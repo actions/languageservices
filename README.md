@@ -1,0 +1,1 @@
+# Language services for GitHub Actions

@@ -1,0 +1,10 @@
+{
+  "exclude": ["./src/**/*.test.ts", "./src/test-utils"],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "outDir": "./dist"
+  }
+}

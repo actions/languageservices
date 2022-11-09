@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "workspaces": [
+    "actions-languageservice",
+    "actions-languageserver"
+  ],
+  "devDependencies": {
+    "lerna": "^6.0.3"
+  },
+  "name": "actions-languageservices"
+}

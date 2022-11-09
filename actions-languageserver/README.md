@@ -1,0 +1,1 @@
+This wraps the GitHub Actions language service and makes it available via the [language server protocol](https://microsoft.github.io/language-server-protocol/) (LSP).
