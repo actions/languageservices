@@ -2,6 +2,15 @@ name: Publish npm package
 
 on:
   workflow_dispatch:
+    inputs:
+      bump:
+        description: How to increase the value of the
+        type: choice
+        default: patch
+        options:
+        - patch
+        - minor
+        - major
 
 jobs:
   publish:
@@ -20,6 +29,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish packages
-        run: npm publish
+        run: npx lerna publish ${{ github.event.inputs.bump }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
