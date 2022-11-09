@@ -1,4 +1,4 @@
-name: Publish npm package
+name: Publish npm packages
 
 on:
   workflow_dispatch:
@@ -29,6 +29,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish packages
-        run: npx lerna publish ${{ github.event.inputs.bump }}
+        run: npx lerna publish ${{ github.event.inputs.bump }} --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
