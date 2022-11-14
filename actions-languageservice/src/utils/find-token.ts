@@ -47,10 +47,7 @@ export function findInnerTokenAndParent(
           if (nullNodeOnLine(pos, key, value)) {
             return [value, key];
           }
-          //value.definition?.keyname = key.value;
-          if (value.definition){
-            value.definition.keyname = key.toString();
-          }
+
           s.push(value);
         }
         continue;
@@ -77,8 +74,8 @@ function posInToken(pos: Position, token: TemplateToken): boolean {
   const r = token.range;
 
   // TokenRange is one-based, Position is zero-based
-  const tokenLine = pos.line //+ 1;
-  const tokenChar = pos.character //+ 1;
+  const tokenLine = pos.line + 1;
+  const tokenChar = pos.character + 1;
 
   // Check lines
   if (r.start[0] > tokenLine || tokenLine > r.end[0]) {

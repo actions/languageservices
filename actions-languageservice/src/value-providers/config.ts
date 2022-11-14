@@ -1,5 +1,3 @@
-import { WorkflowTemplate } from "@github/actions-workflow-parser/model/workflow-template";
-
 export interface Value {
   label: string;
   description?: string;
@@ -13,8 +11,7 @@ export interface WorkflowContext {
 export interface ValueProviderConfig {
   getCustomValues: (
     key: string,
-    context: WorkflowContext,
-    template: WorkflowTemplate | undefined
+    context: WorkflowContext
   ) => Promise<Value[] | undefined>;
   getActionInputs?: (
     owner: string,

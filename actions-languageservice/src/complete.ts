@@ -1,4 +1,4 @@
-import { convertWorkflowTemplate, parseWorkflow, WorkflowTemplate } from "@github/actions-workflow-parser";
+import { parseWorkflow } from "@github/actions-workflow-parser";
 import {
   SEQUENCE_TYPE,
   STRING_TYPE,
@@ -31,24 +31,16 @@ export async function complete(
     content: newDoc.getText(),
   };
   const result = parseWorkflow(file.name, [file], nullTrace);
-  const [innerToken, parent] = findInnerTokenAndParent(newPos, result.value);
-  let template: WorkflowTemplate | undefined = undefined;
-  const valueToRemove = parent?.definition?.keyname;
-  if (result.value) {
-    template = convertWorkflowTemplate(result.context, result.value);
-    console.log("template", template);
-  }
 
+  const [innerToken, parent] = findInnerTokenAndParent(newPos, result.value);
   const values = await getValues(
     innerToken,
     parent,
     newPos,
     textDocument.uri,
-    valueProviderConfig,
-    template,
+    valueProviderConfig
   );
-  const valuesFiltered = values.filter((x) => x.label !== valueToRemove);
-  return valuesFiltered.map((value) => CompletionItem.create(value.label));
+  return values.map((value) => CompletionItem.create(value.label));
 }
 
 async function getValues(
@@ -56,8 +48,7 @@ async function getValues(
   parent: TemplateToken | null,
   position: Position,
   workflowUri: string,
-  valueProviderConfig: ValueProviderConfig | undefined,
-  template: WorkflowTemplate | undefined,
+  valueProviderConfig: ValueProviderConfig | undefined
 ): Promise<Value[]> {
   if (!parent) {
     return [];
@@ -71,21 +62,16 @@ async function getValues(
   }
 
   const existingValues = getExistingValues(token, parent);
-  console.log("Parent", parent);
-  console.log("Token", token);
 
   let customValues: Value[] | undefined = undefined;
   if (token?.definition?.key) {
     customValues = await valueProviderConfig?.getCustomValues(
       token.definition.key,
-      { uri: workflowUri },
-      template,
+      { uri: workflowUri }
     );
-    // add to custom values?
   }
 
   if (customValues !== undefined) {
-    console.log("filterAndSortCompletionOptions with customValues")
     return filterAndSortCompletionOptions(customValues, existingValues);
   }
 
@@ -101,7 +87,6 @@ async function getValues(
   }
   const values = valueProvider();
 
-  console.log("filterAndSortCompletionOptions with values")
   return filterAndSortCompletionOptions(values, existingValues);
 }
 
