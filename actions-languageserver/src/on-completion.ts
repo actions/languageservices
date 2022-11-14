@@ -7,7 +7,10 @@ import { Octokit } from "@octokit/rest";
 import { CompletionItem, DocumentUri, Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { RepositoryContext } from "./initializationOptions";
+import { getJobNames } from "./value-providers/needs";
 import { getRunnerLabels } from "./value-providers/runs-on";
+import { WorkflowTemplate } from "@github/actions-workflow-parser";
+
 
 export async function onCompletion(
   position: Position,
@@ -17,8 +20,8 @@ export async function onCompletion(
   repoWorkflowMap: Map<string, RepositoryContext>
 ): Promise<CompletionItem[]> {
   const config: ValueProviderConfig = {
-    getCustomValues: async (key: string, context: WorkflowContext) =>
-      getCustomValues(key, context, sessionToken, repoWorkflowMap),
+    getCustomValues: async (key: string, context: WorkflowContext, template: WorkflowTemplate | undefined) =>
+      getCustomValues(key, context, sessionToken, repoWorkflowMap, template),
   };
   return await complete(document, position, config);
 }
@@ -27,7 +30,8 @@ async function getCustomValues(
   key: string,
   context: WorkflowContext,
   sessionToken: string | undefined,
-  repoWorkspaceMap: Map<string, RepositoryContext>
+  repoWorkspaceMap: Map<string, RepositoryContext>,
+  template: WorkflowTemplate | undefined
 ) {
   if (!sessionToken) {
     return;
@@ -44,4 +48,7 @@ async function getCustomValues(
     });
     return await getRunnerLabels(octokit, repo.owner, repo.name);
   }
+   if (key === "needs" && template) {
+     return await getJobNames(template);
+   }
 }
