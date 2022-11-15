@@ -1,11 +1,7 @@
-import {
-  TemplateToken,
-  MAPPING_TYPE,
-  SEQUENCE_TYPE,
-  NULL_TYPE
-} from "@github/actions-workflow-parser/templates/tokens/index";
+import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
+import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {Position} from "vscode-languageserver-textdocument";
 
 export function findInnerToken(pos: Position, root?: TemplateToken) {
@@ -37,7 +33,7 @@ export function findInnerTokenAndParent(
 
     // Position is in token, enqueue children if there are any
     switch (token.templateTokenType) {
-      case MAPPING_TYPE:
+      case TokenType.Mapping:
         const mappingToken = token as MappingToken;
         parent = mappingToken;
         for (let i = 0; i < mappingToken.count; i++) {
@@ -52,7 +48,7 @@ export function findInnerTokenAndParent(
         }
         continue;
 
-      case SEQUENCE_TYPE:
+      case TokenType.Sequence:
         const sequenceToken = token as SequenceToken;
         parent = sequenceToken;
         for (let i = 0; i < sequenceToken.count; i++) {
@@ -92,7 +88,7 @@ function posInToken(pos: Position, token: TemplateToken): boolean {
 }
 
 function nullNodeOnLine(pos: Position, key: TemplateToken, value: TemplateToken): boolean {
-  if (value.templateTokenType !== NULL_TYPE) {
+  if (value.templateTokenType !== TokenType.Null) {
     return false;
   }
 
