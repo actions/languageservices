@@ -2,11 +2,11 @@ import {
   TemplateToken,
   MAPPING_TYPE,
   SEQUENCE_TYPE,
-  NULL_TYPE,
+  NULL_TYPE
 } from "@github/actions-workflow-parser/templates/tokens/index";
-import { MappingToken } from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import { SequenceToken } from "@github/actions-workflow-parser/templates/tokens/sequence-token";
-import { Position } from "vscode-languageserver-textdocument";
+import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
+import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
+import {Position} from "vscode-languageserver-textdocument";
 
 export function findInnerToken(pos: Position, root?: TemplateToken) {
   const [innerToken, _] = findInnerTokenAndParent(pos, root);
@@ -41,7 +41,7 @@ export function findInnerTokenAndParent(
         const mappingToken = token as MappingToken;
         parent = mappingToken;
         for (let i = 0; i < mappingToken.count; i++) {
-          const { key, value } = mappingToken.get(i);
+          const {key, value} = mappingToken.get(i);
 
           // Null tokens don't have a position, we can only use the line information
           if (nullNodeOnLine(pos, key, value)) {
@@ -84,21 +84,14 @@ function posInToken(pos: Position, token: TemplateToken): boolean {
 
   // Position is within the token lines. Check character/column if pos line matches
   // start or end
-  if (
-    (r.start[0] === tokenLine && tokenChar < r.start[1]) ||
-    (r.end[0] === tokenLine && tokenChar > r.end[1])
-  ) {
+  if ((r.start[0] === tokenLine && tokenChar < r.start[1]) || (r.end[0] === tokenLine && tokenChar > r.end[1])) {
     return false;
   }
 
   return true;
 }
 
-function nullNodeOnLine(
-  pos: Position,
-  key: TemplateToken,
-  value: TemplateToken
-): boolean {
+function nullNodeOnLine(pos: Position, key: TemplateToken, value: TemplateToken): boolean {
   if (value.templateTokenType !== NULL_TYPE) {
     return false;
   }

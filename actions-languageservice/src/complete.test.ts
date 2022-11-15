@@ -1,10 +1,6 @@
-import { complete } from "./complete";
-import { getPositionFromCursor } from "./test-utils/cursor-position";
-import {
-  Value,
-  ValueProviderConfig,
-  WorkflowContext,
-} from "./value-providers/config";
+import {complete} from "./complete";
+import {getPositionFromCursor} from "./test-utils/cursor-position";
+import {Value, ValueProviderConfig, WorkflowContext} from "./value-providers/config";
 
 describe("completion", () => {
   it("runs-on", async () => {
@@ -69,7 +65,7 @@ jobs:
     |`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result.map((x) => x.label)).not.toContain("runs-on");
+    expect(result.map(x => x.label)).not.toContain("runs-on");
   });
 
   it("one-of narrows down to a specific type", async () => {
@@ -80,22 +76,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     |`;
-    const jobFactoryResult = await complete(
-      ...getPositionFromCursor(jobFactory)
-    );
+    const jobFactoryResult = await complete(...getPositionFromCursor(jobFactory));
     expect(jobFactoryResult).not.toBeUndefined();
-    expect(jobFactoryResult.map((x) => x.label)).not.toContain("uses");
+    expect(jobFactoryResult.map(x => x.label)).not.toContain("uses");
 
     const workflowJob = `on: push
     jobs:
       build:
         uses: octo-org/this-repo/.github/workflows/workflow-1.yml@172239021f7ba04fe7327647b213799853a9eb89
         |`;
-    const workflowJobResult = await complete(
-      ...getPositionFromCursor(workflowJob)
-    );
+    const workflowJobResult = await complete(...getPositionFromCursor(workflowJob));
     expect(workflowJobResult).not.toBeUndefined();
-    expect(workflowJobResult.map((x) => x.label)).not.toContain("runs-on");
+    expect(workflowJobResult.map(x => x.label)).not.toContain("runs-on");
   });
 
   it("completes boolean values", async () => {
@@ -108,7 +100,7 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(2);
 
-    expect(result.map((x) => x.label).sort()).toEqual(["false", "true"]);
+    expect(result.map(x => x.label).sort()).toEqual(["false", "true"]);
   });
 
   it("completes for empty map values", async () => {
@@ -121,7 +113,7 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(2);
 
-    expect(result.map((x) => x.label).sort()).toEqual(["false", "true"]);
+    expect(result.map(x => x.label).sort()).toEqual(["false", "true"]);
   });
 
   it("does not complete empty map values when cursor is immediately after the position", async () => {
@@ -138,17 +130,14 @@ jobs:
   it("custom value providers override defaults", async () => {
     const input = "on: push\njobs:\n  build:\n    runs-on: |";
 
-    const getCustomValues = async (
-      key: string,
-      _: WorkflowContext
-    ): Promise<Value[] | undefined> => {
+    const getCustomValues = async (key: string, _: WorkflowContext): Promise<Value[] | undefined> => {
       if (key === "runs-on") {
-        return [{ label: "my-custom-label" }];
+        return [{label: "my-custom-label"}];
       }
       return [];
     };
     const config: ValueProviderConfig = {
-      getCustomValues: getCustomValues,
+      getCustomValues: getCustomValues
     };
     const result = await complete(...getPositionFromCursor(input), config);
 

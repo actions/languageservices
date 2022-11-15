@@ -1,4 +1,4 @@
-import { TextDocument, Position } from "vscode-languageserver-textdocument";
+import {TextDocument, Position} from "vscode-languageserver-textdocument";
 
 // Calculates the position of the cursor and the document without that cursor
 // Cursor is represented by a `|` character
@@ -11,12 +11,7 @@ export function getPositionFromCursor(input: string): [TextDocument, Position] {
   }
 
   const position = doc.positionAt(cursorIndex);
-  const newDoc = TextDocument.create(
-    doc.uri,
-    doc.languageId,
-    doc.version,
-    doc.getText().replace("|", "")
-  );
+  const newDoc = TextDocument.create(doc.uri, doc.languageId, doc.version, doc.getText().replace("|", ""));
 
   return [newDoc, position];
 }

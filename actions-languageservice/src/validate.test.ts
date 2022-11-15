@@ -1,6 +1,6 @@
-import { parseWorkflow } from "@github/actions-workflow-parser";
-import { TemplateValidationError } from "@github/actions-workflow-parser/templates/template-validation-error";
-import { nullTrace } from "./nulltrace";
+import {parseWorkflow} from "@github/actions-workflow-parser";
+import {TemplateValidationError} from "@github/actions-workflow-parser/templates/template-validation-error";
+import {nullTrace} from "./nulltrace";
 
 describe("validation", () => {
   it("valid workflow", () => {
@@ -9,8 +9,8 @@ describe("validation", () => {
       [
         {
           name: "wf.yaml",
-          content: "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest",
-        },
+          content: "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest"
+        }
       ],
       nullTrace
     );
@@ -24,23 +24,18 @@ describe("validation", () => {
       [
         {
           name: "wf.yaml",
-          content: "on: push",
-        },
+          content: "on: push"
+        }
       ],
       nullTrace
     );
 
     expect(result.context.errors.getErrors().length).toBe(1);
     expect(result.context.errors.getErrors()[0]).toEqual(
-      new TemplateValidationError(
-        "Required property is missing: jobs",
-        "wf.yaml (Line: 1, Col: 1)",
-        undefined,
-        {
-          start: [1, 1],
-          end: [1, 9],
-        }
-      )
+      new TemplateValidationError("Required property is missing: jobs", "wf.yaml (Line: 1, Col: 1)", undefined, {
+        start: [1, 1],
+        end: [1, 9]
+      })
     );
   });
 
@@ -56,23 +51,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - run: echo`,
-        },
+    - run: echo`
+        }
       ],
       nullTrace
     );
 
     expect(result.context.errors.getErrors().length).toBe(1);
     expect(result.context.errors.getErrors()[0]).toEqual(
-      new TemplateValidationError(
-        "Unexpected value 'unknown-key'",
-        "wf.yaml (Line: 2, Col: 1)",
-        undefined,
-        {
-          start: [2, 1],
-          end: [2, 12],
-        }
-      )
+      new TemplateValidationError("Unexpected value 'unknown-key'", "wf.yaml (Line: 2, Col: 1)", undefined, {
+        start: [2, 1],
+        end: [2, 12]
+      })
     );
   });
 });
