@@ -1,31 +1,19 @@
-import {data} from "@github/actions-expressions/.";
+import {data} from "@github/actions-expressions";
 import {complete, getExpressionInput} from "./complete";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 
 const contextProviderConfig: ContextProviderConfig = {
-  async getContext(contexts: string[]): Promise<data.Dictionary | undefined> {
-    const context = new data.Dictionary();
-
-    for (const contextName of contexts) {
-      switch (contextName) {
-        case "github":
-          context.add(
-            "github",
-            new data.Dictionary({
-              key: "event",
-              value: new data.StringData("push")
-            })
-          );
-          break;
-
-        default:
-          context.add(contextName, new data.Dictionary());
-          break;
-      }
+  getContext: async (context: string) => {
+    switch (context) {
+      case "github":
+        return new data.Dictionary({
+          key: "event",
+          value: new data.StringData("push")
+        });
     }
 
-    return context;
+    return undefined;
   }
 };
 
@@ -101,6 +89,14 @@ describe("expressions", () => {
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
       expect(result.map(x => x.label)).toEqual(["event"]);
+    });
+
+    it("using default context provider", async () => {
+      const input =
+        "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    environment:\n      url: ${{ runner.| }}\n    steps:\n      - run: echo";
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["arch", "name", "os", "temp", "tool_cache"]);
     });
   });
 });

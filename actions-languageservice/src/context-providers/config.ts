@@ -2,9 +2,9 @@ import {data} from "@github/actions-expressions";
 import {Dictionary} from "@github/actions-expressions/data/dictionary";
 import {ExpressionData, Pair} from "@github/actions-expressions/data/expressiondata";
 
-export interface ContextProviderConfig {
-  getContext(contexts: string[]): Promise<data.Dictionary | undefined>;
-}
+export type ContextProviderConfig = {
+  getContext: (name: string) => Promise<data.Dictionary | undefined>;
+};
 
 /**
  * DynamicDictionary is a dictionary that returns an empty DynamicDictionary for

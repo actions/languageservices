@@ -1,4 +1,4 @@
-import {complete as completeExpression, data} from "@github/actions-expressions";
+import {complete as completeExpression} from "@github/actions-expressions";
 import {isSequence, isString, parseWorkflow} from "@github/actions-workflow-parser";
 import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
@@ -9,6 +9,7 @@ import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
+import {getContext} from "./context-providers/default";
 import {nullTrace} from "./nulltrace";
 import {findInnerTokenAndParent} from "./utils/find-token";
 import {transform} from "./utils/transform";
@@ -61,8 +62,7 @@ export async function complete(
 
     const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
-    const context =
-      (await contextProviderConfig?.getContext(innerToken.definition!.readerContext)) || new data.Dictionary();
+    const context = await getContext(innerToken.definition?.readerContext || [], contextProviderConfig);
 
     return completeExpression(expressionInput, context, []);
   }
