@@ -1,22 +1,22 @@
-import { parseWorkflow } from "@github/actions-workflow-parser";
+import {parseWorkflow} from "@github/actions-workflow-parser";
 import {
   SEQUENCE_TYPE,
   STRING_TYPE,
   MAPPING_TYPE,
   TemplateToken,
-  NULL_TYPE,
+  NULL_TYPE
 } from "@github/actions-workflow-parser/templates/tokens/index";
-import { MappingToken } from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import { SequenceToken } from "@github/actions-workflow-parser/templates/tokens/sequence-token";
-import { StringToken } from "@github/actions-workflow-parser/templates/tokens/string-token";
-import { File } from "@github/actions-workflow-parser/workflows/file";
-import { Position, TextDocument } from "vscode-languageserver-textdocument";
-import { CompletionItem } from "vscode-languageserver-types";
-import { nullTrace } from "./nulltrace";
-import { findInnerTokenAndParent } from "./utils/find-token";
-import { transform } from "./utils/transform";
-import { Value, ValueProviderConfig } from "./value-providers/config";
-import { defaultValueProviders } from "./value-providers/default";
+import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
+import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
+import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
+import {File} from "@github/actions-workflow-parser/workflows/file";
+import {Position, TextDocument} from "vscode-languageserver-textdocument";
+import {CompletionItem} from "vscode-languageserver-types";
+import {nullTrace} from "./nulltrace";
+import {findInnerTokenAndParent} from "./utils/find-token";
+import {transform} from "./utils/transform";
+import {Value, ValueProviderConfig} from "./value-providers/config";
+import {defaultValueProviders} from "./value-providers/default";
 
 export async function complete(
   textDocument: TextDocument,
@@ -28,19 +28,13 @@ export async function complete(
 
   const file: File = {
     name: textDocument.uri,
-    content: newDoc.getText(),
+    content: newDoc.getText()
   };
   const result = parseWorkflow(file.name, [file], nullTrace);
 
   const [innerToken, parent] = findInnerTokenAndParent(newPos, result.value);
-  const values = await getValues(
-    innerToken,
-    parent,
-    newPos,
-    textDocument.uri,
-    valueProviderConfig
-  );
-  return values.map((value) => CompletionItem.create(value.label));
+  const values = await getValues(innerToken, parent, newPos, textDocument.uri, valueProviderConfig);
+  return values.map(value => CompletionItem.create(value.label));
 }
 
 async function getValues(
@@ -65,10 +59,7 @@ async function getValues(
 
   let customValues: Value[] | undefined = undefined;
   if (token?.definition?.key) {
-    customValues = await valueProviderConfig?.getCustomValues(
-      token.definition.key,
-      { uri: workflowUri }
-    );
+    customValues = await valueProviderConfig?.getCustomValues(token.definition.key, {uri: workflowUri});
   }
 
   if (customValues !== undefined) {
@@ -93,10 +84,7 @@ async function getValues(
 function getExistingValues(token: TemplateToken | null, parent: TemplateToken) {
   // For incomplete YAML, we may only have a parent token
   if (token) {
-    if (
-      token.templateTokenType !== STRING_TYPE ||
-      parent.templateTokenType !== SEQUENCE_TYPE
-    ) {
+    if (token.templateTokenType !== STRING_TYPE || parent.templateTokenType !== SEQUENCE_TYPE) {
       return;
     }
 
@@ -127,13 +115,8 @@ function getExistingValues(token: TemplateToken | null, parent: TemplateToken) {
   }
 }
 
-function filterAndSortCompletionOptions(
-  options: Value[],
-  existingValues?: Set<string>
-) {
-  options = options.filter(
-    (x) => !existingValues || !existingValues.has(x.label)
-  );
+function filterAndSortCompletionOptions(options: Value[], existingValues?: Set<string>) {
+  options = options.filter(x => !existingValues || !existingValues.has(x.label));
   options.sort((a, b) => a.label.localeCompare(b.label));
   return options;
 }

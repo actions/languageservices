@@ -9,16 +9,8 @@ export interface WorkflowContext {
   uri: string;
 }
 export interface ValueProviderConfig {
-  getCustomValues: (
-    key: string,
-    context: WorkflowContext
-  ) => Promise<Value[] | undefined>;
-  getActionInputs?: (
-    owner: string,
-    name: string,
-    ref: string,
-    path?: string
-  ) => Promise<ActionInput[]>;
+  getCustomValues: (key: string, context: WorkflowContext) => Promise<Value[] | undefined>;
+  getActionInputs?: (owner: string, name: string, ref: string, path?: string) => Promise<ActionInput[]>;
 }
 
 export interface ActionInput {

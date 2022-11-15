@@ -1,13 +1,10 @@
-import { Position, TextDocument } from "vscode-languageserver-textdocument";
+import {Position, TextDocument} from "vscode-languageserver-textdocument";
 
 const DUMMY_KEY = "dummy";
 
 // Transform a document to work around YAML parsing issues
 // Based on `_transform` in https://github.com/cschleiden/github-actions-parser/blob/main/src/lib/parser/complete.ts#L311
-export function transform(
-  doc: TextDocument,
-  pos: Position
-): [TextDocument, Position] {
+export function transform(doc: TextDocument, pos: Position): [TextDocument, Position] {
   const input = doc.getText();
   let offset = doc.offsetAt(pos);
   // TODO: Optimize this...
@@ -15,9 +12,8 @@ export function transform(
   const lineNo = input
     .substring(0, offset)
     .split("")
-    .filter((x) => x === "\n").length;
-  const linePos =
-    offset - lines.slice(0, lineNo).reduce((p, l) => p + l.length + 1, 0);
+    .filter(x => x === "\n").length;
+  const linePos = offset - lines.slice(0, lineNo).reduce((p, l) => p + l.length + 1, 0);
   const line = lines[lineNo];
 
   let partialInput = line.trim();
@@ -37,11 +33,7 @@ export function transform(
         }
 
         lines[lineNo] =
-          line.substring(0, linePos) +
-          spacer +
-          DUMMY_KEY +
-          (trimmedLine === "-" ? "" : ":") +
-          line.substring(linePos);
+          line.substring(0, linePos) + spacer + DUMMY_KEY + (trimmedLine === "-" ? "" : ":") + line.substring(linePos);
 
         // Adjust pos by one to prevent a sequence node being marked as active
         offset++;
@@ -51,22 +43,13 @@ export function transform(
       }
 
       if (trimmedLine.startsWith("-")) {
-        partialInput = trimmedLine
-          .substring(trimmedLine.indexOf("-") + 1)
-          .trim();
+        partialInput = trimmedLine.substring(trimmedLine.indexOf("-") + 1).trim();
       }
     } else {
-      partialInput = (
-        offset > colon ? line.substring(colon + 1) : line.substring(0, colon)
-      ).trim();
+      partialInput = (offset > colon ? line.substring(colon + 1) : line.substring(0, colon)).trim();
       offset = offset - 1;
     }
   }
-  const newDoc = TextDocument.create(
-    doc.uri,
-    doc.languageId,
-    doc.version,
-    lines.join("\n")
-  );
+  const newDoc = TextDocument.create(doc.uri, doc.languageId, doc.version, lines.join("\n"));
   return [newDoc, newDoc.positionAt(offset)];
 }

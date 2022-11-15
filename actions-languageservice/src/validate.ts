@@ -1,13 +1,9 @@
-import {
-  convertWorkflowTemplate,
-  parseWorkflow,
-  ParseWorkflowResult,
-} from "@github/actions-workflow-parser";
-import { TokenRange } from "@github/actions-workflow-parser/templates/tokens/token-range";
-import { File } from "@github/actions-workflow-parser/workflows/file";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { Diagnostic, Range } from "vscode-languageserver-types";
-import { nullTrace } from "./nulltrace";
+import {convertWorkflowTemplate, parseWorkflow, ParseWorkflowResult} from "@github/actions-workflow-parser";
+import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
+import {File} from "@github/actions-workflow-parser/workflows/file";
+import {TextDocument} from "vscode-languageserver-textdocument";
+import {Diagnostic, Range} from "vscode-languageserver-types";
+import {nullTrace} from "./nulltrace";
 
 /**
  * Validates a workflow file
@@ -21,15 +17,11 @@ export async function validate(
 ): Promise<Diagnostic[]> {
   const file: File = {
     name: textDocument.uri,
-    content: textDocument.getText(),
+    content: textDocument.getText()
   };
 
   try {
-    const result: ParseWorkflowResult = parseWorkflow(
-      file.name,
-      [file],
-      nullTrace
-    );
+    const result: ParseWorkflowResult = parseWorkflow(file.name, [file], nullTrace);
 
     if (result.value) {
       // Errors will be updated in the context
@@ -37,25 +29,25 @@ export async function validate(
     }
 
     // For now map parser errors directly to diagnostics
-    return result.context.errors.getErrors().map((error) => {
+    return result.context.errors.getErrors().map(error => {
       let range = mapRange(error.range);
       if (!range) {
         // Use default range
         range = {
           start: {
             line: 1,
-            character: 1,
+            character: 1
           },
           end: {
             line: 1,
-            character: 1,
-          },
+            character: 1
+          }
         };
       }
 
       return {
         message: error.rawMessage,
-        range,
+        range
       };
     });
   } catch (e) {
@@ -72,11 +64,11 @@ function mapRange(range: TokenRange | undefined): Range | undefined {
   return {
     start: {
       line: range.start[0] - 1,
-      character: range.start[1] - 1,
+      character: range.start[1] - 1
     },
     end: {
       line: range.end[0] - 1,
-      character: range.end[1] - 1,
-    },
+      character: range.end[1] - 1
+    }
   };
 }
