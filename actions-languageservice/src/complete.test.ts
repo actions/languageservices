@@ -145,4 +145,28 @@ jobs:
     expect(result.length).toEqual(1);
     expect(result[0].label).toEqual("my-custom-label");
   });
+
+  it("does not show parent mapping sibling keys", async () => {
+    const input = `on: push
+jobs:
+  build:
+    container: |
+    runs-on: ubuntu-latest`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result.length).toEqual(6);
+    // Should not contain other top-level job keys like `if` and `runs-on`
+    expect(result.map(x => x.label)).not.toContain("if");
+    expect(result.map(x => x.label)).not.toContain("runs-on");
+  });
+
+  it("shows mapping keys within a new map ", async () => {
+    const input = `on: push
+jobs:
+  build:
+    concurrency: |`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result.map(x => x.label).sort()).toEqual(["cancel-in-progress", "group"]);
+  });
 });

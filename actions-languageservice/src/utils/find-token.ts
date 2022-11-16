@@ -1,4 +1,4 @@
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
+import {StringToken, TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
@@ -54,8 +54,26 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
         for (let i = 0; i < mappingToken.count; i++) {
           const {key, value} = mappingToken.get(i);
 
-          // Null tokens don't have a position, we can only use the line information
-          if (nullNodeOnLine(pos, key, value)) {
+          const sameLine = onSameLine(pos, key, value);
+          if (posInToken(pos, key)) {
+            if (sameLine && key.range!.end[1] + 1 === value.range!.start[1]) {
+              // There's no space between the key and value, there's nothing valid to complete here
+              return {
+                token: null,
+                keyToken: null,
+                parent: null
+              };
+            }
+
+            return {
+              token: key,
+              keyToken: null,
+              parent: mappingToken
+            };
+          }
+
+          // Empty nodes positions won't always match the cursor, so check if we're on the same line
+          if (sameLine && emptyNode(value)) {
             return {
               token: value,
               keyToken: null,
@@ -122,11 +140,7 @@ function posInToken(pos: Position, token: TemplateToken): boolean {
   return true;
 }
 
-function nullNodeOnLine(pos: Position, key: TemplateToken, value: TemplateToken): boolean {
-  if (value.templateTokenType !== TokenType.Null) {
-    return false;
-  }
-
+function onSameLine(pos: Position, key: TemplateToken, value: TemplateToken): boolean {
   if (!value.range) {
     return false;
   }
@@ -136,7 +150,7 @@ function nullNodeOnLine(pos: Position, key: TemplateToken, value: TemplateToken)
   }
 
   if (value.range.start[0] !== value.range.end[0]) {
-    // Token occupies multiple lines, can't be a null node
+    // Token occupies multiple lines, can't be an empty node
     return false;
   }
 
@@ -147,4 +161,21 @@ function nullNodeOnLine(pos: Position, key: TemplateToken, value: TemplateToken)
   }
 
   return true;
+}
+
+function emptyNode(token: TemplateToken | null): boolean {
+  if (!token) {
+    return false;
+  }
+
+  if (token.templateTokenType === TokenType.Null) {
+    return true;
+  }
+
+  if (token.templateTokenType === TokenType.String) {
+    const stringToken = token as StringToken;
+    return stringToken.value === "";
+  }
+
+  return false;
 }
