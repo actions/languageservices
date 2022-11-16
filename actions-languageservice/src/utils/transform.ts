@@ -12,11 +12,10 @@ export function transform(doc: TextDocument, pos: Position): [TextDocument, Posi
   });
   const linePos = pos.character;
 
-  let partialInput = line.trim();
   // Special case for Actions, if this line contains an expression marker, do _not_ transform. This is
   // an ugly fix for auto-completion in multi-line YAML strings. At this point in the process, we cannot
   // determine if a line is in such a multi-line string.
-  if (partialInput.indexOf("${{") === -1) {
+  if (line.indexOf("${{") === -1) {
     const colon = line.indexOf(":");
     if (colon === -1) {
       const trimmedLine = line.trim();
