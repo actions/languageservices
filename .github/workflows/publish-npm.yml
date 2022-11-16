@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       bump:
-        description: How to increase the value of the
+        description: How to increase the version
         type: choice
         default: patch
         options:
