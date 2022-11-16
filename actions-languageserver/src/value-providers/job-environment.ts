@@ -10,15 +10,15 @@ export async function getEnvironments(
   try {
     const response = await client.repos.getAllEnvironments({
       owner,
-      repo: name,
+      repo: "bob",
     });
 
     if (response.data.environments) {
       environments = response.data.environments.map((env) => env.name);
     }
   } catch (e) {
-    console.log(e);
+    console.log("Failure to retrieve environments: ", e);
   }
 
-  return Array.from(environments).map((e) => ({ label: e }));
+  return Array.from(environments).map((env) => ({ label: env }));
 }

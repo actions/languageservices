@@ -7,7 +7,7 @@ import { Octokit } from "@octokit/rest";
 import { CompletionItem, DocumentUri, Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { RepositoryContext } from "./initializationOptions";
-import { getEnvironments } from "./value-providers/job-environtment";
+import { getEnvironments } from "./value-providers/job-environment";
 import { getRunnerLabels } from "./value-providers/runs-on";
 
 export async function onCompletion(
