@@ -57,13 +57,15 @@ connection.onInitialize((params: InitializeParams) => {
 
   const result: InitializeResult = {
     capabilities: {
-      textDocumentSync: TextDocumentSyncKind.Incremental,
+      textDocumentSync: TextDocumentSyncKind.Full,
       completionProvider: {
         resolveProvider: false,
+        triggerCharacters: [":", "."],
       },
       hoverProvider: true,
     },
   };
+
   if (hasWorkspaceFolderCapability) {
     result.capabilities.workspace = {
       workspaceFolders: {
@@ -71,6 +73,7 @@ connection.onInitialize((params: InitializeParams) => {
       },
     };
   }
+
   return result;
 });
 
