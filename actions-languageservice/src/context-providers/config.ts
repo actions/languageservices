@@ -7,8 +7,8 @@ export type ContextProviderConfig = {
 };
 
 /**
- * DynamicDictionary is a dictionary that returns an empty DynamicDictionary for
- * any key that is not present.
+ * DynamicDictionary is a dictionary that returns an empty DynamicDictionary (or other given type)
+ * for any key that is not present.
  */
 export class DynamicDictionary<T extends ExpressionData = Dictionary> extends data.Dictionary {
   constructor(pairs: Pair[], private creator: () => T = () => new data.Dictionary() as T) {
