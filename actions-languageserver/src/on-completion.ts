@@ -7,6 +7,7 @@ import { Octokit } from "@octokit/rest";
 import { CompletionItem, DocumentUri, Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { RepositoryContext } from "./initializationOptions";
+import { getEnvironments } from "./value-providers/job-environtment";
 import { getRunnerLabels } from "./value-providers/runs-on";
 
 export async function onCompletion(
@@ -38,10 +39,17 @@ async function getCustomValues(
   if (!repo) {
     return;
   }
-  if (key === "runs-on") {
-    const octokit = new Octokit({
-      auth: sessionToken,
-    });
-    return await getRunnerLabels(octokit, repo.owner, repo.name);
+
+  const octokit = new Octokit({
+    auth: sessionToken,
+  });
+
+  switch (key) {
+    case "job-environment": {
+      return await getEnvironments(octokit, repo.owner, repo.name);
+    }
+    case "runs-on": {
+      return await getRunnerLabels(octokit, repo.owner, repo.name);
+    }
   }
 }
