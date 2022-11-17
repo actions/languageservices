@@ -1,4 +1,5 @@
-import {StringToken, TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
+import {isString} from "@github/actions-workflow-parser";
+import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
@@ -165,9 +166,8 @@ function emptyNode(token: TemplateToken | null): boolean {
     return true;
   }
 
-  if (token.templateTokenType === TokenType.String) {
-    const stringToken = token as StringToken;
-    return stringToken.value === "";
+  if (isString(token)) {
+    return token.value === "";
   }
 
   return false;
