@@ -11,16 +11,16 @@ import {CompletionItem} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
 import {nullTrace} from "./nulltrace";
-import {findInnerTokenAndParent} from "./utils/find-token";
+import {findToken} from "./utils/find-token";
 import {transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 
-export function getExpressionInput(input: string, pos: number): string | undefined {
+export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
   const startPos = input.lastIndexOf(OPEN_EXPRESSION, pos);
   if (startPos === -1) {
-    return undefined;
+    return input;
   }
 
   // Find end marker after the cursor position
@@ -48,26 +48,30 @@ export async function complete(
   };
   const result = parseWorkflow(file.name, [file], nullTrace);
 
-  const [innerToken, parent] = findInnerTokenAndParent(newPos, result.value);
+  const {token, keyToken, parent} = findToken(newPos, result.value);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
-  if (innerToken && isString(innerToken) && innerToken.value.indexOf(OPEN_EXPRESSION) >= 0) {
-    // TODO: Handle expressions without markers like `if`
+  if (token) {
+    // We don't have any way of specifying that a token in the workflow schema is alwyas an expression. For now these
+    // are only the job and step level `if` nodes, so check for those here.
+    const isIfKey = keyToken && isString(keyToken) && keyToken.value === "if";
+    const containsExpression = isString(token) && token.value.indexOf(OPEN_EXPRESSION) >= 0;
+    if (isString(token) && (isIfKey || containsExpression)) {
+      const currentInput = token.value;
 
-    const currentInput = innerToken.value;
+      // Transform the overall position into a node relative position
+      const relCharPos = newPos.character - token.range!.start[1];
 
-    // Transform the overall position into a node relative position
-    const relCharPos = newPos.character - innerToken.range!.start[1];
+      const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
-    const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
+      const context = await getContext(token.definition?.readerContext || [], contextProviderConfig);
 
-    const context = await getContext(innerToken.definition?.readerContext || [], contextProviderConfig);
-
-    return completeExpression(expressionInput, context, []);
+      return completeExpression(expressionInput, context, []);
+    }
   }
 
-  const values = await getValues(innerToken, parent, newPos, textDocument.uri, valueProviderConfig);
+  const values = await getValues(token, parent, newPos, textDocument.uri, valueProviderConfig);
   return values.map(value => CompletionItem.create(value.label));
 }
 
