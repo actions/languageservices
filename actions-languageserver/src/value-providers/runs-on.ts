@@ -34,7 +34,7 @@ export async function getRunnerLabels(
       }
     }
   } catch (e) {
-    console.log(e);
+    console.log("Failure to retrieve runner labels: ", e);
   }
 
   return Array.from(labels).map((label) => ({ label }));
