@@ -71,26 +71,18 @@ export async function complete(
     }
   }
 
-  const values = await getValues(token, parent, newPos, textDocument.uri, valueProviderConfig);
+  const values = await getValues(token, parent, textDocument.uri, valueProviderConfig);
   return values.map(value => CompletionItem.create(value.label));
 }
 
 async function getValues(
   token: TemplateToken | null,
   parent: TemplateToken | null,
-  position: Position,
   workflowUri: string,
   valueProviderConfig: ValueProviderConfig | undefined
 ): Promise<Value[]> {
   if (!parent) {
     return [];
-  }
-
-  if (token?.templateTokenType === TokenType.Null) {
-    // Ensure there's a space after the parent key
-    if (parent.range && position.character + 1 === parent.range.end[1]) {
-      return [];
-    }
   }
 
   const existingValues = getExistingValues(token, parent);
