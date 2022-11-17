@@ -98,5 +98,31 @@ describe("expressions", () => {
 
       expect(result.map(x => x.label)).toEqual(["arch", "name", "os", "temp", "tool_cache"]);
     });
+
+    it("job if", async () => {
+      const input = `on: push
+jobs:
+  build:
+    if: github.|
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`;
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["event"]);
+    });
+
+    it("step if", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+      if: github.|`;
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["event"]);
+    });
   });
 });

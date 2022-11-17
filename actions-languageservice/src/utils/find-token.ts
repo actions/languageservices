@@ -5,24 +5,37 @@ import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types"
 import {Position} from "vscode-languageserver-textdocument";
 
 export function findInnerToken(pos: Position, root?: TemplateToken) {
-  const [innerToken, _] = findInnerTokenAndParent(pos, root);
-  return innerToken;
+  const {token} = findToken(pos, root);
+  return token;
 }
 
-export function findInnerTokenAndParent(
-  pos: Position,
-  root?: TemplateToken
-): [TemplateToken | null, TemplateToken | null] {
+export type TokenResult = {
+  token: TemplateToken | null;
+  keyToken: TemplateToken | null;
+  parent: TemplateToken | null;
+};
+
+export function findToken(pos: Position, root?: TemplateToken): TokenResult {
   if (!root) {
-    return [null, null];
+    return {
+      token: null,
+      keyToken: null,
+      parent: null
+    };
   }
 
-  const s = [root];
+  let lastMatchingToken: TemplateToken | null = null;
 
-  let parent: TemplateToken | null = null;
+  const s: TokenResult[] = [
+    {
+      token: root,
+      keyToken: null,
+      parent: null
+    }
+  ];
 
-  for (;;) {
-    const token = s.shift();
+  while (s.length > 0) {
+    const {parent, token, keyToken} = s.shift()!;
     if (!token) {
       break;
     }
@@ -31,36 +44,58 @@ export function findInnerTokenAndParent(
       continue;
     }
 
+    // Pos is in token, remember this token
+    lastMatchingToken = token;
+
     // Position is in token, enqueue children if there are any
     switch (token.templateTokenType) {
       case TokenType.Mapping:
         const mappingToken = token as MappingToken;
-        parent = mappingToken;
         for (let i = 0; i < mappingToken.count; i++) {
           const {key, value} = mappingToken.get(i);
 
           // Null tokens don't have a position, we can only use the line information
           if (nullNodeOnLine(pos, key, value)) {
-            return [value, key];
+            return {
+              token: value,
+              keyToken: null,
+              parent: key
+            };
           }
 
-          s.push(value);
+          s.push({
+            parent: mappingToken,
+            keyToken: key,
+            token: value
+          });
         }
         continue;
 
       case TokenType.Sequence:
         const sequenceToken = token as SequenceToken;
-        parent = sequenceToken;
         for (let i = 0; i < sequenceToken.count; i++) {
-          s.push(sequenceToken.get(i));
+          s.push({
+            token: sequenceToken.get(i),
+            keyToken: null,
+            parent: sequenceToken
+          });
         }
         continue;
     }
 
-    return [token, parent];
+    return {
+      token,
+      keyToken,
+      parent
+    };
   }
 
-  return [null, parent];
+  // Did not find a matching token, return the last matching token as parent
+  return {
+    token: null,
+    parent: lastMatchingToken,
+    keyToken: null
+  };
 }
 
 function posInToken(pos: Position, token: TemplateToken): boolean {
