@@ -22,6 +22,7 @@ export function defaultValueProviders(): {[key: string]: ValueProvider} {
     "runs-on": () =>
       stringsToValues([
         "ubuntu-latest",
+        "ubuntu-22.04",
         "ubuntu-18.04",
         "ubuntu-16.04",
         "windows-latest",
