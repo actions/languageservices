@@ -12,5 +12,6 @@ export default {
       },
     ],
   },
-  moduleFileExtensions: ["ts", "js"]
+  moduleFileExtensions: ["ts", "js"],
+  reporters: ["default", "github-actions"]
 };
