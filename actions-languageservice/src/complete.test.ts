@@ -25,7 +25,7 @@ describe("completion", () => {
     const input = `on: push
 jobs:
   build:
-      runs-on: [self-hosted, u|]`;
+    runs-on: [self-hosted, u|]`;
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
@@ -55,6 +55,39 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(20);
+  });
+
+  it("string definition completion in sequence", async () => {
+    const input = `on:
+  release:
+    types:
+      - |`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result.map(x => x.label)).toEqual([
+      "created",
+      "deleted",
+      "edited",
+      "prereleased",
+      "published",
+      "released",
+      "unpublished"
+    ]);
+  });
+
+  it("string definition completion", async () => {
+    const input = `on:
+  release:
+    types: |`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result.map(x => x.label)).toEqual([
+      "created",
+      "deleted",
+      "edited",
+      "prereleased",
+      "published",
+      "released",
+      "unpublished"
+    ]);
   });
 
   it("map keys filter out existing values", async () => {

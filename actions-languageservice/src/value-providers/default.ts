@@ -1,7 +1,8 @@
-import {Definition} from "@github/actions-workflow-parser/templates/schema/definition";
 import {BooleanDefinition} from "@github/actions-workflow-parser/templates/schema/boolean-definition";
+import {Definition} from "@github/actions-workflow-parser/templates/schema/definition";
 import {MappingDefinition} from "@github/actions-workflow-parser/templates/schema/mapping-definition";
 import {OneOfDefinition} from "@github/actions-workflow-parser/templates/schema/one-of-definition";
+import {StringDefinition} from "@github/actions-workflow-parser/templates/schema/string-definition";
 import {getWorkflowSchema} from "@github/actions-workflow-parser/workflows/workflow-schema";
 import {Value, ValueProvider} from "./config";
 
@@ -37,12 +38,21 @@ export function defaultValueProviders(): {[key: string]: ValueProvider} {
 
 function definitionValueProvider(key: string, definitions: {[key: string]: Definition}): ValueProvider | undefined {
   const def = definitions[key];
+
   if (def instanceof MappingDefinition) {
     return mappingValueProvider(def);
-  } else if (def instanceof OneOfDefinition) {
+  }
+
+  if (def instanceof OneOfDefinition) {
     return oneOfValueProvider(def, definitions);
-  } else if (def instanceof BooleanDefinition) {
+  }
+
+  if (def instanceof BooleanDefinition) {
     return () => stringsToValues(["true", "false"]);
+  }
+
+  if (def instanceof StringDefinition && def.constant) {
+    return () => stringsToValues([def.constant]);
   }
 }
 
