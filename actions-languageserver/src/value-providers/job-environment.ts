@@ -10,7 +10,7 @@ export async function getEnvironments(
   try {
     const response = await client.repos.getAllEnvironments({
       owner,
-      repo: "bob",
+      repo: name,
     });
 
     if (response.data.environments) {
