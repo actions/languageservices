@@ -13,14 +13,14 @@ describe("expression validation", () => {
 
     expect(result).toEqual([
       {
-        message: "Context might be invalid: does-not-exist",
+        message: "Context access might be invalid: does-not-exist",
         range: {
           end: {
             character: 43,
             line: 1
           },
           start: {
-            character: 10,
+            character: 15,
             line: 1
           }
         },
@@ -39,14 +39,14 @@ describe("expression validation", () => {
 
     expect(result).toEqual([
       {
-        message: "Context might be invalid: does-not-exist",
+        message: "Context access might be invalid: does-not-exist",
         range: {
           end: {
             character: 49,
             line: 1
           },
           start: {
-            character: 10,
+            character: 15,
             line: 1
           }
         },
