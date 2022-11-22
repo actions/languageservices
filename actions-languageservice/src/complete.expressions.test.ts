@@ -4,7 +4,7 @@ import {ContextProviderConfig} from "./context-providers/config";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 
 const contextProviderConfig: ContextProviderConfig = {
-  getContext: async (context: string) => {
+  getContext: (context: string) => {
     switch (context) {
       case "github":
         return new data.Dictionary({

@@ -1,16 +1,16 @@
 import {data} from "@github/actions-expressions";
 import {ContextProviderConfig} from "./config";
 
-export async function getContext(names: string[], config: ContextProviderConfig | undefined): Promise<data.Dictionary> {
+export function getContext(names: string[], config: ContextProviderConfig | undefined): data.Dictionary {
   const context = new data.Dictionary();
 
   for (const contextName of names) {
     let value: data.Dictionary | undefined;
 
-    value = await getDefaultContext(contextName);
+    value = getDefaultContext(contextName);
 
     if (!value) {
-      value = await config?.getContext(contextName);
+      value = config?.getContext(contextName);
     }
 
     if (!value) {
@@ -23,7 +23,7 @@ export async function getContext(names: string[], config: ContextProviderConfig 
   return context;
 }
 
-async function getDefaultContext(name: string): Promise<data.Dictionary | undefined> {
+function getDefaultContext(name: string): data.Dictionary | undefined {
   switch (name) {
     case "runner":
       return objectToDictionary({
