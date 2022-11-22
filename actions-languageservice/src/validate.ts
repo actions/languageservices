@@ -6,7 +6,7 @@ import {
   parseWorkflow,
   ParseWorkflowResult
 } from "@github/actions-workflow-parser";
-import {splitAllowedContext} from "@github/actions-workflow-parser/templates/tokens/expression-token";
+import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
 import {File} from "@github/actions-workflow-parser/workflows/file";
