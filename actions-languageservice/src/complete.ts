@@ -15,6 +15,7 @@ import {findToken} from "./utils/find-token";
 import {transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
+import {definitionValues} from "./value-providers/definition";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
@@ -98,16 +99,23 @@ async function getValues(
 
   const valueProviders = defaultValueProviders();
 
-  // Use the key from the parent if we don't have a value provider for the current key
-  // Ideally each token would have a valid key
+  // Use the value provider from the parent if we don't have a value provider for the current key
   const valueProvider =
     (token?.definition?.key && valueProviders[token.definition.key]) ||
-    (parent?.definition?.key && valueProviders[parent.definition.key]);
-  if (!valueProvider) {
+    (parent.definition?.key && valueProviders[parent.definition.key]);
+
+  if (valueProvider) {
+    const values = valueProvider();
+    return filterAndSortCompletionOptions(values, existingValues);
+  }
+
+  // Use the definition if there are no value providers
+  const def = token?.definition || parent.definition;
+  if (!def) {
     return [];
   }
-  const values = valueProvider();
 
+  const values = definitionValues(def);
   return filterAndSortCompletionOptions(values, existingValues);
 }
 
