@@ -56,12 +56,20 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
           const {key, value} = mappingToken.get(i);
 
           if (onSameLine(pos, key, value)) {
-            if (posInToken(pos, key) && key.range!.end[1] + 1 === value.range!.start[1]) {
-              // There's no space between the key and value, there's nothing valid to complete here
+            if (posInToken(pos, key)) {
+              if (key.range!.end[1] + 1 === value.range!.start[1]) {
+                // There's no space between the key and value, this is not valid
+                return {
+                  token: null,
+                  keyToken: null,
+                  parent: null
+                };
+              }
+
               return {
-                token: null,
+                token: key,
                 keyToken: null,
-                parent: null
+                parent: mappingToken
               };
             }
 
@@ -76,9 +84,9 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
           }
 
           s.push({
-            parent: mappingToken,
+            token: value,
             keyToken: key,
-            token: value
+            parent: mappingToken
           });
         }
         continue;
