@@ -1,68 +1,60 @@
-import {parseWorkflow} from "@github/actions-workflow-parser";
-import {TemplateValidationError} from "@github/actions-workflow-parser/templates/template-validation-error";
-import {nullTrace} from "./nulltrace";
+import {Diagnostic} from "vscode-languageserver-types";
+import {createDocument} from "./test-utils/document";
+import {validate} from "./validate";
 
 describe("validation", () => {
-  it("valid workflow", () => {
-    const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest"
-        }
-      ],
-      nullTrace
-    );
+  it("valid workflow", async () => {
+    const result = await validate(createDocument("wf.yaml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest"));
 
-    expect(result.context.errors.getErrors().length).toBe(0);
+    expect(result.length).toBe(0);
   });
 
-  it("missing jobs key", () => {
-    const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: "on: push"
-        }
-      ],
-      nullTrace
-    );
+  it("missing jobs key", async () => {
+    const result = await validate(createDocument("wf.yaml", "on: push"));
 
-    expect(result.context.errors.getErrors().length).toBe(1);
-    expect(result.context.errors.getErrors()[0]).toEqual(
-      new TemplateValidationError("Required property is missing: jobs", "wf.yaml (Line: 1, Col: 1)", undefined, {
-        start: [1, 1],
-        end: [1, 9]
-      })
-    );
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message: "Required property is missing: jobs",
+      range: {
+        start: {
+          line: 0,
+          character: 0
+        },
+        end: {
+          line: 0,
+          character: 8
+        }
+      }
+    } as Diagnostic);
   });
 
-  it("extraneous key", () => {
-    const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+  it("extraneous key", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
 unknown-key: foo
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - run: echo`
-        }
-      ],
-      nullTrace
+      )
     );
 
-    expect(result.context.errors.getErrors().length).toBe(1);
-    expect(result.context.errors.getErrors()[0]).toEqual(
-      new TemplateValidationError("Unexpected value 'unknown-key'", "wf.yaml (Line: 2, Col: 1)", undefined, {
-        start: [2, 1],
-        end: [2, 12]
-      })
-    );
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message: "Unexpected value 'unknown-key'",
+      range: {
+        end: {
+          character: 11,
+          line: 1
+        },
+        start: {
+          character: 0,
+          line: 1
+        }
+      }
+    } as Diagnostic);
   });
 });
