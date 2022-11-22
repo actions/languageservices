@@ -1,12 +1,10 @@
-import {parseWorkflow} from "@github/actions-workflow-parser";
+import {isMapping, parseWorkflow} from "@github/actions-workflow-parser";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Hover} from "vscode-languageserver-types";
 import {nullTrace} from "./nulltrace";
-import {findInnerToken, findToken} from "./utils/find-token";
-import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
+import {findToken} from "./utils/find-token";
 
 // Render value description and Context when hovering over a key in a MappingToken
 export async function hover(document: TextDocument, position: Position): Promise<Hover | null> {
@@ -20,9 +18,8 @@ export async function hover(document: TextDocument, position: Position): Promise
 
   if (result.value && token) {
     // If the parent is a MappingToken and no keyToken was returned, our token is the key
-    if (parent?.templateTokenType === TokenType.Mapping && !keyToken) {
-      const mappingToken = parent as MappingToken;
-      const value = mappingToken.find(token.toString());
+    if (parent && isMapping(parent) && !keyToken) {
+      const value = parent.find(token.toString());
       if (value) {
         return getHover(token, value);
       }
