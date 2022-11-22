@@ -1,9 +1,10 @@
-import {TextDocument, Position} from "vscode-languageserver-textdocument";
+import {Position, TextDocument} from "vscode-languageserver-textdocument";
+import {createDocument} from "./document";
 
 // Calculates the position of the cursor and the document without that cursor
 // Cursor is represented by a `|` character
 export function getPositionFromCursor(input: string): [TextDocument, Position] {
-  const doc = TextDocument.create("test://test/test.yaml", "yaml", 0, input);
+  const doc = createDocument("test.yaml", input);
 
   const cursorIndex = doc.getText().indexOf("|");
   if (cursorIndex === -1) {
