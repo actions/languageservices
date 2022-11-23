@@ -23,6 +23,7 @@ function testFindToken(input: string): {
   parent: testTokenInfo | null;
   key: testTokenInfo | null;
   token: testTokenInfo | null;
+  parentKey: testTokenInfo | null;
 } {
   const [textDocument, pos] = getPositionFromCursor(input);
   const result = parseWorkflow(
@@ -40,6 +41,7 @@ function testFindToken(input: string): {
 
   return {
     parent: getTokenInfo(r.parent),
+    parentKey: getTokenInfo(r.parentKey),
     key: getTokenInfo(r.keyToken),
     token: getTokenInfo(r.token)
   };
@@ -49,6 +51,7 @@ describe("find-token", () => {
   it("on string key", () => {
     expect(testFindToken(`o|n: push`)).toEqual({
       parent: ["workflow-root-strict", TokenType.Mapping],
+      parentKey: null,
       key: null,
       token: [null, TokenType.String, "on"]
     });
@@ -57,6 +60,7 @@ describe("find-token", () => {
   it("on string value", () => {
     expect(testFindToken(`on: pu|sh`)).toEqual({
       parent: ["workflow-root-strict", TokenType.Mapping],
+      parentKey: null,
       key: [null, TokenType.String, "on"],
       token: ["on-strict", TokenType.String, "push"]
     });
@@ -68,6 +72,7 @@ describe("find-token", () => {
   pu|sh:`)
     ).toEqual({
       parent: ["on-mapping-strict", TokenType.Mapping],
+      parentKey: [null, TokenType.String, "on"],
       key: null,
       token: [null, TokenType.String, "push"]
     });
@@ -79,6 +84,7 @@ describe("find-token", () => {
     - pu|sh`)
     ).toEqual({
       parent: ["on-strict", TokenType.Sequence],
+      parentKey: null,
       key: null,
       token: ["non-empty-string", TokenType.String, "push"]
     });
@@ -90,6 +96,7 @@ describe("find-token", () => {
     -| push`)
     ).toEqual({
       parent: ["on-strict", TokenType.Sequence],
+      parentKey: null,
       key: null,
       token: null
     });
@@ -102,6 +109,7 @@ describe("find-token", () => {
     - pull_request|`)
     ).toEqual({
       parent: ["on-strict", TokenType.Sequence],
+      parentKey: null,
       key: null,
       token: ["non-empty-string", TokenType.String, "pull_request"]
     });
@@ -115,6 +123,7 @@ jobs:
     runs-on: [ubuntu-latest, self|`)
     ).toEqual({
       parent: ["runs-on", TokenType.Sequence],
+      parentKey: null,
       key: null,
       token: ["non-empty-string", TokenType.String, "self"]
     });
@@ -127,6 +136,7 @@ jo|bs:
   build:`)
     ).toEqual({
       parent: ["workflow-root-strict", TokenType.Mapping],
+      parentKey: null,
       key: null,
       token: [null, TokenType.String, "jobs"]
     });
@@ -140,6 +150,7 @@ jobs:
     runs-on: ubu|`)
     ).toEqual({
       parent: ["job-factory", TokenType.Mapping],
+      parentKey: ["job-id", TokenType.String, "build"],
       key: [null, TokenType.String, "runs-on"],
       token: ["runs-on", TokenType.String, "ubu"]
     });
@@ -153,6 +164,7 @@ jobs:
     run|s-on: ubu`)
     ).toEqual({
       parent: ["job-factory", TokenType.Mapping],
+      parentKey: ["job-id", TokenType.String, "build"],
       key: null,
       token: [null, TokenType.String, "runs-on"]
     });
@@ -166,6 +178,7 @@ jobs:
     continue-on-error:|`)
     ).toEqual({
       parent: ["job-factory", TokenType.Mapping],
+      parentKey: ["job-id", TokenType.String, "build"],
       key: [null, TokenType.String, "continue-on-error"],
       token: ["boolean-strategy-context", TokenType.Null, ""]
     });
@@ -179,6 +192,7 @@ jobs:
     container:|`)
     ).toEqual({
       parent: ["job-factory", TokenType.Mapping],
+      parentKey: ["job-id", TokenType.String, "build"],
       key: [null, TokenType.String, "container"],
       token: ["container", TokenType.String, ""]
     });
@@ -192,6 +206,7 @@ jobs:
     continue-on-error:|foo`)
     ).toEqual({
       parent: ["jobs", TokenType.Mapping],
+      parentKey: [null, TokenType.String, "jobs"],
       key: ["job-id", TokenType.String, "build"],
       token: ["job", TokenType.String, "continue-on-error:foo"]
     });
@@ -205,6 +220,7 @@ jobs:
     continue-on-error:| foo`)
     ).toEqual({
       parent: ["job-factory", TokenType.Mapping],
+      parentKey: null,
       key: null,
       token: null
     });
@@ -218,6 +234,7 @@ jobs:
     continue-on-error|: foo`)
     ).toEqual({
       parent: ["job-factory", TokenType.Mapping],
+      parentKey: ["job-id", TokenType.String, "build"],
       key: null,
       token: [null, TokenType.String, "continue-on-error"]
     });
@@ -231,6 +248,7 @@ jobs:
     runs-|`)
     ).toEqual({
       parent: ["jobs", TokenType.Mapping],
+      parentKey: [null, TokenType.String, "jobs"],
       key: ["job-id", TokenType.String, "build"],
       token: ["job", TokenType.String, "runs-"]
     });
@@ -245,6 +263,7 @@ jobs:
   #`)
     ).toEqual({
       parent: ["jobs", TokenType.Mapping],
+      parentKey: [null, TokenType.String, "jobs"],
       key: ["job-id", TokenType.String, "build"],
       token: ["job", TokenType.String, "runs-"]
     });
@@ -259,6 +278,7 @@ jobs:
     runs-on: ubu|`)
     ).toEqual({
       parent: ["job-factory", TokenType.Mapping],
+      parentKey: ["job-id", TokenType.String, "build"],
       key: [null, TokenType.String, "runs-on"],
       token: ["runs-on", TokenType.String, "ubu"]
     });
