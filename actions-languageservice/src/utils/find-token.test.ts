@@ -158,7 +158,7 @@ jobs:
     });
   });
 
-  it("pos after colon in empty mapping", () => {
+  it("pos after colon in empty null mapping ", () => {
     expect(
       testFindToken(`on: push
 jobs:
@@ -168,6 +168,19 @@ jobs:
       parent: ["job-factory", TokenType.Mapping],
       key: [null, TokenType.String, "continue-on-error"],
       token: ["boolean-strategy-context", TokenType.Null, ""]
+    });
+  });
+
+  it("pos after colon in empty string mapping", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    container:|`)
+    ).toEqual({
+      parent: ["job-factory", TokenType.Mapping],
+      key: [null, TokenType.String, "container"],
+      token: ["container", TokenType.String, ""]
     });
   });
 
