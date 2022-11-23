@@ -95,4 +95,83 @@ jo|bs:
       token: [null, TokenType.String, "jobs"]
     });
   });
+
+  it("value in job", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    runs-on: ubu|`)
+    ).toEqual({
+      parent: ["job-factory", TokenType.Mapping],
+      key: [null, TokenType.String, "runs-on"],
+      token: ["runs-on", TokenType.String, "ubu"]
+    });
+  });
+
+  it("key in job", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    run|s-on: ubu`)
+    ).toEqual({
+      parent: ["job-factory", TokenType.Mapping],
+      key: null,
+      token: [null, TokenType.String, "runs-on"]
+    });
+  });
+
+  it("pos after colon in empty mapping", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    continue-on-error:|`)
+    ).toEqual({
+      parent: ["job-factory", TokenType.Mapping],
+      key: [null, TokenType.String, "continue-on-error"],
+      token: ["boolean-strategy-context", TokenType.Null, ""]
+    });
+  });
+
+  it("pos after colon in mapping", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    continue-on-error:|foo`)
+    ).toEqual({
+      parent: ["jobs", TokenType.Mapping],
+      key: ["job-id", TokenType.String, "build"],
+      token: ["job", TokenType.String, "continue-on-error:foo"]
+    });
+  });
+
+  it("pos in mapping key without comment", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    runs-|`)
+    ).toEqual({
+      parent: ["jobs", TokenType.Mapping],
+      key: ["job-id", TokenType.String, "build"],
+      token: ["job", TokenType.String, "runs-"]
+    });
+  });
+
+  it("pos in mapping key before comment", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    runs-|
+  #`)
+    ).toEqual({
+      parent: ["jobs", TokenType.Mapping],
+      key: ["job-id", TokenType.String, "build"],
+      token: ["job", TokenType.String, "runs-"]
+    });
+  });
 });

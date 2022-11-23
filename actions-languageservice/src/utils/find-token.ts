@@ -69,25 +69,25 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
 
           if (posInToken(pos, key)) {
             return {
-              token: key,
+              parent: mappingToken,
               keyToken: null,
-              parent: mappingToken
+              token: key
             };
           }
 
           // Empty nodes positions won't always match the cursor, so check if we're on the same line
           if (emptyNode(value)) {
             return {
-              token: value,
-              keyToken: null,
-              parent: key
+              parent: mappingToken,
+              keyToken: key,
+              token: value
             };
           }
 
           s.push({
-            token: value,
+            parent: mappingToken,
             keyToken: key,
-            parent: mappingToken
+            token: value
           });
         }
         continue;
@@ -96,9 +96,9 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
         const sequenceToken = token as SequenceToken;
         for (let i = 0; i < sequenceToken.count; i++) {
           s.push({
-            token: sequenceToken.get(i),
+            parent: sequenceToken,
             keyToken: null,
-            parent: sequenceToken
+            token: sequenceToken.get(i)
           });
         }
         continue;

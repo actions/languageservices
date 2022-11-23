@@ -157,7 +157,7 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(0);
+    expect(result.length).toEqual(17);
   });
 
   it("custom value providers override defaults", async () => {
@@ -201,5 +201,26 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
     expect(result.map(x => x.label).sort()).toEqual(["cancel-in-progress", "group"]);
+  });
+
+  it("job key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-|`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result).toHaveLength(20);
+  });
+
+  it("job key with comment afterwards", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-|
+  #`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result).toHaveLength(20);
   });
 });
