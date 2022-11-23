@@ -1,5 +1,11 @@
 import {complete as completeExpression} from "@github/actions-expressions";
-import {isSequence, isString, parseWorkflow} from "@github/actions-workflow-parser";
+import {
+  convertWorkflowTemplate,
+  isMapping,
+  isSequence,
+  isString,
+  parseWorkflow,
+} from "@github/actions-workflow-parser";
 import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
@@ -13,7 +19,7 @@ import {getContext} from "./context-providers/default";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
 import {transform} from "./utils/transform";
-import {Value, ValueProviderConfig} from "./value-providers/config";
+import {Value, ValueProviderConfig, WorkflowContext} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {definitionValues} from "./value-providers/definition";
 
@@ -57,8 +63,12 @@ export async function complete(
     content: newDoc.getText()
   };
   const result = parseWorkflow(file.name, [file], nullTrace);
+  if (!result.value) {
+    return [];
+  }
 
-  const {token, keyToken, parent} = findToken(newPos, result.value);
+  const {token, keyToken, parent, parentKey} = findToken(newPos, result.value);
+  const template = convertWorkflowTemplate(result.context, result.value);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
@@ -81,32 +91,34 @@ export async function complete(
     }
   }
 
-  const values = await getValues(token, parent, textDocument.uri, valueProviderConfig);
+  const workflowContext = {uri: textDocument.uri, template: template};
+  const values = await getValues(token, parent, parentKey, valueProviderConfig, workflowContext);
   return values.map(value => CompletionItem.create(value.label));
 }
 
 async function getValues(
   token: TemplateToken | null,
   parent: TemplateToken | null,
-  workflowUri: string,
-  valueProviderConfig: ValueProviderConfig | undefined
+  parentKey: TemplateToken | null,
+  valueProviderConfig: ValueProviderConfig | undefined,
+  workflowContext: WorkflowContext
 ): Promise<Value[]> {
   if (!parent) {
     return [];
   }
 
-  const existingValues = getExistingValues(token, parent);
+  const existingValues = getExistingValues(token, parent, parentKey);
 
   let customValues: Value[] | undefined = undefined;
   if (token?.definition?.key) {
-    customValues = await valueProviderConfig?.getCustomValues(token.definition.key, {uri: workflowUri});
+    customValues = await valueProviderConfig?.getCustomValues(token.definition.key, workflowContext);
   }
 
   if (customValues !== undefined) {
     return filterAndSortCompletionOptions(customValues, existingValues);
   }
 
-  const valueProviders = defaultValueProviders();
+  const valueProviders = defaultValueProviders(workflowContext);
 
   // Use the value provider from the parent if we don't have a value provider for the current key
   const valueProvider =
@@ -128,23 +140,27 @@ async function getValues(
   return filterAndSortCompletionOptions(values, existingValues);
 }
 
-function getExistingValues(token: TemplateToken | null, parent: TemplateToken) {
+function getExistingValues(token: TemplateToken | null, parent: TemplateToken, parentKey: TemplateToken | null) {
   // For incomplete YAML, we may only have a parent token
   if (token) {
-    if (!isString(token) || !isSequence(parent)) {
+    if (!isString(token)) {
       return;
     }
 
-    const sequenceValues = new Set<string>();
-    const seqToken = parent as SequenceToken;
-    for (let i = 0; i < seqToken.count; i++) {
-      const t = seqToken.get(i);
-      if (t.isLiteral && isString(t)) {
-        // Should we support other literal values here?
-        sequenceValues.add(t.value);
-      }
+    if (isMapping(parent) && parentKey && isString(parentKey)) {
+      return new Set<string>([parentKey.value]);
     }
-    return sequenceValues;
+    if (isSequence(parent)) {
+      const sequenceValues = new Set<string>();
+      for (let i = 0; i < parent.count; i++) {
+        const t = parent.get(i);
+        if (isString(t)) {
+          // Should we support other literal values here?
+          sequenceValues.add(t.value);
+        }
+      }
+      return sequenceValues;
+    }
   }
 
   if (parent.templateTokenType === TokenType.Mapping) {

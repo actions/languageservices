@@ -12,6 +12,21 @@ describe("completion", () => {
     expect(result[0].label).toEqual("macos-10.13");
   });
 
+  it("needs", async () => {
+    const input = `on: push
+jobs:
+  build:
+      runs-on: ubuntu-latest
+  build2:
+      runs-on: ubuntu-latest
+      needs: bu|`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    expect(result.length).toEqual(1);
+    expect(result[0].label).toEqual("build");
+  });
+
   it("empty workflow", async () => {
     const input = "|";
     const result = await complete(...getPositionFromCursor(input));
