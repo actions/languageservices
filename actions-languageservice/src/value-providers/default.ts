@@ -1,7 +1,7 @@
 import {Value, WorkflowContext} from "./config";
 import {getJobNames} from "./needs";
 
-const defaultValueProviders: {[key: string]: (workflowContext: WorkflowContext) => Value[]} = {
+export const defaultValueProviders: {[key: string]: (workflowContext: WorkflowContext) => Value[]} = {
   needs: (workflowContext: WorkflowContext) => getJobNames(workflowContext.template),
   "runs-on": () =>
     stringsToValues([
