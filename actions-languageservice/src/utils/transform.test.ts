@@ -14,7 +14,7 @@ jobs:
   });
 
   it("adds : at end of line with trailing comment", () => {
-    const [doc, pos] = getPositionFromCursor("on: push\njobs:\n  build:\n    runs-on| \n#");
+    const [doc, pos] = getPositionFromCursor("on: push\njobs:\n  build:\n    runs-on|\n#");
     const [newDoc, newPos] = transform(doc, pos);
 
     expect(newDoc.getText()).toEqual(`on: push

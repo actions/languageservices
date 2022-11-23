@@ -46,7 +46,7 @@ export function transform(doc: TextDocument, pos: Position): [TextDocument, Posi
         offset++;
       } else if (!trimmedLine.startsWith("-")) {
         // Add `:` to end of line
-        line = line.trimEnd() + ":";
+        line = line + ":";
       }
     } else {
       offset = offset - 1;
