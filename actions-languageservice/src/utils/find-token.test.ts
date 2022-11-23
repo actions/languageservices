@@ -67,9 +67,9 @@ describe("find-token", () => {
       testFindToken(`on:
   pu|sh:`)
     ).toEqual({
-      parent: ["on-strict", TokenType.Mapping],
-      key: ["push-event-mapping", TokenType.String, "push"],
-      token: ["on-strict", TokenType.Mapping]
+      parent: ["on-mapping-strict", TokenType.Mapping],
+      key: null,
+      token: [null, TokenType.String, "push"]
     });
   });
 
@@ -92,7 +92,7 @@ jo|bs:
     ).toEqual({
       parent: ["workflow-root-strict", TokenType.Mapping],
       key: null,
-      token: ["jobs", TokenType.Mapping]
+      token: [null, TokenType.String, "jobs"]
     });
   });
 });

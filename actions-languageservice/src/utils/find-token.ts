@@ -67,32 +67,21 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
         for (let i = 0; i < mappingToken.count; i++) {
           const {key, value} = mappingToken.get(i);
 
-          if (onSameLine(pos, key, value)) {
-            if (posInToken(pos, key)) {
-              if (key.range!.end[1] + 1 === value.range!.start[1]) {
-                // There's no space between the key and value, this is not valid
-                return {
-                  token: null,
-                  keyToken: null,
-                  parent: null
-                };
-              }
+          if (posInToken(pos, key)) {
+            return {
+              token: key,
+              keyToken: null,
+              parent: mappingToken
+            };
+          }
 
-              return {
-                token: key,
-                keyToken: null,
-                parent: mappingToken
-              };
-            }
-
-            // Empty nodes positions won't always match the cursor, so check if we're on the same line
-            if (emptyNode(value)) {
-              return {
-                token: value,
-                keyToken: null,
-                parent: key
-              };
-            }
+          // Empty nodes positions won't always match the cursor, so check if we're on the same line
+          if (emptyNode(value)) {
+            return {
+              token: value,
+              keyToken: null,
+              parent: key
+            };
           }
 
           s.push({
