@@ -1,8 +1,9 @@
-import {Value, WorkflowContext} from "./config";
-import {getJobNames} from "./needs";
+import {WorkflowContext} from "../context/workflow-context";
+import {Value} from "./config";
+import {needs} from "./needs";
 
 export const defaultValueProviders: {[key: string]: (workflowContext: WorkflowContext) => Value[]} = {
-  needs: (workflowContext: WorkflowContext) => getJobNames(workflowContext.template),
+  needs,
   "runs-on": () =>
     stringsToValues([
       "ubuntu-latest",

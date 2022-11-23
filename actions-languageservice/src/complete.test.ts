@@ -1,6 +1,7 @@
 import {complete} from "./complete";
+import {WorkflowContext} from "./context/workflow-context";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {Value, ValueProviderConfig, WorkflowContext} from "./value-providers/config";
+import {Value, ValueProviderConfig} from "./value-providers/config";
 
 describe("completion", () => {
   it("runs-on", async () => {

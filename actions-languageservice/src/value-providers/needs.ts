@@ -1,11 +1,13 @@
-import {WorkflowTemplate} from "@github/actions-workflow-parser/model/workflow-template";
+import {WorkflowContext} from "../context/workflow-context";
 import {Value} from "./config";
 
-export function getJobNames(template: WorkflowTemplate | undefined): Value[] {
-  if (!template) {
+export function needs(context: WorkflowContext): Value[] {
+  if (!context.template) {
     return [];
   }
 
-  const uniquejobIDs = new Set(template.jobs.map(j => j.id)).values();
-  return Array.from(uniquejobIDs).map(x => ({label: x}));
+  const uniquejobIDs = new Set(context.template.jobs.map(j => j.id)).values();
+  return Array.from(uniquejobIDs)
+    .filter(x => x !== context.job?.id)
+    .map(x => ({label: x}));
 }
