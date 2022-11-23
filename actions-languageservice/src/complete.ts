@@ -1,15 +1,8 @@
 import {complete as completeExpression} from "@github/actions-expressions";
-import {
-  convertWorkflowTemplate,
-  isMapping,
-  isSequence,
-  isString,
-  parseWorkflow,
-} from "@github/actions-workflow-parser";
+import {convertWorkflowTemplate, isMapping, isSequence, isString, parseWorkflow} from "@github/actions-workflow-parser";
 import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
@@ -109,21 +102,18 @@ async function getValues(
 
   const existingValues = getExistingValues(token, parent, parentKey);
 
-  let customValues: Value[] | undefined = undefined;
   if (token?.definition?.key) {
-    customValues = await valueProviderConfig?.getCustomValues(token.definition.key, workflowContext);
-  }
+    const customValues = await valueProviderConfig?.getCustomValues(token.definition.key, workflowContext);
 
-  if (customValues !== undefined) {
-    return filterAndSortCompletionOptions(customValues, existingValues);
+    if (customValues) {
+      return filterAndSortCompletionOptions(customValues, existingValues);
+    }
   }
-
-  const valueProviders = defaultValueProviders(workflowContext);
 
   // Use the value provider from the parent if we don't have a value provider for the current key
   const valueProvider =
-    (token?.definition?.key && valueProviders[token.definition.key]) ||
-    (parent.definition?.key && valueProviders[parent.definition.key]);
+    (token?.definition?.key && defaultValueProviders[token.definition.key]) ||
+    (parent.definition?.key && defaultValueProviders[parent.definition.key]);
 
   if (valueProvider) {
     const values = valueProvider();
