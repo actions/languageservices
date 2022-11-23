@@ -5,7 +5,7 @@ import {nullTrace} from "../nulltrace";
 import {getPositionFromCursor} from "../test-utils/cursor-position";
 import {findToken} from "./find-token";
 
-type testTokenInfo = [string | null, TokenType, string?];
+type testTokenInfo = [definitionKey: string | null, tokenType: TokenType, literalValue?: string];
 
 function getTokenInfo(token: TemplateToken | null): testTokenInfo | null {
   if (!token) {
