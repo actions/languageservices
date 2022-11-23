@@ -84,6 +84,42 @@ describe("find-token", () => {
     });
   });
 
+  it("on sequence with cursor outside of sequence values", () => {
+    expect(
+      testFindToken(`on:
+    -| push`)
+    ).toEqual({
+      parent: ["on-strict", TokenType.Sequence],
+      key: null,
+      token: null
+    });
+  });
+
+  it("on sequence with multiple values", () => {
+    expect(
+      testFindToken(`on:
+    - push
+    - pull_request|`)
+    ).toEqual({
+      parent: ["on-strict", TokenType.Sequence],
+      key: null,
+      token: ["non-empty-string", TokenType.String, "pull_request"]
+    });
+  });
+
+  it("single-line sequence with multiple values", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    runs-on: [ubuntu-latest, self|`)
+    ).toEqual({
+      parent: ["runs-on", TokenType.Sequence],
+      key: null,
+      token: ["non-empty-string", TokenType.String, "self"]
+    });
+  });
+
   it("jobs key", () => {
     expect(
       testFindToken(`on: push
