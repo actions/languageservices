@@ -16,6 +16,18 @@ export type TokenResult = {
   parent: TemplateToken | null;
 };
 
+/**
+ * Find a token at the given position in the document.
+ *
+ * If the position is within
+ * - the key of a mapping, parent will be the mapping, keyToken will be null, and token will be the key.
+ * - the value of a mapping, parent will be the mapping, keyToken will be the key for the value, and token will be the value
+ * - a sequence item, parent will be the sequence, keyToken will be null, and token will be the item
+ *
+ * @param pos Position within the document for which to find a token
+ * @param root Root node
+ * @returns Token result
+ */
 export function findToken(pos: Position, root?: TemplateToken): TokenResult {
   if (!root) {
     return {
