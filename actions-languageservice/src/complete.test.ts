@@ -223,4 +223,16 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result).toHaveLength(20);
   });
+
+  it("job key with other values afterwards", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-|
+
+    concurrency: 'group-name'`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result).toHaveLength(19);
+  });
 });
