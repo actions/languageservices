@@ -197,6 +197,32 @@ jobs:
     });
   });
 
+  it("pos after mapping key", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    continue-on-error:| foo`)
+    ).toEqual({
+      parent: ["job-factory", TokenType.Mapping],
+      key: null,
+      token: null
+    });
+  });
+
+  it("pos at end of completed mapping key", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    continue-on-error|: foo`)
+    ).toEqual({
+      parent: ["job-factory", TokenType.Mapping],
+      key: null,
+      token: [null, TokenType.String, "continue-on-error"]
+    });
+  });
+
   it("pos in mapping key without comment", () => {
     expect(
       testFindToken(`on: push
