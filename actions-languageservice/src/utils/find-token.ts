@@ -67,6 +67,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
         for (let i = 0; i < mappingToken.count; i++) {
           const {key, value} = mappingToken.get(i);
 
+          // If the position is within the key, immediately return it as the token.
           if (posInToken(pos, key)) {
             return {
               parent: mappingToken,
@@ -75,7 +76,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
             };
           }
 
-          // Empty nodes positions won't always match the cursor, so check if we're on the same line
+          // If the value is an empty node (null, empty string)
           if (emptyNode(value)) {
             return {
               parent: mappingToken,

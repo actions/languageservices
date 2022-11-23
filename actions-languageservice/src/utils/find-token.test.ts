@@ -174,4 +174,18 @@ jobs:
       token: ["job", TokenType.String, "runs-"]
     });
   });
+
+  it("empty node", () => {
+    expect(
+      testFindToken(`on: push
+jobs:
+  build:
+    concurrency:
+    runs-on: ubu|`)
+    ).toEqual({
+      parent: ["job-factory", TokenType.Mapping],
+      key: [null, TokenType.String, "runs-on"],
+      token: ["runs-on", TokenType.String, "ubu"]
+    });
+  });
 });
