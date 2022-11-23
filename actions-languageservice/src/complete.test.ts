@@ -157,7 +157,7 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(17);
+    expect(result.length).toEqual(0);
   });
 
   it("custom value providers override defaults", async () => {
