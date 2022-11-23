@@ -235,4 +235,16 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result).toHaveLength(19);
   });
+
+  it("step key without space after colon", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - env:|
+      run: echo`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).toHaveLength(0);
+  });
 });
