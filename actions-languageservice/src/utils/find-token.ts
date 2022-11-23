@@ -76,8 +76,9 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
             };
           }
 
-          // If the value is an empty node (null, empty string)
-          if (emptyNode(value)) {
+          // If pos, key, and value are on the same line, and value is an empty node (null, empty string) return early
+          // we cannot reliably check the position in that empty node
+          if (onSameLine(pos, key, value) && emptyNode(value)) {
             return {
               parent: mappingToken,
               keyToken: key,
