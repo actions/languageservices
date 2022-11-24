@@ -1,5 +1,6 @@
 import {complete as completeExpression} from "@github/actions-expressions";
 import {convertWorkflowTemplate, isSequence, isString, parseWorkflow} from "@github/actions-workflow-parser";
+import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
@@ -62,7 +63,7 @@ export async function complete(
   }
 
   const {token, keyToken, parent, path} = findToken(newPos, result.value);
-  const template = convertWorkflowTemplate(result.context, result.value);
+  const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
