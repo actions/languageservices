@@ -1,6 +1,6 @@
 {
   "name": "@github/actions-languageserver",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Language server for GitHub Actions",
   "license": "MIT",
   "type": "module",
@@ -36,7 +36,7 @@
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@github/actions-languageservice": "^0.1.12",
+    "@github/actions-languageservice": "^0.1.13",
     "@octokit/rest": "^19.0.5",
     "vscode-languageserver": "^8.0.2",
     "vscode-languageserver-textdocument": "^1.0.7"
