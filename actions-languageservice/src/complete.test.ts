@@ -263,4 +263,18 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
     expect(result).toHaveLength(0);
   });
+
+  it("loose mapping keys have no completion suggestions", async () => {
+    const input = `
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        type: string
+        description: "hello"
+      |
+`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).toHaveLength(0);
+  });
 });
