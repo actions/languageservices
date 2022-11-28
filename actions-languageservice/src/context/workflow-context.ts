@@ -11,7 +11,7 @@ export interface WorkflowContext {
   /** If the context is for a position within a job, this will be the job */
   job?: JobConfig;
 
-  /** If the context is for a position within a step, this will the step */
+  /** If the context is for a position within a step, this will be the step */
   step?: StepConfig;
 }
 
