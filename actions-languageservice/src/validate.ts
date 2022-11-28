@@ -3,21 +3,27 @@ import {Expr} from "@github/actions-expressions/ast";
 import {
   convertWorkflowTemplate,
   isBasicExpression,
+  isSequence,
+  isString,
   parseWorkflow,
-  ParseWorkflowResult
+  ParseWorkflowResult,
+  WorkflowTemplate
 } from "@github/actions-workflow-parser";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
-import {Diagnostic, DiagnosticSeverity, Range} from "vscode-languageserver-types";
+import {Diagnostic, DiagnosticSeverity, Range, URI} from "vscode-languageserver-types";
 
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
+import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {nullTrace} from "./nulltrace";
-import {ValueProviderConfig} from "./value-providers/config";
+import {findToken} from "./utils/find-token";
+import {Value, ValueProviderConfig} from "./value-providers/config";
+import {defaultValueProviders} from "./value-providers/default";
 
 /**
  * Validates a workflow file
@@ -42,11 +48,16 @@ export async function validate(
     const result: ParseWorkflowResult = parseWorkflow(file.name, [file], nullTrace);
     if (result.value) {
       // Errors will be updated in the context
-      convertWorkflowTemplate(result.context, result.value);
-    }
+      const template = convertWorkflowTemplate(result.context, result.value);
 
-    // Validate expressions
-    validateExpressions(diagnostics, result, contextProviderConfig);
+      // Validate with value providers
+      if (valueProviderConfig) {
+        await validateValueProviders(diagnostics, textDocument.uri, template, result, valueProviderConfig);
+      }
+
+      // Validate expressions
+      validateExpressions(diagnostics, result, contextProviderConfig);
+    }
 
     // For now map parser errors directly to diagnostics
     for (const error of result.context.errors.getErrors()) {
@@ -91,7 +102,7 @@ function mapRange(range: TokenRange | undefined): Range {
 }
 
 function validateExpressions(
-  diagnotics: Diagnostic[],
+  diagnostics: Diagnostic[],
   result: ParseWorkflowResult,
   contextProviderConfig: ContextProviderConfig | undefined
 ) {
@@ -130,7 +141,7 @@ function validateExpressions(
           // result of the evaluation.
         } catch (e) {
           if (e instanceof AccessError) {
-            diagnotics.push({
+            diagnostics.push({
               message: `Context access might be invalid: ${e.keyName}`,
               severity: DiagnosticSeverity.Warning,
               range: mapRange(expression.range)
@@ -142,4 +153,80 @@ function validateExpressions(
       }
     }
   }
+}
+
+async function validateValueProviders(
+  diagnostics: Diagnostic[],
+  documentUri: URI,
+  template: WorkflowTemplate,
+  result: ParseWorkflowResult,
+  valueProviderConfig: ValueProviderConfig
+) {
+  if (!result.value) {
+    return;
+  }
+
+  // Allowed values coming from the schema have already been validated. Only check if
+  // a value provider is defined for a token and if it is, validate the values match.
+  for (const token of TemplateToken.traverse(result.value)) {
+    if (token.range && token.definition?.key) {
+      const defKey = token.definition.key;
+
+      let customValues: Value[] | undefined;
+
+      const customValueProvider = valueProviderConfig[defKey];
+      if (customValueProvider) {
+        customValues = await customValueProvider(getProviderContext(documentUri, template, result.value, token));
+      } else {
+        const defaultValueProvider = defaultValueProviders[defKey];
+        if (defaultValueProvider) {
+          customValues = defaultValueProvider(getProviderContext(documentUri, template, result.value, token));
+        }
+      }
+
+      if (customValues) {
+        if (isSequence(token)) {
+          for (let i = 0; i < token.count; ++i) {
+            const entry = token.get(i);
+
+            if (isString(entry)) {
+              if (!customValues.map(x => x.label).includes(entry.value)) {
+                diagnostics.push({
+                  message: `Value '${entry.value}' is not allowed`,
+                  severity: DiagnosticSeverity.Error,
+                  range: mapRange(entry.range)
+                });
+              }
+            }
+          }
+        }
+
+        if (isString(token)) {
+          if (!customValues.map(x => x.label).includes(token.value)) {
+            diagnostics.push({
+              message: `Value '${token.value}' is not allowed`,
+              severity: DiagnosticSeverity.Error,
+              range: mapRange(token.range)
+            });
+          }
+        }
+      }
+    }
+  }
+}
+
+function getProviderContext(
+  documentUri: URI,
+  template: WorkflowTemplate,
+  root: TemplateToken,
+  token: TemplateToken
+): WorkflowContext {
+  const {parent, path} = findToken(
+    {
+      line: token.range!.start[0],
+      character: token.range!.start[1]
+    },
+    root
+  );
+  return getWorkflowContext(documentUri, template, path);
 }

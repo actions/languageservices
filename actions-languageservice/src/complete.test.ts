@@ -1,7 +1,7 @@
 import {complete} from "./complete";
 import {WorkflowContext} from "./context/workflow-context";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {Value, ValueProviderConfig} from "./value-providers/config";
+import {ValueProviderConfig} from "./value-providers/config";
 
 describe("completion", () => {
   it("runs-on", async () => {
@@ -179,14 +179,10 @@ jobs:
   it("custom value providers override defaults", async () => {
     const input = "on: push\njobs:\n  build:\n    runs-on: |";
 
-    const getCustomValues = async (key: string, _: WorkflowContext): Promise<Value[] | undefined> => {
-      if (key === "runs-on") {
+    const config: ValueProviderConfig = {
+      "runs-on": async (_: WorkflowContext) => {
         return [{label: "my-custom-label"}];
       }
-      return [];
-    };
-    const config: ValueProviderConfig = {
-      getCustomValues: getCustomValues
     };
     const result = await complete(...getPositionFromCursor(input), config);
 
