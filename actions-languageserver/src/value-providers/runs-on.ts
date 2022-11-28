@@ -9,8 +9,8 @@ export async function getRunnerLabels(
   name: string
 ): Promise<Value[]> {
   const defaultLabels = [
-    "ubuntu-22.04",
     "ubuntu-latest",
+    "ubuntu-22.04",
     "ubuntu-20.04",
     "ubuntu-18.04",
     "windows-latest",
@@ -24,7 +24,11 @@ export async function getRunnerLabels(
     "self-hosted",
   ];
 
-  const repoLabels = await cache.get(`${owner}/${name}/runner-labels`, undefined, () => fetchRunnerLabels(client, owner, name));
+  const repoLabels = await cache.get(
+    `${owner}/${name}/runner-labels`,
+    undefined,
+    () => fetchRunnerLabels(client, owner, name)
+  );
   for (const label of defaultLabels) {
     repoLabels.add(label);
   }
