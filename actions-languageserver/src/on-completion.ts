@@ -18,44 +18,34 @@ export async function onCompletion(
 ): Promise<CompletionItem[]> {
   const config: ValueProviderConfig = {
     getCustomValues: async (key: string, context: WorkflowContext) =>
-      getCustomValuesWithCache(key, context, sessionToken, repoContext, cache),
+      getCustomValues(key, context, sessionToken, repoContext, cache),
   };
   return await complete(document, position, config);
-}
-
-async function getCustomValuesWithCache(
-  key: string,
-  context: WorkflowContext,
-  sessionToken: string | undefined,
-  repo: RepositoryContext | undefined,
-  cache: TTLCache,
-  ): Promise<Value[] | undefined> {
-  if (!sessionToken || !repo) {
-    return;
-  }
-
-  const cacheKey = `${repo.owner}/${repo.name}/${key}`;
-  return cache.get(cacheKey, undefined, async () => await getCustomValues(key, context, sessionToken, repo));
 }
 
 
 async function getCustomValues(
   key: string,
   _: WorkflowContext,
-  sessionToken: string,
-  repo: RepositoryContext,
+  sessionToken: string | undefined,
+  repo: RepositoryContext | undefined,
+  cache: TTLCache,
 ): Promise<Value[] | undefined> {
+  if (!sessionToken || !repo) {
+    return;
+  }
+
   const octokit = new Octokit({
     auth: sessionToken,
   });
 
   switch (key) {
     case "job-environment": {
-      return await getEnvironments(octokit, repo.owner, repo.name);
+      return await getEnvironments(octokit, cache, repo.owner, repo.name);
     }
 
     case "runs-on": {
-      return await getRunnerLabels(octokit, repo.owner, repo.name);
+      return await getRunnerLabels(octokit, cache, repo.owner, repo.name);
     }
   }
 }
