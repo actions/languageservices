@@ -1,25 +1,20 @@
 import {complete as completeExpression} from "@github/actions-expressions";
-import {
-  convertWorkflowTemplate,
-  isMapping,
-  isSequence,
-  isString,
-  parseWorkflow,
-} from "@github/actions-workflow-parser";
+import {convertWorkflowTemplate, isSequence, isString, parseWorkflow} from "@github/actions-workflow-parser";
+import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
+import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
 import {transform} from "./utils/transform";
-import {Value, ValueProviderConfig, WorkflowContext} from "./value-providers/config";
+import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {definitionValues} from "./value-providers/definition";
 
@@ -67,8 +62,8 @@ export async function complete(
     return [];
   }
 
-  const {token, keyToken, parent, parentKey} = findToken(newPos, result.value);
-  const template = convertWorkflowTemplate(result.context, result.value);
+  const {token, keyToken, parent, path} = findToken(newPos, result.value);
+  const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
@@ -85,21 +80,20 @@ export async function complete(
 
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
-      const context = await getContext(token.definition?.readerContext || [], contextProviderConfig);
+      const context = getContext(token.definition?.readerContext || [], contextProviderConfig);
 
       return completeExpression(expressionInput, context, []);
     }
   }
 
-  const workflowContext = {uri: textDocument.uri, template: template};
-  const values = await getValues(token, parent, parentKey, valueProviderConfig, workflowContext);
+  const workflowContext = getWorkflowContext(textDocument.uri, template, path);
+  const values = await getValues(token, parent, valueProviderConfig, workflowContext);
   return values.map(value => CompletionItem.create(value.label));
 }
 
 async function getValues(
   token: TemplateToken | null,
   parent: TemplateToken | null,
-  parentKey: TemplateToken | null,
   valueProviderConfig: ValueProviderConfig | undefined,
   workflowContext: WorkflowContext
 ): Promise<Value[]> {
@@ -107,26 +101,23 @@ async function getValues(
     return [];
   }
 
-  const existingValues = getExistingValues(token, parent, parentKey);
+  const existingValues = getExistingValues(token, parent);
 
-  let customValues: Value[] | undefined = undefined;
   if (token?.definition?.key) {
-    customValues = await valueProviderConfig?.getCustomValues(token.definition.key, workflowContext);
-  }
+    const customValues = await valueProviderConfig?.getCustomValues(token.definition.key, workflowContext);
 
-  if (customValues !== undefined) {
-    return filterAndSortCompletionOptions(customValues, existingValues);
+    if (customValues) {
+      return filterAndSortCompletionOptions(customValues, existingValues);
+    }
   }
-
-  const valueProviders = defaultValueProviders(workflowContext);
 
   // Use the value provider from the parent if we don't have a value provider for the current key
   const valueProvider =
-    (token?.definition?.key && valueProviders[token.definition.key]) ||
-    (parent.definition?.key && valueProviders[parent.definition.key]);
+    (token?.definition?.key && defaultValueProviders[token.definition.key]) ||
+    (parent.definition?.key && defaultValueProviders[parent.definition.key]);
 
   if (valueProvider) {
-    const values = valueProvider();
+    const values = valueProvider(workflowContext);
     return filterAndSortCompletionOptions(values, existingValues);
   }
 
@@ -140,18 +131,16 @@ async function getValues(
   return filterAndSortCompletionOptions(values, existingValues);
 }
 
-function getExistingValues(token: TemplateToken | null, parent: TemplateToken, parentKey: TemplateToken | null) {
+function getExistingValues(token: TemplateToken | null, parent: TemplateToken) {
   // For incomplete YAML, we may only have a parent token
   if (token) {
     if (!isString(token)) {
       return;
     }
 
-    if (isMapping(parent) && parentKey && isString(parentKey)) {
-      return new Set<string>([parentKey.value]);
-    }
     if (isSequence(parent)) {
       const sequenceValues = new Set<string>();
+
       for (let i = 0; i < parent.count; i++) {
         const t = parent.get(i);
         if (isString(t)) {
@@ -159,6 +148,7 @@ function getExistingValues(token: TemplateToken | null, parent: TemplateToken, p
           sequenceValues.add(t.value);
         }
       }
+
       return sequenceValues;
     }
   }
@@ -167,9 +157,11 @@ function getExistingValues(token: TemplateToken | null, parent: TemplateToken, p
     // No token and parent is a mapping, so we're completing a key
     const mapKeys = new Set<string>();
     const mapToken = parent as MappingToken;
+
     for (let i = 0; i < mapToken.count; i++) {
       const key = mapToken.get(i).key;
-      if (key.isLiteral && isString(key)) {
+
+      if (isString(key)) {
         mapKeys.add(key.value);
       }
     }
@@ -179,7 +171,7 @@ function getExistingValues(token: TemplateToken | null, parent: TemplateToken, p
 }
 
 function filterAndSortCompletionOptions(options: Value[], existingValues?: Set<string>) {
-  options = options.filter(x => !existingValues || !existingValues.has(x.label));
+  options = options.filter(x => !existingValues?.has(x.label));
   options.sort((a, b) => a.label.localeCompare(b.label));
   return options;
 }

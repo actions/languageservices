@@ -11,10 +11,11 @@ export function findInnerToken(pos: Position, root?: TemplateToken) {
 }
 
 export type TokenResult = {
-  token: TemplateToken | null;
-  keyToken: TemplateToken | null;
   parent: TemplateToken | null;
-  parentKey: TemplateToken | null;
+  keyToken: TemplateToken | null;
+  token: TemplateToken | null;
+
+  path: TemplateToken[];
 };
 
 /**
@@ -35,23 +36,24 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
       token: null,
       keyToken: null,
       parent: null,
-      parentKey: null
+      path: []
     };
   }
 
-  let lastMatchingToken: TemplateToken | null = null;
+  let lastMatching: TokenResult | null = null;
 
   const s: TokenResult[] = [
     {
       token: root,
       keyToken: null,
       parent: null,
-      parentKey: null
+      path: []
     }
   ];
 
   while (s.length > 0) {
-    const {parent, token, keyToken, parentKey} = s.shift()!;
+    const result = s.shift()!;
+    const {parent, token, keyToken, path} = result;
     if (!token) {
       break;
     }
@@ -61,7 +63,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
     }
 
     // Pos is in token, remember this token
-    lastMatchingToken = token;
+    lastMatching = result;
 
     // Position is in token, enqueue children if there are any
     switch (token.templateTokenType) {
@@ -76,7 +78,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
               parent: mappingToken,
               keyToken: null,
               token: key,
-              parentKey: keyToken
+              path: [...path, mappingToken]
             };
           }
 
@@ -87,7 +89,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
               parent: mappingToken,
               keyToken: key,
               token: value,
-              parentKey: keyToken
+              path: [...path, mappingToken]
             };
           }
 
@@ -95,7 +97,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
             parent: mappingToken,
             keyToken: key,
             token: value,
-            parentKey: keyToken
+            path: [...path, mappingToken, key]
           });
         }
         continue;
@@ -107,7 +109,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
             parent: sequenceToken,
             keyToken: null,
             token: sequenceToken.get(i),
-            parentKey: null
+            path: [...path, sequenceToken]
           });
         }
         continue;
@@ -117,16 +119,16 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
       token,
       keyToken,
       parent,
-      parentKey
+      path
     };
   }
 
   // Did not find a matching token, return the last matching token as parent
   return {
     token: null,
-    parent: lastMatchingToken,
+    parent: lastMatching?.token ?? null,
     keyToken: null,
-    parentKey: null
+    path: lastMatching?.token ? [...lastMatching.path, lastMatching.token] : []
   };
 }
 
