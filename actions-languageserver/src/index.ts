@@ -18,6 +18,7 @@ import {
   RepositoryContext,
 } from "./initializationOptions";
 import { onCompletion } from "./on-completion";
+import { TTLCache } from "./utils/cache";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -28,6 +29,7 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let sessionToken: string | undefined;
 let repos: RepositoryContext[] = [];
+const cache = new TTLCache();
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -108,7 +110,8 @@ connection.onCompletion(
       position,
       documents.get(textDocument.uri)!,
       sessionToken,
-      repos.find((repo) => textDocument.uri.startsWith(repo.workspaceUri))
+      repos.find((repo) => textDocument.uri.startsWith(repo.workspaceUri)),
+      cache,
     );
   }
 );
