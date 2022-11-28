@@ -1,8 +1,6 @@
 import { complete } from "@github/actions-languageservice/complete";
-import {
-  ValueProviderConfig,
-  WorkflowContext,
-} from "@github/actions-languageservice/value-providers/config";
+import { WorkflowContext } from "@github/actions-languageservice/context/workflow-context";
+import { ValueProviderConfig } from "@github/actions-languageservice/value-providers/config";
 import { Octokit } from "@octokit/rest";
 import { CompletionItem, DocumentUri, Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -48,6 +46,7 @@ async function getCustomValues(
     case "job-environment": {
       return await getEnvironments(octokit, repo.owner, repo.name);
     }
+
     case "runs-on": {
       return await getRunnerLabels(octokit, repo.owner, repo.name);
     }
