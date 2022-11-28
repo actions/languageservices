@@ -28,7 +28,6 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let sessionToken: string | undefined;
 let repos: RepositoryContext[] = [];
-let repoWorkspaceMap = new Map<string, RepositoryContext>();
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -50,9 +49,6 @@ connection.onInitialize((params: InitializeParams) => {
   sessionToken = options.sessionToken;
   if (options.repos) {
     repos = options.repos;
-    for (const repo of repos) {
-      repoWorkspaceMap.set(repo.workspaceUri, repo);
-    }
   }
 
   const result: InitializeResult = {
@@ -110,10 +106,9 @@ connection.onCompletion(
   }: TextDocumentPositionParams): Promise<CompletionItem[]> => {
     return await onCompletion(
       position,
-      textDocument.uri,
       documents.get(textDocument.uri)!,
       sessionToken,
-      repoWorkspaceMap
+      repos.find((repo) => textDocument.uri.startsWith(repo.workspaceUri))
     );
   }
 );
