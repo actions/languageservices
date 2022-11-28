@@ -128,7 +128,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
     token: null,
     parent: lastMatching?.token ?? null,
     keyToken: null,
-    path: lastMatching?.token ? [...(lastMatching?.path || []), lastMatching?.token] : []
+    path: lastMatching?.token ? [...lastMatching.path, lastMatching.token] : []
   };
 }
 
