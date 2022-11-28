@@ -46,6 +46,15 @@ export async function complete(
   valueProviderConfig?: ValueProviderConfig,
   contextProviderConfig?: ContextProviderConfig
 ): Promise<CompletionItem[]> {
+  // Edge case: when completing a key like `foo:|`, do not calculate auto-completions
+  const charBeforePos = textDocument.getText({
+    start: {line: position.line, character: position.character - 1},
+    end: {line: position.line, character: position.character}
+  });
+  if (charBeforePos === ":") {
+    return [];
+  }
+
   // Fix the input to work around YAML parsing issues
   const [newDoc, newPos] = transform(textDocument, position);
 

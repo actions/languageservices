@@ -17,6 +17,18 @@ export type TokenResult = {
   parentKey: TemplateToken | null;
 };
 
+/**
+ * Find a token at the given position in the document.
+ *
+ * If the position is within
+ * - the key of a mapping, parent will be the mapping, keyToken will be null, and token will be the key.
+ * - the value of a mapping, parent will be the mapping, keyToken will be the key for the value, and token will be the value
+ * - a sequence item, parent will be the sequence, keyToken will be null, and token will be the item
+ *
+ * @param pos Position within the document for which to find a token
+ * @param root Root node
+ * @returns Token result
+ */
 export function findToken(pos: Position, root?: TemplateToken): TokenResult {
   if (!root) {
     return {
@@ -58,41 +70,31 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
         for (let i = 0; i < mappingToken.count; i++) {
           const {key, value} = mappingToken.get(i);
 
-          if (onSameLine(pos, key, value)) {
-            if (posInToken(pos, key)) {
-              if (key.range!.end[1] + 1 === value.range!.start[1]) {
-                // There's no space between the key and value, this is not valid
-                return {
-                  token: null,
-                  keyToken: null,
-                  parent: null,
-                  parentKey: null
-                };
-              }
+          // If the position is within the key, immediately return it as the token.
+          if (posInToken(pos, key)) {
+            return {
+              parent: mappingToken,
+              keyToken: null,
+              token: key,
+              parentKey: keyToken
+            };
+          }
 
-              return {
-                token: key,
-                keyToken: null,
-                parent: mappingToken,
-                parentKey: keyToken
-              };
-            }
-
-            // Empty nodes positions won't always match the cursor, so check if we're on the same line
-            if (emptyNode(value)) {
-              return {
-                token: value,
-                keyToken: null,
-                parent: key,
-                parentKey: keyToken
-              };
-            }
+          // If pos, key, and value are on the same line, and value is an empty node (null, empty string) return early
+          // we cannot reliably check the position in that empty node
+          if (onSameLine(pos, key, value) && emptyNode(value)) {
+            return {
+              parent: mappingToken,
+              keyToken: key,
+              token: value,
+              parentKey: keyToken
+            };
           }
 
           s.push({
-            token: value,
-            keyToken: key,
             parent: mappingToken,
+            keyToken: key,
+            token: value,
             parentKey: keyToken
           });
         }
@@ -102,9 +104,9 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
         const sequenceToken = token as SequenceToken;
         for (let i = 0; i < sequenceToken.count; i++) {
           s.push({
-            token: sequenceToken.get(i),
-            keyToken: null,
             parent: sequenceToken,
+            keyToken: null,
+            token: sequenceToken.get(i),
             parentKey: null
           });
         }

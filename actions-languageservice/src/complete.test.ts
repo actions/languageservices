@@ -217,4 +217,49 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result.map(x => x.label).sort()).toEqual(["cancel-in-progress", "group"]);
   });
+
+  it("job key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-|`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result).toHaveLength(20);
+  });
+
+  it("job key with comment afterwards", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-|
+  #`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result).toHaveLength(20);
+  });
+
+  it("job key with other values afterwards", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-|
+
+    concurrency: 'group-name'`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result).toHaveLength(19);
+  });
+
+  it("step key without space after colon", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - env:|
+      run: echo`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).toHaveLength(0);
+  });
 });

@@ -1,4 +1,5 @@
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
+import {Range} from "vscode-languageserver-types";
 
 const DUMMY_KEY = "dummy";
 
@@ -6,10 +7,21 @@ const DUMMY_KEY = "dummy";
 // Based on `_transform` in https://github.com/cschleiden/github-actions-parser/blob/main/src/lib/parser/complete.ts#L311
 export function transform(doc: TextDocument, pos: Position): [TextDocument, Position] {
   let offset = doc.offsetAt(pos);
-  let line = doc.getText({
+
+  const lineRange: Range = {
     start: {line: pos.line, character: 0},
     end: {line: pos.line, character: Number.MAX_SAFE_INTEGER}
-  });
+  };
+
+  let line = doc.getText(lineRange);
+
+  // If the line includes a new-line char, strip that out
+  const newLinePos = line.indexOf("\n");
+  if (newLinePos >= 0) {
+    line = line.substring(0, newLinePos);
+  }
+  lineRange.end.character = line.length;
+
   const linePos = pos.character;
 
   // Special case for Actions, if this line contains an expression marker, do _not_ transform. This is
@@ -47,7 +59,7 @@ export function transform(doc: TextDocument, pos: Position): [TextDocument, Posi
     newDoc,
     [
       {
-        range: {start: {line: pos.line, character: 0}, end: {line: pos.line, character: Number.MAX_SAFE_INTEGER}},
+        range: lineRange,
         text: line
       }
     ],
