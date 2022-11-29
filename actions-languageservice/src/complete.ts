@@ -104,7 +104,7 @@ async function getValues(
   const existingValues = getExistingValues(token, parent);
 
   if (token?.definition?.key) {
-    const customValues = await valueProviderConfig?.[token.definition.key]?.(workflowContext);
+    const customValues = await valueProviderConfig?.[token.definition.key]?.get(workflowContext);
 
     if (customValues) {
       return filterAndSortCompletionOptions(customValues, existingValues);
@@ -117,7 +117,7 @@ async function getValues(
     (parent.definition?.key && defaultValueProviders[parent.definition.key]);
 
   if (valueProvider) {
-    const values = await valueProvider(workflowContext);
+    const values = await valueProvider.get(workflowContext);
     return filterAndSortCompletionOptions(values, existingValues);
   }
 

@@ -1,7 +1,7 @@
 import {complete} from "./complete";
 import {WorkflowContext} from "./context/workflow-context";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {ValueProviderConfig} from "./value-providers/config";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 
 describe("completion", () => {
   it("runs-on", async () => {
@@ -180,8 +180,11 @@ jobs:
     const input = "on: push\njobs:\n  build:\n    runs-on: |";
 
     const config: ValueProviderConfig = {
-      "runs-on": async (_: WorkflowContext) => {
-        return [{label: "my-custom-label"}];
+      "runs-on": {
+        kind: ValueProviderKind.SuggestedValues,
+        get: async (_: WorkflowContext) => {
+          return [{label: "my-custom-label"}];
+        }
       }
     };
     const result = await complete(...getPositionFromCursor(input), config);

@@ -59,7 +59,7 @@ jobs:
     } as Diagnostic);
   });
 
-  it("single value not returned by value provider", async () => {
+  it("single value not returned by suggested value provider", async () => {
     const result = await validate(
       createDocument(
         "wf.yaml",
@@ -76,7 +76,7 @@ jobs:
     expect(result.length).toBe(1);
     expect(result[0]).toEqual({
       message: "Value 'does-not-exist' is not valid",
-      severity: DiagnosticSeverity.Error,
+      severity: DiagnosticSeverity.Warning,
       range: {
         end: {
           character: 27,
@@ -109,7 +109,7 @@ jobs:
     expect(result.length).toBe(1);
     expect(result[0]).toEqual({
       message: "Value 'does-not-exist' is not valid",
-      severity: DiagnosticSeverity.Error,
+      severity: DiagnosticSeverity.Warning,
       range: {
         end: {
           character: 20,
@@ -118,6 +118,42 @@ jobs:
         start: {
           character: 6,
           line: 5
+        }
+      }
+    } as Diagnostic);
+  });
+
+  it("single value not returned by allowed value provider", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+  build:
+    runs-on: ubuntu-latest
+    needs: test2
+    steps:
+    - run: echo`
+      ),
+      defaultValueProviders
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message: "Value 'test2' is not valid",
+      severity: DiagnosticSeverity.Error,
+      range: {
+        end: {
+          character: 16,
+          line: 8
+        },
+        start: {
+          character: 11,
+          line: 8
         }
       }
     } as Diagnostic);

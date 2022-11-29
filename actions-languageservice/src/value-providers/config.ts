@@ -5,7 +5,15 @@ export interface Value {
   description?: string;
 }
 
-export type ValueProvider = (context: WorkflowContext) => Promise<Value[]>;
+export enum ValueProviderKind {
+  AllowedValues,
+  SuggestedValues
+}
+
+export type ValueProvider = {
+  kind: ValueProviderKind;
+  get: (context: WorkflowContext) => Promise<Value[]>;
+};
 
 export interface ValueProviderConfig {
   [definitionKey: string]: ValueProvider;

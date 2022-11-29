@@ -24,7 +24,7 @@ import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
-import {Value, ValueProviderConfig} from "./value-providers/config";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 
 /**
@@ -124,26 +124,23 @@ async function additionalValidations(
     if (valueProviderConfig && token.range && token.definition?.key) {
       const defKey = token.definition.key;
 
-      let customValues: Value[] | undefined;
-
-      const customValueProvider = valueProviderConfig[defKey];
-      if (customValueProvider) {
-        customValues = await customValueProvider(getProviderContext(documentUri, template, root, token));
-      } else {
-        const defaultValueProvider = defaultValueProviders[defKey];
-        if (defaultValueProvider) {
-          customValues = await defaultValueProvider(getProviderContext(documentUri, template, root, token));
-        }
+      // Try a custom value provider first
+      let valueProvider = valueProviderConfig[defKey];
+      if (!valueProvider) {
+        // fall back to default
+        valueProvider = defaultValueProviders[defKey];
       }
 
-      if (customValues) {
+      if (valueProvider) {
+        const customValues = await valueProvider.get(getProviderContext(documentUri, template, root, token));
+
         if (isSequence(token)) {
           for (let i = 0; i < token.count; ++i) {
             const entry = token.get(i);
 
             if (isString(entry)) {
               if (!customValues.map(x => x.label).includes(entry.value)) {
-                invalidValue(diagnostics, entry);
+                invalidValue(diagnostics, entry, valueProvider.kind);
               }
             }
           }
@@ -151,7 +148,7 @@ async function additionalValidations(
 
         if (isString(token)) {
           if (!customValues.map(x => x.label).includes(token.value)) {
-            invalidValue(diagnostics, token);
+            invalidValue(diagnostics, token, valueProvider.kind);
           }
         }
       }
@@ -159,10 +156,10 @@ async function additionalValidations(
   }
 }
 
-function invalidValue(diagnostics: Diagnostic[], token: StringToken) {
+function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: ValueProviderKind) {
   diagnostics.push({
     message: `Value '${token.value}' is not valid`,
-    severity: DiagnosticSeverity.Error,
+    severity: kind === ValueProviderKind.AllowedValues ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
     range: mapRange(token.range)
   });
 }
