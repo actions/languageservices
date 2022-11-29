@@ -1,6 +1,7 @@
-import {Diagnostic} from "vscode-languageserver-types";
+import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
 import {createDocument} from "./test-utils/document";
 import {validate} from "./validate";
+import {defaultValueProviders} from "./value-providers/default";
 
 describe("validation", () => {
   it("valid workflow", async () => {
@@ -53,6 +54,70 @@ jobs:
         start: {
           character: 0,
           line: 1
+        }
+      }
+    } as Diagnostic);
+  });
+
+  it("single value not returned by value provider", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: does-not-exist
+    steps:
+    - run: echo`
+      ),
+      defaultValueProviders
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message: "Value 'does-not-exist' is not valid",
+      severity: DiagnosticSeverity.Error,
+      range: {
+        end: {
+          character: 27,
+          line: 3
+        },
+        start: {
+          character: 13,
+          line: 3
+        }
+      }
+    } as Diagnostic);
+  });
+
+  it("value in sequence not returned by value provider", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on:
+    - ubuntu-latest
+    - does-not-exist
+    steps:
+    - run: echo`
+      ),
+      defaultValueProviders
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message: "Value 'does-not-exist' is not valid",
+      severity: DiagnosticSeverity.Error,
+      range: {
+        end: {
+          character: 20,
+          line: 5
+        },
+        start: {
+          character: 6,
+          line: 5
         }
       }
     } as Diagnostic);

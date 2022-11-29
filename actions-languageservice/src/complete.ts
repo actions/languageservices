@@ -117,7 +117,7 @@ async function getValues(
     (parent.definition?.key && defaultValueProviders[parent.definition.key]);
 
   if (valueProvider) {
-    const values = valueProvider(workflowContext);
+    const values = await valueProvider(workflowContext);
     return filterAndSortCompletionOptions(values, existingValues);
   }
 

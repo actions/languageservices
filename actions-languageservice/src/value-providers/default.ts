@@ -1,10 +1,10 @@
 import {WorkflowContext} from "../context/workflow-context";
-import {Value} from "./config";
+import {Value, ValueProviderConfig} from "./config";
 import {needs} from "./needs";
 
-export const defaultValueProviders: {[key: string]: (workflowContext: WorkflowContext) => Value[]} = {
+export const defaultValueProviders: ValueProviderConfig = {
   needs,
-  "runs-on": () =>
+  "runs-on": async (_: WorkflowContext) =>
     stringsToValues([
       "ubuntu-latest",
       "ubuntu-18.04",
