@@ -75,7 +75,7 @@ jobs:
 
     expect(result.length).toBe(1);
     expect(result[0]).toEqual({
-      message: "Value 'does-not-exist' is not valid",
+      message: "Value 'does-not-exist' might not be valid",
       severity: DiagnosticSeverity.Warning,
       range: {
         end: {
@@ -108,7 +108,7 @@ jobs:
 
     expect(result.length).toBe(1);
     expect(result[0]).toEqual({
-      message: "Value 'does-not-exist' is not valid",
+      message: "Value 'does-not-exist' might not be valid",
       severity: DiagnosticSeverity.Warning,
       range: {
         end: {

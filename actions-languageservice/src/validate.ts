@@ -157,11 +157,22 @@ async function additionalValidations(
 }
 
 function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: ValueProviderKind) {
-  diagnostics.push({
-    message: `Value '${token.value}' is not valid`,
-    severity: kind === ValueProviderKind.AllowedValues ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
-    range: mapRange(token.range)
-  });
+  switch (kind) {
+    case ValueProviderKind.AllowedValues:
+      diagnostics.push({
+        message: `Value '${token.value}' is not valid`,
+        severity: DiagnosticSeverity.Error,
+        range: mapRange(token.range)
+      });
+      break;
+
+    case ValueProviderKind.SuggestedValues:
+      diagnostics.push({
+        message: `Value '${token.value}' might not be valid`,
+        severity: DiagnosticSeverity.Warning,
+        range: mapRange(token.range)
+      });
+  }
 }
 
 function getProviderContext(
