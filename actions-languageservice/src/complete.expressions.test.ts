@@ -4,12 +4,17 @@ import {ContextProviderConfig} from "./context-providers/config";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 
 const contextProviderConfig: ContextProviderConfig = {
-  getContext: (context: string) => {
+  getContext: async (context: string) => {
     switch (context) {
       case "github":
         return new data.Dictionary({
           key: "event",
           value: new data.StringData("push")
+        });
+      case "secrets":
+        return new data.Dictionary({
+          key: "DEPLOY_KEY",
+          value: new data.StringData("DEPLOY_KEY")
         });
     }
 
@@ -124,5 +129,23 @@ jobs:
 
       expect(result.map(x => x.label)).toEqual(["event"]);
     });
+  });
+
+  it("context inherited from parent", async () => {
+    // The token definition is just a `string` and
+    // the parent `step-with` holds the allowed context
+    const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/deploy@v100
+      with:
+        deploy-key: \${{ secrets.|
+`;
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.map(x => x.label)).toEqual(["DEPLOY_KEY"]);
   });
 });

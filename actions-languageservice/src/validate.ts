@@ -116,7 +116,7 @@ async function additionalValidations(
   for (const token of TemplateToken.traverse(root)) {
     // If this is an expression, validate it
     if (isBasicExpression(token)) {
-      validateExpression(diagnostics, token, contextProviderConfig);
+      await validateExpression(diagnostics, token, contextProviderConfig);
     }
 
     // Allowed values coming from the schema have already been validated. Only check if
@@ -193,7 +193,7 @@ function getProviderContext(
   return getWorkflowContext(documentUri, template, path);
 }
 
-function validateExpression(
+async function validateExpression(
   diagnostics: Diagnostic[],
   token: BasicExpressionToken,
   contextProviderConfig: ContextProviderConfig | undefined
@@ -217,7 +217,7 @@ function validateExpression(
     }
 
     try {
-      const context = getContext(namedContexts, contextProviderConfig);
+      const context = await getContext(namedContexts, contextProviderConfig);
 
       const e = new Evaluator(expr, wrapDictionary(context));
       e.evaluate();
