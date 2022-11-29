@@ -19,6 +19,7 @@ import {
 } from "./initializationOptions";
 import { onCompletion } from "./on-completion";
 import { TTLCache } from "./utils/cache";
+import { valueProviders } from "./value-providers";
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -90,7 +91,14 @@ documents.onDidChangeContent((change) => {
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-  const result = await validate(textDocument);
+  const result = await validate(
+    textDocument,
+    valueProviders(
+      sessionToken,
+      repos.find((repo) => textDocument.uri.startsWith(repo.workspaceUri)),
+      cache
+    )
+  );
 
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: result });
 }
@@ -111,7 +119,7 @@ connection.onCompletion(
       documents.get(textDocument.uri)!,
       sessionToken,
       repos.find((repo) => textDocument.uri.startsWith(repo.workspaceUri)),
-      cache,
+      cache
     );
   }
 );

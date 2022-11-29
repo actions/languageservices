@@ -3,21 +3,29 @@ import {Expr} from "@github/actions-expressions/ast";
 import {
   convertWorkflowTemplate,
   isBasicExpression,
+  isSequence,
+  isString,
   parseWorkflow,
-  ParseWorkflowResult
+  ParseWorkflowResult,
+  WorkflowTemplate
 } from "@github/actions-workflow-parser";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
+import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
+import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
-import {Diagnostic, DiagnosticSeverity, Range} from "vscode-languageserver-types";
+import {Diagnostic, DiagnosticSeverity, Range, URI} from "vscode-languageserver-types";
 
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
+import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {nullTrace} from "./nulltrace";
-import {ValueProviderConfig} from "./value-providers/config";
+import {findToken} from "./utils/find-token";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
+import {defaultValueProviders} from "./value-providers/default";
 
 /**
  * Validates a workflow file
@@ -42,11 +50,18 @@ export async function validate(
     const result: ParseWorkflowResult = parseWorkflow(file.name, [file], nullTrace);
     if (result.value) {
       // Errors will be updated in the context
-      convertWorkflowTemplate(result.context, result.value);
-    }
+      const template = convertWorkflowTemplate(result.context, result.value);
 
-    // Validate expressions
-    validateExpressions(diagnostics, result, contextProviderConfig);
+      // Validate expressions and value providers
+      await additionalValidations(
+        diagnostics,
+        textDocument.uri,
+        template,
+        result.value,
+        valueProviderConfig,
+        contextProviderConfig
+      );
+    }
 
     // For now map parser errors directly to diagnostics
     for (const error of result.context.errors.getErrors()) {
@@ -90,55 +105,134 @@ function mapRange(range: TokenRange | undefined): Range {
   };
 }
 
-function validateExpressions(
-  diagnotics: Diagnostic[],
-  result: ParseWorkflowResult,
+async function additionalValidations(
+  diagnostics: Diagnostic[],
+  documentUri: URI,
+  template: WorkflowTemplate,
+  root: TemplateToken,
+  valueProviderConfig: ValueProviderConfig | undefined,
   contextProviderConfig: ContextProviderConfig | undefined
 ) {
-  if (!result.value) {
-    return;
-  }
-
-  // Iterate over the parsed workflow
-  for (const token of TemplateToken.traverse(result.value)) {
+  for (const token of TemplateToken.traverse(root)) {
+    // If this is an expression, validate it
     if (isBasicExpression(token)) {
-      // Validate the expression
-      for (const expression of token.originalExpressions || [token]) {
-        const allowedContexts = token.definition?.readerContext || [];
-        const {namedContexts, functions} = splitAllowedContext(allowedContexts);
+      validateExpression(diagnostics, token, contextProviderConfig);
+    }
 
-        let expr: Expr | undefined;
+    // Allowed values coming from the schema have already been validated. Only check if
+    // a value provider is defined for a token and if it is, validate the values match.
+    if (valueProviderConfig && token.range && token.definition?.key) {
+      const defKey = token.definition.key;
 
-        try {
-          const l = new Lexer(expression.expression);
-          const lr = l.lex();
+      // Try a custom value provider first
+      let valueProvider = valueProviderConfig[defKey];
+      if (!valueProvider) {
+        // fall back to default
+        valueProvider = defaultValueProviders[defKey];
+      }
 
-          const p = new Parser(lr.tokens, namedContexts, functions);
-          expr = p.parse();
-        } catch {
-          // Ignore any error here, we should've caught this earlier in the parsing process
-          continue;
-        }
+      if (valueProvider) {
+        const customValues = await valueProvider.get(getProviderContext(documentUri, template, root, token));
+        const customValuesMap = new Set(customValues.map(x => x.label));
 
-        try {
-          const context = getContext(namedContexts, contextProviderConfig);
+        if (isSequence(token)) {
+          for (let i = 0; i < token.count; ++i) {
+            const entry = token.get(i);
 
-          const e = new Evaluator(expr, wrapDictionary(context));
-          e.evaluate();
-
-          // Any invalid context access would've thrown an error via the `ErrorDictionary`, for now we don't have to check the actual
-          // result of the evaluation.
-        } catch (e) {
-          if (e instanceof AccessError) {
-            diagnotics.push({
-              message: `Context access might be invalid: ${e.keyName}`,
-              severity: DiagnosticSeverity.Warning,
-              range: mapRange(expression.range)
-            });
-          } else {
-            // Ignore error
+            if (isString(entry)) {
+              if (!customValuesMap.has(entry.value)) {
+                invalidValue(diagnostics, entry, valueProvider.kind);
+              }
+            }
           }
         }
+
+        if (isString(token)) {
+          if (!customValuesMap.has(token.value)) {
+            invalidValue(diagnostics, token, valueProvider.kind);
+          }
+        }
+      }
+    }
+  }
+}
+
+function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: ValueProviderKind) {
+  switch (kind) {
+    case ValueProviderKind.AllowedValues:
+      diagnostics.push({
+        message: `Value '${token.value}' is not valid`,
+        severity: DiagnosticSeverity.Error,
+        range: mapRange(token.range)
+      });
+      break;
+
+    case ValueProviderKind.SuggestedValues:
+      diagnostics.push({
+        message: `Value '${token.value}' might not be valid`,
+        severity: DiagnosticSeverity.Warning,
+        range: mapRange(token.range)
+      });
+      break;
+  }
+}
+
+function getProviderContext(
+  documentUri: URI,
+  template: WorkflowTemplate,
+  root: TemplateToken,
+  token: TemplateToken
+): WorkflowContext {
+  const {parent, path} = findToken(
+    {
+      line: token.range!.start[0],
+      character: token.range!.start[1]
+    },
+    root
+  );
+  return getWorkflowContext(documentUri, template, path);
+}
+
+function validateExpression(
+  diagnostics: Diagnostic[],
+  token: BasicExpressionToken,
+  contextProviderConfig: ContextProviderConfig | undefined
+) {
+  // Validate the expression
+  for (const expression of token.originalExpressions || [token]) {
+    const allowedContexts = token.definition?.readerContext || [];
+    const {namedContexts, functions} = splitAllowedContext(allowedContexts);
+
+    let expr: Expr | undefined;
+
+    try {
+      const l = new Lexer(expression.expression);
+      const lr = l.lex();
+
+      const p = new Parser(lr.tokens, namedContexts, functions);
+      expr = p.parse();
+    } catch {
+      // Ignore any error here, we should've caught this earlier in the parsing process
+      continue;
+    }
+
+    try {
+      const context = getContext(namedContexts, contextProviderConfig);
+
+      const e = new Evaluator(expr, wrapDictionary(context));
+      e.evaluate();
+
+      // Any invalid context access would've thrown an error via the `ErrorDictionary`, for now we don't have to check the actual
+      // result of the evaluation.
+    } catch (e) {
+      if (e instanceof AccessError) {
+        diagnostics.push({
+          message: `Context access might be invalid: ${e.keyName}`,
+          severity: DiagnosticSeverity.Warning,
+          range: mapRange(expression.range)
+        });
+      } else {
+        // Ignore error
       }
     }
   }

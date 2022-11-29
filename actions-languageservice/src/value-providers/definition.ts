@@ -5,7 +5,7 @@ import {OneOfDefinition} from "@github/actions-workflow-parser/templates/schema/
 import {StringDefinition} from "@github/actions-workflow-parser/templates/schema/string-definition";
 import {getWorkflowSchema} from "@github/actions-workflow-parser/workflows/workflow-schema";
 import {Value} from "./config";
-import {stringsToValues} from "./default";
+import {stringsToValues} from "./strings-to-values";
 
 export function definitionValues(def: Definition): Value[] {
   const schema = getWorkflowSchema();

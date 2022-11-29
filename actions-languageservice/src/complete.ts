@@ -104,7 +104,7 @@ async function getValues(
   const existingValues = getExistingValues(token, parent);
 
   if (token?.definition?.key) {
-    const customValues = await valueProviderConfig?.getCustomValues(token.definition.key, workflowContext);
+    const customValues = await valueProviderConfig?.[token.definition.key]?.get(workflowContext);
 
     if (customValues) {
       return filterAndSortCompletionOptions(customValues, existingValues);
@@ -117,7 +117,7 @@ async function getValues(
     (parent.definition?.key && defaultValueProviders[parent.definition.key]);
 
   if (valueProvider) {
-    const values = valueProvider(workflowContext);
+    const values = await valueProvider.get(workflowContext);
     return filterAndSortCompletionOptions(values, existingValues);
   }
 
@@ -131,7 +131,7 @@ async function getValues(
   return filterAndSortCompletionOptions(values, existingValues);
 }
 
-function getExistingValues(token: TemplateToken | null, parent: TemplateToken) {
+export function getExistingValues(token: TemplateToken | null, parent: TemplateToken) {
   // For incomplete YAML, we may only have a parent token
   if (token) {
     if (!isString(token)) {
