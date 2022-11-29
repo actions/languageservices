@@ -172,6 +172,7 @@ function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: Value
         severity: DiagnosticSeverity.Warning,
         range: mapRange(token.range)
       });
+      break;
   }
 }
 
