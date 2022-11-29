@@ -1,6 +1,7 @@
 import { complete } from "@github/actions-languageservice/complete";
 import { CompletionItem, Position } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { contextProviders } from "./context-providers";
 import { RepositoryContext } from "./initializationOptions";
 import { TTLCache } from "./utils/cache";
 import { valueProviders } from "./value-providers";
@@ -15,6 +16,7 @@ export async function onCompletion(
   return await complete(
     document,
     position,
-    repoContext && valueProviders(sessionToken, repoContext, cache)
+    repoContext && valueProviders(sessionToken, repoContext, cache),
+    repoContext && contextProviders(sessionToken, repoContext, cache)
   );
 }

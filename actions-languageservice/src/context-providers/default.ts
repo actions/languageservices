@@ -1,7 +1,7 @@
 import {data} from "@github/actions-expressions";
 import {ContextProviderConfig} from "./config";
 
-export function getContext(names: string[], config: ContextProviderConfig | undefined): data.Dictionary {
+export async function getContext(names: string[], config: ContextProviderConfig | undefined): Promise<data.Dictionary> {
   const context = new data.Dictionary();
 
   for (const contextName of names) {
@@ -10,7 +10,7 @@ export function getContext(names: string[], config: ContextProviderConfig | unde
     value = getDefaultContext(contextName);
 
     if (!value) {
-      value = config?.getContext(contextName);
+      value = await config?.getContext(contextName);
     }
 
     if (!value) {

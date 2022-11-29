@@ -12,6 +12,7 @@ import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {nullTrace} from "./nulltrace";
+import {getAllowedContext} from "./utils/allowed-context";
 import {findToken} from "./utils/find-token";
 import {transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
@@ -80,7 +81,8 @@ export async function complete(
 
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
-      const context = getContext(token.definition?.readerContext || [], contextProviderConfig);
+      const allowedContext = getAllowedContext(token, parent!);
+      const context = await getContext(allowedContext, contextProviderConfig);
 
       return completeExpression(expressionInput, context, []);
     }
