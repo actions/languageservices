@@ -93,7 +93,11 @@ documents.onDidChangeContent((change) => {
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   const result = await validate(
     textDocument,
-    valueProviders(sessionToken, repoWorkspaceMap)
+    valueProviders(
+      sessionToken,
+      repos.find((repo) => textDocument.uri.startsWith(repo.workspaceUri)),
+      cache
+    )
   );
 
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: result });

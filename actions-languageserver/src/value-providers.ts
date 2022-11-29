@@ -9,9 +9,13 @@ import { getRunnerLabels } from "./value-providers/runs-on";
 
 export function valueProviders(
   sessionToken: string | undefined,
-  repoContext: RepositoryContext,
+  repoContext: RepositoryContext | undefined,
   cache: TTLCache
 ): ValueProviderConfig {
+  if (!repoContext) {
+    return {};
+  }
+
   return {
     "job-environment": passOctoKit(
       sessionToken,

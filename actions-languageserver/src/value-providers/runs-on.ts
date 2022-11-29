@@ -29,9 +29,11 @@ export async function getRunnerLabels(
     undefined,
     () => fetchRunnerLabels(client, owner, name)
   );
+
   for (const label of defaultLabels) {
     repoLabels.add(label);
   }
+
   return Array.from(repoLabels).map((label) => ({ label }));
 }
 
