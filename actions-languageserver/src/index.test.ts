@@ -1,5 +1,5 @@
-import { validate } from "@github/actions-languageservice";
-import { TextDocument } from "vscode-languageserver-textdocument";
+import {validate} from "@github/actions-languageservice";
+import {TextDocument} from "vscode-languageserver-textdocument";
 
 describe("simple test", () => {
   it("should work", async () => {

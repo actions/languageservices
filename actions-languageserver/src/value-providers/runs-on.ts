@@ -1,13 +1,8 @@
-import { Value } from "@github/actions-languageservice/value-providers/config";
-import { Octokit } from "@octokit/rest";
-import { TTLCache } from "../utils/cache";
+import {Value} from "@github/actions-languageservice/value-providers/config";
+import {Octokit} from "@octokit/rest";
+import {TTLCache} from "../utils/cache";
 
-export async function getRunnerLabels(
-  client: Octokit,
-  cache: TTLCache,
-  owner: string,
-  name: string
-): Promise<Value[]> {
+export async function getRunnerLabels(client: Octokit, cache: TTLCache, owner: string, name: string): Promise<Value[]> {
   const defaultLabels = [
     "ubuntu-latest",
     "ubuntu-22.04",
@@ -21,32 +16,26 @@ export async function getRunnerLabels(
     "macos-12",
     "macos-11",
     "macos-10.15",
-    "self-hosted",
+    "self-hosted"
   ];
 
-  const repoLabels = await cache.get(
-    `${owner}/${name}/runner-labels`,
-    undefined,
-    () => fetchRunnerLabels(client, owner, name)
+  const repoLabels = await cache.get(`${owner}/${name}/runner-labels`, undefined, () =>
+    fetchRunnerLabels(client, owner, name)
   );
 
   for (const label of defaultLabels) {
     repoLabels.add(label);
   }
 
-  return Array.from(repoLabels).map((label) => ({ label }));
+  return Array.from(repoLabels).map(label => ({label}));
 }
 
-async function fetchRunnerLabels(
-  client: Octokit,
-  owner: string,
-  name: string
-): Promise<Set<string>> {
+async function fetchRunnerLabels(client: Octokit, owner: string, name: string): Promise<Set<string>> {
   const labels = new Set<string>();
   try {
     const response = await client.actions.listSelfHostedRunnersForRepo({
       owner,
-      repo: name,
+      repo: name
     });
 
     for (const runner of response.data.runners) {
