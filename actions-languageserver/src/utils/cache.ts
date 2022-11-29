@@ -15,18 +15,10 @@ export class TTLCache {
    * @param ttlInMS How long is the content valid. If optional, default value will be used
    * @param getter Function to retrieve content if not in cache
    */
-  async get<T>(
-    key: string,
-    ttlInMS: number | undefined,
-    getter: () => Promise<T>
-  ): Promise<T> {
+  async get<T>(key: string, ttlInMS: number | undefined, getter: () => Promise<T>): Promise<T> {
     const hasEntry = this.cache.has(key);
     const e = hasEntry && this.cache.get(key);
-    if (
-      hasEntry &&
-      e &&
-      e.cachedAt > Date.now() - (ttlInMS || this.defaultTTLinMS)
-    ) {
+    if (hasEntry && e && e.cachedAt > Date.now() - (ttlInMS || this.defaultTTLinMS)) {
       return e.content as T;
     }
 
@@ -35,7 +27,7 @@ export class TTLCache {
 
       this.cache.set(key, {
         cachedAt: Date.now(),
-        content,
+        content
       });
 
       return content;
