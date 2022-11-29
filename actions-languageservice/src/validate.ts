@@ -133,13 +133,14 @@ async function additionalValidations(
 
       if (valueProvider) {
         const customValues = await valueProvider.get(getProviderContext(documentUri, template, root, token));
+        const customValuesMap = new Set(customValues.map(x => x.label));
 
         if (isSequence(token)) {
           for (let i = 0; i < token.count; ++i) {
             const entry = token.get(i);
 
             if (isString(entry)) {
-              if (!customValues.map(x => x.label).includes(entry.value)) {
+              if (!customValuesMap.has(entry.value)) {
                 invalidValue(diagnostics, entry, valueProvider.kind);
               }
             }
@@ -147,7 +148,7 @@ async function additionalValidations(
         }
 
         if (isString(token)) {
-          if (!customValues.map(x => x.label).includes(token.value)) {
+          if (!customValuesMap.has(token.value)) {
             invalidValue(diagnostics, token, valueProvider.kind);
           }
         }
