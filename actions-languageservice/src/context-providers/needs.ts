@@ -3,7 +3,7 @@ import {WorkflowContext} from "../context/workflow-context";
 
 export function getNeedsContext(workflowContext: WorkflowContext): data.Dictionary {
   const d = new data.Dictionary();
-  if (!workflowContext.job) {
+  if (!workflowContext.job || !workflowContext.job.needs) {
     return d;
   }
 
