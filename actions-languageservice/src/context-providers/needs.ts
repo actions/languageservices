@@ -1,4 +1,4 @@
-import {data} from "@github/actions-expressions/.";
+import {data} from "@github/actions-expressions";
 import {WorkflowContext} from "../context/workflow-context";
 
 export function getNeedsContext(workflowContext: WorkflowContext): data.Dictionary {
