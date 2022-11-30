@@ -93,9 +93,9 @@ describe("find-token", () => {
       path: [
         ["workflow-root-strict", TokenType.Mapping],
         ["on-strict", TokenType.String, "on"],
-        ["on-sequence-strict", TokenType.Sequence]
+        ["on-strict", TokenType.Sequence]
       ],
-      parent: ["on-sequence-strict", TokenType.Sequence],
+      parent: ["on-strict", TokenType.Sequence],
       key: null,
       token: ["push-string", TokenType.String, "push"]
     });
@@ -109,9 +109,9 @@ describe("find-token", () => {
       path: [
         ["workflow-root-strict", TokenType.Mapping],
         ["on-strict", TokenType.String, "on"],
-        ["on-sequence-strict", TokenType.Sequence]
+        ["on-strict", TokenType.Sequence]
       ],
-      parent: ["on-sequence-strict", TokenType.Sequence],
+      parent: ["on-strict", TokenType.Sequence],
       key: null,
       token: null
     });
@@ -126,9 +126,9 @@ describe("find-token", () => {
       path: [
         ["workflow-root-strict", TokenType.Mapping],
         ["on-strict", TokenType.String, "on"],
-        ["on-sequence-strict", TokenType.Sequence]
+        ["on-strict", TokenType.Sequence]
       ],
-      parent: ["on-sequence-strict", TokenType.Sequence],
+      parent: ["on-strict", TokenType.Sequence],
       key: null,
       token: ["pull-request-string", TokenType.String, "pull_request"]
     });
@@ -148,9 +148,9 @@ jobs:
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping],
         ["runs-on", TokenType.String, "runs-on"],
-        ["sequence-of-non-empty-string", TokenType.Sequence]
+        ["runs-on", TokenType.Sequence]
       ],
-      parent: ["sequence-of-non-empty-string", TokenType.Sequence],
+      parent: ["runs-on", TokenType.Sequence],
       key: null,
       token: ["non-empty-string", TokenType.String, "self"]
     });

@@ -2,7 +2,6 @@ import {BooleanDefinition} from "@github/actions-workflow-parser/templates/schem
 import {Definition} from "@github/actions-workflow-parser/templates/schema/definition";
 import {MappingDefinition} from "@github/actions-workflow-parser/templates/schema/mapping-definition";
 import {OneOfDefinition} from "@github/actions-workflow-parser/templates/schema/one-of-definition";
-import {SequenceDefinition} from "@github/actions-workflow-parser/templates/schema/sequence-definition";
 import {StringDefinition} from "@github/actions-workflow-parser/templates/schema/string-definition";
 import {getWorkflowSchema} from "@github/actions-workflow-parser/workflows/workflow-schema";
 import {Value} from "./config";
@@ -25,10 +24,6 @@ export function definitionValues(def: Definition): Value[] {
 
   if (def instanceof StringDefinition && def.constant) {
     return stringsToValues([def.constant]);
-  }
-
-  if (def instanceof SequenceDefinition && def.itemType && schema.definitions[def.itemType]) {
-    return definitionValues(schema.definitions[def.itemType]);
   }
 
   return [];
