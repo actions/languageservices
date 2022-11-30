@@ -65,6 +65,7 @@ export async function complete(
 
   const {token, keyToken, parent, path} = findToken(newPos, result.value);
   const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
+  const workflowContext = getWorkflowContext(textDocument.uri, template, path);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
@@ -82,13 +83,12 @@ export async function complete(
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
       const allowedContext = getAllowedContext(token, parent!);
-      const context = await getContext(allowedContext, contextProviderConfig);
+      const context = await getContext(allowedContext, contextProviderConfig, workflowContext);
 
       return completeExpression(expressionInput, context, []);
     }
   }
 
-  const workflowContext = getWorkflowContext(textDocument.uri, template, path);
   const values = await getValues(token, parent, valueProviderConfig, workflowContext);
   return values.map(value => CompletionItem.create(value.label));
 }

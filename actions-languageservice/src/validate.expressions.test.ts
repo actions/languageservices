@@ -54,4 +54,23 @@ describe("expression validation", () => {
       }
     ]);
   });
+
+  it.failing("needs.<job_id>", async () => {
+    const input = `
+on: push
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello a
+  b:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ needs.a }}"
+`;
+    const result = await validate(createDocument("wf.yaml", input));
+
+    expect(result).toEqual([]);
+  });
 });

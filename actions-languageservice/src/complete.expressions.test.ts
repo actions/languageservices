@@ -148,4 +148,68 @@ jobs:
 
     expect(result.map(x => x.label)).toEqual(["DEPLOY_KEY"]);
   });
+
+  it("needs context only includes referenced jobs", async () => {
+    const input = `
+on: push
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello a
+  b:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello b
+  c:
+    needs: [b]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ needs.| 
+`;
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.map(x => x.label)).toEqual(["b"]);
+  });
+
+  it("needs.<job_id>", async () => {
+    const input = `
+on: push
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello a
+  b:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ needs.a.| 
+`;
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.map(x => x.label)).toEqual(["outputs", "result"]);
+  });
+
+  it.failing("needs.<job_id>.outputs includes outputs", async () => {
+    const input = `
+on: push
+jobs:
+  a:
+    outputs:
+      build_id: my-build-id
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello a
+  b:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ needs.a.outputs.|
+`;
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.map(x => x.label)).toEqual(["build_id"]);
+  });
 });
