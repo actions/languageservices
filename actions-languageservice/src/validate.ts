@@ -9,6 +9,7 @@ import {
   ParseWorkflowResult,
   WorkflowTemplate
 } from "@github/actions-workflow-parser";
+import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
@@ -49,8 +50,8 @@ export async function validate(
   try {
     const result: ParseWorkflowResult = parseWorkflow(file.name, [file], nullTrace);
     if (result.value) {
-      // Errors will be updated in the context
-      const template = convertWorkflowTemplate(result.context, result.value);
+      // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
+      const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
 
       // Validate expressions and value providers
       await additionalValidations(
