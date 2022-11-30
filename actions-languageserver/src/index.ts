@@ -13,6 +13,7 @@ import {
 
 import {hover, validate} from "@github/actions-languageservice";
 import {TextDocument} from "vscode-languageserver-textdocument";
+import {contextProviders} from "./context-providers";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions";
 import {onCompletion} from "./on-completion";
 import {TTLCache} from "./utils/cache";
@@ -86,13 +87,11 @@ documents.onDidChangeContent(change => {
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
+  const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
   const result = await validate(
     textDocument,
-    valueProviders(
-      sessionToken,
-      repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri)),
-      cache
-    )
+    valueProviders(sessionToken, repoContext, cache),
+    contextProviders(sessionToken, repoContext, cache)
   );
 
   connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
