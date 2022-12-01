@@ -192,7 +192,7 @@ jobs:
     expect(result.map(x => x.label)).toEqual(["outputs", "result"]);
   });
 
-  it.failing("needs.<job_id>.outputs includes outputs", async () => {
+  it("needs.<job_id>.outputs includes outputs", async () => {
     const input = `
 on: push
 jobs:
