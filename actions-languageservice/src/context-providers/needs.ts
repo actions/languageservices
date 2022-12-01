@@ -1,5 +1,5 @@
 import {data} from "@github/actions-expressions";
-import {isString} from "@github/actions-workflow-parser/.";
+import {isScalar, isString} from "@github/actions-workflow-parser";
 import {Job} from "@github/actions-workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 
@@ -40,7 +40,10 @@ function jobOutputs(job?: Job): data.Dictionary {
     if (!isString(output.key)) {
       continue;
     }
-    d.add(output.key.value, new data.Null());
+
+    // Include the value for hover purposes
+    const value = isScalar(output.value) ? new data.StringData(output.value.toDisplayString()) : new data.Null();
+    d.add(output.key.value, value);
   }
   return d;
 }
