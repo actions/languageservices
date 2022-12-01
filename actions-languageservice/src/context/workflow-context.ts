@@ -1,5 +1,5 @@
 import {WorkflowTemplate} from "@github/actions-workflow-parser";
-import {JobConfig, StepConfig} from "@github/actions-workflow-parser/model/workflow-template";
+import {Job, Step} from "@github/actions-workflow-parser/model/workflow-template";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 
@@ -9,10 +9,10 @@ export interface WorkflowContext {
   template: WorkflowTemplate | undefined;
 
   /** If the context is for a position within a job, this will be the job */
-  job?: JobConfig;
+  job?: Job;
 
   /** If the context is for a position within a step, this will be the step */
-  step?: StepConfig;
+  step?: Step;
 }
 
 export function getWorkflowContext(
@@ -30,7 +30,7 @@ export function getWorkflowContext(
       switch (token.definition?.key) {
         case "job-id": {
           const jobID = (token as StringToken).value;
-          context.job = template.jobs.find(job => job.id === jobID);
+          context.job = template.jobs.find(job => job.id.value === jobID);
         }
       }
     }
