@@ -8,6 +8,6 @@ export async function needs(context: WorkflowContext): Promise<Value[]> {
 
   const uniquejobIDs = new Set(context.template.jobs.map(j => j.id)).values();
   return Array.from(uniquejobIDs)
-    .filter(x => x !== context.job?.id)
-    .map(x => ({label: x}));
+    .filter(x => x.value !== context.job?.id.value)
+    .map(x => ({label: x.value}));
 }
