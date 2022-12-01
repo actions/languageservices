@@ -55,7 +55,7 @@ describe("expression validation", () => {
     ]);
   });
 
-  it.failing("needs.<job_id>", async () => {
+  it("needs.<job_id>", async () => {
     const input = `
 on: push
 jobs:
