@@ -1,4 +1,4 @@
-import {isMapping, parseWorkflow} from "@github/actions-workflow-parser";
+import {parseWorkflow} from "@github/actions-workflow-parser";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
@@ -14,7 +14,7 @@ export async function hover(document: TextDocument, position: Position): Promise
   };
   const result = parseWorkflow(file.name, [file], nullTrace);
 
-  const {token, keyToken, parent} = findToken(position, result.value);
+  const {token} = findToken(position, result.value);
 
   if (result.value && token) {
     return getHover(token);
