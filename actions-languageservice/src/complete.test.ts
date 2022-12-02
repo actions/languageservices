@@ -263,6 +263,31 @@ jobs:
     expect(result).toHaveLength(0);
   });
 
+  it("empty step", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+    - |`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).toHaveLength(11);
+    expect(result.map(x => x.label)).toEqual([
+      "continue-on-error",
+      "env",
+      "id",
+      "if",
+      "name",
+      "run",
+      "shell",
+      "timeout-minutes",
+      "uses",
+      "with",
+      "working-directory"
+    ]);
+  });
+
   it("loose mapping keys have no completion suggestions", async () => {
     const input = `
 on:
