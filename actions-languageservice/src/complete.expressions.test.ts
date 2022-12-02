@@ -166,7 +166,7 @@ jobs:
     needs: [b]
     runs-on: ubuntu-latest
     steps:
-    - run: echo "hello \${{ needs.| 
+    - run: echo "hello \${{ needs.|
 `;
     const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
@@ -185,7 +185,7 @@ jobs:
     needs: [a]
     runs-on: ubuntu-latest
     steps:
-    - run: echo "hello \${{ needs.a.| 
+    - run: echo "hello \${{ needs.a.|
 `;
     const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
@@ -211,5 +211,33 @@ jobs:
     const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
     expect(result.map(x => x.label)).toEqual(["build_id"]);
+  });
+
+  it("inputs", async () => {
+    const input = `
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        type: string
+        default: some value
+      another-name:
+        type: string
+jobs:
+  a:
+    outputs:
+      build_id: my-build-id
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello a
+  b:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ inputs.|
+`;
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.map(x => x.label)).toEqual(["another-name", "name"]);
   });
 });
