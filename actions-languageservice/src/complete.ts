@@ -1,6 +1,8 @@
 import {complete as completeExpression} from "@github/actions-expressions";
 import {convertWorkflowTemplate, isSequence, isString, parseWorkflow} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
+import {DefinitionType} from "@github/actions-workflow-parser/templates/schema/definition-type";
+import {StringDefinition} from "@github/actions-workflow-parser/templates/schema/string-definition";
 import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
@@ -70,11 +72,10 @@ export async function complete(
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
   if (token) {
-    // We don't have any way of specifying that a token in the workflow schema is alwyas an expression. For now these
-    // are only the job and step level `if` nodes, so check for those here.
-    const isIfKey = keyToken && isString(keyToken) && keyToken.value === "if";
+    const isExpression =
+      token.definition?.definitionType === DefinitionType.String && (token.definition as StringDefinition).isExpression;
     const containsExpression = isString(token) && token.value.indexOf(OPEN_EXPRESSION) >= 0;
-    if (isString(token) && (isIfKey || containsExpression)) {
+    if (isString(token) && (isExpression || containsExpression)) {
       const currentInput = token.value;
 
       // Transform the overall position into a node relative position

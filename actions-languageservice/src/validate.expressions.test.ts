@@ -7,7 +7,13 @@ describe("expression validation", () => {
     const result = await validate(
       createDocument(
         "wf.yaml",
-        "on: push\nrun-name: name-${{ github.does-not-exist }}\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n    - run: echo"
+        `on: push
+run-name: name-\${{ github.does-not-exist }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo`
       )
     );
 
@@ -72,5 +78,39 @@ jobs:
     const result = await validate(createDocument("wf.yaml", input));
 
     expect(result).toEqual([]);
+  });
+
+  describe("expressions without markers", () => {
+    it("access invalid context field", async () => {
+      const result = await validate(
+        createDocument(
+          "wf.yaml",
+          `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo
+        if: github.does-not-exist`
+        )
+      );
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: does-not-exist",
+          range: {
+            start: {
+              character: 12,
+              line: 6
+            },
+            end: {
+              character: 33,
+              line: 6
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
   });
 });
