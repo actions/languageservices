@@ -72,8 +72,6 @@ export async function complete(
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
   if (token) {
-    // We don't have any way of specifying that a token in the workflow schema is alwyas an expression. For now these
-    // are only the job and step level `if` nodes, so check for those here.
     const isExpression =
       token.definition?.definitionType === DefinitionType.String && (token.definition as StringDefinition).isExpression;
     const containsExpression = isString(token) && token.value.indexOf(OPEN_EXPRESSION) >= 0;
