@@ -25,6 +25,10 @@ export function valueProviders(
       kind: ValueProviderKind.AllowedValues,
       get: (_: WorkflowContext) => getEnvironments(octokit, cache, repo.owner, repo.name)
     },
+    "job-environment-name": {
+      kind: ValueProviderKind.AllowedValues,
+      get: (_: WorkflowContext) => getEnvironments(octokit, cache, repo.owner, repo.name)
+    },
     "runs-on": {
       kind: ValueProviderKind.SuggestedValues,
       get: (_: WorkflowContext) => getRunnerLabels(octokit, cache, repo.owner, repo.name)
