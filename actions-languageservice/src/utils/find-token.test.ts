@@ -53,7 +53,7 @@ describe("find-token", () => {
       path: [["workflow-root-strict", TokenType.Mapping]],
       parent: ["workflow-root-strict", TokenType.Mapping],
       key: null,
-      token: [null, TokenType.String, "on"]
+      token: ["on-strict", TokenType.String, "on"]
     });
   });
 
@@ -61,11 +61,11 @@ describe("find-token", () => {
     expect(testFindToken(`on: pu|sh`)).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "on"]
+        ["on-strict", TokenType.String, "on"]
       ],
       parent: ["workflow-root-strict", TokenType.Mapping],
-      key: [null, TokenType.String, "on"],
-      token: ["on-strict", TokenType.String, "push"]
+      key: ["on-strict", TokenType.String, "on"],
+      token: ["push-string", TokenType.String, "push"]
     });
   });
 
@@ -76,12 +76,12 @@ describe("find-token", () => {
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "on"],
+        ["on-strict", TokenType.String, "on"],
         ["on-mapping-strict", TokenType.Mapping]
       ],
       parent: ["on-mapping-strict", TokenType.Mapping],
       key: null,
-      token: [null, TokenType.String, "push"]
+      token: ["push", TokenType.String, "push"]
     });
   });
 
@@ -92,12 +92,12 @@ describe("find-token", () => {
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "on"],
+        ["on-strict", TokenType.String, "on"],
         ["on-strict", TokenType.Sequence]
       ],
       parent: ["on-strict", TokenType.Sequence],
       key: null,
-      token: ["non-empty-string", TokenType.String, "push"]
+      token: ["push-string", TokenType.String, "push"]
     });
   });
 
@@ -108,7 +108,7 @@ describe("find-token", () => {
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "on"],
+        ["on-strict", TokenType.String, "on"],
         ["on-strict", TokenType.Sequence]
       ],
       parent: ["on-strict", TokenType.Sequence],
@@ -125,12 +125,12 @@ describe("find-token", () => {
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "on"],
+        ["on-strict", TokenType.String, "on"],
         ["on-strict", TokenType.Sequence]
       ],
       parent: ["on-strict", TokenType.Sequence],
       key: null,
-      token: ["non-empty-string", TokenType.String, "pull_request"]
+      token: ["pull-request-string", TokenType.String, "pull_request"]
     });
   });
 
@@ -143,11 +143,11 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping],
-        [null, TokenType.String, "runs-on"],
+        ["runs-on", TokenType.String, "runs-on"],
         ["runs-on", TokenType.Sequence]
       ],
       parent: ["runs-on", TokenType.Sequence],
@@ -165,7 +165,7 @@ jo|bs:
       path: [["workflow-root-strict", TokenType.Mapping]],
       parent: ["workflow-root-strict", TokenType.Mapping],
       key: null,
-      token: [null, TokenType.String, "jobs"]
+      token: ["jobs", TokenType.String, "jobs"]
     });
   });
 
@@ -178,15 +178,15 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping],
-        [null, TokenType.String, "runs-on"]
+        ["runs-on", TokenType.String, "runs-on"]
       ],
       parent: ["job-factory", TokenType.Mapping],
-      key: [null, TokenType.String, "runs-on"],
-      token: ["runs-on", TokenType.String, "ubu"]
+      key: ["runs-on", TokenType.String, "runs-on"],
+      token: ["non-empty-string", TokenType.String, "ubu"]
     });
   });
 
@@ -199,14 +199,14 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
       key: null,
-      token: [null, TokenType.String, "runs-on"]
+      token: ["runs-on", TokenType.String, "runs-on"]
     });
   });
 
@@ -219,14 +219,14 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
-      key: [null, TokenType.String, "continue-on-error"],
-      token: ["boolean-strategy-context", TokenType.Null, ""]
+      key: ["boolean-strategy-context", TokenType.String, "continue-on-error"],
+      token: [null, TokenType.Null, ""]
     });
   });
 
@@ -239,14 +239,14 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
-      key: [null, TokenType.String, "container"],
-      token: ["container", TokenType.String, ""]
+      key: ["container", TokenType.String, "container"],
+      token: ["string", TokenType.String, ""]
     });
   });
 
@@ -259,13 +259,13 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"]
       ],
       parent: ["jobs", TokenType.Mapping],
       key: ["job-id", TokenType.String, "build"],
-      token: ["job", TokenType.String, "continue-on-error:foo"]
+      token: [null, TokenType.String, "continue-on-error:foo"]
     });
   });
 
@@ -278,7 +278,7 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
@@ -298,14 +298,14 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
       key: null,
-      token: [null, TokenType.String, "continue-on-error"]
+      token: ["boolean-strategy-context", TokenType.String, "continue-on-error"]
     });
   });
 
@@ -318,13 +318,13 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"]
       ],
       parent: ["jobs", TokenType.Mapping],
       key: ["job-id", TokenType.String, "build"],
-      token: ["job", TokenType.String, "runs-"]
+      token: [null, TokenType.String, "runs-"]
     });
   });
 
@@ -338,13 +338,13 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"]
       ],
       parent: ["jobs", TokenType.Mapping],
       key: ["job-id", TokenType.String, "build"],
-      token: ["job", TokenType.String, "runs-"]
+      token: [null, TokenType.String, "runs-"]
     });
   });
 
@@ -358,15 +358,15 @@ jobs:
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
-        [null, TokenType.String, "jobs"],
+        ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
         ["job-id", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping],
-        [null, TokenType.String, "runs-on"]
+        ["runs-on", TokenType.String, "runs-on"]
       ],
       parent: ["job-factory", TokenType.Mapping],
-      key: [null, TokenType.String, "runs-on"],
-      token: ["runs-on", TokenType.String, "ubu"]
+      key: ["runs-on", TokenType.String, "runs-on"],
+      token: ["non-empty-string", TokenType.String, "ubu"]
     });
   });
 });

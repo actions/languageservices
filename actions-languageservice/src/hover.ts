@@ -1,4 +1,4 @@
-import {isMapping, parseWorkflow} from "@github/actions-workflow-parser";
+import {parseWorkflow} from "@github/actions-workflow-parser";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
@@ -14,46 +14,38 @@ export async function hover(document: TextDocument, position: Position): Promise
   };
   const result = parseWorkflow(file.name, [file], nullTrace);
 
-  const {token, keyToken, parent} = findToken(position, result.value);
+  const {token} = findToken(position, result.value);
 
   if (result.value && token) {
-    // If the parent is a MappingToken and no keyToken was returned, our token is the key
-    if (parent && isMapping(parent) && !keyToken) {
-      const value = parent.find(token.toString());
-      if (value) {
-        return getHover(token, value);
-      }
-    }
+    return getHover(token);
   }
   return null;
 }
 
-// PositionToken is the token that the cursor is on
-// DescriptionToken may differ if the description is stored on an associated token, such as when hovering over a key in a mapping
-function getHover(positionToken: TemplateToken, descriptionToken: TemplateToken): Hover | null {
-  if (descriptionToken.definition) {
+function getHover(token: TemplateToken): Hover | null {
+  if (token.definition) {
     let description = "";
-    if (descriptionToken.description) {
-      description = descriptionToken.description;
+    if (token.description) {
+      description = token.description;
     }
 
-    if (descriptionToken.definition.evaluatorContext.length > 0) {
+    if (token.definition.evaluatorContext.length > 0) {
       // Only add padding if there is a description
-      description += `${
-        description.length > 0 ? `\n\n` : ""
-      }**Context:** ${descriptionToken.definition.evaluatorContext.join(", ")}`;
+      description += `${description.length > 0 ? `\n\n` : ""}**Context:** ${token.definition.evaluatorContext.join(
+        ", "
+      )}`;
     }
 
     return {
       contents: description,
       range: {
         start: {
-          line: positionToken.range!.start[0] - 1,
-          character: positionToken.range!.start[1] - 1
+          line: token.range!.start[0] - 1,
+          character: token.range!.start[1] - 1
         },
         end: {
-          line: positionToken.range!.end[0] - 1,
-          character: positionToken.range!.end[1] - 1
+          line: token.range!.end[0] - 1,
+          character: token.range!.end[1] - 1
         }
       }
     } as Hover;

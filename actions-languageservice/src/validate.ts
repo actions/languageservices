@@ -3,7 +3,6 @@ import {Expr} from "@github/actions-expressions/ast";
 import {
   convertWorkflowTemplate,
   isBasicExpression,
-  isSequence,
   isString,
   parseWorkflow,
   ParseWorkflowResult,
@@ -11,6 +10,7 @@ import {
 } from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
+import {Definition} from "@github/actions-workflow-parser/templates/schema/definition";
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
@@ -114,12 +114,18 @@ async function additionalValidations(
   valueProviderConfig: ValueProviderConfig | undefined,
   contextProviderConfig: ContextProviderConfig | undefined
 ) {
-  for (const token of TemplateToken.traverse(root)) {
+  for (const [parent, token, key] of TemplateToken.traverse(root)) {
+    // If  the token is a value in a pair, use the key definition for validation
+    // If the token has a parent (map, sequence, etc), use this definition for validation
+    const validationToken = key || parent || token;
+    const validationDefinition = validationToken.definition;
+
     // If this is an expression, validate it
     if (isBasicExpression(token)) {
       await validateExpression(
         diagnostics,
         token,
+        validationDefinition,
         contextProviderConfig,
         getProviderContext(documentUri, template, root, token)
       );
@@ -127,8 +133,8 @@ async function additionalValidations(
 
     // Allowed values coming from the schema have already been validated. Only check if
     // a value provider is defined for a token and if it is, validate the values match.
-    if (valueProviderConfig && token.range && token.definition?.key) {
-      const defKey = token.definition.key;
+    if (valueProviderConfig && token.range && validationDefinition) {
+      const defKey = validationDefinition.key;
 
       // Try a custom value provider first
       let valueProvider = valueProviderConfig[defKey];
@@ -140,18 +146,6 @@ async function additionalValidations(
       if (valueProvider) {
         const customValues = await valueProvider.get(getProviderContext(documentUri, template, root, token));
         const customValuesMap = new Set(customValues.map(x => x.label));
-
-        if (isSequence(token)) {
-          for (let i = 0; i < token.count; ++i) {
-            const entry = token.get(i);
-
-            if (isString(entry)) {
-              if (!customValuesMap.has(entry.value)) {
-                invalidValue(diagnostics, entry, valueProvider.kind);
-              }
-            }
-          }
-        }
 
         if (isString(token)) {
           if (!customValuesMap.has(token.value)) {
@@ -202,12 +196,13 @@ function getProviderContext(
 async function validateExpression(
   diagnostics: Diagnostic[],
   token: BasicExpressionToken,
+  definition: Definition | undefined,
   contextProviderConfig: ContextProviderConfig | undefined,
   workflowContext: WorkflowContext
 ) {
   // Validate the expression
   for (const expression of token.originalExpressions || [token]) {
-    const allowedContexts = token.definition?.readerContext || [];
+    const allowedContexts = definition?.readerContext || [];
     const {namedContexts, functions} = splitAllowedContext(allowedContexts);
 
     let expr: Expr | undefined;

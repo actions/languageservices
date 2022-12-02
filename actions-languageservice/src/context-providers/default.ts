@@ -1,6 +1,7 @@
 import {data} from "@github/actions-expressions";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
+import {getInputsContext} from "./inputs";
 import {getNeedsContext} from "./needs";
 
 export async function getContext(
@@ -13,7 +14,7 @@ export async function getContext(
   for (const contextName of names) {
     let value: data.Dictionary | undefined;
 
-    value = getDefaultContext(contextName, workflowContext);
+    value = await getDefaultContext(contextName, workflowContext);
 
     if (!value) {
       value = await config?.getContext(contextName);
@@ -29,7 +30,7 @@ export async function getContext(
   return context;
 }
 
-function getDefaultContext(name: string, workflowContext: WorkflowContext): data.Dictionary | undefined {
+async function getDefaultContext(name: string, workflowContext: WorkflowContext): Promise<data.Dictionary | undefined> {
   switch (name) {
     case "runner":
       return objectToDictionary({
@@ -39,8 +40,12 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext): data
         tool_cache: "/opt/hostedtoolcache",
         temp: "/home/runner/work/_temp"
       });
+
     case "needs":
       return getNeedsContext(workflowContext);
+
+    case "inputs":
+      return getInputsContext(workflowContext);
   }
 
   return undefined;
