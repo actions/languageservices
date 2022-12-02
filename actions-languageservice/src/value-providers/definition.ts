@@ -12,7 +12,7 @@ export function definitionValues(def: Definition): Value[] {
   const schema = getWorkflowSchema();
 
   if (def instanceof MappingDefinition) {
-    return mappingValues(def);
+    return mappingValues(def, schema.definitions);
   }
 
   if (def instanceof OneOfDefinition) {
@@ -24,7 +24,12 @@ export function definitionValues(def: Definition): Value[] {
   }
 
   if (def instanceof StringDefinition && def.constant) {
-    return stringsToValues([def.constant]);
+    return [
+      {
+        label: def.constant,
+        description: def.description
+      }
+    ];
   }
 
   if (def instanceof SequenceDefinition) {
@@ -37,10 +42,15 @@ export function definitionValues(def: Definition): Value[] {
   return [];
 }
 
-function mappingValues(mappingDefinition: MappingDefinition): Value[] {
+function mappingValues(mappingDefinition: MappingDefinition, definitions: {[key: string]: Definition}): Value[] {
   const properties: Value[] = [];
   for (const [key, value] of Object.entries(mappingDefinition.properties)) {
-    properties.push({label: key, description: value.description});
+    let description: string | undefined;
+    if (value.type) {
+      const typeDef = definitions[value.type];
+      description = typeDef?.description;
+    }
+    properties.push({label: key, description: description});
   }
   return properties;
 }
