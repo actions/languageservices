@@ -3,7 +3,7 @@ import {hover} from "./hover";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 
 describe("hover", () => {
-  it("valid workflow", async () => {
+  it("on a key", async () => {
     const input = `o|n: push
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
     );
   });
 
-  it("hover on value", async () => {
+  it("on a value", async () => {
     const input = `on: pu|sh
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
     expect(result?.contents).toEqual("Runs your workflow when you push a commit or tag.");
   });
 
-  it("hover on sequence value", async () => {
+  it("on a value in a sequence", async () => {
     const input = `on: [pull_request, 
       pu|sh]
 jobs:
