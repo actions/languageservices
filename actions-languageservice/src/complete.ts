@@ -91,7 +91,11 @@ export async function complete(
   }
 
   const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext);
-  return values.map(value => CompletionItem.create(value.label));
+  return values.map(value => {
+    const item = CompletionItem.create(value.label);
+    item.detail = value.description;
+    return item;
+  });
 }
 
 async function getValues(
