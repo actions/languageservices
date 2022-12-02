@@ -89,12 +89,13 @@ export async function complete(
     }
   }
 
-  const values = await getValues(token, parent, valueProviderConfig, workflowContext);
+  const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext);
   return values.map(value => CompletionItem.create(value.label));
 }
 
 async function getValues(
   token: TemplateToken | null,
+  keyToken: TemplateToken | null,
   parent: TemplateToken | null,
   valueProviderConfig: ValueProviderConfig | undefined,
   workflowContext: WorkflowContext
@@ -105,8 +106,8 @@ async function getValues(
 
   const existingValues = getExistingValues(token, parent);
 
-  if (token?.definition?.key) {
-    const customValues = await valueProviderConfig?.[token.definition.key]?.get(workflowContext);
+  if (keyToken?.definition?.key) {
+    const customValues = await valueProviderConfig?.[keyToken.definition.key]?.get(workflowContext);
 
     if (customValues) {
       return filterAndSortCompletionOptions(customValues, existingValues);
@@ -115,7 +116,7 @@ async function getValues(
 
   // Use the value provider from the parent if we don't have a value provider for the current key
   const valueProvider =
-    (token?.definition?.key && defaultValueProviders[token.definition.key]) ||
+    (keyToken?.definition?.key && defaultValueProviders[keyToken.definition.key]) ||
     (parent.definition?.key && defaultValueProviders[parent.definition.key]);
 
   if (valueProvider) {
@@ -124,7 +125,7 @@ async function getValues(
   }
 
   // Use the definition if there are no value providers
-  const def = token?.definition || parent.definition;
+  const def = keyToken?.definition || parent.definition;
   if (!def) {
     return [];
   }

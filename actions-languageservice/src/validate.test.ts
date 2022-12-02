@@ -158,4 +158,33 @@ jobs:
       }
     } as Diagnostic);
   });
+
+  it("unknown event type", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: [push, check_run, pr]
+jobs:
+  build:
+    runs-on:
+    - ubuntu-latest`
+      ),
+      defaultValueProviders
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message: "Unexpected value 'pr'",
+      range: {
+        end: {
+          character: 24,
+          line: 0
+        },
+        start: {
+          character: 22,
+          line: 0
+        }
+      }
+    } as Diagnostic);
+  });
 });
