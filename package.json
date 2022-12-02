@@ -7,8 +7,5 @@
   "devDependencies": {
     "lerna": "^6.0.3"
   },
-  "name": "actions-languageservices",
-  "dependencies": {
-    "@github/actions-workflow-parser": "^0.0.25"
-  }
+  "name": "actions-languageservices"
 }
