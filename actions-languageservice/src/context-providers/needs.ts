@@ -21,7 +21,6 @@ function needsJobContext(job?: Job): data.Dictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
   const d = new data.Dictionary();
 
-  // Once job config contains outputs, this can be populated
   d.add("outputs", jobOutputs(job));
 
   // Can be "success", "failure", "cancelled", or "skipped"

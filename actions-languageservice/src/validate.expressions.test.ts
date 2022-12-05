@@ -113,4 +113,110 @@ jobs:
       ]);
     });
   });
+
+  describe("steps context", () => {
+    it("steps.<step_id>", async () => {
+      const input = `
+  on: push
+  jobs:
+    a:
+      runs-on: ubuntu-latest
+      steps:
+      - id: a
+        run: echo hello a
+      - id: b
+        run: echo \${{ steps.a }}
+  `;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("steps.<step_id>.outputs.<output_id>", async () => {
+      const input = `
+      on: push
+      jobs:
+        a:
+          runs-on: ubuntu-latest
+          steps:
+          - id: a
+            run: echo hello a
+          - id: b
+            run: echo \${{ steps.a.outputs.anything }}
+      `;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("invalid reference of later step", async () => {
+      const input = `
+      on: push
+      jobs:
+        a:
+          runs-on: ubuntu-latest
+          steps:
+          - id: a
+            run: echo hello a
+          - id: b
+            run: echo \${{ steps.c }}
+          - id: c
+            run: echo hello c
+      `;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: c",
+          range: {
+            end: {
+              character: 36,
+              line: 9
+            },
+            start: {
+              character: 22,
+              line: 9
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
+    it("invalid reference of generated step name", async () => {
+      const input = `
+      on: push
+      jobs:
+        a:
+          runs-on: ubuntu-latest
+          steps:
+          - id: a
+            run: echo hello a
+          - id: b
+            run: echo \${{ steps.__run }}
+      `;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: __run",
+          range: {
+            end: {
+              character: 40,
+              line: 9
+            },
+            start: {
+              character: 22,
+              line: 9
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
 });

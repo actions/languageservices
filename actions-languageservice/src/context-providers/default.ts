@@ -3,6 +3,7 @@ import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
 import {getInputsContext} from "./inputs";
 import {getNeedsContext} from "./needs";
+import {getStepsContext} from "./steps";
 
 export async function getContext(
   names: string[],
@@ -46,6 +47,9 @@ async function getDefaultContext(name: string, workflowContext: WorkflowContext)
 
     case "inputs":
       return getInputsContext(workflowContext);
+
+    case "steps":
+      return getStepsContext(workflowContext);
   }
 
   return undefined;

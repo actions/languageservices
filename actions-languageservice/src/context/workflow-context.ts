@@ -1,5 +1,7 @@
-import {WorkflowTemplate} from "@github/actions-workflow-parser";
+import {isMapping, isSequence, WorkflowTemplate} from "@github/actions-workflow-parser";
 import {Job, Step} from "@github/actions-workflow-parser/model/workflow-template";
+import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
+import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 
@@ -21,20 +23,60 @@ export function getWorkflowContext(
   tokenPath: TemplateToken[]
 ): WorkflowContext {
   const context: WorkflowContext = {uri: uri, template};
+  if (!template) {
+    return context;
+  }
 
-  if (template) {
-    // Iterate through the token path to find the job and step
-    for (let i = 0; i < tokenPath.length; ++i) {
-      const token = tokenPath[i];
+  let stepsSequence: SequenceToken | undefined = undefined;
+  let stepToken: MappingToken | undefined = undefined;
 
-      switch (token.definition?.key) {
-        case "job-id": {
-          const jobID = (token as StringToken).value;
-          context.job = template.jobs.find(job => job.id.value === jobID);
+  // Iterate through the token path to find the job and step
+  for (let i = 0; i < tokenPath.length; ++i) {
+    const token = tokenPath[i];
+
+    switch (token.definition?.key) {
+      case "job-id": {
+        const jobID = (token as StringToken).value;
+        context.job = template.jobs.find(job => job.id.value === jobID);
+        break;
+      }
+      case "steps": {
+        if (isSequence(token)) {
+          stepsSequence = token;
         }
+        break;
+      }
+      case "regular-step":
+      case "run-step": {
+        if (isMapping(token)) {
+          stepToken = token;
+        }
+        break;
       }
     }
   }
 
+  context.step = findStep(context.job?.steps, stepsSequence, stepToken);
   return context;
+}
+
+function findStep(steps?: Step[], stepSequence?: SequenceToken, stepToken?: MappingToken): Step | undefined {
+  if (!steps || !stepSequence || !stepToken) {
+    return undefined;
+  }
+
+  // Steps may not define an ID, so find the step by index
+  let stepIndex = -1;
+  for (let i = 0; i < stepSequence.count; i++) {
+    if (stepSequence.get(i) === stepToken) {
+      stepIndex = i;
+      break;
+    }
+  }
+
+  if (stepIndex === -1 || stepIndex >= steps.length) {
+    return undefined;
+  }
+
+  return steps[stepIndex];
 }
