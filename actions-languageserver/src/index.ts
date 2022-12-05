@@ -5,13 +5,12 @@ import {
   HoverParams,
   InitializeParams,
   InitializeResult,
-  ProposedFeatures,
   TextDocumentPositionParams,
   TextDocuments,
   TextDocumentSyncKind
 } from "vscode-languageserver/node";
 
-import {hover, validate} from "@github/actions-languageservice";
+import {hover, registerLogger, setLogLevel, validate} from "@github/actions-languageservice";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {contextProviders} from "./context-providers";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions";
@@ -19,20 +18,18 @@ import {onCompletion} from "./on-completion";
 import {TTLCache} from "./utils/cache";
 import {valueProviders} from "./value-providers";
 
-// Create a connection for the server, using Node's IPC as a transport.
-// Also include all preview / proposed LSP features.
-const connection = createConnection(ProposedFeatures.all);
-
-// Create a simple text document manager.
+const connection = createConnection();
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let sessionToken: string | undefined;
 let repos: RepositoryContext[] = [];
 const cache = new TTLCache();
 
-let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
+
+// Register remote console logger with language service
+registerLogger(connection.console);
 
 connection.onInitialize((params: InitializeParams) => {
   const capabilities = params.capabilities;
@@ -48,6 +45,10 @@ connection.onInitialize((params: InitializeParams) => {
   sessionToken = options.sessionToken;
   if (options.repos) {
     repos = options.repos;
+  }
+
+  if (options.logLevel !== undefined) {
+    setLogLevel(options.logLevel);
   }
 
   const result: InitializeResult = {
@@ -72,14 +73,6 @@ connection.onInitialize((params: InitializeParams) => {
   return result;
 });
 
-connection.onInitialized(() => {
-  if (hasWorkspaceFolderCapability) {
-    connection.workspace.onDidChangeWorkspaceFolders(_event => {
-      connection.console.log("Workspace folder change event received.");
-    });
-  }
-});
-
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
@@ -97,11 +90,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
 }
 
-connection.onDidChangeWatchedFiles(_change => {
-  // Monitored files have change in VSCode
-  connection.console.log("We received an file change event");
-});
-
 // This handler provides the initial list of the completion items.
 connection.onCompletion(async ({position, textDocument}: TextDocumentPositionParams): Promise<CompletionItem[]> => {
   return await onCompletion(
@@ -114,8 +102,7 @@ connection.onCompletion(async ({position, textDocument}: TextDocumentPositionPar
 });
 
 connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
-  const r = await hover(documents.get(textDocument.uri)!, position);
-  return r;
+  return hover(documents.get(textDocument.uri)!, position);
 });
 
 // Make the text document manager listen on the connection
