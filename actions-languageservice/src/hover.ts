@@ -25,7 +25,7 @@ export async function hover(document: TextDocument, position: Position): Promise
 
 function getHover(token: TemplateToken): Hover | null {
   if (token.definition) {
-    info(`Calculation hover for token with definition ${token.definition.key}`);
+    info(`Calculating hover for token with definition ${token.definition.key}`);
 
     let description = "";
     if (token.description) {
