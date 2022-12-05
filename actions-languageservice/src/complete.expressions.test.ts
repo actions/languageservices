@@ -262,4 +262,78 @@ jobs:
 
     expect(result).toEqual([]);
   });
+  
+  describe("steps context", () => {
+    it("includes defined step IDs", async () => {
+      const input = `
+on: push
+jobs:
+  one:
+    runs-on: ubuntu-latest
+    steps:
+    - id: a
+      run: echo hello a
+    - id: b
+      run: echo hello b
+    - id: c
+      run: echo "hello \${{ steps.|
+`;
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["a", "b"]);
+    });
+
+    it("step.<step_id>", async () => {
+      const input = `
+on: push
+jobs:
+  one:
+    runs-on: ubuntu-latest
+    steps:
+    - id: a
+      run: echo hello a
+    - run: echo "hello \${{ steps.a.|
+    `;
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["conclusion", "outcome", "outputs"]);
+    });
+
+    it("ignores IDs from later steps", async () => {
+      const input = `
+on: push
+jobs:
+  one:
+    runs-on: ubuntu-latest
+    steps:
+    - id: a
+      run: echo hello a
+    - id: b
+      run: echo "hello \${{ steps.|
+    - id: c
+      run: echo hello c
+  `;
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["a"]);
+    });
+  });
+
+  // The workflow parser doesn't currently generate IDs, so we can't test this yet
+  it.failing("Ignores generated IDs", async () => {
+    const input = `
+on: push
+jobs:
+  one:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello a
+    - id: b
+      run: echo hello b
+    - run: echo "hello \${{ steps.|
+`;
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.map(x => x.label)).toEqual(["b"]);
+  });
 });
