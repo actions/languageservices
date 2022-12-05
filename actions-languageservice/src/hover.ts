@@ -3,6 +3,7 @@ import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/te
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Hover} from "vscode-languageserver-types";
+import {info} from "./log";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
 
@@ -24,6 +25,8 @@ export async function hover(document: TextDocument, position: Position): Promise
 
 function getHover(token: TemplateToken): Hover | null {
   if (token.definition) {
+    info(`Calculation hover for token with definition ${token.definition.key}`);
+
     let description = "";
     if (token.description) {
       description = token.description;
