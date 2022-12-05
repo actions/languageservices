@@ -240,4 +240,26 @@ jobs:
 
     expect(result.map(x => x.label)).toEqual(["another-name", "name"]);
   });
+
+  it("no inputs", async () => {
+    const input = `
+on:
+  workflow_dispatch:
+jobs:
+  a:
+    outputs:
+      build_id: my-build-id
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello a
+  b:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ inputs.|
+`;
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result).toEqual([]);
+  });
 });
