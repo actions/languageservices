@@ -335,4 +335,65 @@ jobs:
       expect(result.map(x => x.label)).toEqual(["b"]);
     });
   });
+
+  describe("strategy context", () => {
+    it.failing("strategy is not suggested when outside of a matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm test > test-job-\${{ | }}.txt
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).not.toContain("strategy");
+    });
+
+    it("strategy is suggested within a matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-group: [1, 2]
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm test > test-job-\${{ | }}.txt
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toContain("strategy");
+    });
+  });
+
+  it("includes expected keys", async () => {
+    const input = `
+on: push
+
+jobs:
+test:
+  runs-on: ubuntu-latest
+  strategy:
+    matrix:
+      test-group: [1, 2]
+      node: [14, 16]
+  steps:
+    - uses: actions/checkout@v3
+    - run: npm test > test-job-\${{ strategy.| }}.txt
+`;
+
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.map(x => x.label)).toEqual(["fail-fast", "job-index", "job-total", "max-parallel"]);
+  });
 });

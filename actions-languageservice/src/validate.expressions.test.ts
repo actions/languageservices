@@ -219,4 +219,86 @@ jobs:
       ]);
     });
   });
+
+  describe("strategy context", () => {
+    it("reference within a matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-group: [1, 2]
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ strategy.fail-fast }}
+      - run: echo \${{ strategy.job-index }}
+      - run: echo \${{ strategy.job-total }}
+      - run: echo \${{ strategy.max-parallel }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it.failing("reference outside of a matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ strategy.fail-fast }}
+      - run: echo \${{ strategy.job-index }}
+      - run: echo \${{ strategy.job-total }}
+      - run: echo \${{ strategy.max-parallel }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).not.toEqual([]);
+    });
+
+    it("invalid strategy property", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-group: [1, 2]
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ strategy.fail-faster-than-fast }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: fail-faster-than-fast",
+          range: {
+            end: {
+              character: 55,
+              line: 12
+            },
+            start: {
+              character: 18,
+              line: 12
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
 });
