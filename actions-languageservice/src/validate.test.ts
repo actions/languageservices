@@ -142,7 +142,6 @@ jobs:
       defaultValueProviders
     );
 
-    expect(result.length).toBe(1);
     expect(result[0]).toEqual({
       message: "Value 'test2' is not valid",
       severity: DiagnosticSeverity.Error,

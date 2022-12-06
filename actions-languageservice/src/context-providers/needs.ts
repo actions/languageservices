@@ -10,8 +10,8 @@ export function getNeedsContext(workflowContext: WorkflowContext): data.Dictiona
   }
 
   for (const jobID of workflowContext.job.needs) {
-    const job = workflowContext.template?.jobs.find(job => job.id.value === jobID);
-    d.add(jobID, needsJobContext(job));
+    const job = workflowContext.template?.jobs.find(job => job.id.value === jobID.value);
+    d.add(jobID.value, needsJobContext(job));
   }
 
   return d;
