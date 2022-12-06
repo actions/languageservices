@@ -13,6 +13,9 @@ export function getInputsContext(workflowContext: WorkflowContext): data.Diction
   }
 
   const inputs = event.inputs;
+  if (!inputs) {
+    return d;
+  }
   for (const inputName of Object.keys(inputs)) {
     const input = inputs[inputName];
     switch (input.type) {
