@@ -9,7 +9,7 @@ import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/map
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
-import {CompletionItem} from "vscode-languageserver-types";
+import {CompletionItem, TextEdit, Range} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
@@ -91,9 +91,27 @@ export async function complete(
   }
 
   const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext);
+  let replaceRange: Range | undefined;
+  if (token?.range) {
+    replaceRange = {
+      start: {
+        line: token.range.start[0] - 1,
+        character: token.range.start[1] - 1
+      },
+      end: {
+        line: token.range.end[0] - 1,
+        character: token.range.end[1] - 1
+      }
+    };
+  }
+
   return values.map(value => {
     const item = CompletionItem.create(value.label);
     item.detail = value.description;
+    if (replaceRange) {
+      item.textEdit = TextEdit.replace(replaceRange, value.label);
+    }
+
     return item;
   });
 }
@@ -183,3 +201,17 @@ function filterAndSortCompletionOptions(options: Value[], existingValues?: Set<s
   options.sort((a, b) => a.label.localeCompare(b.label));
   return options;
 }
+
+// function getTokenRange(document: TextDocument, position: Position) {
+//   const lineRange: Range = {
+//     start: {line: position.line, character: 0},
+//     end: {line: position.line, character: Number.MAX_SAFE_INTEGER}
+//   };
+//   let line = document.getText(lineRange);
+//   const wordArray = line.split(/[\s,]+/);
+//   const word = wordArray[wordArray.length - 1];
+
+//   const start = new Position(position.line, Math.max(0, position.character - word.length));
+//   const end = new Position(position.line, position.character);
+//   return {start, end};
+// }
