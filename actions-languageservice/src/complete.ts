@@ -201,17 +201,3 @@ function filterAndSortCompletionOptions(options: Value[], existingValues?: Set<s
   options.sort((a, b) => a.label.localeCompare(b.label));
   return options;
 }
-
-// function getTokenRange(document: TextDocument, position: Position) {
-//   const lineRange: Range = {
-//     start: {line: position.line, character: 0},
-//     end: {line: position.line, character: Number.MAX_SAFE_INTEGER}
-//   };
-//   let line = document.getText(lineRange);
-//   const wordArray = line.split(/[\s,]+/);
-//   const word = wordArray[wordArray.length - 1];
-
-//   const start = new Position(position.line, Math.max(0, position.character - word.length));
-//   const end = new Position(position.line, position.character);
-//   return {start, end};
-// }
