@@ -4,6 +4,7 @@ import {ContextProviderConfig} from "./config";
 import {getInputsContext} from "./inputs";
 import {getNeedsContext} from "./needs";
 import {getStepsContext} from "./steps";
+import {getStrategyContext} from "./strategy";
 
 export async function getContext(
   names: string[],
@@ -50,6 +51,9 @@ async function getDefaultContext(name: string, workflowContext: WorkflowContext)
 
     case "steps":
       return getStepsContext(workflowContext);
+
+    case "strategy":
+      return getStrategyContext();
   }
 
   return undefined;
