@@ -9,13 +9,14 @@ import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/map
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
-import {CompletionItem} from "vscode-languageserver-types";
+import {CompletionItem, TextEdit, Range} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {nullTrace} from "./nulltrace";
 import {getAllowedContext} from "./utils/allowed-context";
 import {findToken} from "./utils/find-token";
+import {mapRange} from "./utils/range";
 import {transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
@@ -91,9 +92,18 @@ export async function complete(
   }
 
   const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext);
+  let replaceRange: Range | undefined;
+  if (token?.range) {
+    replaceRange = mapRange(token.range);
+  }
+
   return values.map(value => {
     const item = CompletionItem.create(value.label);
     item.detail = value.description;
+    if (replaceRange) {
+      item.textEdit = TextEdit.replace(replaceRange, value.label);
+    }
+
     return item;
   });
 }

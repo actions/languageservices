@@ -1,3 +1,4 @@
+import {TextEdit} from "vscode-languageserver-types";
 import {complete} from "./complete";
 import {WorkflowContext} from "./context/workflow-context";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
@@ -328,5 +329,26 @@ o|
     expect(dispatchResult?.detail).toEqual(
       "You can now create workflows that are manually triggered with the new workflow_dispatch event. You will then see a 'Run workflow' button on the Actions tab, enabling you to easily trigger a run."
     );
+  });
+
+  it("sets range when completing token", async () => {
+    const input = `on: push
+jobs:
+  pre-build:
+    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+    needs: pre-bu|`;
+
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result.length).toEqual(1);
+
+    let textEdit = result[0].textEdit as TextEdit;
+    expect(textEdit.newText).toEqual("pre-build");
+    expect(textEdit.range).toEqual({
+      start: {line: 6, character: 11},
+      end: {line: 6, character: 17}
+    });
   });
 });
