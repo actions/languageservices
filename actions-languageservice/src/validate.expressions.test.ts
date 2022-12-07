@@ -245,7 +245,7 @@ jobs:
       expect(result).toEqual([]);
     });
 
-    it.failing("reference outside of a matrix job", async () => {
+    it("reference outside of a matrix job", async () => {
       const input = `
 on: push
 

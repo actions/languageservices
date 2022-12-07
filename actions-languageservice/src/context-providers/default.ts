@@ -4,7 +4,7 @@ import {ContextProviderConfig} from "./config";
 import {getInputsContext} from "./inputs";
 import {getNeedsContext} from "./needs";
 import {getStepsContext} from "./steps";
-import {getStrategyContext} from "./strategy";
+import {allowStrategyContext, getStrategyContext} from "./strategy";
 
 export async function getContext(
   names: string[],
@@ -13,7 +13,8 @@ export async function getContext(
 ): Promise<data.Dictionary> {
   const context = new data.Dictionary();
 
-  for (const contextName of names) {
+  const filteredNames = filterContextNames(names, workflowContext);
+  for (const contextName of filteredNames) {
     let value: data.Dictionary | undefined;
 
     value = await getDefaultContext(contextName, workflowContext);
@@ -53,7 +54,7 @@ async function getDefaultContext(name: string, workflowContext: WorkflowContext)
       return getStepsContext(workflowContext);
 
     case "strategy":
-      return getStrategyContext();
+      return getStrategyContext(workflowContext);
   }
 
   return undefined;
@@ -66,4 +67,14 @@ function objectToDictionary(object: {[key: string]: string}): data.Dictionary {
   }
 
   return dictionary;
+}
+
+function filterContextNames(contextNames: string[], workflowContext: WorkflowContext): string[] {
+  return contextNames.filter(name => {
+    switch (name) {
+      case "strategy":
+        return allowStrategyContext(workflowContext);
+    }
+    return true;
+  });
 }
