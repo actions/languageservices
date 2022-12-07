@@ -14,10 +14,9 @@ import {Definition} from "@github/actions-workflow-parser/templates/schema/defin
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
-import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
-import {Diagnostic, DiagnosticSeverity, Range, URI} from "vscode-languageserver-types";
+import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
@@ -25,6 +24,7 @@ import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
+import {mapRange} from "./utils/range";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 
@@ -78,32 +78,6 @@ export async function validate(
   }
 
   return diagnostics;
-}
-
-function mapRange(range: TokenRange | undefined): Range {
-  if (!range) {
-    return {
-      start: {
-        line: 1,
-        character: 1
-      },
-      end: {
-        line: 1,
-        character: 1
-      }
-    };
-  }
-
-  return {
-    start: {
-      line: range.start[0] - 1,
-      character: range.start[1] - 1
-    },
-    end: {
-      line: range.end[0] - 1,
-      character: range.end[1] - 1
-    }
-  };
 }
 
 async function additionalValidations(

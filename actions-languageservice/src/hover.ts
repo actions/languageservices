@@ -5,6 +5,7 @@ import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Hover} from "vscode-languageserver-types";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
+import {mapRange} from "./utils/range";
 
 // Render value description and Context when hovering over a key in a MappingToken
 export async function hover(document: TextDocument, position: Position): Promise<Hover | null> {
@@ -38,16 +39,7 @@ function getHover(token: TemplateToken): Hover | null {
 
     return {
       contents: description,
-      range: {
-        start: {
-          line: token.range!.start[0] - 1,
-          character: token.range!.start[1] - 1
-        },
-        end: {
-          line: token.range!.end[0] - 1,
-          character: token.range!.end[1] - 1
-        }
-      }
+      range: mapRange(token.range)
     } as Hover;
   }
   return null;

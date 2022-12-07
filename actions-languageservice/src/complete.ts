@@ -16,6 +16,7 @@ import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {nullTrace} from "./nulltrace";
 import {getAllowedContext} from "./utils/allowed-context";
 import {findToken} from "./utils/find-token";
+import {mapRange} from "./utils/range";
 import {transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
@@ -93,16 +94,7 @@ export async function complete(
   const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext);
   let replaceRange: Range | undefined;
   if (token?.range) {
-    replaceRange = {
-      start: {
-        line: token.range.start[0] - 1,
-        character: token.range.start[1] - 1
-      },
-      end: {
-        line: token.range.end[0] - 1,
-        character: token.range.end[1] - 1
-      }
-    };
+    replaceRange = mapRange(token.range);
   }
 
   return values.map(value => {
