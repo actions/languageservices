@@ -25,5 +25,4 @@
     "outDir": "dist",
     "composite": true
   },
-  "include": ["src/**/*.ts"],
 }
