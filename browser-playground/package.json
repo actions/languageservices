@@ -6,13 +6,13 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
+    "@github/actions-languageserver": "*",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "monaco-editor-workers": "^0.34.2",
     "monaco-languageclient": "^4.0.3",
     "path-browserify": "^1.0.1",
     "vscode-languageserver": "^8.0.2",
-    "vscode-languageserver-protocol": "^3.17.2",
-    "@github/actions-languageserver": "*"
+    "vscode-languageserver-protocol": "^3.17.2"
   },
   "scripts": {
     "build": "webpack --mode production",
