@@ -38,7 +38,3 @@ export function getStrategyContext(workflowContext: WorkflowContext): data.Dicti
 
   return strategyContext;
 }
-
-export function allowStrategyContext(workflowContext: WorkflowContext): boolean {
-  return workflowContext.job?.strategy !== undefined;
-}

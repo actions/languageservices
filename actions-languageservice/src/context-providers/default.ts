@@ -2,9 +2,10 @@ import {data} from "@github/actions-expressions";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
 import {getInputsContext} from "./inputs";
+import {getMatrixContext} from "./matrix";
 import {getNeedsContext} from "./needs";
 import {getStepsContext} from "./steps";
-import {allowStrategyContext, getStrategyContext} from "./strategy";
+import {getStrategyContext} from "./strategy";
 
 export async function getContext(
   names: string[],
@@ -55,6 +56,9 @@ async function getDefaultContext(name: string, workflowContext: WorkflowContext)
 
     case "strategy":
       return getStrategyContext(workflowContext);
+
+    case "matrix":
+      return getMatrixContext(workflowContext);
   }
 
   return undefined;
@@ -72,9 +76,14 @@ function objectToDictionary(object: {[key: string]: string}): data.Dictionary {
 function filterContextNames(contextNames: string[], workflowContext: WorkflowContext): string[] {
   return contextNames.filter(name => {
     switch (name) {
+      case "matrix":
       case "strategy":
-        return allowStrategyContext(workflowContext);
+        return hasStrategy(workflowContext);
     }
     return true;
   });
+}
+
+function hasStrategy(workflowContext: WorkflowContext): boolean {
+  return workflowContext.job?.strategy !== undefined;
 }
