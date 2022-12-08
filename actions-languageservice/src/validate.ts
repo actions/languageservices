@@ -22,6 +22,7 @@ import {ContextProviderConfig} from "./context-providers/config";
 import {getContext} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
+import {error} from "./log";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
@@ -74,7 +75,7 @@ export async function validate(
       });
     }
   } catch (e) {
-    // TODO: Handle error here
+    error(`Unhandled error while validating: ${e}`);
   }
 
   return diagnostics;
@@ -208,7 +209,7 @@ async function validateExpression(
           range: mapRange(expression.range)
         });
       } else {
-        // Ignore error
+        throw e;
       }
     }
   }

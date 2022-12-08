@@ -16,17 +16,9 @@ export async function getContext(
 
   const filteredNames = filterContextNames(names, workflowContext);
   for (const contextName of filteredNames) {
-    let value: data.Dictionary | undefined;
+    let value = (await getDefaultContext(contextName, workflowContext)) || new data.Dictionary();
 
-    value = await getDefaultContext(contextName, workflowContext);
-
-    if (!value) {
-      value = await config?.getContext(contextName);
-    }
-
-    if (!value) {
-      value = new data.Dictionary();
-    }
+    value = (await config?.getContext(contextName, value)) || value;
 
     context.add(contextName, value);
   }
@@ -50,6 +42,9 @@ async function getDefaultContext(name: string, workflowContext: WorkflowContext)
 
     case "inputs":
       return getInputsContext(workflowContext);
+
+    case "secrets":
+      return objectToDictionary({GITHUB_TOKEN: "***"});
 
     case "steps":
       return getStepsContext(workflowContext);
