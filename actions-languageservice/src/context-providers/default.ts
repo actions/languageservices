@@ -1,4 +1,5 @@
 import {data} from "@github/actions-expressions";
+import {Kind} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
 import {getInputsContext} from "./inputs";
@@ -21,6 +22,10 @@ export async function getContext(
   const filteredNames = filterContextNames(names, workflowContext);
   for (const contextName of filteredNames) {
     let value = (await getDefaultContext(contextName, workflowContext)) || new data.Dictionary();
+    if (value.kind === Kind.Null) {
+      context.add(contextName, value);
+      continue;
+    }
 
     value = (await config?.getContext(contextName, value)) || value;
 
