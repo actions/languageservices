@@ -7,6 +7,10 @@ import {getNeedsContext} from "./needs";
 import {getStepsContext} from "./steps";
 import {getStrategyContext} from "./strategy";
 
+// ContextValue is the type of the value returned by a context provider
+// Null indicates that the context provider doesn't have any value to provide
+export type ContextValue = data.Dictionary | data.Null;
+
 export async function getContext(
   names: string[],
   config: ContextProviderConfig | undefined,
@@ -16,7 +20,7 @@ export async function getContext(
 
   const filteredNames = filterContextNames(names, workflowContext);
   for (const contextName of filteredNames) {
-    let value: data.Dictionary | undefined;
+    let value: ContextValue | undefined;
 
     value = await getDefaultContext(contextName, workflowContext);
 
@@ -34,7 +38,7 @@ export async function getContext(
   return context;
 }
 
-async function getDefaultContext(name: string, workflowContext: WorkflowContext): Promise<data.Dictionary | undefined> {
+async function getDefaultContext(name: string, workflowContext: WorkflowContext): Promise<ContextValue | undefined> {
   switch (name) {
     case "runner":
       return objectToDictionary({
