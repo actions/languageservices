@@ -374,10 +374,9 @@ jobs:
 
       expect(result.map(x => x.label)).toContain("strategy");
     });
-  });
 
-  it("includes expected keys", async () => {
-    const input = `
+    it("includes expected keys", async () => {
+      const input = `
 on: push
 
 jobs:
@@ -390,10 +389,173 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: npm test > test-job-\${{ strategy.| }}.txt
+  `;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["fail-fast", "job-index", "job-total", "max-parallel"]);
+    });
+  });
+
+  describe("matrix context", () => {
+    it("matrix is not suggested when outside of a matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm test > test-job-\${{ | }}.txt
 `;
 
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-    expect(result.map(x => x.label)).toEqual(["fail-fast", "job-index", "job-total", "max-parallel"]);
+      expect(result.map(x => x.label)).not.toContain("strategy");
+    });
+
+    it("matrix is suggested within a matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-group: [1, 2]
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm test > test-job-\${{ | }}.txt
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toContain("strategy");
+    });
+
+    it("basic matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: \${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.| }}
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["node", "os"]);
+    });
+
+    it("matrix with include", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fruit: [apple, pear]
+        animal: [cat, dog]
+        include:
+          - color: green
+          - color: pink
+            animal: cat
+          - fruit: apple
+            shape: circle
+          - fruit: banana
+          - fruit: banana
+            animal: cat
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.| }}
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["animal", "color", "fruit", "shape"]);
+    });
+
+    it("matrix from expression", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: \${{ fromJSON('{"color":["green","blue"]}') }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.| }}
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual([]);
+    });
+
+    it("matrix with include expression", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: \${{ matrix.os }}
+    strategy:
+      matrix:
+        fruit: [apple, pear]
+        animal: [cat, dog]
+        include: \${{ fromJSON('{"color":"green"}') }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.| }}
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual([]);
+    });
+
+    it("matrix with expression in property", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        color: \${{ fromJSON('["green","blue"]') }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.| }}
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["color"]);
+    });
   });
 });
