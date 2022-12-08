@@ -31,9 +31,7 @@ export function getWorkflowContext(
   let stepToken: MappingToken | undefined = undefined;
 
   // Iterate through the token path to find the job and step
-  for (let i = 0; i < tokenPath.length; ++i) {
-    const token = tokenPath[i];
-
+  for (const token of tokenPath) {
     switch (token.definition?.key) {
       case "job-id": {
         const jobID = (token as StringToken).value;

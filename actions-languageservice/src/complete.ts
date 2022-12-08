@@ -159,8 +159,7 @@ export function getExistingValues(token: TemplateToken | null, parent: TemplateT
     if (isSequence(parent)) {
       const sequenceValues = new Set<string>();
 
-      for (let i = 0; i < parent.count; i++) {
-        const t = parent.get(i);
+      for (const t of parent) {
         if (isString(t)) {
           // Should we support other literal values here?
           sequenceValues.add(t.value);
@@ -176,9 +175,7 @@ export function getExistingValues(token: TemplateToken | null, parent: TemplateT
     const mapKeys = new Set<string>();
     const mapToken = parent as MappingToken;
 
-    for (let i = 0; i < mapToken.count; i++) {
-      const key = mapToken.get(i).key;
-
+    for (const {key} of mapToken) {
       if (isString(key)) {
         mapKeys.add(key.value);
       }

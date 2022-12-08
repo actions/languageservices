@@ -98,8 +98,7 @@ function matrixProperties(matrix: MappingToken): Map<string, Set<string> | undef
 
   let include: SequenceToken | undefined;
 
-  for (let i = 0; i < matrix.count; i++) {
-    const pair = matrix.get(i);
+  for (const pair of matrix) {
     if (!isString(pair.key)) {
       continue;
     }
@@ -123,8 +122,7 @@ function matrixProperties(matrix: MappingToken): Map<string, Set<string> | undef
         }
 
         const values = new Set<string>();
-        for (let j = 0; j < pair.value.count; j++) {
-          const value = pair.value.get(j);
+        for (const value of pair.value) {
           // The parser should coerce matrix values to strings, ignore expressions
           if (isString(value)) {
             values.add(value.value);
@@ -137,14 +135,12 @@ function matrixProperties(matrix: MappingToken): Map<string, Set<string> | undef
   }
 
   if (include) {
-    for (let i = 0; i < include.count; i++) {
-      const item = include.get(i);
+    for (const item of include) {
       if (!isMapping(item)) {
         continue;
       }
 
-      for (let j = 0; j < item.count; j++) {
-        const pair = item.get(j);
+      for (const pair of item) {
         addValueToProperties(properties, pair);
       }
     }
