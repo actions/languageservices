@@ -23,6 +23,7 @@ import {getContext} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {nullTrace} from "./nulltrace";
+import {getAllowedContext} from "./utils/allowed-context";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
@@ -75,6 +76,7 @@ export async function validate(
     }
   } catch (e) {
     // TODO: Handle error here
+    console.error(e);
   }
 
   return diagnostics;
@@ -94,12 +96,14 @@ async function additionalValidations(
     const validationToken = key || parent || token;
     const validationDefinition = validationToken.definition;
 
+    const allowedContext = getAllowedContext(validationToken, parent);
+
     // If this is an expression, validate it
     if (isBasicExpression(token)) {
       await validateExpression(
         diagnostics,
         token,
-        validationDefinition,
+        allowedContext,
         contextProviderConfig,
         getProviderContext(documentUri, template, root, token)
       );
@@ -170,14 +174,13 @@ function getProviderContext(
 async function validateExpression(
   diagnostics: Diagnostic[],
   token: BasicExpressionToken,
-  definition: Definition | undefined,
+  allowedContext: string[],
   contextProviderConfig: ContextProviderConfig | undefined,
   workflowContext: WorkflowContext
 ) {
   // Validate the expression
   for (const expression of token.originalExpressions || [token]) {
-    const allowedContexts = definition?.readerContext || [];
-    const {namedContexts, functions} = splitAllowedContext(allowedContexts);
+    const {namedContexts, functions} = splitAllowedContext(allowedContext);
 
     let expr: Expr | undefined;
 
