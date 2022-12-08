@@ -22,7 +22,8 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "composite": true
   },
   "include": ["src/**/*.ts"],
 }
