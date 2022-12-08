@@ -48,7 +48,7 @@ export function getMatrixContext(workflowContext: WorkflowContext): data.Diction
  *   - A configuration included via the "include" property
  *
  * By definition, "exclude" can't add new keys to the matrix.
- * Additionally, "include" and "exclude are not propeties of the matrix
+ * Additionally, "include" and "exclude are not properties of the matrix
  * If the matrix or "include" is an expression, we can't know the keys
  *
  * Examples:
