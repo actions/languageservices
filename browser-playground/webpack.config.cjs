@@ -56,44 +56,4 @@ const editorConfig = {
   plugins: [new MonacoWebpackPlugin()],
 };
 
-// const workerConfig = {
-//   entry: "./src/service-worker/service-worker.ts",
-//   output: {
-//     path: path.resolve(__dirname, "dist"),
-//     filename: "./worker.js",
-//   },
-//   resolve: {
-//     fallback: {
-//       path: require.resolve("path-browserify"),
-//     },
-//   },
-//   module: {
-//     rules: [
-//       {
-//         test: /\.ts$/,
-//         exclude: /node_modules/,
-//         use: [
-//           {
-//             loader: "ts-loader",
-//             options: {
-//               compilerOptions: {
-//                 sourceMap: true,
-//               },
-//             },
-//           },
-//         ],
-//       },
-//       {
-//         test: /\.css$/,
-//         use: ["style-loader", "css-loader"],
-//       },
-//       {
-//         test: /\.ttf$/,
-//         type: "asset/resource",
-//       },
-//     ],
-//   },
-//   plugins: [new MonacoWebpackPlugin()],
-// };
-
 module.exports = [editorConfig]
