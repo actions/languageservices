@@ -11,11 +11,6 @@ const contextProviderConfig: ContextProviderConfig = {
           key: "event",
           value: new data.StringData("push")
         });
-      case "secrets":
-        return new data.Dictionary({
-          key: "DEPLOY_KEY",
-          value: new data.StringData("DEPLOY_KEY")
-        });
     }
 
     return undefined;
@@ -146,7 +141,7 @@ jobs:
 `;
     const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-    expect(result.map(x => x.label)).toEqual(["DEPLOY_KEY"]);
+    expect(result.map(x => x.label)).toEqual(["GITHUB_TOKEN"]);
   });
 
   it("needs context only includes referenced jobs", async () => {

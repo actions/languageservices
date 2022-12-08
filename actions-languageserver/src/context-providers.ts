@@ -18,13 +18,14 @@ export function contextProviders(
     auth: sessionToken
   });
 
-  const getContext = async (name: string) => {
+  const getContext = async (name: string, defaultContext: data.Dictionary | undefined) => {
     switch (name) {
       case "secrets":
         const secrets = await getSecrets(octokit, cache, repo.owner, repo.name);
-        const secretContext = new data.Dictionary();
-        secrets.forEach(secret => secretContext.add(secret.value, secret));
-        return secretContext;
+
+        defaultContext = defaultContext || new data.Dictionary();
+        secrets.forEach(secret => defaultContext!.add(secret.value, new data.StringData("***")));
+        return defaultContext;
     }
   };
 

@@ -3,7 +3,7 @@ import {Dictionary} from "@github/actions-expressions/data/dictionary";
 import {ExpressionData, Pair} from "@github/actions-expressions/data/expressiondata";
 
 export type ContextProviderConfig = {
-  getContext: (name: string) => Promise<data.Dictionary | undefined>;
+  getContext: (name: string, defaultContext: data.Dictionary | undefined) => Promise<data.Dictionary | undefined>;
 };
 
 /**
