@@ -15,13 +15,14 @@ export type ContextValue = data.Dictionary | data.Null;
 export async function getContext(
   names: string[],
   config: ContextProviderConfig | undefined,
-  workflowContext: WorkflowContext
+  workflowContext: WorkflowContext,
+  allowPartialContext: boolean = false
 ): Promise<data.Dictionary> {
   const context = new data.Dictionary();
 
   const filteredNames = filterContextNames(names, workflowContext);
   for (const contextName of filteredNames) {
-    let value = (await getDefaultContext(contextName, workflowContext)) || new data.Dictionary();
+    let value = getDefaultContext(contextName, workflowContext, allowPartialContext) || new data.Dictionary();
     if (value.kind === Kind.Null) {
       context.add(contextName, value);
       continue;
@@ -35,7 +36,11 @@ export async function getContext(
   return context;
 }
 
-async function getDefaultContext(name: string, workflowContext: WorkflowContext): Promise<ContextValue | undefined> {
+function getDefaultContext(
+  name: string,
+  workflowContext: WorkflowContext,
+  allowPartialContext: boolean
+): ContextValue | undefined {
   switch (name) {
     case "runner":
       return objectToDictionary({
@@ -62,7 +67,7 @@ async function getDefaultContext(name: string, workflowContext: WorkflowContext)
       return getStrategyContext(workflowContext);
 
     case "matrix":
-      return getMatrixContext(workflowContext);
+      return getMatrixContext(workflowContext, allowPartialContext);
   }
 
   return undefined;

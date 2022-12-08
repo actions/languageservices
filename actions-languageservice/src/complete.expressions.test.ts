@@ -532,7 +532,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-      expect(result.map(x => x.label)).toEqual([]);
+      expect(result.map(x => x.label)).toEqual(["animal", "fruit"]);
     });
 
     it("matrix with expression in property", async () => {

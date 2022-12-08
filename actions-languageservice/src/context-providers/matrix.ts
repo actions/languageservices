@@ -6,7 +6,7 @@ import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/se
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextValue} from "./default";
 
-export function getMatrixContext(workflowContext: WorkflowContext): ContextValue {
+export function getMatrixContext(workflowContext: WorkflowContext, allowPartialContext: boolean): ContextValue {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#matrix-context
   const strategy = workflowContext.job?.strategy;
   if (!strategy || !isMapping(strategy)) {
@@ -19,7 +19,7 @@ export function getMatrixContext(workflowContext: WorkflowContext): ContextValue
     return new data.Null();
   }
 
-  const properties = matrixProperties(matrix);
+  const properties = matrixProperties(matrix, allowPartialContext);
   if (!properties) {
     // Matrix included an expression, so there's no context we can provide
     return new data.Null();
@@ -94,7 +94,10 @@ export function getMatrixContext(workflowContext: WorkflowContext): ContextValue
  *
  *  Keys: os, version, environment
  */
-function matrixProperties(matrix: MappingToken): Map<string, Set<string> | undefined> | undefined {
+function matrixProperties(
+  matrix: MappingToken,
+  allowPartialContext: boolean
+): Map<string, Set<string> | undefined> | undefined {
   const properties = new Map<string, Set<string> | undefined>();
 
   let include: SequenceToken | undefined;
@@ -108,9 +111,13 @@ function matrixProperties(matrix: MappingToken): Map<string, Set<string> | undef
     const key = pair.key.value;
     switch (key) {
       case "include":
-        // If "include" is an expression, we can't know the properties of the matrix
+        // If "include" is an expression, we can't know the full properties of the matrix
         if (isBasicExpression(pair.value) || !isSequence(pair.value)) {
-          return;
+          if (!allowPartialContext) {
+            return;
+          } else {
+            continue;
+          }
         }
         include = pair.value;
         break;
