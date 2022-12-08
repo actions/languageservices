@@ -1,8 +1,12 @@
 import {TextEdit} from "vscode-languageserver-types";
 import {complete} from "./complete";
 import {WorkflowContext} from "./context/workflow-context";
+import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
+import {TestLogger} from "./test-utils/logger";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
+
+registerLogger(new TestLogger());
 
 describe("completion", () => {
   it("runs-on", async () => {

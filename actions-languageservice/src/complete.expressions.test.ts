@@ -1,7 +1,9 @@
 import {data} from "@github/actions-expressions";
 import {complete, getExpressionInput} from "./complete";
 import {ContextProviderConfig} from "./context-providers/config";
+import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
+import {TestLogger} from "./test-utils/logger";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: async (context: string) => {
@@ -16,6 +18,8 @@ const contextProviderConfig: ContextProviderConfig = {
     return undefined;
   }
 };
+
+registerLogger(new TestLogger());
 
 describe("expressions", () => {
   it("input extraction", () => {
