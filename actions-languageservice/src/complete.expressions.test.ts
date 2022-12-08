@@ -337,7 +337,7 @@ jobs:
   });
 
   describe("strategy context", () => {
-    it.failing("strategy is not suggested when outside of a matrix job", async () => {
+    it("strategy is not suggested when outside of a matrix job", async () => {
       const input = `
 on: push
 
@@ -381,15 +381,15 @@ jobs:
 on: push
 
 jobs:
-test:
-  runs-on: ubuntu-latest
-  strategy:
-    matrix:
-      test-group: [1, 2]
-      node: [14, 16]
-  steps:
-    - uses: actions/checkout@v3
-    - run: npm test > test-job-\${{ strategy.| }}.txt
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-group: [1, 2]
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm test > test-job-\${{ strategy.| }}.txt
 `;
 
     const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
