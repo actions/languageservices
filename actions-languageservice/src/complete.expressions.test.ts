@@ -1,7 +1,9 @@
 import {data} from "@github/actions-expressions";
 import {complete, getExpressionInput} from "./complete";
 import {ContextProviderConfig} from "./context-providers/config";
+import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
+import {TestLogger} from "./test-utils/logger";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: async (context: string) => {
@@ -11,16 +13,13 @@ const contextProviderConfig: ContextProviderConfig = {
           key: "event",
           value: new data.StringData("push")
         });
-      case "secrets":
-        return new data.Dictionary({
-          key: "DEPLOY_KEY",
-          value: new data.StringData("DEPLOY_KEY")
-        });
     }
 
     return undefined;
   }
 };
+
+registerLogger(new TestLogger());
 
 describe("expressions", () => {
   it("input extraction", () => {
@@ -146,7 +145,7 @@ jobs:
 `;
     const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-    expect(result.map(x => x.label)).toEqual(["DEPLOY_KEY"]);
+    expect(result.map(x => x.label)).toEqual(["GITHUB_TOKEN"]);
   });
 
   it("needs context only includes referenced jobs", async () => {

@@ -1,6 +1,10 @@
 import {DiagnosticSeverity} from "vscode-languageserver-types";
+import {registerLogger} from "./log";
 import {createDocument} from "./test-utils/document";
+import {TestLogger} from "./test-utils/logger";
 import {validate} from "./validate";
+
+registerLogger(new TestLogger());
 
 describe("expression validation", () => {
   it("access invalid context field", async () => {

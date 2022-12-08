@@ -2,7 +2,8 @@
   "private": true,
   "workspaces": [
     "actions-languageservice",
-    "actions-languageserver"
+    "actions-languageserver",
+    "browser-playground"
   ],
   "devDependencies": {
     "lerna": "^6.0.3"
