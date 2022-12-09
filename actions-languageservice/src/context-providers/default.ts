@@ -12,16 +12,23 @@ import {getStrategyContext} from "./strategy";
 // Null indicates that the context provider doesn't have any value to provide
 export type ContextValue = data.Dictionary | data.Null;
 
+export enum Mode {
+  Completion,
+  Validation,
+  Hover
+}
+
 export async function getContext(
   names: string[],
   config: ContextProviderConfig | undefined,
-  workflowContext: WorkflowContext
+  workflowContext: WorkflowContext,
+  mode: Mode
 ): Promise<data.Dictionary> {
   const context = new data.Dictionary();
 
   const filteredNames = filterContextNames(names, workflowContext);
   for (const contextName of filteredNames) {
-    let value = (await getDefaultContext(contextName, workflowContext)) || new data.Dictionary();
+    let value = getDefaultContext(contextName, workflowContext, mode) || new data.Dictionary();
     if (value.kind === Kind.Null) {
       context.add(contextName, value);
       continue;
@@ -35,7 +42,7 @@ export async function getContext(
   return context;
 }
 
-async function getDefaultContext(name: string, workflowContext: WorkflowContext): Promise<ContextValue | undefined> {
+function getDefaultContext(name: string, workflowContext: WorkflowContext, mode: Mode): ContextValue | undefined {
   switch (name) {
     case "runner":
       return objectToDictionary({
@@ -62,7 +69,7 @@ async function getDefaultContext(name: string, workflowContext: WorkflowContext)
       return getStrategyContext(workflowContext);
 
     case "matrix":
-      return getMatrixContext(workflowContext);
+      return getMatrixContext(workflowContext, mode);
   }
 
   return undefined;

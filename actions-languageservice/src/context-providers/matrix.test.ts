@@ -7,6 +7,7 @@ import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/se
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {WorkflowContext} from "../context/workflow-context";
+import {Mode} from "./default";
 import {getMatrixContext} from "./matrix";
 
 type MatrixMap = {
@@ -62,7 +63,7 @@ describe("matrix context", () => {
       const workflowContext = {} as WorkflowContext;
       expect(workflowContext.job).toBeUndefined();
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
       expect(context).toEqual(new data.Dictionary());
     });
 
@@ -71,7 +72,7 @@ describe("matrix context", () => {
       const workflowContext = {job} as WorkflowContext;
       expect(workflowContext.job!.strategy).toBeUndefined();
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
       expect(context).toEqual(new data.Dictionary());
     });
 
@@ -79,7 +80,7 @@ describe("matrix context", () => {
       const workflowContext = contextFromStrategy(stringToToken("hello"));
       expect(workflowContext.job!.strategy).toBeDefined();
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
       expect(context).toEqual(new data.Dictionary());
     });
 
@@ -87,7 +88,7 @@ describe("matrix context", () => {
       const strategy = new MappingToken(undefined, undefined, undefined);
       const workflowContext = contextFromStrategy(strategy);
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
       expect(context).toEqual(new data.Null());
     });
 
@@ -96,7 +97,7 @@ describe("matrix context", () => {
       strategy.add(stringToToken("matrix"), stringToToken("hello"));
       const workflowContext = contextFromStrategy(strategy);
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
       expect(context).toEqual(new data.Null());
     });
 
@@ -105,7 +106,7 @@ describe("matrix context", () => {
       strategy.add(stringToToken("matrix"), new MappingToken(undefined, undefined, undefined));
       const workflowContext = contextFromStrategy(strategy);
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
       expect(context).toEqual(new data.Dictionary());
     });
   });
@@ -116,7 +117,7 @@ describe("matrix context", () => {
       strategy.add(stringToToken("matrix"), expressionToToken("${{ fromJSON(needs.job1.outputs.matrix) }}"));
 
       const workflowContext = contextFromStrategy(strategy);
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
 
       expect(context).toEqual(new data.Null());
     });
@@ -136,9 +137,35 @@ describe("matrix context", () => {
       strategy.add(stringToToken("matrix"), matrix);
 
       const workflowContext = contextFromStrategy(strategy);
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
 
       expect(context).toEqual(new data.Null());
+    });
+
+    it("matrix with include expression during completion", () => {
+      const include = expressionToToken("${{ fromJSON(needs.job1.outputs.matrix) }}");
+
+      const nodeSequence = new SequenceToken(undefined, undefined, undefined);
+      nodeSequence.add(stringToToken("12"));
+      nodeSequence.add(stringToToken("14"));
+
+      const matrix = new MappingToken(undefined, undefined, undefined);
+      matrix.add(stringToToken("node"), nodeSequence);
+      matrix.add(stringToToken("include"), include);
+
+      const strategy = new MappingToken(undefined, undefined, undefined);
+      strategy.add(stringToToken("matrix"), matrix);
+
+      const workflowContext = contextFromStrategy(strategy);
+
+      const context = getMatrixContext(workflowContext, Mode.Completion);
+
+      expect(context).toEqual(
+        new data.Dictionary({
+          key: "node",
+          value: new data.Array(new data.StringData("12"), new data.StringData("14"))
+        })
+      );
     });
 
     it("matrix with expression within property", () => {
@@ -151,7 +178,7 @@ describe("matrix context", () => {
       strategy.add(stringToToken("matrix"), matrix);
 
       const workflowContext = contextFromStrategy(strategy);
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
 
       expect(context).toEqual(
         new data.Dictionary({
@@ -166,7 +193,7 @@ describe("matrix context", () => {
     it("basic matrix", () => {
       const workflowContext = createMatrix({os: ["ubuntu-latest", "windows-latest"]});
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
       expect(context).toEqual(
         new data.Dictionary({
           key: "os",
@@ -181,7 +208,7 @@ describe("matrix context", () => {
         node: ["12", "14"]
       });
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
       expect(context).toEqual(
         new data.Dictionary(
           {
@@ -208,7 +235,7 @@ describe("matrix context", () => {
         ]
       });
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
 
       expect(context).toEqual(
         new data.Dictionary(
@@ -242,7 +269,7 @@ describe("matrix context", () => {
         ]
       });
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
 
       expect(context).toEqual(
         new data.Dictionary(
@@ -276,7 +303,7 @@ describe("matrix context", () => {
         ]
       });
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
 
       expect(context).toEqual(
         new data.Dictionary(
@@ -311,7 +338,7 @@ describe("matrix context", () => {
         ]
       });
 
-      const context = getMatrixContext(workflowContext);
+      const context = getMatrixContext(workflowContext, Mode.Validation);
 
       expect(context).toEqual(new data.Dictionary());
     });

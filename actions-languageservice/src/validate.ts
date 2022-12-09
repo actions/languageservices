@@ -10,7 +10,6 @@ import {
 } from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
-import {Definition} from "@github/actions-workflow-parser/templates/schema/definition";
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
@@ -19,7 +18,7 @@ import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 
 import {ContextProviderConfig} from "./context-providers/config";
-import {getContext} from "./context-providers/default";
+import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {error} from "./log";
@@ -196,7 +195,7 @@ async function validateExpression(
     }
 
     try {
-      const context = await getContext(namedContexts, contextProviderConfig, workflowContext);
+      const context = await getContext(namedContexts, contextProviderConfig, workflowContext, Mode.Validation);
 
       const e = new Evaluator(expr, wrapDictionary(context));
       e.evaluate();
