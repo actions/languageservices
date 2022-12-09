@@ -88,7 +88,7 @@ describe("matrix context", () => {
       const workflowContext = contextFromStrategy(strategy);
 
       const context = getMatrixContext(workflowContext);
-      expect(context).toEqual(new data.Dictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("matrix is not a mapping token", () => {
@@ -97,7 +97,7 @@ describe("matrix context", () => {
       const workflowContext = contextFromStrategy(strategy);
 
       const context = getMatrixContext(workflowContext);
-      expect(context).toEqual(new data.Dictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("empty matrix", () => {
@@ -118,7 +118,7 @@ describe("matrix context", () => {
       const workflowContext = contextFromStrategy(strategy);
       const context = getMatrixContext(workflowContext);
 
-      expect(context).toEqual(new data.Dictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("matrix with include expression", () => {
@@ -138,7 +138,7 @@ describe("matrix context", () => {
       const workflowContext = contextFromStrategy(strategy);
       const context = getMatrixContext(workflowContext);
 
-      expect(context).toEqual(new data.Dictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("matrix with expression within property", () => {

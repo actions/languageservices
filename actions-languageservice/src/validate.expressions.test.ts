@@ -305,4 +305,354 @@ jobs:
       ]);
     });
   });
+
+  describe("matrix context", () => {
+    it("reference within a matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ matrix.node }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("reference outside of a matrix job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ matrix.node }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: matrix",
+          range: {
+            end: {
+              character: 36,
+              line: 8
+            },
+            start: {
+              character: 18,
+              line: 8
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
+    it("basic matrix", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: \${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ matrix.node }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("invalid property reference", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: \${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [14, 16]
+        include:
+          - os: macos-latest
+            node: 14
+        exclude:
+          - os: windows-latest
+            node: 14
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ matrix.goversion }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: goversion",
+          range: {
+            end: {
+              character: 41,
+              line: 18
+            },
+            start: {
+              character: 18,
+              line: 18
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
+    it("matrix with include", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: \${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [14, 16]
+        include:
+          - os: macos-latest
+            node: 14
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ matrix.node }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("matrix with only include", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            node: 14
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ matrix.os }}
+      - run: echo \${{ matrix.node }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("matrix with exclude", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: \${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [14, 16]
+        include:
+          - os: macos-latest
+            node: 14
+        exclude:
+          - os: windows-latest
+            node: 14
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.node }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("matrix with only exclude", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: \${{ matrix.os }}
+    strategy:
+      matrix:
+        exclude:
+          - os: windows-latest
+            node: 14
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.node }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: os",
+          range: {
+            end: {
+              character: 29,
+              line: 5
+            },
+            start: {
+              character: 13,
+              line: 5
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        },
+        {
+          message: "Context access might be invalid: node",
+          range: {
+            end: {
+              character: 42,
+              line: 15
+            },
+            start: {
+              character: 24,
+              line: 15
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
+    it("matrix from expression", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: \${{ fromJSON('{"color":["green","blue"]}') }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.ANYVALUE }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("matrix with include expression", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fruit: [apple, pear]
+        animal: [cat, dog]
+        include: \${{ fromJSON('{"color":"green"}') }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.ANYVALUE }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("matrix with property expression", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        color: \${{ fromJSON('["green","blue"]') }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.color }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("matrix with property expression and invalid property reference", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        color: \${{ fromJSON('["green","blue"]') }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.shape }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: shape",
+          range: {
+            end: {
+              character: 43,
+              line: 13
+            },
+            start: {
+              character: 24,
+              line: 13
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
 });

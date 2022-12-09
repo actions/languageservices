@@ -4,8 +4,9 @@ import {KeyValuePair} from "@github/actions-workflow-parser/templates/tokens/key
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
 import {WorkflowContext} from "../context/workflow-context";
+import {ContextValue} from "./default";
 
-export function getMatrixContext(workflowContext: WorkflowContext): data.Dictionary {
+export function getMatrixContext(workflowContext: WorkflowContext): ContextValue {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#matrix-context
   const strategy = workflowContext.job?.strategy;
   if (!strategy || !isMapping(strategy)) {
@@ -15,13 +16,13 @@ export function getMatrixContext(workflowContext: WorkflowContext): data.Diction
   const matrix = strategy.find("matrix");
   if (!matrix || !isMapping(matrix)) {
     // Matrix could be an expression, so there's no context we can provide
-    return new data.Dictionary();
+    return new data.Null();
   }
 
   const properties = matrixProperties(matrix);
   if (!properties) {
     // Matrix included an expression, so there's no context we can provide
-    return new data.Dictionary();
+    return new data.Null();
   }
 
   const d = new data.Dictionary();

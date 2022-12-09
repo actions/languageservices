@@ -84,7 +84,7 @@ export async function complete(
 
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
-      const allowedContext = getAllowedContext(token, parent!);
+      const allowedContext = getAllowedContext(token, parent);
       const context = await getContext(allowedContext, contextProviderConfig, workflowContext);
 
       return completeExpression(expressionInput, context, []);
