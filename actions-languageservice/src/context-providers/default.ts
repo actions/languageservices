@@ -1,4 +1,5 @@
 import {data} from "@github/actions-expressions";
+import {Kind} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
 import {getInputsContext} from "./inputs";
@@ -7,16 +8,31 @@ import {getNeedsContext} from "./needs";
 import {getStepsContext} from "./steps";
 import {getStrategyContext} from "./strategy";
 
+// ContextValue is the type of the value returned by a context provider
+// Null indicates that the context provider doesn't have any value to provide
+export type ContextValue = data.Dictionary | data.Null;
+
+export enum Mode {
+  Completion,
+  Validation,
+  Hover
+}
+
 export async function getContext(
   names: string[],
   config: ContextProviderConfig | undefined,
-  workflowContext: WorkflowContext
+  workflowContext: WorkflowContext,
+  mode: Mode
 ): Promise<data.Dictionary> {
   const context = new data.Dictionary();
 
   const filteredNames = filterContextNames(names, workflowContext);
   for (const contextName of filteredNames) {
-    let value = (await getDefaultContext(contextName, workflowContext)) || new data.Dictionary();
+    let value = getDefaultContext(contextName, workflowContext, mode) || new data.Dictionary();
+    if (value.kind === Kind.Null) {
+      context.add(contextName, value);
+      continue;
+    }
 
     value = (await config?.getContext(contextName, value)) || value;
 
@@ -26,7 +42,7 @@ export async function getContext(
   return context;
 }
 
-async function getDefaultContext(name: string, workflowContext: WorkflowContext): Promise<data.Dictionary | undefined> {
+function getDefaultContext(name: string, workflowContext: WorkflowContext, mode: Mode): ContextValue | undefined {
   switch (name) {
     case "runner":
       return objectToDictionary({
@@ -53,7 +69,7 @@ async function getDefaultContext(name: string, workflowContext: WorkflowContext)
       return getStrategyContext(workflowContext);
 
     case "matrix":
-      return getMatrixContext(workflowContext);
+      return getMatrixContext(workflowContext, mode);
   }
 
   return undefined;

@@ -10,7 +10,6 @@ import {
 } from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
-import {Definition} from "@github/actions-workflow-parser/templates/schema/definition";
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
@@ -19,11 +18,12 @@ import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 
 import {ContextProviderConfig} from "./context-providers/config";
-import {getContext} from "./context-providers/default";
+import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {error} from "./log";
 import {nullTrace} from "./nulltrace";
+import {getAllowedContext} from "./utils/allowed-context";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
@@ -95,12 +95,14 @@ async function additionalValidations(
     const validationToken = key || parent || token;
     const validationDefinition = validationToken.definition;
 
+    const allowedContext = getAllowedContext(validationToken, parent);
+
     // If this is an expression, validate it
     if (isBasicExpression(token)) {
       await validateExpression(
         diagnostics,
         token,
-        validationDefinition,
+        allowedContext,
         contextProviderConfig,
         getProviderContext(documentUri, template, root, token)
       );
@@ -171,14 +173,13 @@ function getProviderContext(
 async function validateExpression(
   diagnostics: Diagnostic[],
   token: BasicExpressionToken,
-  definition: Definition | undefined,
+  allowedContext: string[],
   contextProviderConfig: ContextProviderConfig | undefined,
   workflowContext: WorkflowContext
 ) {
   // Validate the expression
   for (const expression of token.originalExpressions || [token]) {
-    const allowedContexts = definition?.readerContext || [];
-    const {namedContexts, functions} = splitAllowedContext(allowedContexts);
+    const {namedContexts, functions} = splitAllowedContext(allowedContext);
 
     let expr: Expr | undefined;
 
@@ -194,7 +195,7 @@ async function validateExpression(
     }
 
     try {
-      const context = await getContext(namedContexts, contextProviderConfig, workflowContext);
+      const context = await getContext(namedContexts, contextProviderConfig, workflowContext, Mode.Validation);
 
       const e = new Evaluator(expr, wrapDictionary(context));
       e.evaluate();

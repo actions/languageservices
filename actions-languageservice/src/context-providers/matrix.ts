@@ -4,8 +4,9 @@ import {KeyValuePair} from "@github/actions-workflow-parser/templates/tokens/key
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
 import {WorkflowContext} from "../context/workflow-context";
+import {ContextValue, Mode} from "./default";
 
-export function getMatrixContext(workflowContext: WorkflowContext): data.Dictionary {
+export function getMatrixContext(workflowContext: WorkflowContext, mode: Mode): ContextValue {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#matrix-context
   const strategy = workflowContext.job?.strategy;
   if (!strategy || !isMapping(strategy)) {
@@ -15,13 +16,13 @@ export function getMatrixContext(workflowContext: WorkflowContext): data.Diction
   const matrix = strategy.find("matrix");
   if (!matrix || !isMapping(matrix)) {
     // Matrix could be an expression, so there's no context we can provide
-    return new data.Dictionary();
+    return new data.Null();
   }
 
-  const properties = matrixProperties(matrix);
+  const properties = matrixProperties(matrix, mode);
   if (!properties) {
     // Matrix included an expression, so there's no context we can provide
-    return new data.Dictionary();
+    return new data.Null();
   }
 
   const d = new data.Dictionary();
@@ -93,7 +94,7 @@ export function getMatrixContext(workflowContext: WorkflowContext): data.Diction
  *
  *  Keys: os, version, environment
  */
-function matrixProperties(matrix: MappingToken): Map<string, Set<string> | undefined> | undefined {
+function matrixProperties(matrix: MappingToken, mode: Mode): Map<string, Set<string> | undefined> | undefined {
   const properties = new Map<string, Set<string> | undefined>();
 
   let include: SequenceToken | undefined;
@@ -106,9 +107,14 @@ function matrixProperties(matrix: MappingToken): Map<string, Set<string> | undef
     const key = pair.key.value;
     switch (key) {
       case "include":
-        // If "include" is an expression, we can't know the properties of the matrix
+        // If "include" is an expression, we can't know the full properties of the matrix
         if (isBasicExpression(pair.value) || !isSequence(pair.value)) {
-          return;
+          // Without the full properties of the matrix, we shouldn't validate anything
+          if (mode === Mode.Validation) {
+            return;
+          } else {
+            continue;
+          }
         }
         include = pair.value;
         break;
