@@ -22,7 +22,6 @@ jobs:
 
       - run: |
           npm update @github/actions-workflow-parser
-        working-directory: ./actions-languageservice
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
