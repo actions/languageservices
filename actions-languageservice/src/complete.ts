@@ -11,7 +11,7 @@ import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem, TextEdit, Range} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
-import {getContext} from "./context-providers/default";
+import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {nullTrace} from "./nulltrace";
 import {getAllowedContext} from "./utils/allowed-context";
@@ -85,7 +85,7 @@ export async function complete(
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
       const allowedContext = getAllowedContext(token, parent);
-      const context = await getContext(allowedContext, contextProviderConfig, workflowContext, true);
+      const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 
       return completeExpression(expressionInput, context, []);
     }
