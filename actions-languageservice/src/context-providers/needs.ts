@@ -34,8 +34,7 @@ function jobOutputs(job?: Job): data.Dictionary {
     return d;
   }
 
-  for (let i = 0; i < job.outputs.count; ++i) {
-    const output = job.outputs.get(i);
+  for (const output of job.outputs) {
     if (!isString(output.key)) {
       continue;
     }

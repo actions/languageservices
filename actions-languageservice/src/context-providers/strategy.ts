@@ -17,8 +17,7 @@ export function getStrategyContext(workflowContext: WorkflowContext): data.Dicti
   }
 
   const strategyContext = new data.Dictionary();
-  for (let i = 0; i < strategy.count; i++) {
-    const pair = strategy.get(i);
+  for (const pair of strategy) {
     if (!isString(pair.key)) {
       continue;
     }

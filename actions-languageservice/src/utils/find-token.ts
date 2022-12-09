@@ -69,9 +69,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
     switch (token.templateTokenType) {
       case TokenType.Mapping:
         const mappingToken = token as MappingToken;
-        for (let i = 0; i < mappingToken.count; i++) {
-          const {key, value} = mappingToken.get(i);
-
+        for (const {key, value} of mappingToken) {
           // If the position is within the key, immediately return it as the token.
           if (posInToken(pos, key)) {
             return {
@@ -104,11 +102,11 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
 
       case TokenType.Sequence:
         const sequenceToken = token as SequenceToken;
-        for (let i = 0; i < sequenceToken.count; i++) {
+        for (const token of sequenceToken) {
           s.push({
             parent: sequenceToken,
             keyToken: null,
-            token: sequenceToken.get(i),
+            token: token,
             path: [...path, sequenceToken]
           });
         }
