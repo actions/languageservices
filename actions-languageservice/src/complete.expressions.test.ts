@@ -88,6 +88,64 @@ describe("expressions", () => {
       ]);
     });
 
+    describe("multi-line strings", () => {
+      it("indented |", async () => {
+        const input = `on: push
+jobs:
+  build:
+    steps:
+      - run: |
+          first line
+          test \${{ github.| }}
+          test2`;
+        const result = await complete(...getPositionFromCursor(input, 1), undefined, contextProviderConfig);
+
+        expect(result.map(x => x.label)).toEqual(["event"]);
+      });
+
+      it("indented |+", async () => {
+        const input = `on: push
+jobs:
+  build:
+    steps:
+      - run: |+
+          first line
+          test \${{ github.| }}
+          test2`;
+        const result = await complete(...getPositionFromCursor(input, 1), undefined, contextProviderConfig);
+
+        expect(result.map(x => x.label)).toEqual(["event"]);
+      });
+
+      it("indented >", async () => {
+        const input = `on: push
+jobs:
+  build:
+    steps:
+      - run: >
+          first line
+          test \${{ github.| }}
+          test2`;
+        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+        expect(result.map(x => x.label)).toEqual(["event"]);
+      });
+
+      it("indented >+", async () => {
+        const input = `on: push
+jobs:
+  build:
+    steps:
+      - run: >+
+          first line
+          test \${{ github.| }}
+          test2`;
+        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+        expect(result.map(x => x.label)).toEqual(["event"]);
+      });
+    });
+
     it("nested auto-complete", async () => {
       const input = "run-name: ${{ github.| }}";
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);

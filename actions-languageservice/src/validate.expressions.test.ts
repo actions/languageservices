@@ -306,6 +306,128 @@ jobs:
     });
   });
 
+  describe("multi-line strings", () => {
+    it("indented |", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          first line
+          test \${{ github.does-not-exist }}
+          test2`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: does-not-exist",
+          range: {
+            end: {
+              character: 43,
+              line: 7
+            },
+            start: {
+              character: 15,
+              line: 7
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
+    it("indented |+", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |+
+          first line
+          test \${{ github.does-not-exist }}
+          test2`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: does-not-exist",
+          range: {
+            end: {
+              character: 43,
+              line: 7
+            },
+            start: {
+              character: 15,
+              line: 7
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
+    it("indented >", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: >
+          first line
+          test \${{ github.does-not-exist }}
+          test2`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: does-not-exist",
+          range: {
+            end: {
+              character: 43,
+              line: 7
+            },
+            start: {
+              character: 15,
+              line: 7
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
+    it("indented >+", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: >+
+          first line
+          test \${{ github.does-not-exist }}
+          test2`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: does-not-exist",
+          range: {
+            end: {
+              character: 43,
+              line: 7
+            },
+            start: {
+              character: 15,
+              line: 7
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
+
   describe("matrix context", () => {
     it("reference within a matrix job", async () => {
       const input = `
