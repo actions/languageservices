@@ -9,7 +9,7 @@ import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/map
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
-import {CompletionItem, TextEdit, Range} from "vscode-languageserver-types";
+import {CompletionItem, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
@@ -77,10 +77,18 @@ export async function complete(
       token.definition?.definitionType === DefinitionType.String && (token.definition as StringDefinition).isExpression;
     const containsExpression = isString(token) && token.value.indexOf(OPEN_EXPRESSION) >= 0;
     if (isString(token) && (isExpression || containsExpression)) {
-      const currentInput = token.value;
+      const currentInput = token.source || token.value;
 
       // Transform the overall position into a node relative position
-      const relCharPos = newPos.character - token.range!.start[1];
+      let relCharPos: number = 0;
+      const lineDiff = newPos.line - token.range!.start[0];
+      if (token.range!.start[0] !== token.range!.end[0]) {
+        const lines = currentInput.split("\n");
+        const linesBeforeCusor = lines.slice(0, lineDiff);
+        relCharPos = linesBeforeCusor.join("\n").length + newPos.character;
+      } else {
+        relCharPos = newPos.character - token.range!.start[1];
+      }
 
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
