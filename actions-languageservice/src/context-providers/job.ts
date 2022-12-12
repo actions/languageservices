@@ -16,45 +16,36 @@ export function getJobContext(workflowContext: WorkflowContext): data.Dictionary
   }
 
   const jobContext = new data.Dictionary();
-  for (const pair of job) {
-    if (!isString(pair.key)) {
-      continue;
-    }
-    if (!keys.includes(pair.key.value)) {
-      continue;
-    }
-
-    const value = isScalar(pair.value) ? scalarToData(pair.value) : new data.Null();
-    jobContext.add(pair.key.value, value);
-  }
-
   for (const key of keys) {
     if (!jobContext.get(key)) {
       switch (key) {
         case "container":
-          var containerDictionary = new data.Dictionary();
-          for (const containerKey of containerKeys) {
-            if (job.container[containerKey]) {
-              containerDictionary.add(containerKey, job.container[containerKey]);
-            }
-          }
-          jobContext.add(key, containerDictionary);
+          // var containerDictionary = new data.Dictionary();
+          // for (const containerKey of containerKeys) {
+          //   if (job.container[containerKey]) {
+          //     containerDictionary.add(containerKey, job.container[containerKey]);
+          //   }
+          // }
+          // jobContext.add(key, containerDictionary);
+          jobContext.add(key, new data.Null());
           break;
         case "services":
-          var services = new data.Dictionary();
-          for (const service of job.services) {
-            var serviceDictionary = new data.Dictionary();
-            for (const serviceKey of serviceKeys) {
-              if (service[serviceKey]) {
-                serviceDictionary.add(serviceKey, service[serviceKey]);
-              }
-            }
-            services.add(service, serviceDictionary);
-          }
-          jobContext.add(key, services);
+          // var services = new data.Dictionary();
+          // for (const service of job.services) {
+          //   var serviceDictionary = new data.Dictionary();
+          //   for (const serviceKey of serviceKeys) {
+          //     if (service[serviceKey]) {
+          //       serviceDictionary.add(serviceKey, service[serviceKey]);
+          //     }
+          //   }
+          //   services.add(service, serviceDictionary);
+          // }
+          // jobContext.add(key, services);
+          jobContext.add(key, new data.Null());
           break;
         case "status":
-          jobContext.add(key, job.status);
+          // jobContext.add(key, job.status);
+          jobContext.add(key, new data.Null());
           break;
       }
     }
