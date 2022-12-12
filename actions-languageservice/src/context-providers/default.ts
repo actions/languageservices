@@ -3,6 +3,7 @@ import {Kind} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
 import {getInputsContext} from "./inputs";
+import {getJobContext} from "./job";
 import {getMatrixContext} from "./matrix";
 import {getNeedsContext} from "./needs";
 import {getStepsContext} from "./steps";
@@ -70,6 +71,9 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
 
     case "matrix":
       return getMatrixContext(workflowContext, mode);
+
+    case "job":
+      return getJobContext(workflowContext);
   }
 
   return undefined;
