@@ -209,8 +209,6 @@ async function validateExpression(
           severity: DiagnosticSeverity.Warning,
           range: mapRange(expression.range)
         });
-      } else {
-        throw e;
       }
     }
   }

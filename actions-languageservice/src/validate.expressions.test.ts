@@ -306,7 +306,7 @@ jobs:
     });
   });
 
-  describe("multi-line strings", () => {
+  describe("multi-line strings warnings", () => {
     it("indented |", async () => {
       const input = `on: push
 jobs:
@@ -423,6 +423,124 @@ jobs:
             }
           },
           severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
+
+  describe("multi-line strings errors", () => {
+    it("indented |", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          first line
+          test \${{ fromJSON2('') }}
+          test2`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Unrecognized function: 'fromJSON2'",
+          range: {
+            end: {
+              character: 35,
+              line: 7
+            },
+            start: {
+              character: 15,
+              line: 7
+            }
+          }
+        }
+      ]);
+    });
+
+    it("indented |+", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |+
+          first line
+          test \${{ fromJSON2('') }}
+          test2`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Unrecognized function: 'fromJSON2'",
+          range: {
+            end: {
+              character: 35,
+              line: 7
+            },
+            start: {
+              character: 15,
+              line: 7
+            }
+          }
+        }
+      ]);
+    });
+
+    it("indented >", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: >
+          first line
+          test \${{ fromJSON2('') }}
+          test2`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Unrecognized function: 'fromJSON2'",
+          range: {
+            end: {
+              character: 35,
+              line: 7
+            },
+            start: {
+              character: 15,
+              line: 7
+            }
+          }
+        }
+      ]);
+    });
+
+    it("indented >+", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: >+
+          first line
+          test \${{ fromJSON2('') }}
+          test2`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Unrecognized function: 'fromJSON2'",
+          range: {
+            end: {
+              character: 35,
+              line: 7
+            },
+            start: {
+              character: 15,
+              line: 7
+            }
+          }
         }
       ]);
     });
