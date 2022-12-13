@@ -1,21 +1,29 @@
 import {data} from "@github/actions-expressions";
+import {InputConfig} from "@github/actions-workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 
 export function getInputsContext(workflowContext: WorkflowContext): data.Dictionary {
   const d = new data.Dictionary();
-  if (!workflowContext?.template?.events) {
+
+  const events = workflowContext?.template?.events;
+  if (!events) {
     return d;
   }
 
-  const event = workflowContext.template.events["workflow_dispatch"];
-  if (!event) {
-    return d;
+  const dispatch = events["workflow_dispatch"];
+  if (dispatch?.inputs) {
+    addInputs(d, dispatch.inputs);
   }
 
-  const inputs = event.inputs;
-  if (!inputs) {
-    return d;
+  const call = events["workflow_call"];
+  if (call?.inputs) {
+    addInputs(d, call.inputs);
   }
+
+  return d;
+}
+
+function addInputs(d: data.Dictionary, inputs: {[inputName: string]: InputConfig}) {
   for (const inputName of Object.keys(inputs)) {
     const input = inputs[inputName];
     switch (input.type) {
@@ -49,6 +57,4 @@ export function getInputsContext(workflowContext: WorkflowContext): data.Diction
         break;
     }
   }
-
-  return d;
 }
