@@ -1,3 +1,13 @@
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
+export type ActionInput = {
+  description: string;
+  required?: boolean;
+  default?: string;
+  deprecationMessage?: string;
+};
+
+export type ActionInputs = Record<string, ActionInput>;
+
 export type ActionReference = {
   owner: string;
   name: string;

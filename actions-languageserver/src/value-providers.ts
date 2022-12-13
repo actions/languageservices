@@ -4,7 +4,7 @@ import {ValueProviderKind} from "@github/actions-languageservice/value-providers
 import {Octokit} from "@octokit/rest";
 import {RepositoryContext} from "./initializationOptions";
 import {TTLCache} from "./utils/cache";
-import {getActionInputs} from "./value-providers/action-inputs";
+import {getActionInputValues} from "./value-providers/action-inputs";
 import {getEnvironments} from "./value-providers/job-environment";
 import {getRunnerLabels} from "./value-providers/runs-on";
 
@@ -36,7 +36,7 @@ export function valueProviders(
     },
     "step-with": {
       kind: ValueProviderKind.AllowedValues,
-      get: (context: WorkflowContext) => getActionInputs(octokit, cache, context)
+      get: (context: WorkflowContext) => getActionInputValues(octokit, cache, context)
     }
   };
 }
