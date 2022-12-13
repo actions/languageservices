@@ -129,21 +129,20 @@ async function getValues(
 
   const existingValues = getExistingValues(token, parent);
 
-  if (keyToken?.definition?.key) {
-    const customValues = await valueProviderConfig?.[keyToken.definition.key]?.get(workflowContext);
+  // Use the value providers from the parent if the current key is null
+  const valueProviderToken = keyToken || parent;
 
+  const customValueProvider = valueProviderToken?.definition?.key && valueProviderConfig?.[valueProviderToken.definition.key]
+  if (customValueProvider) {
+    const customValues = await customValueProvider.get(workflowContext);
     if (customValues) {
       return filterAndSortCompletionOptions(customValues, existingValues);
     }
   }
 
-  // Use the value provider from the parent if we don't have a value provider for the current key
-  const valueProvider =
-    (keyToken?.definition?.key && defaultValueProviders[keyToken.definition.key]) ||
-    (parent.definition?.key && defaultValueProviders[parent.definition.key]);
-
-  if (valueProvider) {
-    const values = await valueProvider.get(workflowContext);
+  const defaultValueProvider = valueProviderToken?.definition?.key && defaultValueProviders[valueProviderToken.definition.key]
+  if (defaultValueProvider) {
+    const values = await defaultValueProvider.get(workflowContext);
     return filterAndSortCompletionOptions(values, existingValues);
   }
 
