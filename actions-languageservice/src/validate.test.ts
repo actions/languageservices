@@ -70,7 +70,7 @@ jobs:
     steps:
     - run: echo`
       ),
-      defaultValueProviders
+      {valueProviderConfig: defaultValueProviders}
     );
 
     expect(result.length).toBe(1);
@@ -103,7 +103,7 @@ jobs:
     steps:
     - run: echo`
       ),
-      defaultValueProviders
+      {valueProviderConfig: defaultValueProviders}
     );
 
     expect(result.length).toBe(1);
@@ -139,7 +139,7 @@ jobs:
     steps:
     - run: echo`
       ),
-      defaultValueProviders
+      {valueProviderConfig: defaultValueProviders}
     );
 
     expect(result[0]).toEqual({
@@ -168,7 +168,7 @@ jobs:
     runs-on:
     - ubuntu-latest`
       ),
-      defaultValueProviders
+      {valueProviderConfig: defaultValueProviders}
     );
 
     expect(result.length).toBe(1);
