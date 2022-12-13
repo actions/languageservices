@@ -1,12 +1,33 @@
+import {
+  actionIdentifier,
+  ActionInputs,
+  ActionReference,
+  parseActionReference
+} from "@github/actions-languageservice/action";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
 import {Value} from "@github/actions-languageservice/value-providers/config";
 import {isActionStep} from "@github/actions-workflow-parser/model/type-guards";
 import {Octokit, RestEndpointMethodTypes} from "@octokit/rest";
 import {parse} from "yaml";
-import {actionIdentifier, ActionReference, parseActionReference} from "../utils/action-reference";
 import {TTLCache} from "../utils/cache";
 
-export async function getActionInputs(client: Octokit, cache: TTLCache, context: WorkflowContext): Promise<Value[]> {
+export async function getActionInputs(
+  client: Octokit,
+  cache: TTLCache,
+  action: ActionReference
+): Promise<ActionInputs | undefined> {
+  const inputs = await cache.get(`${actionIdentifier(action)}/action-inputs`, undefined, () =>
+    fetchActionInputs(client, action)
+  );
+
+  return inputs;
+}
+
+export async function getActionInputValues(
+  client: Octokit,
+  cache: TTLCache,
+  context: WorkflowContext
+): Promise<Value[]> {
   if (!context.step || !isActionStep(context.step)) {
     return [];
   }
@@ -15,18 +36,23 @@ export async function getActionInputs(client: Octokit, cache: TTLCache, context:
   if (!action) {
     return [];
   }
+  const inputs = await getActionInputs(client, cache, action);
+  if (!inputs) {
+    return [];
+  }
 
-  const inputs = await cache.get(`${actionIdentifier(action)}/action-inputs`, undefined, () =>
-    fetchActionInputs(client, action)
-  );
-
-  return inputs;
+  return Object.entries(inputs).map(([inputName, input]) => {
+    return {
+      label: inputName,
+      description: input.description
+    };
+  });
 }
 
-async function fetchActionInputs(client: Octokit, action: ActionReference): Promise<Value[]> {
+async function fetchActionInputs(client: Octokit, action: ActionReference): Promise<ActionInputs | undefined> {
   const metadata = await getActionMetadata(client, action);
   if (!metadata) {
-    return [];
+    return undefined;
   }
 
   return parseActionMetadata(metadata);
@@ -71,7 +97,7 @@ async function getActionMetadata(client: Octokit, action: ActionReference): Prom
 }
 
 type ActionMetadata = {
-  inputs?: Record<string, ActionInput>;
+  inputs?: ActionInputs;
 };
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
@@ -83,20 +109,7 @@ type ActionInput = {
 };
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
-async function parseActionMetadata(content: string): Promise<Value[]> {
-  const inputs = new Array<Value>();
-
+async function parseActionMetadata(content: string): Promise<ActionInputs> {
   const metadata: ActionMetadata = parse(content);
-  if (metadata.inputs === undefined) {
-    return inputs;
-  }
-
-  for (const [name, input] of Object.entries(metadata.inputs)) {
-    inputs.push({
-      label: name,
-      description: input.description
-    });
-  }
-
-  return inputs;
+  return metadata.inputs ?? {};
 }
