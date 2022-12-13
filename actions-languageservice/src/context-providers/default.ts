@@ -46,7 +46,7 @@ export async function getContext(
 function getDefaultContext(name: string, workflowContext: WorkflowContext, mode: Mode): ContextValue | undefined {
   switch (name) {
     case "github":
-      return getGithubContext();
+      return getGithubContext(workflowContext);
 
     case "inputs":
       return getInputsContext(workflowContext);
