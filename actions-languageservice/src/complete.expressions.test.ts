@@ -36,7 +36,7 @@ describe("expressions", () => {
   describe("top-level auto-complete", () => {
     it("single region", async () => {
       const input = "run-name: ${{ | }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
 
       expect(result.map(x => x.label)).toEqual([
         "github",
@@ -318,6 +318,23 @@ jobs:
     const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
     expect(result).toEqual([]);
+  });
+
+  it("github context includes expected keys", async () => {
+    const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo \${{ github.| }}
+  `;
+
+    const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+
+    expect(result.map(x => x.label)).toContain("actor");
   });
 
   describe("steps context", () => {

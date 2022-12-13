@@ -2,6 +2,7 @@ import {data} from "@github/actions-expressions";
 import {Kind} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
+import {getGithubContext} from "./github";
 import {getInputsContext} from "./inputs";
 import {getMatrixContext} from "./matrix";
 import {getNeedsContext} from "./needs";
@@ -44,6 +45,18 @@ export async function getContext(
 
 function getDefaultContext(name: string, workflowContext: WorkflowContext, mode: Mode): ContextValue | undefined {
   switch (name) {
+    case "github":
+      return getGithubContext();
+
+    case "inputs":
+      return getInputsContext(workflowContext);
+
+    case "matrix":
+      return getMatrixContext(workflowContext, mode);
+
+    case "needs":
+      return getNeedsContext(workflowContext);
+
     case "runner":
       return objectToDictionary({
         os: "Linux",
@@ -53,12 +66,6 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
         temp: "/home/runner/work/_temp"
       });
 
-    case "needs":
-      return getNeedsContext(workflowContext);
-
-    case "inputs":
-      return getInputsContext(workflowContext);
-
     case "secrets":
       return objectToDictionary({GITHUB_TOKEN: "***"});
 
@@ -67,9 +74,6 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
 
     case "strategy":
       return getStrategyContext(workflowContext);
-
-    case "matrix":
-      return getMatrixContext(workflowContext, mode);
   }
 
   return undefined;
