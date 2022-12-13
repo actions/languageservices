@@ -1,5 +1,5 @@
 import {data} from "@github/actions-expressions";
-import {ExpressionData, Pair} from "@github/actions-expressions/data/expressiondata";
+import {ExpressionData} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {getInputsContext} from "./inputs";
 
