@@ -44,7 +44,8 @@ export async function getActionInputValues(
   return Object.entries(inputs).map(([inputName, input]) => {
     return {
       label: inputName,
-      description: input.description
+      description: input.description,
+      deprecated: input.deprecationMessage !== undefined
     };
   });
 }
@@ -98,14 +99,6 @@ async function getActionMetadata(client: Octokit, action: ActionReference): Prom
 
 type ActionMetadata = {
   inputs?: ActionInputs;
-};
-
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
-type ActionInput = {
-  description: string;
-  required?: boolean;
-  default?: string;
-  deprecationMessage?: string;
 };
 
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
