@@ -199,6 +199,24 @@ jobs:
     expect(result[0].label).toEqual("my-custom-label");
   });
 
+  it("custom value providers for sequences", async () => {
+    const input = "on: push\njobs:\n  build:\n    runs-on: [m|]";
+
+    const config: ValueProviderConfig = {
+      "runs-on": {
+        kind: ValueProviderKind.SuggestedValues,
+        get: async (_: WorkflowContext) => {
+          return [{label: "my-custom-label"}];
+        }
+      }
+    };
+    const result = await complete(...getPositionFromCursor(input), config);
+
+    expect(result).not.toBeUndefined();
+    expect(result.length).toEqual(1);
+    expect(result[0].label).toEqual("my-custom-label");
+  });
+
   it("does not show parent mapping sibling keys", async () => {
     const input = `on: push
 jobs:
