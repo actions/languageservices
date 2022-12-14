@@ -9,7 +9,7 @@ import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/map
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
-import {CompletionItem, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
+import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
@@ -95,7 +95,13 @@ export async function complete(
       const allowedContext = getAllowedContext(token, parent);
       const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 
-      return completeExpression(expressionInput, context, []);
+      return completeExpression(expressionInput, context, []).map(item => {
+        return {
+          label: item.label,
+          insertText: item.function ? item.label + "()" : undefined,
+          kind: item.function ? CompletionItemKind.Function : CompletionItemKind.Variable
+        };
+      });
     }
   }
 
