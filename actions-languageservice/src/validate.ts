@@ -24,7 +24,6 @@ import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {error} from "./log";
 import {nullTrace} from "./nulltrace";
-import {getAllowedContext} from "./utils/allowed-context";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
 import {validateAction} from "./validate-action";
@@ -94,14 +93,12 @@ async function additionalValidations(
     const validationToken = key || parent || token;
     const validationDefinition = validationToken.definition;
 
-    const allowedContext = getAllowedContext(validationToken, parent);
-
     // If this is an expression, validate it
     if (isBasicExpression(token)) {
       await validateExpression(
         diagnostics,
         token,
-        allowedContext,
+        validationToken.definitionInfo?.allowedContext || [],
         config?.contextProviderConfig,
         getProviderContext(documentUri, template, root, token)
       );
