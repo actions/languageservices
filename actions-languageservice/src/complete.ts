@@ -9,7 +9,7 @@ import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/map
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
-import {CompletionItem, Range, TextEdit} from "vscode-languageserver-types";
+import {CompletionItem, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
@@ -106,11 +106,12 @@ export async function complete(
   }
 
   return values.map(value => {
-    const item = CompletionItem.create(value.label);
-    item.detail = value.description;
-    if (replaceRange) {
-      item.textEdit = TextEdit.replace(replaceRange, value.label);
-    }
+    const item: CompletionItem = {
+      label: value.label,
+      detail: value.description,
+      tags: value.deprecated ? [CompletionItemTag.Deprecated] : undefined,
+      textEdit: replaceRange ? TextEdit.replace(replaceRange, value.label) : undefined
+    };
 
     return item;
   });
@@ -132,7 +133,8 @@ async function getValues(
   // Use the value providers from the parent if the current key is null
   const valueProviderToken = keyToken || parent;
 
-  const customValueProvider = valueProviderToken?.definition?.key && valueProviderConfig?.[valueProviderToken.definition.key]
+  const customValueProvider =
+    valueProviderToken?.definition?.key && valueProviderConfig?.[valueProviderToken.definition.key];
   if (customValueProvider) {
     const customValues = await customValueProvider.get(workflowContext);
     if (customValues) {
@@ -140,7 +142,8 @@ async function getValues(
     }
   }
 
-  const defaultValueProvider = valueProviderToken?.definition?.key && defaultValueProviders[valueProviderToken.definition.key]
+  const defaultValueProvider =
+    valueProviderToken?.definition?.key && defaultValueProviders[valueProviderToken.definition.key];
   if (defaultValueProvider) {
     const values = await defaultValueProvider.get(workflowContext);
     return filterAndSortCompletionOptions(values, existingValues);
