@@ -1,4 +1,5 @@
 import {complete as completeExpression} from "@github/actions-expressions";
+import {CompletionItem as ExpressionCompletionItem} from "@github/actions-expressions/completion";
 import {convertWorkflowTemplate, isSequence, isString, parseWorkflow} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {DefinitionType} from "@github/actions-workflow-parser/templates/schema/definition-type";
@@ -9,7 +10,7 @@ import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/map
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
-import {CompletionItem, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
+import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
@@ -87,7 +88,9 @@ export async function complete(
       const allowedContext = token.definitionInfo?.allowedContext || [];
       const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 
-      return completeExpression(expressionInput, context, []);
+      return completeExpression(expressionInput, context, []).map(item =>
+        mapExpressionCompletionItem(item, currentInput[relCharPos])
+      );
     }
   }
 
@@ -191,4 +194,18 @@ function filterAndSortCompletionOptions(options: Value[], existingValues?: Set<s
   options = options.filter(x => !existingValues?.has(x.label));
   options.sort((a, b) => a.label.localeCompare(b.label));
   return options;
+}
+
+function mapExpressionCompletionItem(item: ExpressionCompletionItem, charAfterPos: string): CompletionItem {
+  let insertText: string | undefined;
+  // Insert parentheses if the cursor is after a function
+  // and the function does not have any parantheses already
+  if (item.function) {
+    insertText = charAfterPos === "(" ? item.label : item.label + "()";
+  }
+  return {
+    label: item.label,
+    insertText: insertText,
+    kind: item.function ? CompletionItemKind.Function : CompletionItemKind.Variable
+  };
 }

@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@github/actions-workflow-parser": "*",
+    "@github/actions-expressions": "*",
     "vscode-languageserver-textdocument": "^1.0.7",
     "vscode-languageserver-types": "^3.17.2",
     "yaml": "^2.1.1"

@@ -1,4 +1,5 @@
 import {data} from "@github/actions-expressions";
+import {CompletionItemKind} from "vscode-languageserver-types";
 import {complete, getExpressionInput} from "./complete";
 import {ContextProviderConfig} from "./context-providers/config";
 import {registerLogger} from "./log";
@@ -671,5 +672,54 @@ jobs:
 
       expect(result.map(x => x.label)).toEqual(["color"]);
     });
+  });
+
+  it("context completion items include kind and insert text", async () => {
+    const input = `
+    on: push
+
+    jobs:
+      test:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+          - run: echo \${{ | }}.txt
+    `;
+
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    // Built-in function
+    const toJSON = result.find(x => x.label === "toJson");
+    expect(toJSON).toBeDefined();
+    expect(toJSON!.kind).toBe(CompletionItemKind.Function);
+    expect(toJSON!.insertText).toBe("toJson()");
+
+    // Function from context
+    const hashFiles = result.find(x => x.label === "hashFiles");
+    expect(hashFiles).toBeDefined();
+    expect(hashFiles!.kind).toBe(CompletionItemKind.Function);
+    expect(hashFiles!.insertText).toBe("hashFiles()");
+
+    // Not a function
+    const github = result.find(x => x.label === "github");
+    expect(github).toBeDefined();
+    expect(github!.kind).toBe(CompletionItemKind.Variable);
+    expect(github!.insertText).toBeUndefined();
+  });
+
+  it("function parentheses are not inserted when parentheses already exist", async () => {
+    const input = `
+    on: push
+
+    jobs:
+      test:
+        runs-on: ubuntu-latest
+        steps:
+          - run: echo \${{ toJS|(github.event) }}
+    `;
+
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.find(x => x.label === "toJson")!.insertText).toBe("toJson");
   });
 });
