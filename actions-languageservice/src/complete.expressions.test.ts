@@ -30,6 +30,10 @@ describe("expressions", () => {
 
     expect(test("${{ gh |")).toBe(" gh ");
     expect(test("${{ gh |}}")).toBe(" gh ");
+    expect(test("${{ vars| == 'test' }}")).toBe(" vars");
+    expect(test("${{ fromJso|('test').bar == 'test' }}")).toBe(" fromJso");
+    expect(test("${{ github.| == 'test' }}")).toBe(" github.");
+    expect(test("test ${{ github.| == 'test' }}")).toBe(" github.");
     expect(test("${{ vars }} ${{ gh |}}")).toBe(" gh ");
   });
 
@@ -54,6 +58,42 @@ describe("expressions", () => {
 
     it("single region with existing input", async () => {
       const input = "run-name: ${{ g| }}";
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual([
+        "github",
+        "inputs",
+        "vars",
+        "contains",
+        "endsWith",
+        "format",
+        "fromJson",
+        "join",
+        "startsWith",
+        "toJson"
+      ]);
+    });
+
+    it("single region with existing condition", async () => {
+      const input = "run-name: ${{ g| == 'test' }}";
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual([
+        "github",
+        "inputs",
+        "vars",
+        "contains",
+        "endsWith",
+        "format",
+        "fromJson",
+        "join",
+        "startsWith",
+        "toJson"
+      ]);
+    });
+
+    it("multiple regions with partial function", async () => {
+      const input = "run-name: Run a ${{ inputs.test }} one-line script ${{ from|('test') == inputs.name }}";
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
       expect(result.map(x => x.label)).toEqual([
