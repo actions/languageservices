@@ -269,24 +269,13 @@ jobs:
     services:
       nginx:
         image: node:14.16
-        env:
-          NODE_ENV: development
         ports:
           - 80
-        volumes:
-          - my_docker_volume:/volume_mount
-        options: --cpus 1
-        credentials:
-          username: actor
-          password: password
     steps:
       - run: echo \${{ job.services.nginx }}
-      - run: echo \${{ job.services.nginx.image }}
-      - run: echo \${{ job.services.nginx.env }}
+      - run: echo \${{ job.services.nginx.id }}
+      - run: echo \${{ job.services.nginx.network }}
       - run: echo \${{ job.services.nginx.ports }}
-      - run: echo \${{ job.services.nginx.volumes }}
-      - run: echo \${{ job.services.nginx.options }}
-      - run: echo \${{ job.services.nginx.credentials }}
 `;
       const result = await validate(createDocument("wf.yaml", input));
 
