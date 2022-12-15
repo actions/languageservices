@@ -20,32 +20,32 @@ export function getJobContext(workflowContext: WorkflowContext): data.Dictionary
     if (!jobContext.get(key)) {
       switch (key) {
         case "container":
-          // var containerDictionary = new data.Dictionary();
-          // for (const containerKey of containerKeys) {
-          //   if (job.container[containerKey]) {
-          //     containerDictionary.add(containerKey, job.container[containerKey]);
-          //   }
-          // }
-          // jobContext.add(key, containerDictionary);
-          jobContext.add(key, new data.Null());
+          var containerDictionary = new data.Dictionary();
+          for (const containerKey of containerKeys) {
+            if (job.container[containerKey]) {
+              containerDictionary.add(containerKey, job.container[containerKey]);
+            }
+          }
+          jobContext.add(key, containerDictionary);
+          // jobContext.add(key, new data.Null());
           break;
         case "services":
-          // var services = new data.Dictionary();
-          // for (const service of job.services) {
-          //   var serviceDictionary = new data.Dictionary();
-          //   for (const serviceKey of serviceKeys) {
-          //     if (service[serviceKey]) {
-          //       serviceDictionary.add(serviceKey, service[serviceKey]);
-          //     }
-          //   }
-          //   services.add(service, serviceDictionary);
-          // }
-          // jobContext.add(key, services);
-          jobContext.add(key, new data.Null());
+          var services = new data.Dictionary();
+          for (const service of job.services) {
+            var serviceDictionary = new data.Dictionary();
+            for (const serviceKey of serviceKeys) {
+              if (service[serviceKey]) {
+                serviceDictionary.add(serviceKey, service[serviceKey]);
+              }
+            }
+            services.add(service, serviceDictionary);
+          }
+          jobContext.add(key, services);
+          // jobContext.add(key, new data.Null());
           break;
         case "status":
-          // jobContext.add(key, job.status);
-          jobContext.add(key, new data.Null());
+          jobContext.add(key, job.status);
+          // jobContext.add(key, new data.Null());
           break;
       }
     }
