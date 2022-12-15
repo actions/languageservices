@@ -706,4 +706,20 @@ jobs:
     expect(github!.kind).toBe(CompletionItemKind.Variable);
     expect(github!.insertText).toBeUndefined();
   });
+
+  it("function parentheses are not inserted when parentheses already exist", async () => {
+    const input = `
+    on: push
+
+    jobs:
+      test:
+        runs-on: ubuntu-latest
+        steps:
+          - run: echo \${{ toJS|(github.event) }}
+    `;
+
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.find(x => x.label === "toJson")!.insertText).toBe("toJson");
+  });
 });
