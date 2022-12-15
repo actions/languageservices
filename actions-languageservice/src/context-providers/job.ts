@@ -48,13 +48,19 @@ function createContainerContext(container: MappingToken, isServices: boolean): d
     else if (isSequence(token.value)) {
       // ports and volumes
       // service ports are the only thing that is part of the job context
-      const sequence = new data.Array();
+      if (token.key.toString() !== "ports") {
+        continue;
+      }
+      const ports = new data.Dictionary()
       for (const item of token.value) {
-        if (item.toString() === "ports" && isServices) {
-          sequence.add(new data.StringData(item.toString()));
+        // We can determine the context mapping fully only if the port is defined
+        // as a mapping (i.e. <port1>:<port2>), single ports are assigned randomly
+        const portParts = item.toString().split(":")
+        if (isServices && portParts.length === 2) {
+          ports.add(portParts[1], new data.StringData(portParts[0]));
         }
       }
-      containerContext.add(token.key.toString(), new data.Array(sequence));
+      containerContext.add(token.key.toString(), ports);
     }
     else if (isMapping(token.value)) {
       // credentials and env

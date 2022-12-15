@@ -269,8 +269,10 @@ jobs:
     services:
       nginx:
         image: node:14.16
+        volumes:
+          - my_docker_volume:/volume_mount
         ports:
-          - 80
+          - 80:8080
     steps:
       - run: echo \${{ job.services.nginx }}
       - run: echo \${{ job.services.nginx.id }}
