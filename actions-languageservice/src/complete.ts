@@ -1,20 +1,20 @@
 import {complete as completeExpression} from "@github/actions-expressions";
+import {CompletionItem as ExpressionCompletionItem} from "@github/actions-expressions/completion";
 import {convertWorkflowTemplate, isSequence, isString, parseWorkflow} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {DefinitionType} from "@github/actions-workflow-parser/templates/schema/definition-type";
 import {StringDefinition} from "@github/actions-workflow-parser/templates/schema/string-definition";
-import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
+import {OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
-import {CompletionItem, Range, TextEdit} from "vscode-languageserver-types";
+import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {nullTrace} from "./nulltrace";
-import {getAllowedContext} from "./utils/allowed-context";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
 import {transform} from "./utils/transform";
@@ -29,14 +29,7 @@ export function getExpressionInput(input: string, pos: number): string {
     return input;
   }
 
-  // Find end marker after the cursor position
-  let endPos = input.indexOf(CLOSE_EXPRESSION, pos);
-  if (endPos === -1) {
-    // Assume an unfinished expression like "${{ someinput.|"
-    endPos = input.length;
-  }
-
-  return input.substring(startPos + OPEN_EXPRESSION.length, endPos);
+  return input.substring(startPos + OPEN_EXPRESSION.length, pos);
 }
 
 export async function complete(
@@ -85,17 +78,19 @@ export async function complete(
       if (token.range!.start[0] !== token.range!.end[0]) {
         const lines = currentInput.split("\n");
         const linesBeforeCusor = lines.slice(0, lineDiff);
-        relCharPos = linesBeforeCusor.join("\n").length + newPos.character;
+        relCharPos = linesBeforeCusor.join("\n").length + 1 + newPos.character;
       } else {
-        relCharPos = newPos.character - token.range!.start[1];
+        relCharPos = newPos.character - token.range!.start[1] + 1;
       }
 
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
-      const allowedContext = getAllowedContext(token, parent);
+      const allowedContext = token.definitionInfo?.allowedContext || [];
       const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 
-      return completeExpression(expressionInput, context, []);
+      return completeExpression(expressionInput, context, []).map(item =>
+        mapExpressionCompletionItem(item, currentInput[relCharPos])
+      );
     }
   }
 
@@ -106,11 +101,12 @@ export async function complete(
   }
 
   return values.map(value => {
-    const item = CompletionItem.create(value.label);
-    item.detail = value.description;
-    if (replaceRange) {
-      item.textEdit = TextEdit.replace(replaceRange, value.label);
-    }
+    const item: CompletionItem = {
+      label: value.label,
+      detail: value.description,
+      tags: value.deprecated ? [CompletionItemTag.Deprecated] : undefined,
+      textEdit: replaceRange ? TextEdit.replace(replaceRange, value.label) : undefined
+    };
 
     return item;
   });
@@ -129,21 +125,22 @@ async function getValues(
 
   const existingValues = getExistingValues(token, parent);
 
-  if (keyToken?.definition?.key) {
-    const customValues = await valueProviderConfig?.[keyToken.definition.key]?.get(workflowContext);
+  // Use the value providers from the parent if the current key is null
+  const valueProviderToken = keyToken || parent;
 
+  const customValueProvider =
+    valueProviderToken?.definition?.key && valueProviderConfig?.[valueProviderToken.definition.key];
+  if (customValueProvider) {
+    const customValues = await customValueProvider.get(workflowContext);
     if (customValues) {
       return filterAndSortCompletionOptions(customValues, existingValues);
     }
   }
 
-  // Use the value provider from the parent if we don't have a value provider for the current key
-  const valueProvider =
-    (keyToken?.definition?.key && defaultValueProviders[keyToken.definition.key]) ||
-    (parent.definition?.key && defaultValueProviders[parent.definition.key]);
-
-  if (valueProvider) {
-    const values = await valueProvider.get(workflowContext);
+  const defaultValueProvider =
+    valueProviderToken?.definition?.key && defaultValueProviders[valueProviderToken.definition.key];
+  if (defaultValueProvider) {
+    const values = await defaultValueProvider.get(workflowContext);
     return filterAndSortCompletionOptions(values, existingValues);
   }
 
@@ -197,4 +194,18 @@ function filterAndSortCompletionOptions(options: Value[], existingValues?: Set<s
   options = options.filter(x => !existingValues?.has(x.label));
   options.sort((a, b) => a.label.localeCompare(b.label));
   return options;
+}
+
+function mapExpressionCompletionItem(item: ExpressionCompletionItem, charAfterPos: string): CompletionItem {
+  let insertText: string | undefined;
+  // Insert parentheses if the cursor is after a function
+  // and the function does not have any parantheses already
+  if (item.function) {
+    insertText = charAfterPos === "(" ? item.label : item.label + "()";
+  }
+  return {
+    label: item.label,
+    insertText: insertText,
+    kind: item.function ? CompletionItemKind.Function : CompletionItemKind.Variable
+  };
 }

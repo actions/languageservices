@@ -1,6 +1,7 @@
-import { hover } from "@github/actions-languageservice/hover";
-import { registerLogger, setLogLevel } from "@github/actions-languageservice/log";
-import { validate } from "@github/actions-languageservice/validate";
+import {hover} from "@github/actions-languageservice/hover";
+import {registerLogger, setLogLevel} from "@github/actions-languageservice/log";
+import {validate, ValidationConfig} from "@github/actions-languageservice/validate";
+import {Octokit} from "@octokit/rest";
 import {
   CompletionItem,
   Connection,
@@ -12,12 +13,13 @@ import {
   TextDocuments,
   TextDocumentSyncKind
 } from "vscode-languageserver";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { contextProviders } from "./context-providers";
-import { InitializationOptions, RepositoryContext } from "./initializationOptions";
-import { onCompletion } from "./on-completion";
-import { TTLCache } from "./utils/cache";
-import { valueProviders } from "./value-providers";
+import {TextDocument} from "vscode-languageserver-textdocument";
+import {contextProviders} from "./context-providers";
+import {InitializationOptions, RepositoryContext} from "./initializationOptions";
+import {onCompletion} from "./on-completion";
+import {TTLCache} from "./utils/cache";
+import {valueProviders} from "./value-providers";
+import {getActionInputs} from "./value-providers/action-inputs";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -82,11 +84,21 @@ export function initConnection(connection: Connection) {
 
   async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
-    const result = await validate(
-      textDocument,
-      valueProviders(sessionToken, repoContext, cache),
-      contextProviders(sessionToken, repoContext, cache)
-    );
+
+    const config: ValidationConfig = {
+      valueProviderConfig: valueProviders(sessionToken, repoContext, cache),
+      contextProviderConfig: contextProviders(sessionToken, repoContext, cache),
+      getActionInputs: async action => {
+        if (sessionToken) {
+          const octokit = new Octokit({
+            auth: sessionToken
+          });
+          return await getActionInputs(octokit, cache, action);
+        }
+        return undefined;
+      }
+    };
+    const result = await validate(textDocument, config);
 
     connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
   }

@@ -3,6 +3,7 @@ import {WorkflowContext} from "../context/workflow-context";
 export interface Value {
   label: string;
   description?: string;
+  deprecated?: boolean;
 }
 
 export enum ValueProviderKind {

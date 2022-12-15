@@ -16,6 +16,7 @@ import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/te
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
+import {ActionInputs, ActionReference} from "./action";
 
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
@@ -23,11 +24,17 @@ import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {error} from "./log";
 import {nullTrace} from "./nulltrace";
-import {getAllowedContext} from "./utils/allowed-context";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
+import {validateAction} from "./validate-action";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
+
+export type ValidationConfig = {
+  valueProviderConfig?: ValueProviderConfig;
+  contextProviderConfig?: ContextProviderConfig;
+  getActionInputs?(action: ActionReference): Promise<ActionInputs | undefined>;
+};
 
 /**
  * Validates a workflow file
@@ -37,9 +44,8 @@ import {defaultValueProviders} from "./value-providers/default";
  */
 export async function validate(
   textDocument: TextDocument,
+  config?: ValidationConfig
   // TODO: Support multiple files, context for API calls
-  valueProviderConfig?: ValueProviderConfig,
-  contextProviderConfig?: ContextProviderConfig
 ): Promise<Diagnostic[]> {
   const file: File = {
     name: textDocument.uri,
@@ -55,14 +61,7 @@ export async function validate(
       const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
 
       // Validate expressions and value providers
-      await additionalValidations(
-        diagnostics,
-        textDocument.uri,
-        template,
-        result.value,
-        valueProviderConfig,
-        contextProviderConfig
-      );
+      await additionalValidations(diagnostics, textDocument.uri, template, result.value, config);
     }
 
     // For now map parser errors directly to diagnostics
@@ -86,8 +85,7 @@ async function additionalValidations(
   documentUri: URI,
   template: WorkflowTemplate,
   root: TemplateToken,
-  valueProviderConfig: ValueProviderConfig | undefined,
-  contextProviderConfig: ContextProviderConfig | undefined
+  config?: ValidationConfig
 ) {
   for (const [parent, token, key] of TemplateToken.traverse(root)) {
     // If  the token is a value in a pair, use the key definition for validation
@@ -95,26 +93,33 @@ async function additionalValidations(
     const validationToken = key || parent || token;
     const validationDefinition = validationToken.definition;
 
-    const allowedContext = getAllowedContext(validationToken, parent);
-
     // If this is an expression, validate it
     if (isBasicExpression(token)) {
       await validateExpression(
         diagnostics,
         token,
-        allowedContext,
-        contextProviderConfig,
+        validationToken.definitionInfo?.allowedContext || [],
+        config?.contextProviderConfig,
         getProviderContext(documentUri, template, root, token)
       );
     }
 
+    if (token.definition?.key === "regular-step") {
+      const context = getProviderContext(documentUri, template, root, token);
+      await validateAction(diagnostics, token, context.step, config);
+    }
+
     // Allowed values coming from the schema have already been validated. Only check if
     // a value provider is defined for a token and if it is, validate the values match.
-    if (valueProviderConfig && token.range && validationDefinition) {
+    if (config?.valueProviderConfig && token.range && validationDefinition) {
       const defKey = validationDefinition.key;
+      if (defKey === "step-with") {
+        // Action inputs should be validated already in validateAction
+        continue;
+      }
 
       // Try a custom value provider first
-      let valueProvider = valueProviderConfig[defKey];
+      let valueProvider = config.valueProviderConfig[defKey];
       if (!valueProvider) {
         // fall back to default
         valueProvider = defaultValueProviders[defKey];
@@ -209,8 +214,6 @@ async function validateExpression(
           severity: DiagnosticSeverity.Warning,
           range: mapRange(expression.range)
         });
-      } else {
-        throw e;
       }
     }
   }

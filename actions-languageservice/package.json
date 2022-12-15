@@ -1,6 +1,6 @@
 {
   "name": "@github/actions-languageservice",
-  "version": "0.1.48",
+  "version": "0.1.58",
   "description": "Language service for GitHub Actions",
   "license": "MIT",
   "type": "module",
@@ -38,6 +38,7 @@
     "prettier-fix": "prettier --write ."
   },
   "dependencies": {
+    "@github/actions-expressions": "*",
     "@github/actions-workflow-parser": "*",
     "vscode-languageserver-textdocument": "^1.0.7",
     "vscode-languageserver-types": "^3.17.2",
