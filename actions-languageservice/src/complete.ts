@@ -3,7 +3,7 @@ import {convertWorkflowTemplate, isSequence, isString, parseWorkflow} from "@git
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {DefinitionType} from "@github/actions-workflow-parser/templates/schema/definition-type";
 import {StringDefinition} from "@github/actions-workflow-parser/templates/schema/string-definition";
-import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
+import {OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
@@ -29,14 +29,7 @@ export function getExpressionInput(input: string, pos: number): string {
     return input;
   }
 
-  // Find end marker after the cursor position
-  let endPos = input.indexOf(CLOSE_EXPRESSION, pos);
-  if (endPos === -1) {
-    // Assume an unfinished expression like "${{ someinput.|"
-    endPos = input.length;
-  }
-
-  return input.substring(startPos + OPEN_EXPRESSION.length, endPos);
+  return input.substring(startPos + OPEN_EXPRESSION.length, pos);
 }
 
 export async function complete(
@@ -85,9 +78,9 @@ export async function complete(
       if (token.range!.start[0] !== token.range!.end[0]) {
         const lines = currentInput.split("\n");
         const linesBeforeCusor = lines.slice(0, lineDiff);
-        relCharPos = linesBeforeCusor.join("\n").length + newPos.character;
+        relCharPos = linesBeforeCusor.join("\n").length + 1 + newPos.character;
       } else {
-        relCharPos = newPos.character - token.range!.start[1];
+        relCharPos = newPos.character - token.range!.start[1] + 1;
       }
 
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
