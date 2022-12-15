@@ -232,32 +232,27 @@ on: push
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: node:14.16
     steps:
-      - run: echo \${{ job.status }}
+      - run: echo \${{ job.container }}
+      - run: echo \${{ job.container.id }}
+      - run: echo \${{ job.container.network }}
 `;
       const result = await validate(createDocument("wf.yaml", input));
 
       expect(result).toEqual([]);
     });
 
-    it("job.container", async () => {
+    it("job.status", async () => {
       const input = `
 on: push
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    container:
-      image: node:14.16
-      env:
-        NODE_ENV: development
-      ports:
-        - 80
-      volumes:
-        - my_docker_volume:/volume_mount
-      options: --cpus 1
     steps:
-      - run: echo \${{ job.container }}
+      - run: echo \${{ job.status }}
 `;
       const result = await validate(createDocument("wf.yaml", input));
 
@@ -273,11 +268,25 @@ jobs:
     runs-on: ubuntu-latest
     services:
       nginx:
-        image: nginx
+        image: node:14.16
+        env:
+          NODE_ENV: development
         ports:
-          - 8080:80
+          - 80
+        volumes:
+          - my_docker_volume:/volume_mount
+        options: --cpus 1
+        credentials:
+          username: actor
+          password: password
     steps:
       - run: echo \${{ job.services.nginx }}
+      - run: echo \${{ job.services.nginx.image }}
+      - run: echo \${{ job.services.nginx.env }}
+      - run: echo \${{ job.services.nginx.ports }}
+      - run: echo \${{ job.services.nginx.volumes }}
+      - run: echo \${{ job.services.nginx.options }}
+      - run: echo \${{ job.services.nginx.credentials }}
 `;
       const result = await validate(createDocument("wf.yaml", input));
 

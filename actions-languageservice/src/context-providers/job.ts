@@ -1,55 +1,79 @@
 import {data} from "@github/actions-expressions";
-import { Dictionary } from "@github/actions-expressions/data/dictionary";
-import {isMapping, isScalar, isString} from "@github/actions-workflow-parser";
+import {isMapping, isSequence, isString} from "@github/actions-workflow-parser";
+import { MappingToken } from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {WorkflowContext} from "../context/workflow-context";
-import {scalarToData} from "../utils/scalar-to-data";
 
 export function getJobContext(workflowContext: WorkflowContext): data.Dictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
   const keys = ["container", "services", "status"];
-  const containerKeys = ["id", "network"];
-  const serviceKeys = containerKeys.concat("ports");
-
-  const job = workflowContext.job;
-  if (!job) {
-    return new data.Dictionary();
-  }
 
   const jobContext = new data.Dictionary();
-  for (const key of keys) {
-    if (!jobContext.get(key)) {
-      switch (key) {
-        case "container":
-          var containerDictionary = new data.Dictionary();
-          for (const containerKey of containerKeys) {
-            if (job.container[containerKey]) {
-              containerDictionary.add(containerKey, job.container[containerKey]);
-            }
-          }
-          jobContext.add(key, containerDictionary);
-          // jobContext.add(key, new data.Null());
-          break;
-        case "services":
-          var services = new data.Dictionary();
-          for (const service of job.services) {
-            var serviceDictionary = new data.Dictionary();
-            for (const serviceKey of serviceKeys) {
-              if (service[serviceKey]) {
-                serviceDictionary.add(serviceKey, service[serviceKey]);
-              }
-            }
-            services.add(service, serviceDictionary);
-          }
-          jobContext.add(key, services);
-          // jobContext.add(key, new data.Null());
-          break;
-        case "status":
-          jobContext.add(key, job.status);
-          // jobContext.add(key, new data.Null());
-          break;
-      }
-    }
+  const job = workflowContext.job;
+  if (!job) {
+    return new data.Dictionary(
+      ...keys.map(key => {
+        return {key, value: new data.Null()};
+      })
+    );
   }
+
+  // Container
+  const jobContainer = job.container;
+  if (jobContainer && isMapping(jobContainer)) {
+    let containerContext = createContainerContext(jobContainer);
+    jobContext.add("container", containerContext);
+  }
+  else {
+    jobContext.add("container", new data.Null());
+  }
+
+  // Services
+  const jobServices = job.services;
+  if (jobServices && isMapping(jobServices)) {
+    const servicesContext = new data.Dictionary();
+    for (const service of jobServices) {
+      if (!isMapping(service.value)) {
+        continue
+      }
+      let serviceContext = createContainerContext(service.value);
+      servicesContext.add(service.key.toString(), serviceContext);
+    }
+    jobContext.add("services", servicesContext);
+  }
+  else {
+    jobContext.add("services", new data.Null());
+  }
+
+  // Status
+  jobContext.add("status", new data.Null());
 
   return jobContext;
 }
+
+function createContainerContext(container: MappingToken): data.Dictionary {
+  const containerContext = new data.Dictionary();
+  for (const token of container) {
+    if (isString(token.value)) {
+      // image and options
+      containerContext.add(token.key.toString(), new data.StringData(token.value.toString()));
+    }
+    else if (isSequence(token.value)) {
+      // ports and volumes
+      const sequence = new data.Array();
+      for (const item of token.value) {
+        sequence.add(new data.StringData(item.toString()));
+      }
+      containerContext.add(token.key.toString(), new data.Array(sequence));
+    }
+    else if (isMapping(token.value)) {
+      // credentials and env
+      const dict = new data.Dictionary();
+      for (const item of token.value) {
+        containerContext.add(item.key.toString(), new data.StringData(item.value.toString()));
+      }
+      containerContext.add(token.key.toString(), dict);
+    }
+  }
+  return containerContext;
+}
+
