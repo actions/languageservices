@@ -224,6 +224,99 @@ jobs:
     });
   });
 
+  describe("job context", () => {
+    it("job.status", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14.16
+    steps:
+      - run: echo \${{ job.container }}
+      - run: echo \${{ job.container.id }}
+      - run: echo \${{ job.container.network }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("job.status", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ job.status }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("job.services.<service_id>", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      nginx:
+        image: node:14.16
+        volumes:
+          - my_docker_volume:/volume_mount
+        ports:
+          - 80:8080
+    steps:
+      - run: echo \${{ job.services.nginx }}
+      - run: echo \${{ job.services.nginx.id }}
+      - run: echo \${{ job.services.nginx.network }}
+      - run: echo \${{ job.services.nginx.ports }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("job.services.<service_id>", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14.16
+    steps:
+      - run: echo \${{ job.container.tupperware }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: tupperware",
+          range: {
+            end: {
+              character: 49,
+              line: 9
+            },
+            start: {
+              character: 18,
+              line: 9
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
+
   describe("strategy context", () => {
     it("reference within a matrix job", async () => {
       const input = `

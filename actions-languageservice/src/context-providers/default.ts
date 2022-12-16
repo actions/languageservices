@@ -4,6 +4,7 @@ import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
 import {getGithubContext} from "./github";
 import {getInputsContext} from "./inputs";
+import {getJobContext} from "./job";
 import {getMatrixContext} from "./matrix";
 import {getNeedsContext} from "./needs";
 import {getStepsContext} from "./steps";
@@ -74,6 +75,9 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
 
     case "strategy":
       return getStrategyContext(workflowContext);
+
+    case "job":
+      return getJobContext(workflowContext);
   }
 
   return undefined;
