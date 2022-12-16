@@ -41,12 +41,7 @@ export function getJobContext(workflowContext: WorkflowContext): data.Dictionary
 function createContainerContext(container: MappingToken, isServices: boolean): data.Dictionary {
   const containerContext = new data.Dictionary();
   for (const token of container) {
-    if (isString(token.value)) {
-      // image and options
-      // containerContext.add(token.key.toString(), new data.StringData(token.value.toString()));
-    }
-    else if (isSequence(token.value)) {
-      // ports and volumes
+    if (isSequence(token.value)) {
       // service ports are the only thing that is part of the job context
       if (token.key.toString() !== "ports") {
         continue;
@@ -65,14 +60,6 @@ function createContainerContext(container: MappingToken, isServices: boolean): d
         }
       }
       containerContext.add(token.key.toString(), ports);
-    }
-    else if (isMapping(token.value)) {
-      // credentials and env
-      // const dict = new data.Dictionary();
-      // for (const item of token.value) {
-      //   containerContext.add(item.key.toString(), new data.StringData(item.value.toString()));
-      // }
-      // containerContext.add(token.key.toString(), dict);
     }
   }
   containerContext.add("id", new data.Null());
