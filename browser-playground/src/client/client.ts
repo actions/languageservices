@@ -30,6 +30,7 @@ jobs:
       - uses: actions/checkout@v3
       - run: echo "Hello \${{ github.event.inputs.name }}"`,
   language: "yaml",
+  wordBasedSuggestions: false,
 });
 
 function createLanguageClient(
