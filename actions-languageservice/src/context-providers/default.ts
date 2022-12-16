@@ -76,9 +76,6 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
     case "strategy":
       return getStrategyContext(workflowContext);
 
-    case "matrix":
-      return getMatrixContext(workflowContext, mode);
-
     case "job":
       return getJobContext(workflowContext);
   }
