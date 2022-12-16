@@ -684,20 +684,73 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: node:14.16
+    services:
+      nginx:
+        image: node:14.16
     steps:
       - run: echo \${{ job.| }}
 `;
 
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
-      expect(result.map(x => x.label)).toContain("container");
-      expect(result.map(x => x.label)).toContain("services");
-      expect(result.map(x => x.label)).toContain("status");
+      expect(result.map(x => x.label)).toEqual(["container", "services", "status"]);
     });
 
-    it("job context is suggested within a job", async () => {
+    it("container context is suggested within a job container", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14.16
+    steps:
+      - run: echo \${{ job.container.| }}
+`;
+      
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      expect(result.map(x => x.label)).toEqual(["id", "network"]);
     });
 
-    it("job context is suggested within a job", async () => {
+    it("services are suggested within a job services list", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      nginx:
+        image: node:14.16
+      redis:
+        image: redis
+    steps:
+      - run: echo \${{ job.services.| }}
+`;
+            
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      expect(result.map(x => x.label)).toEqual(["nginx", "redis"]);
+    });
+
+    it("services context is suggested within a job service", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      nginx:
+        image: node:14.16
+        ports:
+          - 80:8080
+          - 90
+    steps:
+      - run: echo \${{ job.services.nginx.| }}
+`;
+            
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      expect(result.map(x => x.label)).toEqual(["id", "network", "ports"]);
     });
   });
 
