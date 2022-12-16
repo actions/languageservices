@@ -707,7 +707,7 @@ jobs:
     steps:
       - run: echo \${{ job.container.| }}
 `;
-      
+
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
       expect(result.map(x => x.label)).toEqual(["id", "network"]);
     });
@@ -727,7 +727,7 @@ jobs:
     steps:
       - run: echo \${{ job.services.| }}
 `;
-            
+
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
       expect(result.map(x => x.label)).toEqual(["nginx", "redis"]);
     });
@@ -748,7 +748,7 @@ jobs:
     steps:
       - run: echo \${{ job.services.nginx.| }}
 `;
-            
+
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
       expect(result.map(x => x.label)).toEqual(["id", "network", "ports"]);
     });
