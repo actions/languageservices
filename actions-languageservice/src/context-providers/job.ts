@@ -14,7 +14,7 @@ export function getJobContext(workflowContext: WorkflowContext): data.Dictionary
   // Container
   const jobContainer = job.container;
   if (jobContainer && isMapping(jobContainer)) {
-    let containerContext = createContainerContext(jobContainer, false);
+    const containerContext = createContainerContext(jobContainer, false);
     jobContext.add("container", containerContext);
   }
 
@@ -26,7 +26,7 @@ export function getJobContext(workflowContext: WorkflowContext): data.Dictionary
       if (!isMapping(service.value)) {
         continue
       }
-      let serviceContext = createContainerContext(service.value, true);
+      const serviceContext = createContainerContext(service.value, true);
       servicesContext.add(service.key.toString(), serviceContext);
     }
     jobContext.add("services", servicesContext);
@@ -58,6 +58,10 @@ function createContainerContext(container: MappingToken, isServices: boolean): d
         const portParts = item.toString().split(":")
         if (isServices && portParts.length === 2) {
           ports.add(portParts[1], new data.StringData(portParts[0]));
+        }
+        else {
+          // If the port isn't a mapping, just use null
+          ports.add(portParts[0], new data.Null());
         }
       }
       containerContext.add(token.key.toString(), ports);

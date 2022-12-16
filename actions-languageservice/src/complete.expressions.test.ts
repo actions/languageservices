@@ -674,6 +674,33 @@ jobs:
     });
   });
 
+  describe("job context", () => {
+    it("job context is suggested within a job", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: node:14.16
+    steps:
+      - run: echo \${{ job.| }}
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      expect(result.map(x => x.label)).toContain("container");
+      expect(result.map(x => x.label)).toContain("services");
+      expect(result.map(x => x.label)).toContain("status");
+    });
+
+    it("job context is suggested within a job", async () => {
+    });
+
+    it("job context is suggested within a job", async () => {
+    });
+  });
+
   it("context completion items include kind and insert text", async () => {
     const input = `
     on: push
