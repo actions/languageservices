@@ -286,13 +286,6 @@ on:
         type: boolean
 jobs:
   a:
-    outputs:
-      build_id: my-build-id
-    runs-on: ubuntu-latest
-    steps:
-    - run: echo hello a
-  b:
-    needs: [a]
     runs-on: ubuntu-latest
     steps:
     - run: echo "hello \${{ inputs.|
@@ -308,13 +301,6 @@ on:
   workflow_dispatch:
 jobs:
   a:
-    outputs:
-      build_id: my-build-id
-    runs-on: ubuntu-latest
-    steps:
-    - run: echo hello a
-  b:
-    needs: [a]
     runs-on: ubuntu-latest
     steps:
     - run: echo "hello \${{ inputs.|
@@ -358,13 +344,6 @@ jobs:
           type: boolean
   jobs:
     a:
-      outputs:
-        build_id: my-build-id
-      runs-on: ubuntu-latest
-      steps:
-      - run: echo hello a
-    b:
-      needs: [a]
       runs-on: ubuntu-latest
       steps:
       - run: echo "hello \${{ github.event.inputs.|
@@ -410,8 +389,6 @@ jobs:
 
       expect(result.map(x => x.label)).toContain("cron");
     });
-
-    it("excludes cron scheudle when no schedule", async () => {});
   });
 
   describe("steps context", () => {

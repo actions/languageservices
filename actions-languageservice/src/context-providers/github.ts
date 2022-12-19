@@ -69,6 +69,7 @@ function getEventContext(workflowContext: WorkflowContext): ExpressionData {
   const schedule = events["schedule"];
   if (schedule && schedule.length > 0) {
     const default_cron = schedule[0].cron;
+    // For now, default to the first cron expression only
     d.add("cron", new data.StringData(default_cron));
   }
 

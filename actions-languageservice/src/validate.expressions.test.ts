@@ -826,13 +826,6 @@ on:
         type: boolean
 jobs:
   a:
-    outputs:
-      build_id: my-build-id
-    runs-on: ubuntu-latest
-    steps:
-    - run: echo hello a
-  b:
-    needs: [a]
     runs-on: ubuntu-latest
     steps:
     - run: echo "hello \${{ github.event.inputs.name }}"
@@ -847,11 +840,11 @@ jobs:
           range: {
             end: {
               character: 56,
-              line: 26
+              line: 19
             },
             start: {
               character: 23,
-              line: 26
+              line: 19
             }
           },
           severity: DiagnosticSeverity.Warning
