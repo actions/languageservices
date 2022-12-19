@@ -368,7 +368,7 @@ jobs:
       const result = await complete(...getPositionFromCursor(input), undefined, undefined);
 
       expect(result.map(x => x.label)).not.toContain("inputs");
-      expect(result.map(x => x.label)).not.toContain("cron");
+      expect(result.map(x => x.label)).not.toContain("schedule");
     });
 
     it("includes cron schedules", async () => {
@@ -387,7 +387,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), undefined, undefined);
 
-      expect(result.map(x => x.label)).toContain("cron");
+      expect(result.map(x => x.label)).toContain("schedule");
     });
   });
 
