@@ -321,22 +321,19 @@ on:
         default: some value
       another-name:
         type: string
+  workflow_call:
+    inputs:
+      third-name:
+        type: boolean
 jobs:
   a:
-    outputs:
-      build_id: my-build-id
-    runs-on: ubuntu-latest
-    steps:
-    - run: echo hello a
-  b:
-    needs: [a]
     runs-on: ubuntu-latest
     steps:
     - run: echo "hello \${{ inputs.|
 `;
     const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-    expect(result.map(x => x.label)).toEqual(["another-name", "name"]);
+    expect(result.map(x => x.label)).toEqual(["another-name", "name", "third-name"]);
   });
 
   it("no inputs", async () => {
@@ -345,13 +342,6 @@ on:
   workflow_dispatch:
 jobs:
   a:
-    outputs:
-      build_id: my-build-id
-    runs-on: ubuntu-latest
-    steps:
-    - run: echo hello a
-  b:
-    needs: [a]
     runs-on: ubuntu-latest
     steps:
     - run: echo "hello \${{ inputs.|
@@ -361,21 +351,85 @@ jobs:
     expect(result).toEqual([]);
   });
 
-  it("github context includes expected keys", async () => {
-    const input = `
-on: push
+  describe("github context", () => {
+    it("includes expected keys", async () => {
+      const input = `
+  on: push
+  
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - run: echo \${{ github.| }}
+    `;
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: echo \${{ github.| }}
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+
+      expect(result.map(x => x.label)).toContain("actor");
+    });
+
+    it("includes event inputs", async () => {
+      const input = `
+  on:
+    workflow_dispatch:
+      inputs:
+        name:
+          type: string
+          default: some value
+        another-name:
+          type: string
+    workflow_call:
+      inputs:
+        third-name:
+          type: boolean
+  jobs:
+    a:
+      runs-on: ubuntu-latest
+      steps:
+      - run: echo "hello \${{ github.event.inputs.|
   `;
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
 
-    const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      expect(result.map(x => x.label)).toEqual(["another-name", "name", "third-name"]);
+    });
 
-    expect(result.map(x => x.label)).toContain("actor");
+    it("excludes event inputs and cron when no relevant events", async () => {
+      const input = `
+  on: push
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - run: echo \${{ github.event.| }}
+    `;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+
+      expect(result.map(x => x.label)).not.toContain("inputs");
+      expect(result.map(x => x.label)).not.toContain("cron");
+    });
+
+    it("includes cron schedules", async () => {
+      const input = `
+  on:
+    schedule:
+    - cron: '0 0 * * *'
+    
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - run: echo \${{ github.event.| }}
+    `;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+
+      expect(result.map(x => x.label)).toContain("cron");
+    });
   });
 
   describe("steps context", () => {

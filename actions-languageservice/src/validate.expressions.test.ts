@@ -988,4 +988,79 @@ jobs:
       ]);
     });
   });
+
+  describe("github context", () => {
+    it("includes only expected keys", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ github.action }}
+      - run: echo \${{ github.steps }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: steps",
+          range: {
+            end: {
+              character: 37,
+              line: 8
+            },
+            start: {
+              character: 18,
+              line: 8
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+    it("validates event inputs", async () => {
+      const input = `
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        type: string
+        default: some value
+      another-name:
+        type: string
+  workflow_call:
+    inputs:
+      third-name:
+        type: boolean
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ github.event.inputs.name }}"
+    - run: echo "hello \${{ github.event.inputs.third-name }}"
+    - run: echo "hello \${{ github.event.inputs.random }}"
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: random",
+          range: {
+            end: {
+              character: 56,
+              line: 19
+            },
+            start: {
+              character: 23,
+              line: 19
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
 });
