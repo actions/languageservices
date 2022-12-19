@@ -1,6 +1,6 @@
 {
   "name": "@github/actions-languageservice",
-  "version": "0.1.60",
+  "version": "0.1.61",
   "description": "Language service for GitHub Actions",
   "license": "MIT",
   "type": "module",
