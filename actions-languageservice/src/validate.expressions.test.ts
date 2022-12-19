@@ -1130,6 +1130,39 @@ jobs:
         }
       ]);
     });
+
+    it("validates event payload", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ github.event.forced }}
+      - run: echo \${{ github.event.schedule }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: schedule",
+          range: {
+            end: {
+              character: 46,
+              line: 8
+            },
+            start: {
+              character: 18,
+              line: 8
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
     it("validates event inputs", async () => {
       const input = `
 on:
