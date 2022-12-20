@@ -36,7 +36,7 @@ export async function getContext(
       continue;
     }
 
-    value = (await config?.getContext(contextName, value)) || value;
+    value = (await config?.getContext(contextName, value, workflowContext)) || value;
 
     context.add(contextName, value);
   }

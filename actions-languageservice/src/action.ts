@@ -8,6 +8,14 @@ export type ActionInput = {
 
 export type ActionInputs = Record<string, ActionInput>;
 
+// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions
+export type ActionOutput = {
+  description: string;
+  value?: string;
+};
+
+export type ActionOutputs = Record<string, ActionOutput>;
+
 export type ActionReference = {
   owner: string;
   name: string;
