@@ -311,6 +311,35 @@ jobs:
     expect(result.map(x => x.label)).toEqual(["build_id"]);
   });
 
+  it("env steps context only for current step and job", async () => {
+    const input = `
+on: push
+env:
+  envwf: workflow_env
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    env: 
+      envjoba: job_a_env
+  b:
+    runs-on: ubuntu-latest
+    env: 
+      envjobb: job_b_env
+    steps:
+    - name: step a
+      run: echo "hello"
+      env:
+        envstepa: step_a_env
+    - name: step b
+      run: echo "hello \${{ env.|
+      env:
+        envstepb: step_b_env
+`;
+    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+    expect(result.map(x => x.label)).toEqual(["envjobb", "envstepb", "envwf"]);
+  });
+
   it("inputs", async () => {
     const input = `
 on:

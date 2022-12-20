@@ -2,6 +2,7 @@ import {data} from "@github/actions-expressions";
 import {Kind} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
+import {getEnvContext} from "./env";
 import {getGithubContext} from "./github";
 import {getInputsContext} from "./inputs";
 import {getJobContext} from "./job";
@@ -78,6 +79,9 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
 
     case "job":
       return getJobContext(workflowContext);
+
+    case "env":
+      return getEnvContext(workflowContext);
   }
 
   return undefined;
