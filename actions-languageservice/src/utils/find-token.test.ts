@@ -1,4 +1,4 @@
-import {isScalar, parseWorkflow} from "@github/actions-workflow-parser/.";
+import {isScalar, parseWorkflow} from "@github/actions-workflow-parser";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {nullTrace} from "../nulltrace";
