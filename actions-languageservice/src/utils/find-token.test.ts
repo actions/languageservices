@@ -139,7 +139,7 @@ describe("find-token", () => {
       testFindToken(`on: push
 jobs:
   build:
-    runs-on: [ubuntu-latest, self|`)
+    runs-on: [ubuntu-latest, self|]`)
     ).toEqual({
       path: [
         ["workflow-root-strict", TokenType.Mapping],
