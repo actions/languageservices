@@ -1,5 +1,5 @@
 import {data} from "@github/actions-expressions";
-import {ContextProviderConfig} from "@github/actions-languageservice/.";
+import {ContextProviderConfig} from "@github/actions-languageservice";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
 import {Octokit} from "@octokit/rest";
 import {getSecrets} from "./context-providers/secrets";

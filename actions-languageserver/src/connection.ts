@@ -1,10 +1,11 @@
-import {hover} from "@github/actions-languageservice/hover";
+import {documentLinks, hover, validate, ValidationConfig} from "@github/actions-languageservice";
 import {registerLogger, setLogLevel} from "@github/actions-languageservice/log";
-import {validate, ValidationConfig} from "@github/actions-languageservice/validate";
 import {Octokit} from "@octokit/rest";
 import {
   CompletionItem,
   Connection,
+  DocumentLink,
+  DocumentLinkParams,
   Hover,
   HoverParams,
   InitializeParams,
@@ -61,7 +62,10 @@ export function initConnection(connection: Connection) {
           resolveProvider: false,
           triggerCharacters: [":", "."]
         },
-        hoverProvider: true
+        hoverProvider: true,
+        documentLinkProvider: {
+          resolveProvider: false
+        }
       }
     };
 
@@ -103,7 +107,6 @@ export function initConnection(connection: Connection) {
     connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
   }
 
-  // This handler provides the initial list of the completion items.
   connection.onCompletion(async ({position, textDocument}: TextDocumentPositionParams): Promise<CompletionItem[]> => {
     return await onCompletion(
       position,
@@ -116,6 +119,10 @@ export function initConnection(connection: Connection) {
 
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
     return hover(documents.get(textDocument.uri)!, position);
+  });
+
+  connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
+    return documentLinks(documents.get(textDocument.uri)!);
   });
 
   // Make the text document manager listen on the connection
