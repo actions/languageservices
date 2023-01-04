@@ -7,7 +7,7 @@ import {parseActionReference} from "./action";
 import {nullTrace} from "./nulltrace";
 import {mapRange} from "./utils/range";
 
-export async function documentLinks(document: TextDocument): Promise<DocumentLink[] | null> {
+export async function documentLinks(document: TextDocument): Promise<DocumentLink[]> {
   const file: File = {
     name: document.uri,
     content: document.getText()
