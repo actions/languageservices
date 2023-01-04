@@ -350,6 +350,82 @@ jobs:
     });
   });
 
+  describe("env context", () => {
+    it("references env within scope", async () => {
+      const input = `
+on: push
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+    - name: step a
+      env: 
+        step_env: job_a_env
+      run: echo "hello \${{ env.step_env }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("inherits parent env", async () => {
+      const input = `
+on: push
+env:
+  envwf: workflow_env
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    env: 
+      envjoba: job_a_env
+    steps:
+    - name: step a
+      run: echo "hello \${{ env.envwf }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("references env outside of scope", async () => {
+      const input = `
+on: push
+env:
+  envwf: workflow_env
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    env: 
+      envjoba: job_a_env
+    steps:
+    - name: step a
+      run: echo "hello"
+      env:
+        envstepa: step_a_env
+    - name: step b
+      run: echo "hello \${{ env.envstepa }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: envstepa",
+          range: {
+            end: {
+              character: 42,
+              line: 15
+            },
+            start: {
+              character: 23,
+              line: 15
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
+
   describe("strategy context", () => {
     it("reference within a matrix job", async () => {
       const input = `

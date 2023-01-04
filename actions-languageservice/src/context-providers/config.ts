@@ -1,9 +1,14 @@
 import {data} from "@github/actions-expressions";
 import {Dictionary} from "@github/actions-expressions/data/dictionary";
 import {ExpressionData, Pair} from "@github/actions-expressions/data/expressiondata";
+import {WorkflowContext} from "../context/workflow-context";
 
 export type ContextProviderConfig = {
-  getContext: (name: string, defaultContext: data.Dictionary | undefined) => Promise<data.Dictionary | undefined>;
+  getContext: (
+    name: string,
+    defaultContext: data.Dictionary | undefined,
+    workflowContext: WorkflowContext
+  ) => Promise<data.Dictionary | undefined>;
 };
 
 /**
