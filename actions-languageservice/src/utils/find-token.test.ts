@@ -145,7 +145,7 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"],
+        ["job", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping],
         ["runs-on", TokenType.String, "runs-on"],
         ["runs-on", TokenType.Sequence]
@@ -180,7 +180,7 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"],
+        ["job", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping],
         ["runs-on", TokenType.String, "runs-on"]
       ],
@@ -201,7 +201,7 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"],
+        ["job", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
@@ -221,7 +221,7 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"],
+        ["job", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
@@ -241,7 +241,7 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"],
+        ["job", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
@@ -261,10 +261,10 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"]
+        ["job", TokenType.String, "build"]
       ],
       parent: ["jobs", TokenType.Mapping],
-      key: ["job-id", TokenType.String, "build"],
+      key: ["job", TokenType.String, "build"],
       token: [null, TokenType.String, "continue-on-error:foo"]
     });
   });
@@ -280,7 +280,7 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"],
+        ["job", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
@@ -300,7 +300,7 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"],
+        ["job", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping]
       ],
       parent: ["job-factory", TokenType.Mapping],
@@ -320,10 +320,10 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"]
+        ["job", TokenType.String, "build"]
       ],
       parent: ["jobs", TokenType.Mapping],
-      key: ["job-id", TokenType.String, "build"],
+      key: ["job", TokenType.String, "build"],
       token: [null, TokenType.String, "runs-"]
     });
   });
@@ -340,10 +340,10 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"]
+        ["job", TokenType.String, "build"]
       ],
       parent: ["jobs", TokenType.Mapping],
-      key: ["job-id", TokenType.String, "build"],
+      key: ["job", TokenType.String, "build"],
       token: [null, TokenType.String, "runs-"]
     });
   });
@@ -360,7 +360,7 @@ jobs:
         ["workflow-root-strict", TokenType.Mapping],
         ["jobs", TokenType.String, "jobs"],
         ["jobs", TokenType.Mapping],
-        ["job-id", TokenType.String, "build"],
+        ["job", TokenType.String, "build"],
         ["job-factory", TokenType.Mapping],
         ["runs-on", TokenType.String, "runs-on"]
       ],

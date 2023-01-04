@@ -778,6 +778,57 @@ jobs:
       expect(result.map(x => x.label)).toEqual(["container", "services", "status"]);
     });
 
+    it("job context is suggested within a job output", async () => {
+      const input = `
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: \${{ | }}
+    steps:
+      - id: a
+        run: echo hi
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      expect(result.map(x => x.label)).toEqual([
+        "env",
+        "github",
+        "inputs",
+        "job",
+        "needs",
+        "runner",
+        "secrets",
+        "steps",
+        "vars",
+        "contains",
+        "endsWith",
+        "format",
+        "fromJson",
+        "join",
+        "startsWith",
+        "toJson",
+      ]);
+    });
+
+    it("step context is suggested within a job output", async () => {
+      const input = `
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: \${{ steps.| }}
+    steps:
+      - id: foo
+        run: echo hi
+`;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      expect(result.map(x => x.label)).toEqual(["foo"]);
+    });
+
     it("container context is suggested within a job container", async () => {
       const input = `
 on: push

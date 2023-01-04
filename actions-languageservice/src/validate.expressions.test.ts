@@ -190,6 +190,39 @@ jobs:
       ]);
     });
 
+    it("reference of invalid step in job outputs", async () => {
+      const input = `
+      on: push
+      jobs:
+        a:
+          outputs:
+            environment: \${{ steps.foo }}
+          runs-on: ubuntu-latest
+          steps:
+            - id: a
+              run: echo hello a
+      `;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          "message": "Context access might be invalid: foo",
+          "range": {
+            "end": {
+              "character": 41,
+              "line": 5,
+            },
+            "start": {
+              "character": 25,
+              "line": 5,
+            },
+          },
+          "severity": 2,
+        },
+      ]);
+    });
+
     it("invalid reference of generated step name", async () => {
       const input = `
       on: push

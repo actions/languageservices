@@ -33,7 +33,7 @@ export function getWorkflowContext(
   // Iterate through the token path to find the job and step
   for (const token of tokenPath) {
     switch (token.definition?.key) {
-      case "job-id": {
+      case "job": {
         const jobID = (token as StringToken).value;
         context.job = template.jobs.find(job => job.id.value === jobID);
         break;
