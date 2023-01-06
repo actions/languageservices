@@ -36,6 +36,7 @@ export async function getActionInputValues(
     return {
       label: inputName,
       description: input.description,
+      insertText: `${inputName}: `,
       deprecated: input.deprecationMessage !== undefined
     };
   });

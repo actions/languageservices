@@ -373,4 +373,51 @@ jobs:
       end: {line: 6, character: 17}
     });
   });
+
+  describe("completes with indentation", () => {
+    it("default indentation", async () => {
+      const input = `on: push
+jobs:
+  build:
+    step|`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // Sequence
+      expect(result.filter(x => x.label === "steps").map(x => x.textEdit?.newText)).toEqual(["steps:\n  - "]);
+
+      // Mapping
+      expect(result.filter(x => x.label === "env").map(x => x.textEdit?.newText)).toEqual(["env:\n  "]);
+
+      // Value
+      expect(result.filter(x => x.label === "timeout-minutes").map(x => x.textEdit?.newText)).toEqual([
+        "timeout-minutes: "
+      ]);
+
+      // One-of
+      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency"]);
+    });
+
+    it("custom indentation", async () => {
+      // Use 3 spaces to indent
+      const input = `on: push
+jobs:
+   build:
+      step|`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // Sequence
+      expect(result.filter(x => x.label === "steps").map(x => x.textEdit?.newText)).toEqual(["steps:\n   - "]);
+
+      // Mapping
+      expect(result.filter(x => x.label === "env").map(x => x.textEdit?.newText)).toEqual(["env:\n   "]);
+
+      // Value
+      expect(result.filter(x => x.label === "timeout-minutes").map(x => x.textEdit?.newText)).toEqual([
+        "timeout-minutes: "
+      ]);
+
+      // One-of
+      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency"]);
+    });
+  });
 });
