@@ -1,6 +1,7 @@
 import {data} from "@github/actions-expressions";
 import {ContextProviderConfig} from "@github/actions-languageservice";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
+import {isMapping, isString} from "@github/actions-workflow-parser";
 import {Octokit} from "@octokit/rest";
 import {getSecrets} from "./context-providers/secrets";
 import {getStepsContext} from "./context-providers/steps";
@@ -27,7 +28,23 @@ export function contextProviders(
   ) => {
     switch (name) {
       case "secrets": {
-        const secrets = await getSecrets(octokit, cache, repo.owner, repo.name);
+        let environmentName: string | undefined;
+        if (workflowContext?.job?.environment) {
+          if (isString(workflowContext.job.environment)) {
+            environmentName = workflowContext.job.environment.value;
+          } else if (isMapping(workflowContext.job.environment)) {
+            for (const x of workflowContext.job.environment) {
+              if (isString(x.key) && x.key.value === "name") {
+                if (isString(x.value)) {
+                  environmentName = x.value.value;
+                }
+                break;
+              }
+            }
+          }
+        }
+
+        const secrets = await getSecrets(octokit, cache, repo, environmentName);
 
         defaultContext = defaultContext || new data.Dictionary();
         secrets.forEach(secret => defaultContext!.add(secret.value, new data.StringData("***")));
