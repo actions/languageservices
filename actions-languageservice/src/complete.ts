@@ -109,7 +109,10 @@ export async function complete(
 
     const item: CompletionItem = {
       label: value.label,
-      detail: value.description,
+      documentation: value.description && {
+        kind: "markdown",
+        value: value.description
+      },
       tags: value.deprecated ? [CompletionItemTag.Deprecated] : undefined,
       textEdit: replaceRange ? TextEdit.replace(replaceRange, newText) : TextEdit.insert(position, newText)
     };
@@ -212,6 +215,10 @@ function mapExpressionCompletionItem(item: ExpressionCompletionItem, charAfterPo
   }
   return {
     label: item.label,
+    documentation: item.description && {
+      kind: "markdown",
+      value: item.description
+    },
     insertText: insertText,
     kind: item.function ? CompletionItemKind.Function : CompletionItemKind.Variable
   };
