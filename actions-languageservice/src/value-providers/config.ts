@@ -1,9 +1,16 @@
 import {WorkflowContext} from "../context/workflow-context";
 
 export interface Value {
+  /** Label of this value */
   label: string;
+
+  /** Optional description to show when auto-completing or hovering */
   description?: string;
+
+  /** Whether this value is deprecated */
   deprecated?: boolean;
+
+  /** Alternative insert text, if not given `label` will be used */
   insertText?: string;
 }
 
