@@ -4,6 +4,7 @@ export interface Value {
   label: string;
   description?: string;
   deprecated?: boolean;
+  insertText?: string;
 }
 
 export enum ValueProviderKind {
