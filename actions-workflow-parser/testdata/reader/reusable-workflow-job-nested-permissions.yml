@@ -1,0 +1,149 @@
+include-source: false # Drop file/line/col from output
+skip:
+  - Go
+  - TypeScript
+max-nested-reusable-workflows-depth: 3
+---
+on: push
+permissions:
+  actions: write
+jobs:
+  deploy-level-0:
+    uses: contoso/templates/.github/workflows/deploy-level-1.yml@v1
+---
+contoso/templates/.github/workflows/deploy-level-1.yml@v1
+---
+on: workflow_call
+jobs:
+  deploy-level-1:
+    uses: contoso/templates/.github/workflows/deploy-level-2.yml@v1
+---
+contoso/templates/.github/workflows/deploy-level-2.yml@v1
+---
+on: workflow_call
+permissions:
+  actions: read
+jobs:
+  deploy-level-3:
+    uses: contoso/templates/.github/workflows/deploy-level-3.yml@v1
+---
+contoso/templates/.github/workflows/deploy-level-3.yml@v1
+---
+on: workflow_call
+jobs:
+  deploy-level-3:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+---
+{
+  "permissions": {
+    "actions": "write"
+  },
+  "jobs": [
+    {
+      "Type": "reusableWorkflowJob",
+      "Id": "deploy-level-0",
+      "Name": "deploy-level-0",
+      "Needs": [],
+      "If": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "Ref": "contoso/templates/.github/workflows/deploy-level-1.yml@v1",
+      "Permissions": {
+        "actions": "write"
+      },
+      "InputDefinitions": null,
+      "InputValues": null,
+      "SecretDefinitions": null,
+      "SecretValues": null,
+      "InheritSecrets": false,
+      "Outputs": null,
+      "Defaults": null,
+      "Env": null,
+      "Concurrency": null,
+      "EmbeddedConcurrency": null,
+      "Strategy": null,
+      "Jobs": [
+        {
+          "Type": "reusableWorkflowJob",
+          "Id": "deploy-level-1",
+          "Name": "deploy-level-1",
+          "Needs": [],
+          "If": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "Ref": "contoso/templates/.github/workflows/deploy-level-2.yml@v1",
+          "Permissions": {
+            "actions": "read"
+          },
+          "InputDefinitions": null,
+          "InputValues": null,
+          "SecretDefinitions": null,
+          "SecretValues": null,
+          "InheritSecrets": false,
+          "Outputs": null,
+          "Defaults": null,
+          "Env": null,
+          "Concurrency": null,
+          "EmbeddedConcurrency": null,
+          "Strategy": null,
+          "Jobs": [
+            {
+              "Type": "reusableWorkflowJob",
+              "Id": "deploy-level-3",
+              "Name": "deploy-level-3",
+              "Needs": [],
+              "If": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "Ref": "contoso/templates/.github/workflows/deploy-level-3.yml@v1",
+              "Permissions": {
+                "actions": "read"
+              },
+              "InputDefinitions": null,
+              "InputValues": null,
+              "SecretDefinitions": null,
+              "SecretValues": null,
+              "InheritSecrets": false,
+              "Outputs": null,
+              "Defaults": null,
+              "Env": null,
+              "Concurrency": null,
+              "EmbeddedConcurrency": null,
+              "Strategy": null,
+              "Jobs": [
+                {
+                  "type": "job",
+                  "id": "deploy-level-3",
+                  "name": "deploy-level-3",
+                  "if": {
+                    "type": 3,
+                    "expr": "success()"
+                  },
+                  "permissions": {
+                    "actions": "read"
+                  },
+                  "runs-on": "ubuntu-latest",
+                  "steps": [
+                    {
+                      "id": "__run",
+                      "if": {
+                        "type": 3,
+                        "expr": "success()"
+                      },
+                      "run": "echo hi"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+include-source: false # Drop file/line/col from output
+skip:
+  - Go
+  - TypeScript
+---
+on: push
+jobs:
+  deploy:
+    uses: contoso/templates/.github/workflows/deploy.yml@v1
+    with:
+      some-string-1: null
+      some-string-2: true
+      some-string-3: false
+      some-string-4: 456
+---
+contoso/templates/.github/workflows/deploy.yml@v1
+---
+on:
+  workflow_call:
+    inputs:
+      some-string-1:
+        type: string
+      some-string-2:
+        type: string
+      some-string-3:
+        type: string
+      some-string-4:
+        type: string
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+---
+{
+  "jobs": [
+    {
+      "Type": "reusableWorkflowJob",
+      "Id": "deploy",
+      "Name": "deploy",
+      "Needs": [],
+      "If": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "Ref": "contoso/templates/.github/workflows/deploy.yml@v1",
+      "Permissions": null,
+      "InputDefinitions": {
+        "type": 2,
+        "map": [
+          {
+            "Key": "some-string-1",
+            "Value": {
+              "type": 2,
+              "map": [
+                {
+                  "Key": "type",
+                  "Value": "string"
+                }
+              ]
+            }
+          },
+          {
+            "Key": "some-string-2",
+            "Value": {
+              "type": 2,
+              "map": [
+                {
+                  "Key": "type",
+                  "Value": "string"
+                }
+              ]
+            }
+          },
+          {
+            "Key": "some-string-3",
+            "Value": {
+              "type": 2,
+              "map": [
+                {
+                  "Key": "type",
+                  "Value": "string"
+                }
+              ]
+            }
+          },
+          {
+            "Key": "some-string-4",
+            "Value": {
+              "type": 2,
+              "map": [
+                {
+                  "Key": "type",
+                  "Value": "string"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "InputValues": {
+        "type": 2,
+        "map": [
+          {
+            "Key": "some-string-1",
+            "Value": ""
+          },
+          {
+            "Key": "some-string-2",
+            "Value": true
+          },
+          {
+            "Key": "some-string-3",
+            "Value": false
+          },
+          {
+            "Key": "some-string-4",
+            "Value": 456
+          }
+        ]
+      },
+      "SecretDefinitions": null,
+      "SecretValues": null,
+      "InheritSecrets": false,
+      "Outputs": null,
+      "Defaults": null,
+      "Env": null,
+      "Concurrency": null,
+      "EmbeddedConcurrency": null,
+      "Strategy": null,
+      "Jobs": [
+        {
+          "type": "job",
+          "id": "job1",
+          "name": "job1",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "runs-on": "ubuntu-latest",
+          "steps": [
+            {
+              "id": "__run",
+              "if": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "run": "echo hi"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
