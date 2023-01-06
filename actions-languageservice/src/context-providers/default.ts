@@ -47,11 +47,17 @@ export async function getContext(
 
 function getDefaultContext(name: string, workflowContext: WorkflowContext, mode: Mode): ContextValue | undefined {
   switch (name) {
+    case "env":
+      return getEnvContext(workflowContext);
+
     case "github":
       return getGithubContext(workflowContext);
 
     case "inputs":
       return getInputsContext(workflowContext);
+
+    case "job":
+      return getJobContext(workflowContext);
 
     case "matrix":
       return getMatrixContext(workflowContext, mode);
@@ -76,12 +82,6 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
 
     case "strategy":
       return getStrategyContext(workflowContext);
-
-    case "job":
-      return getJobContext(workflowContext);
-
-    case "env":
-      return getEnvContext(workflowContext);
   }
 
   return undefined;
