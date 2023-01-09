@@ -24,6 +24,7 @@ export class TemplateTokenError extends Error {
 export abstract class TemplateToken {
   // Fields for serialization
   private readonly type: TokenType
+  private _description: string | undefined
   public readonly file: number | undefined
   public readonly range: TokenRange | undefined
   public definitionInfo: DefinitionInfo | undefined
@@ -56,20 +57,20 @@ export abstract class TemplateToken {
     return this.range?.start[1]
   }
 
+  public get definition(): Definition | undefined {
+    return this.definitionInfo?.definition
+  }
+
   get description(): string | undefined {
-    return this.propertyDefinition?.description || this.definition?.description
+    return (
+      this._description ||
+      this.propertyDefinition?.description ||
+      this.definition?.description
+    )
   }
 
   set description(description: string | undefined) {
-    if (this.propertyDefinition) {
-      this.propertyDefinition.description = description
-    } else if (this.definition) {
-      this.definition.description = description
-    }
-  }
-
-  public get definition(): Definition | undefined {
-    return this.definitionInfo?.definition
+    this._description = description
   }
 
   public abstract get isScalar(): boolean

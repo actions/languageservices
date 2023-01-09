@@ -10,7 +10,7 @@ import { TokenType } from "../tokens/types"
 export class PropertyDefinition {
   public readonly type: string = ""
   public readonly required: boolean = false
-  public description: string | undefined
+  public readonly description: string | undefined
 
   public constructor(token: TemplateToken) {
     if (token.templateTokenType === TokenType.String) {

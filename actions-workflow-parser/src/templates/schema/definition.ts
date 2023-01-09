@@ -22,7 +22,7 @@ export abstract class Definition {
   // A key to uniquely identify a definition
   public readonly key: string
 
-  public description: string | undefined
+  public readonly description: string | undefined
 
   public constructor(key: string, definition?: MappingToken) {
     this.key = key
