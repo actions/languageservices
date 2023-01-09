@@ -207,19 +207,19 @@ jobs:
 
       expect(result).toEqual([
         {
-          "message": "Context access might be invalid: foo",
-          "range": {
-            "end": {
-              "character": 41,
-              "line": 5,
+          message: "Context access might be invalid: foo",
+          range: {
+            end: {
+              character: 41,
+              line: 5
             },
-            "start": {
-              "character": 25,
-              "line": 5,
-            },
+            start: {
+              character: 25,
+              line: 5
+            }
           },
-          "severity": 2,
-        },
+          severity: 2
+        }
       ]);
     });
 
@@ -1130,6 +1130,40 @@ jobs:
         }
       ]);
     });
+
+    it("validates event payload", async () => {
+      const input = `
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ github.event.forced }}
+      - run: echo \${{ github.event.pull_request }}
+      - run: echo \${{ github.event.schedule }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: schedule",
+          range: {
+            end: {
+              character: 46,
+              line: 9
+            },
+            start: {
+              character: 18,
+              line: 9
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+
     it("validates event inputs", async () => {
       const input = `
 on:

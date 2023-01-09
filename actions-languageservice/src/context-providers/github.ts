@@ -1,6 +1,7 @@
 import {data} from "@github/actions-expressions";
 import {ExpressionData} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
+import {eventPayloads} from "./events/eventPayloads";
 import {getInputsContext} from "./inputs";
 
 export function getGithubContext(workflowContext: WorkflowContext): data.Dictionary {
@@ -55,9 +56,9 @@ export function getGithubContext(workflowContext: WorkflowContext): data.Diction
 
 function getEventContext(workflowContext: WorkflowContext): ExpressionData {
   const d = new data.Dictionary();
-  const events = workflowContext?.template?.events;
+  const eventsConfig = workflowContext?.template?.events;
 
-  if (!events) {
+  if (!eventsConfig) {
     return d;
   }
 
@@ -66,11 +67,31 @@ function getEventContext(workflowContext: WorkflowContext): ExpressionData {
     d.add("inputs", inputs);
   }
 
-  const schedule = events["schedule"];
+  const schedule = eventsConfig["schedule"];
   if (schedule && schedule.length > 0) {
     const default_cron = schedule[0].cron;
     // For now, default to the first cron expression only
     d.add("schedule", new data.StringData(default_cron));
+  }
+
+  const events = Object.keys(eventsConfig);
+  for (const e of events) {
+    const payload = eventPayloads[e];
+    if (payload) {
+      merge(d, payload);
+    }
+  }
+
+  return d;
+}
+
+function merge(d: data.Dictionary, toAdd: Object): data.Dictionary {
+  for (const [key, value] of Object.entries(toAdd)) {
+    if (value && typeof value === "object" && !d.get(key)) {
+      d.add(key, merge(new data.Dictionary(), value));
+    } else {
+      d.add(key, new data.Null());
+    }
   }
 
   return d;
