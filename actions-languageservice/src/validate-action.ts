@@ -65,7 +65,7 @@ export async function validateAction(
   }
 
   const missingRequiredInputs = Object.entries(actionInputs).filter(
-    ([inputName, input]) => input.required && !stepInputs.has(inputName)
+    ([inputName, input]) => input.required && !stepInputs.has(inputName) && input.default === undefined
   );
 
   if (missingRequiredInputs.length > 0) {
