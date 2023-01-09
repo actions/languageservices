@@ -56,7 +56,7 @@ function testCaseReviver(key: string, val: any): any {
   return val;
 }
 
-const testFiles = "./testData";
+const testFiles = "./testdata";
 
 describe("x-lang tests", () => {
   const files = fs.readdirSync(testFiles);
