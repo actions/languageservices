@@ -16,7 +16,7 @@ const nullTrace: TraceWriter = {
   error: (x) => {},
 }
 
-const testFiles = "./testData/reader"
+const testFiles = "../testData/reader"
 
 describe("x-lang tests", () => {
   const files = fs.readdirSync(testFiles)
