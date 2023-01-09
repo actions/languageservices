@@ -352,6 +352,9 @@ on:
         type: string
   workflow_call:
     inputs:
+      name:
+          type: string
+          default: value
       third-name:
         type: boolean
 jobs:
@@ -410,6 +413,9 @@ jobs:
           type: string
     workflow_call:
       inputs:
+        name:
+          type: string
+          default: value
         third-name:
           type: boolean
   jobs:
@@ -457,7 +463,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), undefined, undefined);
 
-      expect(result.map(x => x.label)).toContain("schedule");
+      expect(result.map(x => x.label)).toEqual(["repository", "schedule", "workflow"]);
     });
 
     it("includes event payload", async () => {
