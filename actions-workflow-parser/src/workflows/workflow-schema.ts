@@ -1,6 +1,6 @@
 import { JSONObjectReader } from "../templates/json-object-reader"
 import { TemplateSchema } from "../templates/schema"
-import WorkflowSchema from "./workflow-v1.0.json"
+import WorkflowSchema from "../workflow-v1.0.json"
 
 let schema: TemplateSchema
 
