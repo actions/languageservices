@@ -1,0 +1,126 @@
+include-source: false # Drop file/line/col from output
+skip:
+  - Go
+  - TypeScript
+---
+on: push
+jobs:
+  build:
+    uses: contoso/templates/.github/workflows/build.yml@v1
+  build2:
+    uses: contoso2/templates2/.github/workflows/build2.yml@v1
+---
+contoso/templates/.github/workflows/build.yml@v1
+---
+on:
+  workflow_call:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 1
+---
+contoso2/templates2/.github/workflows/build2.yml@v1
+---
+on:
+  workflow_call:
+jobs:
+  deploy2:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 1
+---
+{
+  "jobs": [
+    {
+      "Type": "reusableWorkflowJob",
+      "Id": "build",
+      "Name": "build",
+      "Needs": [],
+      "If": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "Ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "Permissions": null,
+      "InputDefinitions": null,
+      "InputValues": null,
+      "SecretDefinitions": null,
+      "SecretValues": null,
+      "InheritSecrets": false,
+      "Outputs": null,
+      "Defaults": null,
+      "Env": null,
+      "Concurrency": null,
+      "EmbeddedConcurrency": null,
+      "Strategy": null,
+      "Jobs": [
+        {
+          "type": "job",
+          "id": "deploy",
+          "name": "deploy",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "runs-on": "ubuntu-latest",
+          "steps": [
+            {
+              "id": "__run",
+              "if": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "run": "echo 1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Type": "reusableWorkflowJob",
+      "Id": "build2",
+      "Name": "build2",
+      "Needs": [],
+      "If": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "Ref": "contoso2/templates2/.github/workflows/build2.yml@v1",
+      "Permissions": null,
+      "InputDefinitions": null,
+      "InputValues": null,
+      "SecretDefinitions": null,
+      "SecretValues": null,
+      "InheritSecrets": false,
+      "Outputs": null,
+      "Defaults": null,
+      "Env": null,
+      "Concurrency": null,
+      "EmbeddedConcurrency": null,
+      "Strategy": null,
+      "Jobs": [
+        {
+          "type": "job",
+          "id": "deploy2",
+          "name": "deploy2",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "runs-on": "ubuntu-latest",
+          "steps": [
+            {
+              "id": "__run",
+              "if": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "run": "echo 1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

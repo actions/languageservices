@@ -1,0 +1,131 @@
+include-source: false # Drop file/line/col from output
+skip:
+  - Go
+  - TypeScript
+---
+on: push
+jobs:
+  build:
+    strategy:
+      matrix:
+        version:
+          - v1
+          - v2
+    uses: contoso/templates/.github/workflows/build.yml@v1
+    with:
+      version: ${{ matrix.version }}
+---
+contoso/templates/.github/workflows/build.yml@v1
+---
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+jobs:
+  build-it:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo version=${{ inputs.version }}
+---
+{
+  "jobs": [
+    {
+      "Type": "reusableWorkflowJob",
+      "Id": "build",
+      "Name": "build",
+      "Needs": [],
+      "If": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "Ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "Permissions": null,
+      "InputDefinitions": {
+        "type": 2,
+        "map": [
+          {
+            "Key": "version",
+            "Value": {
+              "type": 2,
+              "map": [
+                {
+                  "Key": "type",
+                  "Value": "string"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "InputValues": {
+        "type": 2,
+        "map": [
+          {
+            "Key": "version",
+            "Value": {
+              "type": 3,
+              "expr": "matrix.version"
+            }
+          }
+        ]
+      },
+      "SecretDefinitions": null,
+      "SecretValues": null,
+      "InheritSecrets": false,
+      "Outputs": null,
+      "Defaults": null,
+      "Env": null,
+      "Concurrency": null,
+      "EmbeddedConcurrency": null,
+      "Strategy": {
+        "type": 2,
+        "map": [
+          {
+            "Key": "matrix",
+            "Value": {
+              "type": 2,
+              "map": [
+                {
+                  "Key": "version",
+                  "Value": {
+                    "type": 1,
+                    "seq": [
+                      "v1",
+                      "v2"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Jobs": [
+        {
+          "type": "job",
+          "id": "build-it",
+          "name": "build-it",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "runs-on": "ubuntu-latest",
+          "steps": [
+            {
+              "id": "__run",
+              "if": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "run": {
+                "type": 3,
+                "expr": "format('echo version={0}', inputs.version)"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
