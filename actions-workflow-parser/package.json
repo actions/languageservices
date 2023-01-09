@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/github/actions-workflow-parser/"
+    "url": "https://github.com/github/actions-languageservices/actions-workflow-parser"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
