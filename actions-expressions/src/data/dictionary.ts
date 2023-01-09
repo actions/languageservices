@@ -30,7 +30,7 @@ export class Dictionary implements ExpressionDataInterface {
   }
 
   add(key: string, value: ExpressionData) {
-    if (this.indexMap[key.toLowerCase()]) {
+    if (key.toLowerCase() in this.indexMap) {
       return;
     }
 

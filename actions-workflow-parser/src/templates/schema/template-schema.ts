@@ -1,3 +1,4 @@
+import { TokenType } from "../../templates/tokens/types"
 import { ObjectReader } from "../object-reader"
 import {
   ALLOWED_VALUES,
@@ -46,7 +47,6 @@ import {
 import { TemplateContext, TemplateValidationErrors } from "../template-context"
 import { readTemplate } from "../template-reader"
 import { MappingToken, SequenceToken, StringToken } from "../tokens"
-import { TokenType } from "../tokens/types"
 import { NoOperationTraceWriter } from "../trace-writer"
 import { BooleanDefinition } from "./boolean-definition"
 import { Definition } from "./definition"
