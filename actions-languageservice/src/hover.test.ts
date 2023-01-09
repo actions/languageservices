@@ -51,6 +51,25 @@ jobs:
     );
   });
 
+  it("property values are not overwritten", async () => {
+    const input1 = `on: push
+jobs:
+  build:
+    ti|meout-minutes: 10
+    cancel-timeout-minutes: 10`;
+    const result1 = await hover(...getPositionFromCursor(input1));
+    expect(result1).not.toBeUndefined();
+
+    const input2 = `on: push
+jobs:
+  build:
+    timeout-minutes: 10
+    ca|ncel-timeout-minutes: 10`;
+    const result2 = await hover(...getPositionFromCursor(input2));
+    expect(result2).not.toBeUndefined();
+    expect(result1?.contents).not.toEqual(result2?.contents);
+  });
+
   it("on a value in a sequence", async () => {
     const input = `on: [pull_request, 
       pu|sh]
