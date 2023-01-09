@@ -1,5 +1,6 @@
 import {BooleanDefinition} from "@github/actions-workflow-parser/templates/schema/boolean-definition";
 import {Definition} from "@github/actions-workflow-parser/templates/schema/definition";
+import {DefinitionType} from "@github/actions-workflow-parser/templates/schema/definition-type";
 import {MappingDefinition} from "@github/actions-workflow-parser/templates/schema/mapping-definition";
 import {OneOfDefinition} from "@github/actions-workflow-parser/templates/schema/one-of-definition";
 import {SequenceDefinition} from "@github/actions-workflow-parser/templates/schema/sequence-definition";
@@ -8,15 +9,15 @@ import {getWorkflowSchema} from "@github/actions-workflow-parser/workflows/workf
 import {Value} from "./config";
 import {stringsToValues} from "./strings-to-values";
 
-export function definitionValues(def: Definition): Value[] {
+export function definitionValues(def: Definition, indentation: string): Value[] {
   const schema = getWorkflowSchema();
 
   if (def instanceof MappingDefinition) {
-    return mappingValues(def, schema.definitions);
+    return mappingValues(def, schema.definitions, indentation);
   }
 
   if (def instanceof OneOfDefinition) {
-    return oneOfValues(def, schema.definitions);
+    return oneOfValues(def, schema.definitions, indentation);
   }
 
   if (def instanceof BooleanDefinition) {
@@ -35,30 +36,64 @@ export function definitionValues(def: Definition): Value[] {
   if (def instanceof SequenceDefinition) {
     const itemDef = schema.getDefinition(def.itemType);
     if (itemDef) {
-      return definitionValues(itemDef);
+      return definitionValues(itemDef, indentation);
     }
   }
 
   return [];
 }
 
-function mappingValues(mappingDefinition: MappingDefinition, definitions: {[key: string]: Definition}): Value[] {
+function mappingValues(
+  mappingDefinition: MappingDefinition,
+  definitions: {[key: string]: Definition},
+  indentation: string
+): Value[] {
   const properties: Value[] = [];
   for (const [key, value] of Object.entries(mappingDefinition.properties)) {
+    let insertText: string | undefined;
+
     let description: string | undefined;
     if (value.type) {
       const typeDef = definitions[value.type];
       description = typeDef?.description;
+
+      if (typeDef) {
+        switch (typeDef.definitionType) {
+          case DefinitionType.Sequence:
+            insertText = `${key}:\n${indentation}- `;
+            break;
+
+          case DefinitionType.Mapping:
+            insertText = `${key}:\n${indentation}`;
+            break;
+
+          case DefinitionType.OneOf:
+            // No special insertText in this case
+            break;
+
+          default:
+            insertText = `${key}: `;
+        }
+      }
     }
-    properties.push({label: key, description: description});
+
+    properties.push({
+      label: key,
+      description,
+      insertText
+    });
   }
   return properties;
 }
 
-function oneOfValues(oneOfDefinition: OneOfDefinition, definitions: {[key: string]: Definition}): Value[] {
+function oneOfValues(
+  oneOfDefinition: OneOfDefinition,
+  definitions: {[key: string]: Definition},
+  indentation: string
+): Value[] {
   const values: Value[] = [];
   for (const key of oneOfDefinition.oneOf) {
-    values.push(...definitionValues(definitions[key]));
+    values.push(...definitionValues(definitions[key], indentation));
   }
   return distinctValues(values);
 }

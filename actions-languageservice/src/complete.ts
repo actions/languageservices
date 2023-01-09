@@ -16,6 +16,7 @@ import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
+import {guessIndentation} from "./utils/indentation-guesser";
 import {mapRange} from "./utils/range";
 import {transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
@@ -94,18 +95,26 @@ export async function complete(
     }
   }
 
-  const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext);
+  const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
+  const indentString = " ".repeat(indentation.tabSize);
+
+  const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext, indentString);
   let replaceRange: Range | undefined;
   if (token?.range) {
     replaceRange = mapRange(token.range);
   }
 
   return values.map(value => {
+    const newText = value.insertText || value.label;
+
     const item: CompletionItem = {
       label: value.label,
-      detail: value.description,
+      documentation: value.description && {
+        kind: "markdown",
+        value: value.description
+      },
       tags: value.deprecated ? [CompletionItemTag.Deprecated] : undefined,
-      textEdit: replaceRange ? TextEdit.replace(replaceRange, value.label) : undefined
+      textEdit: replaceRange ? TextEdit.replace(replaceRange, newText) : TextEdit.insert(position, newText)
     };
 
     return item;
@@ -117,7 +126,8 @@ async function getValues(
   keyToken: TemplateToken | null,
   parent: TemplateToken | null,
   valueProviderConfig: ValueProviderConfig | undefined,
-  workflowContext: WorkflowContext
+  workflowContext: WorkflowContext,
+  indentation: string
 ): Promise<Value[]> {
   if (!parent) {
     return [];
@@ -150,7 +160,7 @@ async function getValues(
     return [];
   }
 
-  const values = definitionValues(def);
+  const values = definitionValues(def, indentation);
   return filterAndSortCompletionOptions(values, existingValues);
 }
 
@@ -205,6 +215,10 @@ function mapExpressionCompletionItem(item: ExpressionCompletionItem, charAfterPo
   }
   return {
     label: item.label,
+    documentation: item.description && {
+      kind: "markdown",
+      value: item.description
+    },
     insertText: insertText,
     kind: item.function ? CompletionItemKind.Function : CompletionItemKind.Variable
   };
