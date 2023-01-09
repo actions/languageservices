@@ -1,11 +1,11 @@
 {
   "private": true,
   "workspaces": [
-    "actions-expressions",
-    "actions-workflow-parser",
-    "actions-languageservice",
-    "actions-languageserver",
-    "browser-playground"
+    "./actions-expressions",
+    "./actions-workflow-parser",
+    "./actions-languageservice",
+    "./actions-languageserver",
+    "./browser-playground"
   ],
   "devDependencies": {
     "lerna": "^6.0.3"
