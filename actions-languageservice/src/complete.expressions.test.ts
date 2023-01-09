@@ -352,6 +352,9 @@ on:
         type: string
   workflow_call:
     inputs:
+      name:
+          type: string
+          default: value
       third-name:
         type: boolean
 jobs:
@@ -410,6 +413,9 @@ jobs:
           type: string
     workflow_call:
       inputs:
+        name:
+          type: string
+          default: value
         third-name:
           type: boolean
   jobs:
@@ -457,7 +463,26 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), undefined, undefined);
 
-      expect(result.map(x => x.label)).toContain("schedule");
+      expect(result.map(x => x.label)).toEqual(["repository", "schedule", "workflow"]);
+    });
+
+    it("includes event payload", async () => {
+      const input = `
+  on: [push, pull_request]
+    
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - run: echo \${{ github.event.| }}
+    `;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+
+      // forced is part of the push event payload
+      expect(result.map(x => x.label)).toContain("forced");
+      // pull_request is part of the pull_request event payload
+      expect(result.map(x => x.label)).toContain("pull_request");
     });
   });
 
@@ -808,7 +833,7 @@ jobs:
         "fromJson",
         "join",
         "startsWith",
-        "toJson",
+        "toJson"
       ]);
     });
 
