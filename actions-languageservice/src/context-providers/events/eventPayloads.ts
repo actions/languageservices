@@ -22,7 +22,7 @@ import meta from "./meta.json";
 import milestone from "./milestone.json";
 import org_block from "./org_block.json";
 import organization from "./organization.json";
-import packagePayload from "./package.json";
+import packagePayload from "./package_payload.json";
 import page_build from "./page_build.json";
 import ping from "./ping.json";
 import project from "./project.json";
