@@ -75,8 +75,8 @@ function getEventContext(workflowContext: WorkflowContext): ExpressionData {
   }
 
   const events = Object.keys(eventsConfig);
-  for (let e of events) {
-    let payload = eventPayloads[e];
+  for (const e of events) {
+    const payload = eventPayloads[e];
     if (payload) {
       merge(d, payload);
     }
@@ -85,9 +85,8 @@ function getEventContext(workflowContext: WorkflowContext): ExpressionData {
   return d;
 }
 
-function merge(d: data.Dictionary, toAdd: any): data.Dictionary {
-  for (let key of Object.keys(toAdd)) {
-    const value = toAdd[key];
+function merge(d: data.Dictionary, toAdd: Object): data.Dictionary {
+  for (const [key, value] of Object.entries(toAdd)) {
     if (value && typeof value === "object" && !d.get(key)) {
       d.add(key, merge(new data.Dictionary(), value));
     } else {
