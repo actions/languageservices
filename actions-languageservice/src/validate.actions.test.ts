@@ -1,4 +1,4 @@
-import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
+import {DiagnosticSeverity} from "vscode-languageserver-types";
 import {ActionInput, ActionReference} from "./action";
 import {registerLogger} from "./log";
 import {createDocument} from "./test-utils/document";
@@ -26,6 +26,15 @@ const validationConfig: ValidationConfig = {
             description: "Deprecated. Use node-version instead. Will not be supported after October 1, 2019",
             deprecationMessage:
               "The version property will not be supported after October 1, 2019. Use node-version instead"
+          }
+        };
+        break;
+      case "actions/deploy-pages":
+        inputs = {
+          token: {
+            required: true,
+            description: "token to use",
+            default: "${{ github.token }}"
           }
         };
         break;
@@ -73,7 +82,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        notanoption: true 
+        notanoption: true
 `;
     const result = await validate(createDocument("wf.yaml", input), validationConfig);
 
@@ -104,7 +113,7 @@ jobs:
     steps:
     - uses: actions/setup-node@v1
       with:
-        version: 10 
+        version: 10
 `;
     const result = await validate(createDocument("wf.yaml", input), validationConfig);
 
@@ -155,6 +164,20 @@ jobs:
         severity: DiagnosticSeverity.Error
       }
     ]);
+  });
+
+  it("required input with default value", async () => {
+    const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/deploy-pages@main
+`;
+    const result = await validate(createDocument("wf.yaml", input), validationConfig);
+
+    expect(result).toEqual([]);
   });
 
   it("multiple missing required inputs", async () => {
@@ -226,7 +249,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        notanoption: true 
+        notanoption: true
 `;
     const config = validationConfig;
     config.valueProviderConfig = {
