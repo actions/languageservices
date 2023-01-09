@@ -1,0 +1,107 @@
+include-source: false # Drop file/line/col from output
+skip:
+  - Go
+  - TypeScript
+---
+on: push
+jobs:
+  build:
+    uses: contoso/templates/.github/workflows/build.yml@v1
+---
+contoso/templates/.github/workflows/build.yml@v1
+---
+on:
+  workflow_call:
+    outputs:
+      my-output:
+        description: Some output
+        value: ${{ jobs.job1.outputs.hello }}
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    outputs:
+      hello: hello
+    steps:
+      - run: echo 1
+---
+{
+  "jobs": [
+    {
+      "Type": "reusableWorkflowJob",
+      "Id": "build",
+      "Name": "build",
+      "Needs": [],
+      "If": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "Ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "Permissions": null,
+      "InputDefinitions": null,
+      "InputValues": null,
+      "SecretDefinitions": null,
+      "SecretValues": null,
+      "InheritSecrets": false,
+      "Outputs": {
+        "type": 2,
+        "map": [
+          {
+            "Key": "my-output",
+            "Value": {
+              "type": 2,
+              "map": [
+                {
+                  "Key": "description",
+                  "Value": "Some output"
+                },
+                {
+                  "Key": "value",
+                  "Value": {
+                    "type": 3,
+                    "expr": "jobs.job1.outputs.hello"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Defaults": null,
+      "Env": null,
+      "Concurrency": null,
+      "EmbeddedConcurrency": null,
+      "Strategy": null,
+      "Jobs": [
+        {
+          "type": "job",
+          "id": "job1",
+          "name": "job1",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "runs-on": "ubuntu-latest",
+          "outputs": {
+            "type": 2,
+            "map": [
+              {
+                "Key": "hello",
+                "Value": "hello"
+              }
+            ]
+          },
+          "steps": [
+            {
+              "id": "__run",
+              "if": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "run": "echo 1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+include-source: false # Drop file/line/col from output
+skip:
+- TypeScript
+---
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: github/checkout@v2.5
+      with:
+        dot: .
+        single-quoted-number: '8'
+        double-quoted-number: "9"
+---
+{
+  "jobs": [
+    {
+      "type": "job",
+      "id": "build",
+      "name": "build",
+      "if": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "runs-on": "ubuntu-latest",
+      "steps": [
+        {
+          "id": "__github_checkout",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "uses": "github/checkout@v2.5",
+          "with": {
+            "type": 2,
+            "map": [
+              {
+                "Key": "dot",
+                "Value": "."
+              },
+              {
+                "Key": "single-quoted-number",
+                "Value": "8"
+              },
+              {
+                "Key": "double-quoted-number",
+                "Value": "9"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+include-source: true # Preserve file/line/col in serialized output
+skip:
+  - Go
+  - TypeScript
+---
+on: push
+jobs:
+  build:
+    uses: some-org-1/some-repo-1/.github/workflows/build.yml@v1
+  deploy:
+    uses: some-org-2/some-repo-2/.github/workflows/deploy.yml@v2
+---
+some-org-1/some-repo-1/.github/workflows/build.yml@v1
+---
+on:
+  workflow_call:
+jobs:
+  build-nested:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./build
+---
+some-org-2/some-repo-2/.github/workflows/deploy.yml@v2
+---
+on:
+  workflow_call:
+jobs:
+  deploy-nested:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./deploy
+---
+{
+  "jobs": [
+    {
+      "Type": "reusableWorkflowJob",
+      "Id": {
+        "type": 0,
+        "file": 1,
+        "line": 3,
+        "col": 3,
+        "lit": "build"
+      },
+      "Name": {
+        "type": 0,
+        "file": 1,
+        "line": 3,
+        "col": 3,
+        "lit": "build"
+      },
+      "Needs": [],
+      "If": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "Ref": {
+        "type": 0,
+        "file": 1,
+        "line": 4,
+        "col": 11,
+        "lit": "some-org-1/some-repo-1/.github/workflows/build.yml@v1"
+      },
+      "Permissions": null,
+      "InputDefinitions": null,
+      "InputValues": null,
+      "SecretDefinitions": null,
+      "SecretValues": null,
+      "InheritSecrets": false,
+      "Outputs": null,
+      "Defaults": null,
+      "Env": null,
+      "Concurrency": null,
+      "EmbeddedConcurrency": null,
+      "Strategy": null,
+      "Jobs": [
+        {
+          "type": "job",
+          "id": {
+            "type": 0,
+            "file": 2,
+            "line": 4,
+            "col": 3,
+            "lit": "build-nested"
+          },
+          "name": {
+            "type": 0,
+            "file": 2,
+            "line": 4,
+            "col": 3,
+            "lit": "build-nested"
+          },
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "runs-on": {
+            "type": 0,
+            "file": 2,
+            "line": 5,
+            "col": 14,
+            "lit": "ubuntu-latest"
+          },
+          "steps": [
+            {
+              "id": "__run",
+              "if": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "run": {
+                "type": 0,
+                "file": 2,
+                "line": 7,
+                "col": 14,
+                "lit": "./build"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Type": "reusableWorkflowJob",
+      "Id": {
+        "type": 0,
+        "file": 1,
+        "line": 5,
+        "col": 3,
+        "lit": "deploy"
+      },
+      "Name": {
+        "type": 0,
+        "file": 1,
+        "line": 5,
+        "col": 3,
+        "lit": "deploy"
+      },
+      "Needs": [],
+      "If": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "Ref": {
+        "type": 0,
+        "file": 1,
+        "line": 6,
+        "col": 11,
+        "lit": "some-org-2/some-repo-2/.github/workflows/deploy.yml@v2"
+      },
+      "Permissions": null,
+      "InputDefinitions": null,
+      "InputValues": null,
+      "SecretDefinitions": null,
+      "SecretValues": null,
+      "InheritSecrets": false,
+      "Outputs": null,
+      "Defaults": null,
+      "Env": null,
+      "Concurrency": null,
+      "EmbeddedConcurrency": null,
+      "Strategy": null,
+      "Jobs": [
+        {
+          "type": "job",
+          "id": {
+            "type": 0,
+            "file": 3,
+            "line": 4,
+            "col": 3,
+            "lit": "deploy-nested"
+          },
+          "name": {
+            "type": 0,
+            "file": 3,
+            "line": 4,
+            "col": 3,
+            "lit": "deploy-nested"
+          },
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "runs-on": {
+            "type": 0,
+            "file": 3,
+            "line": 5,
+            "col": 14,
+            "lit": "ubuntu-latest"
+          },
+          "steps": [
+            {
+              "id": "__run",
+              "if": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "run": {
+                "type": 0,
+                "file": 3,
+                "line": 7,
+                "col": 14,
+                "lit": "./deploy"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "file-table": [
+    ".github/workflows/preserves-source-info-reusable-workflow.yml",
+    "some-org-1/some-repo-1/.github/workflows/build.yml@v1",
+    "some-org-2/some-repo-2/.github/workflows/deploy.yml@v2"
+  ]
+}
