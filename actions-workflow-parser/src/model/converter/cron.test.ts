@@ -49,7 +49,6 @@ describe("isValidCron", () => {
     "0 2/4-5 * * *",
     "0 2-4-6 * * *",
     "0 2/4/6 * * *",
-    "0 2/4/6 * * *",
   ]
 
   for (const cron of invalid) {
