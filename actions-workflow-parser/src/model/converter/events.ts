@@ -18,6 +18,7 @@ import {
   TypesFilterConfig,
   WorkflowFilterConfig,
 } from "../workflow-template"
+import { isValidCron } from "./cron"
 import { convertStringList } from "./string-list"
 import { convertEventWorkflowDispatchInputs } from "./workflow-dispatch"
 
@@ -160,9 +161,7 @@ function convertSchedule(
       if (scheduleKey.value == "cron") {
         const cron = schedule.value.assertString(`schedule cron`)
         // Validate the cron string
-        if (
-          !cron.value.match(/((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})/)
-        ) {
+        if (!isValidCron(cron.value)) {
           context.error(cron, "Invalid cron string")
         }
         result.push({ cron: cron.value })
