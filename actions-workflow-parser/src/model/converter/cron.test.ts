@@ -37,6 +37,10 @@ describe("isValidCron", () => {
     ["0 1, * * *", "should not accept trailing , (empty value)"],
     ["0 5--5 * * *", "should not accept multiple -"],
     ["0 *//5 * * *", "should not accept multiple /"],
+    ["0 */* * * *", "step start and size may not both be *"],
+    ["0 5/* * * *", "steps size may not be *"],
+    ["0 *-4 5-* *-* *", "range may not contain *"],
+    ["0 *//5 * * *", "should not accept multiple /"],
     ["0 ,, * * *", "should not accept multiple ,"],
     [", , , , ,", "comma is not a valid part"],
     ["0 ** * * *", "should not accept multiple *"],
@@ -47,7 +51,7 @@ describe("isValidCron", () => {
     ["0 */0 * * *", "step size may not be 0"],
     ["0 2/4-5 * * *", "step size may not be a range"],
     ["0 2-4-6 * * *", "range may not contain multiple -"],
-    ["0 2/4/6 * * *", "step size may not contain multiple /"],
+    ["0 2/4/6 * * *", "step may not contain multiple /"],
     ["0 * * */FEB */TUE", "step size may not be a short name"],
   ]
 
