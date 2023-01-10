@@ -67,10 +67,7 @@ function validateRange(
     if (!allowSeparators) {
       return false
     }
-    // Allow separators
-    return value.split(",").every((v) => {
-      v && validateRange(v, range)
-    })
+    return value.split(",").every((v) => v && validateRange(v, range))
   }
 
   if (value.includes("/")) {
@@ -79,11 +76,12 @@ function validateRange(
     }
 
     const [start, step, ...rest] = value.split("/")
-    // Supports */TUE and similar, which needs to be verified with the go cron library
     const stepNumber = convertToNumber(range, step)
     if (rest.length > 0 || stepNumber <= 0 || !start || !step) {
       return false
     }
+
+    // Separators are only allowed in the part before the `/`, e.g. `1-5/2`
     return (
       validateRange(start, range) && validateRange(step, range, false)
     )
