@@ -186,4 +186,34 @@ jobs:
       }
     } as Diagnostic);
   });
+
+  it("invalid cron string", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  schedule:
+    - cron: '0 0 * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      ),
+      {valueProviderConfig: defaultValueProviders}
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message: "Invalid cron string",
+      range: {
+        end: {
+          character: 21,
+          line: 2
+        },
+        start: {
+          character: 12,
+          line: 2
+        }
+      }
+    } as Diagnostic);
+  });
 });
