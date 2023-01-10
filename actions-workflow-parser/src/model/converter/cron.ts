@@ -62,12 +62,15 @@ function validateRange(
     return true
   }
 
+  // Operator precedence: , > / > -
   if (value.includes(",")) {
     if (!allowSeparators) {
       return false
     }
     // Allow separators
-    return value.split(",").every((v) => validateRange(v, range))
+    return value.split(",").every((v) => {
+      v && validateRange(v, range)
+    })
   }
 
   if (value.includes("/")) {
@@ -76,18 +79,24 @@ function validateRange(
     }
 
     const [start, step, ...rest] = value.split("/")
-    // Supports */TUE and similar, which nees to be verified with the go cron library
+    // Supports */TUE and similar, which needs to be verified with the go cron library
     const stepNumber = convertToNumber(range, step)
-    if (rest.length > 0 || stepNumber <= 0) {
+    if (rest.length > 0 || stepNumber <= 0 || !start || !step) {
       return false
     }
     return (
-      validateRange(start, range, false) && validateRange(step, range, false)
+      validateRange(start, range) && validateRange(step, range, false)
     )
   }
 
   if (value.includes("-")) {
-    const [start, end] = value.split("-")
+    if (!allowSeparators) {
+      return false
+    }
+    const [start, end, ...rest] = value.split("-")
+    if (rest.length > 0 || !start || !end) {
+      return false
+    }
 
     // Convert name to integers so we can make sure end >= start
     const startNumber = convertToNumber(range, start)
