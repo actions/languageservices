@@ -6,6 +6,7 @@ import {
   Connection,
   DocumentLink,
   DocumentLinkParams,
+  ExecuteCommandParams,
   Hover,
   HoverParams,
   InitializeParams,
@@ -21,6 +22,7 @@ import {onCompletion} from "./on-completion";
 import {TTLCache} from "./utils/cache";
 import {valueProviders} from "./value-providers";
 import {getActionInputs} from "./value-providers/action-inputs";
+import {Commands} from "./commands";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -119,6 +121,13 @@ export function initConnection(connection: Connection) {
 
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
     return hover(documents.get(textDocument.uri)!, position);
+  });
+
+  connection.onRequest("workspace/executeCommand", (params: ExecuteCommandParams) => {
+    if (params.command === Commands.ClearCache) {
+      cache.clear();
+      documents.all().forEach(validateTextDocument);
+    }
   });
 
   connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
