@@ -76,8 +76,8 @@ function validateRange(
     }
 
     const [start, step, ...rest] = value.split("/")
-    const stepNumber = convertToNumber(range, step)
-    if (rest.length > 0 || stepNumber <= 0 || !start || !step) {
+    const stepNumber = +step
+    if (rest.length > 0 || isNaN(stepNumber) || stepNumber <= 0 || !start || !step) {
       return false
     }
 

@@ -18,7 +18,6 @@ describe("isValidCron", () => {
     "0 0 * * SUN",
     "0 0 * * SUN-TUE",
     "0 0 * * SUN-2",
-    "0 * * */FEB */TUE",
     "0 2-4/5 * * *",
   ]
 
@@ -40,6 +39,7 @@ describe("isValidCron", () => {
     "0 5--5 * * *",
     "0 *//5 * * *",
     "0 ,, * * *",
+    "0 , , , ,",
     "0 ** * * *",
     "0 0 * * BUN",
     "0 0 * SUN JAN",
@@ -49,6 +49,7 @@ describe("isValidCron", () => {
     "0 2/4-5 * * *",
     "0 2-4-6 * * *",
     "0 2/4/6 * * *",
+    "0 * * */FEB */TUE",
   ]
 
   for (const cron of invalid) {
