@@ -36,4 +36,8 @@ export class TTLCache {
       throw e;
     }
   }
+
+  clear(): void {
+    this.cache.clear();
+  }
 }

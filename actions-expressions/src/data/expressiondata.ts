@@ -1,9 +1,9 @@
-import { Dictionary } from "./dictionary";
-import { Null } from "./null";
-import { Array } from "./array";
-import { StringData } from "./string";
-import { NumberData } from "./number";
-import { BooleanData } from "./boolean";
+import {Dictionary} from "./dictionary";
+import {Null} from "./null";
+import {Array} from "./array";
+import {StringData} from "./string";
+import {NumberData} from "./number";
+import {BooleanData} from "./boolean";
 
 export enum Kind {
   String = 0,
@@ -12,7 +12,7 @@ export enum Kind {
   Boolean,
   Number,
   CaseSensitiveDictionary,
-  Null,
+  Null
 }
 
 export function kindStr(k: Kind): string {
@@ -43,13 +43,7 @@ export interface ExpressionDataInterface {
   number(): number;
 }
 
-export type ExpressionData =
-  | Array
-  | Dictionary
-  | StringData
-  | BooleanData
-  | NumberData
-  | Null;
+export type ExpressionData = Array | Dictionary | StringData | BooleanData | NumberData | Null;
 
 export type Pair = {
   key: string;

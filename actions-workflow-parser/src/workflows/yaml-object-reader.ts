@@ -1,19 +1,9 @@
-import {
-  isCollection,
-  isDocument,
-  isMap,
-  isPair,
-  isScalar,
-  isSeq,
-  LineCounter,
-  parseDocument,
-  Scalar,
-} from "yaml"
-import { LinePos } from "yaml/dist/errors"
-import { NodeBase } from "yaml/dist/nodes/Node"
-import { ObjectReader } from "../templates/object-reader"
-import { EventType, ParseEvent } from "../templates/parse-event"
-import { TemplateContext } from "../templates/template-context"
+import {isCollection, isDocument, isMap, isPair, isScalar, isSeq, LineCounter, parseDocument, Scalar} from "yaml";
+import {LinePos} from "yaml/dist/errors";
+import {NodeBase} from "yaml/dist/nodes/Node";
+import {ObjectReader} from "../templates/object-reader";
+import {EventType, ParseEvent} from "../templates/parse-event";
+import {TemplateContext} from "../templates/template-context";
 import {
   BooleanToken,
   LiteralToken,
@@ -21,243 +11,218 @@ import {
   NullToken,
   NumberToken,
   SequenceToken,
-  StringToken,
-} from "../templates/tokens/index"
-import { Position, TokenRange } from "../templates/tokens/token-range"
+  StringToken
+} from "../templates/tokens/index";
+import {Position, TokenRange} from "../templates/tokens/token-range";
 
 export class YamlObjectReader implements ObjectReader {
-  private readonly _generator: Generator<ParseEvent>
-  private _current!: IteratorResult<ParseEvent>
-  private fileId?: number
-  private lineCounter = new LineCounter()
+  private readonly _generator: Generator<ParseEvent>;
+  private _current!: IteratorResult<ParseEvent>;
+  private fileId?: number;
+  private lineCounter = new LineCounter();
 
-  constructor(
-    context: TemplateContext,
-    fileId: number | undefined,
-    content: string
-  ) {
+  constructor(context: TemplateContext, fileId: number | undefined, content: string) {
     const doc = parseDocument(content, {
       lineCounter: this.lineCounter,
       keepSourceTokens: true,
-      uniqueKeys: false, // Uniqueness is validated by the template reader
-    })
+      uniqueKeys: false // Uniqueness is validated by the template reader
+    });
     for (const err of doc.errors) {
-      context.error(fileId, err.message, rangeFromLinePos(err.linePos))
+      context.error(fileId, err.message, rangeFromLinePos(err.linePos));
     }
-    this._generator = this.getNodes(doc)
-    this.fileId = fileId
+    this._generator = this.getNodes(doc);
+    this.fileId = fileId;
   }
 
   private *getNodes(node: unknown): Generator<ParseEvent, void> {
-    let range = this.getRange(node as NodeBase | undefined)
+    let range = this.getRange(node as NodeBase | undefined);
 
     if (isDocument(node)) {
-      yield new ParseEvent(EventType.DocumentStart)
+      yield new ParseEvent(EventType.DocumentStart);
       for (const item of this.getNodes(node.contents)) {
-        yield item
+        yield item;
       }
-      yield new ParseEvent(EventType.DocumentEnd)
+      yield new ParseEvent(EventType.DocumentEnd);
     }
 
     if (isCollection(node)) {
       if (isSeq(node)) {
-        yield new ParseEvent(
-          EventType.SequenceStart,
-          new SequenceToken(this.fileId, range, undefined)
-        )
+        yield new ParseEvent(EventType.SequenceStart, new SequenceToken(this.fileId, range, undefined));
       } else if (isMap(node)) {
-        yield new ParseEvent(
-          EventType.MappingStart,
-          new MappingToken(this.fileId, range, undefined)
-        )
+        yield new ParseEvent(EventType.MappingStart, new MappingToken(this.fileId, range, undefined));
       }
 
       for (const item of node.items) {
         for (const child of this.getNodes(item)) {
-          yield child
+          yield child;
         }
       }
       if (isSeq(node)) {
-        yield new ParseEvent(EventType.SequenceEnd)
+        yield new ParseEvent(EventType.SequenceEnd);
       } else if (isMap(node)) {
-        yield new ParseEvent(EventType.MappingEnd)
+        yield new ParseEvent(EventType.MappingEnd);
       }
     }
 
     if (isScalar(node)) {
-      yield new ParseEvent(
-        EventType.Literal,
-        YamlObjectReader.getLiteralToken(this.fileId, range, node as Scalar)
-      )
+      yield new ParseEvent(EventType.Literal, YamlObjectReader.getLiteralToken(this.fileId, range, node as Scalar));
     }
 
     if (isPair(node)) {
-      const scalarKey = node.key as Scalar
-      range = this.getRange(scalarKey)
-      const key = scalarKey.value as string
-      yield new ParseEvent(
-        EventType.Literal,
-        new StringToken(this.fileId, range, key, undefined)
-      )
+      const scalarKey = node.key as Scalar;
+      range = this.getRange(scalarKey);
+      const key = scalarKey.value as string;
+      yield new ParseEvent(EventType.Literal, new StringToken(this.fileId, range, key, undefined));
       for (const child of this.getNodes(node.value)) {
-        yield child
+        yield child;
       }
     }
   }
 
   private getRange(node: NodeBase | undefined): TokenRange | undefined {
-    const range = node?.range ?? []
-    const startPos = range[0]
-    const endPos = range[1]
+    const range = node?.range ?? [];
+    const startPos = range[0];
+    const endPos = range[1];
 
     if (startPos !== undefined && endPos !== undefined) {
-      const slp = this.lineCounter.linePos(startPos)
-      const elp = this.lineCounter.linePos(endPos)
+      const slp = this.lineCounter.linePos(startPos);
+      const elp = this.lineCounter.linePos(endPos);
 
       return {
         start: [slp.line, slp.col],
-        end: [elp.line, elp.col],
-      }
+        end: [elp.line, elp.col]
+      };
     }
 
-    return undefined
+    return undefined;
   }
 
-  private static getLiteralToken(
-    fileId: number | undefined,
-    range: TokenRange | undefined,
-    token: Scalar
-  ) {
-    const value = token.value
+  private static getLiteralToken(fileId: number | undefined, range: TokenRange | undefined, token: Scalar) {
+    const value = token.value;
 
     if (value === null || value === undefined) {
-      return new NullToken(fileId, range, undefined)
+      return new NullToken(fileId, range, undefined);
     }
 
     switch (typeof value) {
       case "number":
-        return new NumberToken(fileId, range, value, undefined)
+        return new NumberToken(fileId, range, value, undefined);
       case "boolean":
-        return new BooleanToken(fileId, range, value, undefined)
+        return new BooleanToken(fileId, range, value, undefined);
       case "string": {
         // If the string is a YAML block string, include the original source
-        let source: string | undefined
+        let source: string | undefined;
         if (
           (token.type === "BLOCK_LITERAL" || // | multi-line strings
             token.type === "BLOCK_FOLDED") && // > multi-line strings
           token.srcToken &&
           token.srcToken.type === "block-scalar"
         ) {
-          source = token.srcToken.source
+          source = token.srcToken.source;
         }
 
-        return new StringToken(fileId, range, value, undefined, source)
+        return new StringToken(fileId, range, value, undefined, source);
       }
       default:
-        throw new Error(
-          `Unexpected value type '${typeof value}' when reading object`
-        )
+        throw new Error(`Unexpected value type '${typeof value}' when reading object`);
     }
   }
 
   public allowLiteral(): LiteralToken | undefined {
     if (!this._current.done) {
-      const parseEvent = this._current.value
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.Literal) {
-        this._current = this._generator.next()
-        return parseEvent.token as LiteralToken
+        this._current = this._generator.next();
+        return parseEvent.token as LiteralToken;
       }
     }
 
-    return undefined
+    return undefined;
   }
 
   public allowSequenceStart(): SequenceToken | undefined {
     if (!this._current.done) {
-      const parseEvent = this._current.value
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.SequenceStart) {
-        this._current = this._generator.next()
-        return parseEvent.token as SequenceToken
+        this._current = this._generator.next();
+        return parseEvent.token as SequenceToken;
       }
     }
 
-    return undefined
+    return undefined;
   }
 
   public allowSequenceEnd(): boolean {
     if (!this._current.done) {
-      const parseEvent = this._current.value
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.SequenceEnd) {
-        this._current = this._generator.next()
-        return true
+        this._current = this._generator.next();
+        return true;
       }
     }
 
-    return false
+    return false;
   }
 
   public allowMappingStart(): MappingToken | undefined {
     if (!this._current.done) {
-      const parseEvent = this._current.value
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.MappingStart) {
-        this._current = this._generator.next()
-        return parseEvent.token as MappingToken
+        this._current = this._generator.next();
+        return parseEvent.token as MappingToken;
       }
     }
 
-    return undefined
+    return undefined;
   }
 
   public allowMappingEnd(): boolean {
     if (!this._current.done) {
-      const parseEvent = this._current.value
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.MappingEnd) {
-        this._current = this._generator.next()
-        return true
+        this._current = this._generator.next();
+        return true;
       }
     }
 
-    return false
+    return false;
   }
 
   public validateEnd(): void {
     if (!this._current.done) {
-      const parseEvent = this._current.value as ParseEvent
+      const parseEvent = this._current.value as ParseEvent;
       if (parseEvent.type === EventType.DocumentEnd) {
-        this._current = this._generator.next()
-        return
+        this._current = this._generator.next();
+        return;
       }
     }
 
-    throw new Error("Expected end of reader")
+    throw new Error("Expected end of reader");
   }
 
   public validateStart(): void {
     if (!this._current) {
-      this._current = this._generator.next()
+      this._current = this._generator.next();
     }
 
     if (!this._current.done) {
-      const parseEvent = this._current.value as ParseEvent
+      const parseEvent = this._current.value as ParseEvent;
       if (parseEvent.type === EventType.DocumentStart) {
-        this._current = this._generator.next()
-        return
+        this._current = this._generator.next();
+        return;
       }
     }
 
-    throw new Error("Expected start of reader")
+    throw new Error("Expected start of reader");
   }
 }
 
-function rangeFromLinePos(
-  linePos: [LinePos] | [LinePos, LinePos] | undefined
-): TokenRange | undefined {
+function rangeFromLinePos(linePos: [LinePos] | [LinePos, LinePos] | undefined): TokenRange | undefined {
   if (linePos === undefined) {
-    return
+    return;
   }
   // TokenRange and linePos are both 1-based
-  const start: Position = [linePos[0].line, linePos[0].col]
-  const end: Position =
-    linePos.length == 2 ? [linePos[1].line, linePos[1].col] : start
-  return { start, end }
+  const start: Position = [linePos[0].line, linePos[0].col];
+  const end: Position = linePos.length == 2 ? [linePos[1].line, linePos[1].col] : start;
+  return {start, end};
 }

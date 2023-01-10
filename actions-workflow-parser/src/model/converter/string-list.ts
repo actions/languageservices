@@ -1,14 +1,11 @@
-import { SequenceToken } from "../../templates/tokens/sequence-token"
+import {SequenceToken} from "../../templates/tokens/sequence-token";
 
-export function convertStringList(
-  name: string,
-  token: SequenceToken
-): string[] {
-  const result = [] as string[]
+export function convertStringList(name: string, token: SequenceToken): string[] {
+  const result = [] as string[];
 
   for (const item of token) {
-    result.push(item.assertString(`${name} item`).value)
+    result.push(item.assertString(`${name} item`).value);
   }
 
-  return result
+  return result;
 }

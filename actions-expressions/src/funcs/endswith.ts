@@ -1,6 +1,6 @@
-import { BooleanData, ExpressionData } from "../data";
-import { toUpperSpecial } from "../result";
-import { FunctionDefinition } from "./info";
+import {BooleanData, ExpressionData} from "../data";
+import {toUpperSpecial} from "../result";
+import {FunctionDefinition} from "./info";
 
 export const endswith: FunctionDefinition = {
   name: "endsWith",
@@ -23,5 +23,5 @@ export const endswith: FunctionDefinition = {
     const rs = toUpperSpecial(right.coerceString());
 
     return new BooleanData(ls.endsWith(rs));
-  },
+  }
 };

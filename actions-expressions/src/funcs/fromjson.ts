@@ -1,6 +1,6 @@
-import { ExpressionData } from "../data";
-import { reviver } from "../data/reviver";
-import { FunctionDefinition } from "./info";
+import {ExpressionData} from "../data";
+import {reviver} from "../data/reviver";
+import {FunctionDefinition} from "./info";
 
 export const fromjson: FunctionDefinition = {
   name: "fromJson",
@@ -18,5 +18,5 @@ export const fromjson: FunctionDefinition = {
 
     const d = JSON.parse(is, reviver);
     return d;
-  },
+  }
 };

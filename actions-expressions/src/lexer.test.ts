@@ -1,4 +1,4 @@
-import { Lexer, Token, TokenType } from "./lexer";
+import {Lexer, Token, TokenType} from "./lexer";
 
 describe("lexer", () => {
   const tests: {
@@ -6,26 +6,26 @@ describe("lexer", () => {
     tokenType: TokenType[];
     token?: Token;
   }[] = [
-    { input: "<", tokenType: [TokenType.LESS] },
-    { input: ">", tokenType: [TokenType.GREATER] },
+    {input: "<", tokenType: [TokenType.LESS]},
+    {input: ">", tokenType: [TokenType.GREATER]},
 
-    { input: "!=", tokenType: [TokenType.BANG_EQUAL] },
-    { input: "==", tokenType: [TokenType.EQUAL_EQUAL] },
-    { input: "<=", tokenType: [TokenType.LESS_EQUAL] },
-    { input: ">=", tokenType: [TokenType.GREATER_EQUAL] },
+    {input: "!=", tokenType: [TokenType.BANG_EQUAL]},
+    {input: "==", tokenType: [TokenType.EQUAL_EQUAL]},
+    {input: "<=", tokenType: [TokenType.LESS_EQUAL]},
+    {input: ">=", tokenType: [TokenType.GREATER_EQUAL]},
 
-    { input: "&&", tokenType: [TokenType.AND] },
-    { input: "||", tokenType: [TokenType.OR] },
+    {input: "&&", tokenType: [TokenType.AND]},
+    {input: "||", tokenType: [TokenType.OR]},
 
     // Numbers
-    { input: "12", tokenType: [TokenType.NUMBER] },
-    { input: "12.0", tokenType: [TokenType.NUMBER] },
-    { input: "0", tokenType: [TokenType.NUMBER] },
-    { input: "-0", tokenType: [TokenType.NUMBER] },
-    { input: "-12.0", tokenType: [TokenType.NUMBER] },
+    {input: "12", tokenType: [TokenType.NUMBER]},
+    {input: "12.0", tokenType: [TokenType.NUMBER]},
+    {input: "0", tokenType: [TokenType.NUMBER]},
+    {input: "-0", tokenType: [TokenType.NUMBER]},
+    {input: "-12.0", tokenType: [TokenType.NUMBER]},
 
     // Strings
-    { input: "'It''s okay'", tokenType: [TokenType.STRING] },
+    {input: "'It''s okay'", tokenType: [TokenType.STRING]},
     {
       input: "format('{0} == ''queued''', needs)",
       tokenType: [
@@ -34,34 +34,28 @@ describe("lexer", () => {
         TokenType.STRING,
         TokenType.COMMA,
         TokenType.IDENTIFIER,
-        TokenType.RIGHT_PAREN,
-      ],
+        TokenType.RIGHT_PAREN
+      ]
     },
 
     // Arrays
     {
       input: "[1,2]",
-      tokenType: [
-        TokenType.LEFT_BRACKET,
-        TokenType.NUMBER,
-        TokenType.COMMA,
-        TokenType.NUMBER,
-        TokenType.RIGHT_BRACKET,
-      ],
+      tokenType: [TokenType.LEFT_BRACKET, TokenType.NUMBER, TokenType.COMMA, TokenType.NUMBER, TokenType.RIGHT_BRACKET]
     },
 
     // Simple expressions
     {
       input: "1 == 2",
-      tokenType: [TokenType.NUMBER, TokenType.EQUAL_EQUAL, TokenType.NUMBER],
+      tokenType: [TokenType.NUMBER, TokenType.EQUAL_EQUAL, TokenType.NUMBER]
     },
     {
       input: "1== 1",
-      tokenType: [TokenType.NUMBER, TokenType.EQUAL_EQUAL, TokenType.NUMBER],
+      tokenType: [TokenType.NUMBER, TokenType.EQUAL_EQUAL, TokenType.NUMBER]
     },
     {
       input: "1< 1",
-      tokenType: [TokenType.NUMBER, TokenType.LESS, TokenType.NUMBER],
+      tokenType: [TokenType.NUMBER, TokenType.LESS, TokenType.NUMBER]
     },
 
     // Identifiers
@@ -73,9 +67,9 @@ describe("lexer", () => {
         lexeme: "github",
         pos: {
           line: 0,
-          column: 0,
-        },
-      },
+          column: 0
+        }
+      }
     },
 
     // Keywords
@@ -87,9 +81,9 @@ describe("lexer", () => {
         lexeme: "true",
         pos: {
           line: 0,
-          column: 0,
-        },
-      },
+          column: 0
+        }
+      }
     },
 
     {
@@ -100,9 +94,9 @@ describe("lexer", () => {
         lexeme: "false",
         pos: {
           line: 0,
-          column: 0,
-        },
-      },
+          column: 0
+        }
+      }
     },
 
     {
@@ -113,32 +107,21 @@ describe("lexer", () => {
         lexeme: "null",
         pos: {
           line: 0,
-          column: 0,
-        },
-      },
-    },
+          column: 0
+        }
+      }
+    }
   ];
 
-  test.each(tests)(
-    "$input",
-    ({
-      input,
-      tokenType,
-      token,
-    }: {
-      input: string;
-      tokenType: TokenType[];
-      token?: Token;
-    }) => {
-      const l = new Lexer(input);
+  test.each(tests)("$input", ({input, tokenType, token}: {input: string; tokenType: TokenType[]; token?: Token}) => {
+    const l = new Lexer(input);
 
-      const r = l.lex();
+    const r = l.lex();
 
-      const want = r.tokens.map((t) => t.type);
+    const want = r.tokens.map(t => t.type);
 
-      tokenType.push(TokenType.EOF);
+    tokenType.push(TokenType.EOF);
 
-      expect(want).toEqual(tokenType);
-    }
-  );
+    expect(want).toEqual(tokenType);
+  });
 });

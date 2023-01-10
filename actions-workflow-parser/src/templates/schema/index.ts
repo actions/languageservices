@@ -1,1 +1,1 @@
-export { TemplateSchema } from "./template-schema"
+export {TemplateSchema} from "./template-schema";

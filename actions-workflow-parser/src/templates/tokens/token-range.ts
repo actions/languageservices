@@ -1,6 +1,6 @@
-export type Position = [line: number, character: number]
+export type Position = [line: number, character: number];
 
 export type TokenRange = {
-  start: Position
-  end: Position
-}
+  start: Position;
+  end: Position;
+};

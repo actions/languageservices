@@ -1,4 +1,4 @@
-import { ExpressionData } from "../data";
+import {ExpressionData} from "../data";
 
 export interface FunctionInfo {
   name: string;

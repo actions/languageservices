@@ -1,9 +1,9 @@
 export interface TraceWriter {
-  error(message: string): void
+  error(message: string): void;
 
-  info(message: string): void
+  info(message: string): void;
 
-  verbose(message: string): void
+  verbose(message: string): void;
 }
 
 export class NoOperationTraceWriter implements TraceWriter {

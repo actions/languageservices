@@ -1,6 +1,6 @@
 {
   "name": "@github/actions-languageservice",
-  "version": "0.1.76",
+  "version": "0.1.78",
   "description": "Language service for GitHub Actions",
   "license": "MIT",
   "type": "module",
@@ -30,16 +30,16 @@
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "clean": "rimraf dist",
+    "format": "prettier --write '**/*.ts'",
+    "format-check": "prettier --check '**/*.ts'",
     "prepublishOnly": "npm run build && npm run test",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test-watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
-    "watch": "tsc --build tsconfig.build.json --watch",
-    "prettier": "prettier .",
-    "prettier-fix": "prettier --write ."
+    "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@github/actions-expressions": "^0.1.76",
-    "@github/actions-workflow-parser": "^0.1.76",
+    "@github/actions-expressions": "^0.1.78",
+    "@github/actions-workflow-parser": "^0.1.78",
     "vscode-languageserver-textdocument": "^1.0.7",
     "vscode-languageserver-types": "^3.17.2",
     "yaml": "^2.1.1"

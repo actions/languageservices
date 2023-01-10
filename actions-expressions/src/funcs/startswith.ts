@@ -1,6 +1,6 @@
-import { BooleanData, ExpressionData } from "../data";
-import { toUpperSpecial } from "../result";
-import { FunctionDefinition } from "./info";
+import {BooleanData, ExpressionData} from "../data";
+import {toUpperSpecial} from "../result";
+import {FunctionDefinition} from "./info";
 
 export const startswith: FunctionDefinition = {
   name: "startsWith",
@@ -23,5 +23,5 @@ export const startswith: FunctionDefinition = {
     const rs = toUpperSpecial(right.coerceString());
 
     return new BooleanData(ls.startsWith(rs));
-  },
+  }
 };

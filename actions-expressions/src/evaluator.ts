@@ -9,14 +9,14 @@ import {
   Literal,
   Logical,
   Star,
-  Unary,
+  Unary
 } from "./ast";
 import * as data from "./data";
-import { FilteredArray } from "./filtered_array";
-import { wellKnownFunctions } from "./funcs";
-import { idxHelper } from "./idxHelper";
-import { TokenType } from "./lexer";
-import { equals, falsy, greaterThan, lessThan, truthy } from "./result";
+import {FilteredArray} from "./filtered_array";
+import {wellKnownFunctions} from "./funcs";
+import {idxHelper} from "./idxHelper";
+import {TokenType} from "./lexer";
+import {equals, falsy, greaterThan, lessThan, truthy} from "./result";
 
 export class EvaluationError extends Error {}
 
@@ -60,9 +60,7 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
         return new data.BooleanData(greaterThan(left, right));
 
       case TokenType.GREATER_EQUAL:
-        return new data.BooleanData(
-          equals(left, right) || greaterThan(left, right)
-        );
+        return new data.BooleanData(equals(left, right) || greaterThan(left, right));
 
       case TokenType.LESS:
         return new data.BooleanData(lessThan(left, right));
@@ -150,25 +148,19 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
 
   visitFunctionCall(functionCall: FunctionCall): data.ExpressionData {
     // Evaluate arguments
-    const args = functionCall.args.map((arg) => this.eval(arg));
+    const args = functionCall.args.map(arg => this.eval(arg));
 
     return fcall(functionCall, args);
   }
 }
 
-function fcall(
-  fc: FunctionCall,
-  args: data.ExpressionData[]
-): data.ExpressionData {
+function fcall(fc: FunctionCall, args: data.ExpressionData[]): data.ExpressionData {
   const f = wellKnownFunctions[fc.functionName.lexeme.toLowerCase()];
 
   return f.call(...args);
 }
 
-function filteredArrayAccess(
-  fa: FilteredArray,
-  idx: idxHelper
-): data.ExpressionData {
+function filteredArrayAccess(fa: FilteredArray, idx: idxHelper): data.ExpressionData {
   const result = new FilteredArray();
 
   for (const item of fa.values()) {
@@ -225,10 +217,7 @@ function arrayAccess(a: data.Array, idx: idxHelper): data.ExpressionData {
   return new data.Null();
 }
 
-function objectAccess(
-  obj: data.Dictionary,
-  idx: idxHelper
-): data.ExpressionData {
+function objectAccess(obj: data.Dictionary, idx: idxHelper): data.ExpressionData {
   if (idx.star) {
     const fa = new FilteredArray(...obj.values());
     return fa;

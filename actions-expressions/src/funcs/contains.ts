@@ -1,6 +1,6 @@
-import { Array, BooleanData, ExpressionData, Kind } from "../data";
-import { equals } from "../result";
-import { FunctionDefinition } from "./info";
+import {Array, BooleanData, ExpressionData, Kind} from "../data";
+import {equals} from "../result";
+import {FunctionDefinition} from "./info";
 
 export const contains: FunctionDefinition = {
   name: "contains",
@@ -32,5 +32,5 @@ export const contains: FunctionDefinition = {
     }
 
     return new BooleanData(false);
-  },
+  }
 };
