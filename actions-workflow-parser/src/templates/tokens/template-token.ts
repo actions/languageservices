@@ -1,34 +1,26 @@
-import {
-  BooleanToken,
-  MappingToken,
-  NullToken,
-  NumberToken,
-  ScalarToken,
-  SequenceToken,
-  StringToken,
-} from "."
-import { Definition } from "../schema/definition"
-import { DefinitionInfo } from "../schema/definition-info"
-import { PropertyDefinition } from "../schema/property-definition"
-import { SerializedToken } from "./serialization"
-import { TokenRange } from "./token-range"
-import { TraversalState } from "./traversal-state"
-import { TokenType, tokenTypeName } from "./types"
+import {BooleanToken, MappingToken, NullToken, NumberToken, ScalarToken, SequenceToken, StringToken} from ".";
+import {Definition} from "../schema/definition";
+import {DefinitionInfo} from "../schema/definition-info";
+import {PropertyDefinition} from "../schema/property-definition";
+import {SerializedToken} from "./serialization";
+import {TokenRange} from "./token-range";
+import {TraversalState} from "./traversal-state";
+import {TokenType, tokenTypeName} from "./types";
 
 export class TemplateTokenError extends Error {
   constructor(message: string, public readonly token?: TemplateToken) {
-    super(message)
+    super(message);
   }
 }
 
 export abstract class TemplateToken {
   // Fields for serialization
-  private readonly type: TokenType
-  private _description: string | undefined
-  public readonly file: number | undefined
-  public readonly range: TokenRange | undefined
-  public definitionInfo: DefinitionInfo | undefined
-  public propertyDefinition: PropertyDefinition | undefined
+  private readonly type: TokenType;
+  private _description: string | undefined;
+  public readonly file: number | undefined;
+  public readonly range: TokenRange | undefined;
+  public definitionInfo: DefinitionInfo | undefined;
+  public propertyDefinition: PropertyDefinition | undefined;
 
   /**
    * Base class for all template tokens
@@ -39,50 +31,46 @@ export abstract class TemplateToken {
     range: TokenRange | undefined,
     definitionInfo: DefinitionInfo | undefined
   ) {
-    this.type = type
-    this.file = file
-    this.range = range
-    this.definitionInfo = definitionInfo
+    this.type = type;
+    this.file = file;
+    this.range = range;
+    this.definitionInfo = definitionInfo;
   }
 
   public get templateTokenType(): number {
-    return this.type
+    return this.type;
   }
 
   public get line(): number | undefined {
-    return this.range?.start[0]
+    return this.range?.start[0];
   }
 
   public get col(): number | undefined {
-    return this.range?.start[1]
+    return this.range?.start[1];
   }
 
   public get definition(): Definition | undefined {
-    return this.definitionInfo?.definition
+    return this.definitionInfo?.definition;
   }
 
   get description(): string | undefined {
-    return (
-      this._description ||
-      this.propertyDefinition?.description ||
-      this.definition?.description
-    )
+    return this._description || this.propertyDefinition?.description || this.definition?.description;
   }
 
   set description(description: string | undefined) {
-    this._description = description
+    this._description = description;
   }
 
-  public abstract get isScalar(): boolean
+  public abstract get isScalar(): boolean;
 
-  public abstract get isLiteral(): boolean
+  public abstract get isLiteral(): boolean;
 
-  public abstract get isExpression(): boolean
+  public abstract get isExpression(): boolean;
 
-  public abstract clone(omitSource?: boolean): TemplateToken
+  public abstract clone(omitSource?: boolean): TemplateToken;
 
   public typeName(): string {
-    return tokenTypeName(this.type)
+    return tokenTypeName(this.type);
   }
 
   /**
@@ -90,7 +78,7 @@ export abstract class TemplateToken {
    */
   public assertNull(objectDescription: string): NullToken {
     if (this.type === TokenType.Null) {
-      return this as unknown as NullToken
+      return this as unknown as NullToken;
     }
 
     throw new TemplateTokenError(
@@ -98,7 +86,7 @@ export abstract class TemplateToken {
         TokenType.Null
       )}' was expected.`,
       this
-    )
+    );
   }
 
   /**
@@ -106,7 +94,7 @@ export abstract class TemplateToken {
    */
   public assertBoolean(objectDescription: string): BooleanToken {
     if (this.type === TokenType.Boolean) {
-      return this as unknown as BooleanToken
+      return this as unknown as BooleanToken;
     }
 
     throw new TemplateTokenError(
@@ -114,7 +102,7 @@ export abstract class TemplateToken {
         TokenType.Boolean
       )}' was expected.`,
       this
-    )
+    );
   }
 
   /**
@@ -122,7 +110,7 @@ export abstract class TemplateToken {
    */
   public assertNumber(objectDescription: string): NumberToken {
     if (this.type === TokenType.Number) {
-      return this as unknown as NumberToken
+      return this as unknown as NumberToken;
     }
 
     throw new TemplateTokenError(
@@ -130,7 +118,7 @@ export abstract class TemplateToken {
         TokenType.Number
       )}' was expected.`,
       this
-    )
+    );
   }
 
   /**
@@ -138,7 +126,7 @@ export abstract class TemplateToken {
    */
   public assertString(objectDescription: string): StringToken {
     if (this.type === TokenType.String) {
-      return this as unknown as StringToken
+      return this as unknown as StringToken;
     }
 
     throw new TemplateTokenError(
@@ -146,7 +134,7 @@ export abstract class TemplateToken {
         TokenType.String
       )}' was expected.`,
       this
-    )
+    );
   }
 
   /**
@@ -154,13 +142,13 @@ export abstract class TemplateToken {
    */
   public assertScalar(objectDescription: string): ScalarToken {
     if ((this as unknown as ScalarToken | undefined)?.isScalar === true) {
-      return this as unknown as ScalarToken
+      return this as unknown as ScalarToken;
     }
 
     throw new TemplateTokenError(
       `Unexpected type '${this.typeName()}' encountered while reading '${objectDescription}'. The type 'ScalarToken' was expected.`,
       this
-    )
+    );
   }
 
   /**
@@ -168,7 +156,7 @@ export abstract class TemplateToken {
    */
   public assertSequence(objectDescription: string): SequenceToken {
     if (this.type === TokenType.Sequence) {
-      return this as unknown as SequenceToken
+      return this as unknown as SequenceToken;
     }
 
     throw new TemplateTokenError(
@@ -176,7 +164,7 @@ export abstract class TemplateToken {
         TokenType.Sequence
       )}' was expected.`,
       this
-    )
+    );
   }
 
   /**
@@ -184,7 +172,7 @@ export abstract class TemplateToken {
    */
   public assertMapping(objectDescription: string): MappingToken {
     if (this.type === TokenType.Mapping) {
-      return this as unknown as MappingToken
+      return this as unknown as MappingToken;
     }
 
     throw new TemplateTokenError(
@@ -192,7 +180,7 @@ export abstract class TemplateToken {
         TokenType.Mapping
       )}' was expected.`,
       this
-    )
+    );
   }
 
   /**
@@ -203,45 +191,35 @@ export abstract class TemplateToken {
   public static *traverse(
     value: TemplateToken,
     omitKeys?: boolean
-  ): Generator<
-    [
-      parent: TemplateToken | undefined,
-      token: TemplateToken,
-      keyToken: TemplateToken | undefined
-    ],
-    void
-  > {
-    yield [undefined, value, undefined]
+  ): Generator<[parent: TemplateToken | undefined, token: TemplateToken, keyToken: TemplateToken | undefined], void> {
+    yield [undefined, value, undefined];
 
     switch (value.templateTokenType) {
       case TokenType.Sequence:
       case TokenType.Mapping: {
-        let state: TraversalState | undefined = new TraversalState(
-          undefined,
-          value
-        )
-        state = new TraversalState(state, value)
+        let state: TraversalState | undefined = new TraversalState(undefined, value);
+        state = new TraversalState(state, value);
         while (state.parent) {
           if (state.moveNext(omitKeys ?? false)) {
-            value = state.current as TemplateToken
-            yield [state.parent?.current, value, state.currentKey]
+            value = state.current as TemplateToken;
+            yield [state.parent?.current, value, state.currentKey];
 
             switch (value.type) {
               case TokenType.Sequence:
               case TokenType.Mapping:
-                state = new TraversalState(state, value)
-                break
+                state = new TraversalState(state, value);
+                break;
             }
           } else {
-            state = state.parent
+            state = state.parent;
           }
         }
-        break
+        break;
       }
     }
   }
 
   public toJSON(): SerializedToken {
-    return undefined
+    return undefined;
   }
 }

@@ -1,8 +1,5 @@
-import { TemplateContext } from "../../templates/template-context"
-import {
-  TemplateToken,
-  TemplateTokenError,
-} from "../../templates/tokens/template-token"
+import {TemplateContext} from "../../templates/template-context";
+import {TemplateToken, TemplateTokenError} from "../../templates/tokens/template-token";
 
 export function handleTemplateTokenErrors<TResult>(
   root: TemplateToken,
@@ -10,18 +7,18 @@ export function handleTemplateTokenErrors<TResult>(
   defaultValue: TResult,
   f: () => TResult
 ): TResult {
-  let r: TResult = defaultValue
+  let r: TResult = defaultValue;
 
   try {
-    r = f()
+    r = f();
   } catch (err) {
     if (err instanceof TemplateTokenError) {
-      context.error(err.token, err)
+      context.error(err.token, err);
     } else {
       // Report error for the root node
-      context.error(root, err)
+      context.error(root, err);
     }
   }
 
-  return r
+  return r;
 }

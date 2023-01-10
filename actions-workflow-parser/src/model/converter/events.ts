@@ -1,14 +1,9 @@
-import { TemplateContext } from "../../templates/template-context"
-import { MappingToken } from "../../templates/tokens/mapping-token"
-import { SequenceToken } from "../../templates/tokens/sequence-token"
-import { TemplateToken } from "../../templates/tokens/template-token"
-import {
-  isLiteral,
-  isMapping,
-  isSequence,
-  isString,
-} from "../../templates/tokens/type-guards"
-import { TokenType } from "../../templates/tokens/types"
+import {TemplateContext} from "../../templates/template-context";
+import {MappingToken} from "../../templates/tokens/mapping-token";
+import {SequenceToken} from "../../templates/tokens/sequence-token";
+import {TemplateToken} from "../../templates/tokens/template-token";
+import {isLiteral, isMapping, isSequence, isString} from "../../templates/tokens/type-guards";
+import {TokenType} from "../../templates/tokens/types";
 import {
   BranchFilterConfig,
   EventsConfig,
@@ -16,56 +11,53 @@ import {
   ScheduleConfig,
   TagFilterConfig,
   TypesFilterConfig,
-  WorkflowFilterConfig,
-} from "../workflow-template"
-import { convertStringList } from "./string-list"
-import { convertEventWorkflowDispatchInputs } from "./workflow-dispatch"
+  WorkflowFilterConfig
+} from "../workflow-template";
+import {convertStringList} from "./string-list";
+import {convertEventWorkflowDispatchInputs} from "./workflow-dispatch";
 
-export function convertOn(
-  context: TemplateContext,
-  token: TemplateToken
-): EventsConfig {
+export function convertOn(context: TemplateContext, token: TemplateToken): EventsConfig {
   if (isLiteral(token)) {
-    const event = token.assertString("on")
+    const event = token.assertString("on");
 
     return {
-      [event.value]: {},
-    } as EventsConfig
+      [event.value]: {}
+    } as EventsConfig;
   }
 
   if (isSequence(token)) {
-    const result = {} as EventsConfig
+    const result = {} as EventsConfig;
 
     for (const item of token) {
-      const event = item.assertString("on")
-      result[event.value] = {}
+      const event = item.assertString("on");
+      result[event.value] = {};
     }
 
-    return result
+    return result;
   }
 
   if (isMapping(token)) {
-    const result = {} as EventsConfig
+    const result = {} as EventsConfig;
 
     for (const item of token) {
-      const eventKey = item.key.assertString("event name")
-      const eventName = eventKey.value
+      const eventKey = item.key.assertString("event name");
+      const eventName = eventKey.value;
 
       if (item.value.templateTokenType === TokenType.Null) {
-        result[eventName] = {}
-        continue
+        result[eventName] = {};
+        continue;
       }
 
       // Schedule is the only event that can be a sequence, handle that separately
       if (eventName === "schedule") {
-        const scheduleToken = item.value.assertSequence(`event ${eventName}`)
-        result.schedule = convertSchedule(context, scheduleToken)
-        continue
+        const scheduleToken = item.value.assertSequence(`event ${eventName}`);
+        result.schedule = convertSchedule(context, scheduleToken);
+        continue;
       }
 
       // All other events are defined as mappings. During schema validation we already ensure that events
       // receive only known keys, so here we can focus on the values and whether they are valid.
-      const eventToken = item.value.assertMapping(`event ${eventName}`)
+      const eventToken = item.value.assertMapping(`event ${eventName}`);
 
       result[eventName] = {
         ...convertPatternFilter("branches", eventToken),
@@ -74,105 +66,95 @@ export function convertOn(
         ...convertFilter("types", eventToken),
         ...convertFilter("workflows", eventToken),
         // TODO - share input parsing for now, but workflow_call also needs outputs and secrets
-        ...convertEventWorkflowDispatchInputs(context, eventToken),
-      }
+        ...convertEventWorkflowDispatchInputs(context, eventToken)
+      };
     }
 
-    return result
+    return result;
   }
 
-  context.error(token, "Invalid format for 'on'")
-  return {}
+  context.error(token, "Invalid format for 'on'");
+  return {};
 }
 
-function convertPatternFilter<
-  T extends BranchFilterConfig & TagFilterConfig & PathFilterConfig
->(name: "branches" | "tags" | "paths", token: MappingToken): T {
-  const result = {} as T
+function convertPatternFilter<T extends BranchFilterConfig & TagFilterConfig & PathFilterConfig>(
+  name: "branches" | "tags" | "paths",
+  token: MappingToken
+): T {
+  const result = {} as T;
 
   for (const item of token) {
-    const key = item.key.assertString(`${name} filter key`)
+    const key = item.key.assertString(`${name} filter key`);
 
     switch (key.value) {
       case name:
         if (isString(item.value)) {
-          result[name] = [item.value.value]
+          result[name] = [item.value.value];
         } else {
-          result[name] = convertStringList(
-            name,
-            item.value.assertSequence(`${name} list`)
-          )
+          result[name] = convertStringList(name, item.value.assertSequence(`${name} list`));
         }
-        break
+        break;
 
       case `${name}-ignore`:
         if (isString(item.value)) {
-          result[`${name}-ignore`] = [item.value.value]
+          result[`${name}-ignore`] = [item.value.value];
         } else {
           result[`${name}-ignore`] = convertStringList(
             `${name}-ignore`,
             item.value.assertSequence(`${name}-ignore list`)
-          )
+          );
         }
-        break
+        break;
     }
   }
 
-  return result
+  return result;
 }
 
 function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig>(
   name: "types" | "workflows",
   token: MappingToken
 ): T {
-  const result = {} as T
+  const result = {} as T;
 
   for (const item of token) {
-    const key = item.key.assertString(`${name} filter key`)
+    const key = item.key.assertString(`${name} filter key`);
 
     switch (key.value) {
       case name:
         if (isString(item.value)) {
-          result[name] = [item.value.value]
+          result[name] = [item.value.value];
         } else {
-          result[name] = convertStringList(
-            name,
-            item.value.assertSequence(`${name} list`)
-          )
+          result[name] = convertStringList(name, item.value.assertSequence(`${name} list`));
         }
-        break
+        break;
     }
   }
 
-  return result
+  return result;
 }
 
-function convertSchedule(
-  context: TemplateContext,
-  token: SequenceToken
-): ScheduleConfig[] | undefined {
-  const result = [] as ScheduleConfig[]
+function convertSchedule(context: TemplateContext, token: SequenceToken): ScheduleConfig[] | undefined {
+  const result = [] as ScheduleConfig[];
   for (const item of token) {
-    const mappingToken = item.assertMapping(`event schedule`)
+    const mappingToken = item.assertMapping(`event schedule`);
     if (mappingToken.count == 1) {
-      const schedule = mappingToken.get(0)
-      const scheduleKey = schedule.key.assertString(`schedule key`)
+      const schedule = mappingToken.get(0);
+      const scheduleKey = schedule.key.assertString(`schedule key`);
       if (scheduleKey.value == "cron") {
-        const cron = schedule.value.assertString(`schedule cron`)
+        const cron = schedule.value.assertString(`schedule cron`);
         // Validate the cron string
-        if (
-          !cron.value.match(/((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})/)
-        ) {
-          context.error(cron, "Invalid cron string")
+        if (!cron.value.match(/((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})/)) {
+          context.error(cron, "Invalid cron string");
         }
-        result.push({ cron: cron.value })
+        result.push({cron: cron.value});
       } else {
-        context.error(scheduleKey, `Invalid schedule key`)
+        context.error(scheduleKey, `Invalid schedule key`);
       }
     } else {
-      context.error(mappingToken, "Invalid format for 'schedule'")
+      context.error(mappingToken, "Invalid format for 'schedule'");
     }
   }
 
-  return result
+  return result;
 }

@@ -1,5 +1,5 @@
-import { StringData } from "./data";
-import { MAX_EXPRESSION_LENGTH } from "./errors";
+import {StringData} from "./data";
+import {MAX_EXPRESSION_LENGTH} from "./errors";
 
 export enum TokenType {
   UNKNOWN,
@@ -28,7 +28,7 @@ export enum TokenType {
   FALSE,
   NULL,
 
-  EOF,
+  EOF
 }
 
 export type Pos = {
@@ -104,7 +104,6 @@ export class Lexer {
             this.previous() != TokenType.RIGHT_BRACKET &&
             this.previous() != TokenType.RIGHT_PAREN &&
             this.previous() != TokenType.STAR
-
           ) {
             this.consumeNumber();
           } else {
@@ -118,9 +117,7 @@ export class Lexer {
           break;
 
         case "!":
-          this.addToken(
-            this.match("=") ? TokenType.BANG_EQUAL : TokenType.BANG
-          );
+          this.addToken(this.match("=") ? TokenType.BANG_EQUAL : TokenType.BANG);
           break;
 
         case "=":
@@ -134,15 +131,11 @@ export class Lexer {
           break;
 
         case "<":
-          this.addToken(
-            this.match("=") ? TokenType.LESS_EQUAL : TokenType.LESS
-          );
+          this.addToken(this.match("=") ? TokenType.LESS_EQUAL : TokenType.LESS);
           break;
 
         case ">":
-          this.addToken(
-            this.match("=") ? TokenType.GREATER_EQUAL : TokenType.GREATER
-          );
+          this.addToken(this.match("=") ? TokenType.GREATER_EQUAL : TokenType.GREATER);
           break;
 
         case "&":
@@ -199,18 +192,18 @@ export class Lexer {
     this.tokens.push({
       type: TokenType.EOF,
       lexeme: "",
-      pos: this.pos(),
+      pos: this.pos()
     });
 
     return {
-      tokens: this.tokens,
+      tokens: this.tokens
     };
   }
 
   private pos(): Pos {
     return {
       line: this.line,
-      column: this.start - this.lastLineOffset,
+      column: this.start - this.lastLineOffset
     };
   }
 
@@ -268,7 +261,7 @@ export class Lexer {
       type,
       lexeme: this.input.substring(this.start, this.offset),
       pos: this.pos(),
-      value,
+      value
     });
   }
 
@@ -282,9 +275,7 @@ export class Lexer {
 
     if (isNaN(value)) {
       throw new Error(
-        `Unexpected symbol: '${lexeme}'. Located at position ${
-          this.start + 1
-        } within expression: ${this.input}`
+        `Unexpected symbol: '${lexeme}'. Located at position ${this.start + 1} within expression: ${this.input}`
       );
     }
 
@@ -304,11 +295,9 @@ export class Lexer {
     if (this.atEnd()) {
       // Unterminated string
       throw new Error(
-        `Unexpected symbol: '${this.input.substring(
-          this.start
-        )}'. Located at position ${this.start + 1} within expression: ${
-          this.input
-        }`
+        `Unexpected symbol: '${this.input.substring(this.start)}'. Located at position ${
+          this.start + 1
+        } within expression: ${this.input}`
       );
     }
 
@@ -360,9 +349,7 @@ export class Lexer {
 
     if (!isLegalIdentifier(lexeme)) {
       throw new Error(
-        `Unexpected symbol: '${lexeme}'. Located at position ${
-          this.start + 1
-        } within expression: ${this.input}`
+        `Unexpected symbol: '${lexeme}'. Located at position ${this.start + 1} within expression: ${this.input}`
       );
     }
 
@@ -400,19 +387,9 @@ function isLegalIdentifier(str: string): boolean {
   }
 
   const first = str[0];
-  if (
-    (first >= "a" && first <= "z") ||
-    (first >= "A" && first <= "Z") ||
-    first == "_"
-  ) {
+  if ((first >= "a" && first <= "z") || (first >= "A" && first <= "Z") || first == "_") {
     for (const c of str.substring(1).split("")) {
-      if (
-        (c >= "a" && c <= "z") ||
-        (c >= "A" && c <= "Z") ||
-        (c >= "0" && c <= "9") ||
-        c == "_" ||
-        c == "-"
-      ) {
+      if ((c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || (c >= "0" && c <= "9") || c == "_" || c == "-") {
         // OK
       } else {
         return false;

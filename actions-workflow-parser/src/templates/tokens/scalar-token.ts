@@ -1,6 +1,6 @@
-import { DefinitionInfo } from "../schema/definition-info"
-import { TemplateToken } from "./template-token"
-import { TokenRange } from "./token-range"
+import {DefinitionInfo} from "../schema/definition-info";
+import {TemplateToken} from "./template-token";
+import {TokenRange} from "./token-range";
 
 /**
  * Base class for everything that is not a mapping or sequence
@@ -12,21 +12,21 @@ export abstract class ScalarToken extends TemplateToken {
     range: TokenRange | undefined,
     definitionInfo: DefinitionInfo | undefined
   ) {
-    super(type, file, range, definitionInfo)
+    super(type, file, range, definitionInfo);
   }
 
-  public abstract toString(): string
+  public abstract toString(): string;
 
-  public abstract toDisplayString(): string
+  public abstract toDisplayString(): string;
 
   public override get isScalar(): boolean {
-    return true
+    return true;
   }
 
   protected static trimDisplayString(displayString: string): string {
-    let firstLine = displayString.trimStart()
-    const firstNewLine = firstLine.indexOf("\n")
-    const firstCarriageReturn = firstLine.indexOf("\r")
+    let firstLine = displayString.trimStart();
+    const firstNewLine = firstLine.indexOf("\n");
+    const firstCarriageReturn = firstLine.indexOf("\r");
     if (firstNewLine >= 0 || firstCarriageReturn >= 0) {
       firstLine = firstLine.substr(
         0,
@@ -34,8 +34,8 @@ export abstract class ScalarToken extends TemplateToken {
           firstNewLine >= 0 ? firstNewLine : Number.MAX_VALUE,
           firstCarriageReturn >= 0 ? firstCarriageReturn : Number.MAX_VALUE
         )
-      )
+      );
     }
-    return firstLine
+    return firstLine;
   }
 }

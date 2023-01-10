@@ -1,4 +1,4 @@
-import { TokenRange } from "./tokens/token-range"
+import {TokenRange} from "./tokens/token-range";
 
 /**
  * Provides information about an error which occurred during validation
@@ -13,13 +13,13 @@ export class TemplateValidationError {
 
   public get message(): string {
     if (this.prefix) {
-      return `${this.prefix}: ${this.rawMessage}`
+      return `${this.prefix}: ${this.rawMessage}`;
     }
 
-    return this.rawMessage
+    return this.rawMessage;
   }
 
   public toString(): string {
-    return this.message
+    return this.message;
   }
 }

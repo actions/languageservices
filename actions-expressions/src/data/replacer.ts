@@ -1,9 +1,9 @@
-import { Array } from "./array";
-import { BooleanData } from "./boolean";
-import { Dictionary } from "./dictionary";
-import { Null } from "./null";
-import { NumberData } from "./number";
-import { StringData } from "./string";
+import {Array} from "./array";
+import {BooleanData} from "./boolean";
+import {Dictionary} from "./dictionary";
+import {Null} from "./null";
+import {NumberData} from "./number";
+import {StringData} from "./string";
 
 /**
  * Replacer can be passed to JSON.stringify to convert an ExpressionData object into plain JSON

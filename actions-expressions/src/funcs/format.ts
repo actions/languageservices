@@ -1,5 +1,5 @@
-import { ExpressionData, StringData } from "../data";
-import { FunctionDefinition } from "./info";
+import {ExpressionData, StringData} from "../data";
+import {FunctionDefinition} from "./info";
 
 export const format: FunctionDefinition = {
   name: "format",
@@ -32,9 +32,7 @@ export const format: FunctionDefinition = {
           if (argIndex.success) {
             // Check parameter count
             if (1 + argIndex.result > args.length - 1) {
-              throw new Error(
-                `The following format string references more arguments than were supplied: ${fs}`
-              );
+              throw new Error(`The following format string references more arguments than were supplied: ${fs}`);
             }
 
             // Append the portion before the left brace
@@ -69,7 +67,7 @@ export const format: FunctionDefinition = {
     }
 
     return new StringData(result.join(""));
-  },
+  }
 };
 
 function safeCharAt(string: string, index: number): string {
@@ -95,7 +93,7 @@ function readArgIndex(string: string, startIndex: number): ArgIndex {
   // Validate at least one digit
   if (length < 1) {
     return <ArgIndex>{
-      success: false,
+      success: false
     };
   }
 
@@ -105,7 +103,7 @@ function readArgIndex(string: string, startIndex: number): ArgIndex {
   return <ArgIndex>{
     success: !isNaN(result),
     result: result,
-    endIndex: endIndex,
+    endIndex: endIndex
   };
 }
 

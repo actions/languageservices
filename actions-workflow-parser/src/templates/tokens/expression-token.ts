@@ -1,11 +1,11 @@
-import { Lexer, Parser } from "@github/actions-expressions"
-import { splitAllowedContext } from "../allowed-context"
-import { DefinitionInfo } from "../schema/definition-info"
-import { ScalarToken } from "./scalar-token"
-import { TokenRange } from "./token-range"
+import {Lexer, Parser} from "@github/actions-expressions";
+import {splitAllowedContext} from "../allowed-context";
+import {DefinitionInfo} from "../schema/definition-info";
+import {ScalarToken} from "./scalar-token";
+import {TokenRange} from "./token-range";
 
 export abstract class ExpressionToken extends ScalarToken {
-  public readonly directive: string | undefined
+  public readonly directive: string | undefined;
 
   public constructor(
     type: number,
@@ -14,28 +14,25 @@ export abstract class ExpressionToken extends ScalarToken {
     directive: string | undefined,
     definitionInfo: DefinitionInfo | undefined
   ) {
-    super(type, file, range, definitionInfo)
-    this.directive = directive
+    super(type, file, range, definitionInfo);
+    this.directive = directive;
   }
 
   public override get isLiteral(): boolean {
-    return false
+    return false;
   }
 
   public override get isExpression(): boolean {
-    return true
+    return true;
   }
 
-  public static validateExpression(
-    expression: string,
-    allowedContext: string[]
-  ): void {
-    const { namedContexts, functions } = splitAllowedContext(allowedContext)
+  public static validateExpression(expression: string, allowedContext: string[]): void {
+    const {namedContexts, functions} = splitAllowedContext(allowedContext);
 
     // Parse
-    const lexer = new Lexer(expression)
-    const result = lexer.lex()
-    const p = new Parser(result.tokens, namedContexts, functions)
-    p.parse()
+    const lexer = new Lexer(expression);
+    const result = lexer.lex();
+    const p = new Parser(result.tokens, namedContexts, functions);
+    p.parse();
   }
 }

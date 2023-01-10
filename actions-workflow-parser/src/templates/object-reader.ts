@@ -1,22 +1,22 @@
-import { LiteralToken, SequenceToken, MappingToken } from "./tokens"
+import {LiteralToken, SequenceToken, MappingToken} from "./tokens";
 
 /**
  * Interface for reading a source object (or file).
  * This interface is used by TemplateReader to build a TemplateToken DOM.
  */
 export interface ObjectReader {
-  allowLiteral(): LiteralToken | undefined
+  allowLiteral(): LiteralToken | undefined;
 
   // maybe rename these since we don't have out params
-  allowSequenceStart(): SequenceToken | undefined
+  allowSequenceStart(): SequenceToken | undefined;
 
-  allowSequenceEnd(): boolean
+  allowSequenceEnd(): boolean;
 
-  allowMappingStart(): MappingToken | undefined
+  allowMappingStart(): MappingToken | undefined;
 
-  allowMappingEnd(): boolean
+  allowMappingEnd(): boolean;
 
-  validateStart(): void
+  validateStart(): void;
 
-  validateEnd(): void
+  validateEnd(): void;
 }

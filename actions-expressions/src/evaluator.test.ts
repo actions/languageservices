@@ -1,7 +1,7 @@
 import * as data from "./data";
-import { Evaluator } from "./evaluator";
-import { Lexer } from "./lexer";
-import { Parser } from "./parser";
+import {Evaluator} from "./evaluator";
+import {Lexer} from "./lexer";
+import {Parser} from "./parser";
 
 test("evaluator", () => {
   const input = "foo['']";
@@ -18,7 +18,7 @@ test("evaluator", () => {
     expr,
     new data.Dictionary({
       key: "foo",
-      value: new data.Dictionary({ key: "bar", value: new data.NumberData(42) }),
+      value: new data.Dictionary({key: "bar", value: new data.NumberData(42)})
     })
   );
   const eresult = evaluator.evaluate();

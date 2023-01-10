@@ -1,15 +1,9 @@
-import {
-  ExpressionData,
-  ExpressionDataInterface,
-  Kind,
-  kindStr,
-  Pair,
-} from "./expressiondata";
+import {ExpressionData, ExpressionDataInterface, Kind, kindStr, Pair} from "./expressiondata";
 
 export class Dictionary implements ExpressionDataInterface {
   private keys: string[] = [];
   private v: ExpressionData[] = [];
-  private indexMap: { [key: string]: number } = {};
+  private indexMap: {[key: string]: number} = {};
 
   constructor(...pairs: Pair[]) {
     for (const p of pairs) {
@@ -56,7 +50,7 @@ export class Dictionary implements ExpressionDataInterface {
     const result: Pair[] = [];
 
     for (const key of this.keys) {
-      result.push({ key, value: this.v[this.indexMap[key.toLowerCase()]] });
+      result.push({key, value: this.v[this.indexMap[key.toLowerCase()]]});
     }
 
     return result;

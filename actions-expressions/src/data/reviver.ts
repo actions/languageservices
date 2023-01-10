@@ -1,10 +1,10 @@
-import { Array as dArray } from "./array";
-import { BooleanData } from "./boolean";
-import { Dictionary } from "./dictionary";
-import { ExpressionData, Pair } from "./expressiondata";
-import { Null } from "./null";
-import { NumberData } from "./number";
-import { StringData } from "./string";
+import {Array as dArray} from "./array";
+import {BooleanData} from "./boolean";
+import {Dictionary} from "./dictionary";
+import {ExpressionData, Pair} from "./expressiondata";
+import {Null} from "./null";
+import {NumberData} from "./number";
+import {StringData} from "./string";
 
 /**
  * Reviver can be passed to `JSON.parse` to convert plain JSON into an `ExpressionData` object.
@@ -35,10 +35,10 @@ export function reviver(key: string, val: any): ExpressionData {
   if (typeof val === "object") {
     return new Dictionary(
       ...Object.keys(val).map(
-        (k) =>
+        k =>
           ({
             key: k,
-            value: val[k],
+            value: val[k]
           } as Pair)
       )
     );
