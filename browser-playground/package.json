@@ -17,6 +17,8 @@
   "scripts": {
     "build": "webpack --mode production",
     "clean": "rimraf dist",
+    "format": "prettier --write '**/*.ts'",
+    "format-check": "prettier --check '**/*.ts'",
     "start": "webpack-dev-server --mode development --open",
     "test": "exit 0",
     "watch": "webpack --watch --mode development --env esbuild"
