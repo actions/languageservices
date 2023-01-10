@@ -19,6 +19,7 @@ describe("isValidCron", () => {
     "0 0 * * SUN-TUE",
     "0 0 * * SUN-2",
     "0 2-4/5 * * *",
+    "0   0  *  *               *",
   ]
 
   for (const cron of valid) {

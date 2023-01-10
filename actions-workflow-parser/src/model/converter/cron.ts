@@ -27,7 +27,7 @@ const DAYS = {
 export function isValidCron(cron: string): boolean {
   // https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
 
-  const parts = cron.split(" ")
+  const parts = cron.split(/ +/)
   if (parts.length != 5) {
     return false
   }
