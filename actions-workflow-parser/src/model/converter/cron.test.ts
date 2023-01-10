@@ -18,6 +18,8 @@ describe("isValidCron", () => {
     "0 0 * * SUN-TUE",
     "0 0 * * SUN-2",
     "0 * * */FEB */TUE",
+    "0 2-4/5 * * *",
+    // "0 29/5 * * *" <- crontab guru says this is valid, need to test with go library
   ]
 
   for (const cron of valid) {
@@ -32,7 +34,9 @@ describe("isValidCron", () => {
     "0 0 * SUN JAN",
     "0 0 * * FRI-TUE",
     "0 12-4 * * *",
-    "0 */0 * * *"
+    "0 */0 * * *",
+    "0 2/4-5 * * *", // TODO
+    "0 2-4-6/5 * * *", // TODO
   ]
 
   for (const cron of invalid) {
