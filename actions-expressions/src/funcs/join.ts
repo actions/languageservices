@@ -1,5 +1,5 @@
-import { Array, ExpressionData, Kind, StringData } from "../data";
-import { FunctionDefinition } from "./info";
+import {Array, ExpressionData, Kind, StringData} from "../data";
+import {FunctionDefinition} from "./info";
 
 export const join: FunctionDefinition = {
   name: "join",
@@ -25,11 +25,11 @@ export const join: FunctionDefinition = {
       return new StringData(
         (args[0] as Array)
           .values()
-          .map((item) => item.coerceString())
+          .map(item => item.coerceString())
           .join(separator)
       );
     }
 
     return new StringData("");
-  },
+  }
 };

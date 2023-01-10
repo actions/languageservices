@@ -1,10 +1,10 @@
-import { Dictionary, isDictionary } from "./data/dictionary";
-import { ExpressionData } from "./data/expressiondata";
-import { Evaluator } from "./evaluator";
-import { wellKnownFunctions } from "./funcs";
-import { FunctionInfo } from "./funcs/info";
-import { Lexer, Token, TokenType } from "./lexer";
-import { Parser } from "./parser";
+import {Dictionary, isDictionary} from "./data/dictionary";
+import {ExpressionData} from "./data/expressiondata";
+import {Evaluator} from "./evaluator";
+import {wellKnownFunctions} from "./funcs";
+import {FunctionInfo} from "./funcs/info";
+import {Lexer, Token, TokenType} from "./lexer";
+import {Parser} from "./parser";
 
 export type CompletionItem = {
   label: string;
@@ -20,11 +20,7 @@ export type CompletionItem = {
 // - context.path.| or context.path['| -- auto-complete context access
 // - toJS| -- auto-complete function call or top-level
 // - | -- auto-complete function call or top-level context access
-export function complete(
-  input: string,
-  context: Dictionary,
-  extensionFunctions: FunctionInfo[]
-): CompletionItem[] {
+export function complete(input: string, context: Dictionary, extensionFunctions: FunctionInfo[]): CompletionItem[] {
   // Lex
   const lexer = new Lexer(input);
   const lexResult = lexer.lex();
@@ -68,7 +64,7 @@ export function complete(
 
   const p = new Parser(
     pathTokenVector,
-    context.pairs().map((x) => x.key),
+    context.pairs().map(x => x.key),
     extensionFunctions
   );
   const expr = p.parse();
@@ -82,14 +78,11 @@ export function complete(
 function functionItems(extensionFunctions: FunctionInfo[]): CompletionItem[] {
   const result: CompletionItem[] = [];
 
-  for (const fdef of [
-    ...Object.values(wellKnownFunctions),
-    ...extensionFunctions,
-  ]) {
+  for (const fdef of [...Object.values(wellKnownFunctions), ...extensionFunctions]) {
     result.push({
       label: fdef.name,
       description: fdef.description,
-      function: true,
+      function: true
     });
   }
 
@@ -104,7 +97,7 @@ function contextKeys(context: ExpressionData): CompletionItem[] {
     return (
       context
         .pairs()
-        .map((x) => completionItemFromContext(x.key))
+        .map(x => completionItemFromContext(x.key))
         // Sort contexts
         .sort((a, b) => a.label.localeCompare(b.label))
     );
@@ -119,7 +112,7 @@ function completionItemFromContext(context: string): CompletionItem {
 
   return {
     label: isFunc ? context.substring(0, parenIndex) : context,
-    function: isFunc,
+    function: isFunc
   };
 }
 

@@ -76,10 +76,7 @@ export function coerceTypes(
 
 // Similar to the Javascript abstract equality comparison algorithm http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3.
 // Except string comparison is OrdinalIgnoreCase, and objects are not coerced to primitives.
-export function equals(
-  lhs: data.ExpressionData,
-  rhs: data.ExpressionData
-): boolean {
+export function equals(lhs: data.ExpressionData, rhs: data.ExpressionData): boolean {
   let [lv, rv] = coerceTypes(lhs, rhs);
 
   if (lv.kind != rv.kind) {
@@ -125,10 +122,7 @@ export function equals(
 
 // Similar to the Javascript abstract equality comparison algorithm http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3.
 // Except string comparison is OrdinalIgnoreCase, and objects are not coerced to primitives.
-export function greaterThan(
-  lhs: data.ExpressionData,
-  rhs: data.ExpressionData
-): boolean {
+export function greaterThan(lhs: data.ExpressionData, rhs: data.ExpressionData): boolean {
   const [lv, rv] = coerceTypes(lhs, rhs);
 
   if (lv.kind != rv.kind) {
@@ -166,10 +160,7 @@ export function greaterThan(
 
 // Similar to the Javascript abstract equality comparison algorithm http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3.
 // Except string comparison is OrdinalIgnoreCase, and objects are not coerced to primitives.
-export function lessThan(
-  lhs: data.ExpressionData,
-  rhs: data.ExpressionData
-): boolean {
+export function lessThan(lhs: data.ExpressionData, rhs: data.ExpressionData): boolean {
   const [lv, rv] = coerceTypes(lhs, rhs);
 
   if (lv.kind != rv.kind) {

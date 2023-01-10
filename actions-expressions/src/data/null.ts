@@ -1,8 +1,4 @@
-import {
-  ExpressionData,
-  ExpressionDataInterface,
-  Kind,
-} from "./expressiondata";
+import {ExpressionData, ExpressionDataInterface, Kind} from "./expressiondata";
 
 export class Null implements ExpressionDataInterface {
   constructor() {}

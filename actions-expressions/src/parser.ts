@@ -1,20 +1,9 @@
-import {
-  Binary,
-  ContextAccess,
-  Expr,
-  FunctionCall,
-  Grouping,
-  IndexAccess,
-  Literal,
-  Logical,
-  Star,
-  Unary,
-} from "./ast";
+import {Binary, ContextAccess, Expr, FunctionCall, Grouping, IndexAccess, Literal, Logical, Star, Unary} from "./ast";
 import * as data from "./data";
-import { ErrorType, ExpressionError, MAX_PARSER_DEPTH } from "./errors";
-import { ParseContext, validateFunction } from "./funcs";
-import { FunctionInfo } from "./funcs/info";
-import { Token, TokenType } from "./lexer";
+import {ErrorType, ExpressionError, MAX_PARSER_DEPTH} from "./errors";
+import {ParseContext, validateFunction} from "./funcs";
+import {FunctionInfo} from "./funcs/info";
+import {Token, TokenType} from "./lexer";
 
 export class Parser {
   private extContexts: Map<string, boolean>;
@@ -32,11 +21,7 @@ export class Parser {
    * @param extensionContexts Available context names
    * @param extensionFunctions Available functions (beyond the built-in ones)
    */
-  constructor(
-    private tokens: Token[],
-    extensionContexts: string[],
-    extensionFunctions: FunctionInfo[]
-  ) {
+  constructor(private tokens: Token[], extensionContexts: string[], extensionFunctions: FunctionInfo[]) {
     this.extContexts = new Map<string, boolean>();
     this.extFuncs = new Map();
 
@@ -44,9 +29,9 @@ export class Parser {
       this.extContexts.set(contextName.toLowerCase(), true);
     }
 
-    for (const { name, func } of extensionFunctions.map((x) => ({
+    for (const {name, func} of extensionFunctions.map(x => ({
       name: x.name,
-      func: x,
+      func: x
     }))) {
       this.extFuncs.set(name.toLowerCase(), func);
     }
@@ -54,7 +39,7 @@ export class Parser {
     this.context = {
       allowUnknownKeywords: false,
       extensionContexts: this.extContexts,
-      extensionFunctions: this.extFuncs,
+      extensionFunctions: this.extFuncs
     };
   }
 
@@ -65,7 +50,7 @@ export class Parser {
     if (this.atEnd()) {
       return result;
     }
-    
+
     result = this.expression();
 
     if (!this.atEnd()) {
@@ -151,14 +136,7 @@ export class Parser {
     // ! is higher precedence than >, >=, <, <=
     let expr = this.unary();
 
-    while (
-      this.match(
-        TokenType.GREATER,
-        TokenType.GREATER_EQUAL,
-        TokenType.LESS,
-        TokenType.LESS_EQUAL
-      )
-    ) {
+    while (this.match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
       const operator = this.previous();
       const right = this.unary();
 
@@ -191,11 +169,7 @@ export class Parser {
 
     let depthIncreased = 0;
 
-    if (
-      expr instanceof Grouping ||
-      expr instanceof FunctionCall ||
-      expr instanceof ContextAccess
-    ) {
+    if (expr instanceof Grouping || expr instanceof FunctionCall || expr instanceof ContextAccess) {
       let cont = true;
       while (cont) {
         switch (true) {
@@ -207,10 +181,7 @@ export class Parser {
               indexExpr = this.expression();
             }
 
-            this.consume(
-              TokenType.RIGHT_BRACKET,
-              ErrorType.ErrorUnexpectedSymbol
-            );
+            this.consume(TokenType.RIGHT_BRACKET, ErrorType.ErrorUnexpectedSymbol);
 
             // Track depth
             this.incrDepth();
@@ -225,17 +196,11 @@ export class Parser {
 
             if (this.match(TokenType.IDENTIFIER)) {
               let property = this.previous();
-              expr = new IndexAccess(
-                expr,
-                new Literal(new data.StringData(property.lexeme))
-              );
+              expr = new IndexAccess(expr, new Literal(new data.StringData(property.lexeme)));
             } else if (this.match(TokenType.STAR)) {
               expr = new IndexAccess(expr, new Star());
             } else {
-              throw this.buildError(
-                ErrorType.ErrorUnexpectedSymbol,
-                this.peek()
-              );
+              throw this.buildError(ErrorType.ErrorUnexpectedSymbol, this.peek());
             }
 
             break;
@@ -307,20 +272,14 @@ export class Parser {
         const expr = this.expression();
 
         if (this.atEnd()) {
-          throw this.buildError(
-            ErrorType.ErrorUnexpectedEndOfExpression,
-            this.previous()
-          ); // Back up to get the last token before the EOF
+          throw this.buildError(ErrorType.ErrorUnexpectedEndOfExpression, this.previous()); // Back up to get the last token before the EOF
         }
 
         this.consume(TokenType.RIGHT_PAREN, ErrorType.ErrorUnexpectedSymbol);
         return new Grouping(expr);
 
       case this.atEnd():
-        throw this.buildError(
-          ErrorType.ErrorUnexpectedEndOfExpression,
-          this.previous()
-        ); // Back up to get the last token before the EOF
+        throw this.buildError(ErrorType.ErrorUnexpectedEndOfExpression, this.previous()); // Back up to get the last token before the EOF
     }
 
     throw this.buildError(ErrorType.ErrorUnexpectedSymbol, this.peek());

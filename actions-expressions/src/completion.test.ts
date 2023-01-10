@@ -1,9 +1,9 @@
-import { complete, CompletionItem, trimTokenVector } from "./completion";
-import { BooleanData } from "./data/boolean";
-import { Dictionary } from "./data/dictionary";
-import { StringData } from "./data/string";
-import { FunctionInfo } from "./funcs/info";
-import { Lexer, TokenType } from "./lexer";
+import {complete, CompletionItem, trimTokenVector} from "./completion";
+import {BooleanData} from "./data/boolean";
+import {Dictionary} from "./data/dictionary";
+import {StringData} from "./data/string";
+import {FunctionInfo} from "./funcs/info";
+import {Lexer, TokenType} from "./lexer";
 
 const testContext = new Dictionary(
   {
@@ -11,24 +11,24 @@ const testContext = new Dictionary(
     value: new Dictionary(
       {
         key: "FOO",
-        value: new StringData(""),
+        value: new StringData("")
       },
       {
         key: "BAR_TEST",
-        value: new StringData(""),
+        value: new StringData("")
       }
-    ),
+    )
   },
   {
     key: "secrets",
     value: new Dictionary({
       key: "AWS_TOKEN",
-      value: new BooleanData(true),
-    }),
+      value: new BooleanData(true)
+    })
   },
   {
     key: "hashFiles(1,255)",
-    value: new Dictionary(),
+    value: new Dictionary()
   }
 );
 
@@ -38,17 +38,13 @@ const testComplete = (input: string): CompletionItem[] => {
   const pos = input.indexOf("|");
   input = input.replace("|", "");
 
-  const results = complete(
-    input.slice(0, pos >= 0 ? pos : input.length),
-    testContext,
-    testFunctions
-  );
+  const results = complete(input.slice(0, pos >= 0 ? pos : input.length), testContext, testFunctions);
 
   return results;
 };
 
 function completionItems(...labels: string[]): CompletionItem[] {
-  return labels.map((label) => ({ label, function: false }));
+  return labels.map(label => ({label, function: false}));
 }
 
 describe("auto-complete", () => {
@@ -58,7 +54,7 @@ describe("auto-complete", () => {
         label: "toJson",
         description:
           "`toJSON(value)`\n\nReturns a pretty-print JSON representation of `value`. You can use this function to debug the information provided in contexts.",
-        function: true,
+        function: true
       };
       expect(testComplete("to")).toContainEqual(expected);
       expect(testComplete("toJs")).toContainEqual(expected);
@@ -69,7 +65,7 @@ describe("auto-complete", () => {
     it("removes parentheses from passed in function context", () => {
       expect(testComplete("|")).toContainEqual({
         label: "hashFiles",
-        function: true,
+        function: true
       });
     });
   });
@@ -92,9 +88,7 @@ describe("auto-complete", () => {
     });
 
     it("provides suggestions for contexts in function call", () => {
-      expect(testComplete("toJSON(env.|)")).toEqual(
-        completionItems("BAR_TEST", "FOO")
-      );
+      expect(testComplete("toJSON(env.|)")).toEqual(completionItems("BAR_TEST", "FOO"));
     });
   });
 });
@@ -106,34 +100,19 @@ describe("trimTokenVector", () => {
   }>([
     {
       input: "env.",
-      expected: [TokenType.IDENTIFIER, TokenType.DOT, TokenType.EOF],
+      expected: [TokenType.IDENTIFIER, TokenType.DOT, TokenType.EOF]
     },
     {
       input: "github.act",
-      expected: [
-        TokenType.IDENTIFIER,
-        TokenType.DOT,
-        TokenType.IDENTIFIER,
-        TokenType.EOF,
-      ],
+      expected: [TokenType.IDENTIFIER, TokenType.DOT, TokenType.IDENTIFIER, TokenType.EOF]
     },
     {
       input: "1 == github.act",
-      expected: [
-        TokenType.IDENTIFIER,
-        TokenType.DOT,
-        TokenType.IDENTIFIER,
-        TokenType.EOF,
-      ],
+      expected: [TokenType.IDENTIFIER, TokenType.DOT, TokenType.IDENTIFIER, TokenType.EOF]
     },
     {
       input: "github.mona == github.act",
-      expected: [
-        TokenType.IDENTIFIER,
-        TokenType.DOT,
-        TokenType.IDENTIFIER,
-        TokenType.EOF,
-      ],
+      expected: [TokenType.IDENTIFIER, TokenType.DOT, TokenType.IDENTIFIER, TokenType.EOF]
     },
     {
       input: "github['test'].",
@@ -143,14 +122,14 @@ describe("trimTokenVector", () => {
         TokenType.STRING,
         TokenType.RIGHT_BRACKET,
         TokenType.DOT,
-        TokenType.EOF,
-      ],
-    },
-  ])("$input", ({ input, expected }) => {
+        TokenType.EOF
+      ]
+    }
+  ])("$input", ({input, expected}) => {
     const l = new Lexer(input);
     const lr = l.lex();
 
     const tv = trimTokenVector(lr.tokens);
-    expect(tv.map((x) => x.type)).toEqual(expected);
+    expect(tv.map(x => x.type)).toEqual(expected);
   });
 });

@@ -1,14 +1,14 @@
 import * as fs from "fs";
 import * as path from "path";
-import { Expr } from "./ast";
+import {Expr} from "./ast";
 import * as data from "./data";
-import { kindStr } from "./data/expressiondata";
-import { replacer } from "./data/replacer";
-import { reviver } from "./data/reviver";
-import { ExpressionError } from "./errors";
-import { Evaluator } from "./evaluator";
-import { Lexer, Result } from "./lexer";
-import { Parser } from "./parser";
+import {kindStr} from "./data/expressiondata";
+import {replacer} from "./data/replacer";
+import {reviver} from "./data/reviver";
+import {ExpressionError} from "./errors";
+import {Evaluator} from "./evaluator";
+import {Lexer, Result} from "./lexer";
+import {Parser} from "./parser";
 
 interface TestResult {
   value: data.ExpressionData;
@@ -18,11 +18,11 @@ interface TestResult {
 enum TestErrorKind {
   Lexing = "lexing",
   Parsing = "parsing",
-  Evaluation = "evaluation",
+  Evaluation = "evaluation"
 }
 
 enum SkipOptionKind {
-  Typescript = "typescript",
+  Typescript = "typescript"
 }
 
 interface TestOptions {
@@ -83,9 +83,7 @@ describe("x-lang tests", () => {
       let tests = testCases[testCaseName];
 
       // Filter out tests that are not supported by typescript
-      tests = tests.filter(
-        (t) => !t.options?.skip?.includes(SkipOptionKind.Typescript)
-      );
+      tests = tests.filter(t => !t.options?.skip?.includes(SkipOptionKind.Typescript));
 
       const testName = path.basename(file, ".json");
 
@@ -94,7 +92,7 @@ describe("x-lang tests", () => {
       }
 
       describe(testName, () => {
-        test.each(tests)(`${testName}: ${testCaseName} ($expr)`, (testCase) => {
+        test.each(tests)(`${testName}: ${testCaseName} ($expr)`, testCase => {
           if (!testCase.contexts) {
             testCase.contexts = new data.Dictionary();
           }
@@ -114,37 +112,29 @@ describe("x-lang tests", () => {
               return;
             }
 
-            throw new Error(
-              `unexpected error lexing expression: ${e.message} ${e.stack}`
-            );
+            throw new Error(`unexpected error lexing expression: ${e.message} ${e.stack}`);
           }
 
           // Parse
-          const contextNames = testCase.contexts.pairs().map((x) => x.key);
+          const contextNames = testCase.contexts.pairs().map(x => x.key);
           const parser = new Parser(result.tokens, contextNames, []);
           let expr: Expr;
           try {
             expr = parser.parse();
 
             if (testCase.err?.kind === TestErrorKind.Parsing) {
-              throw new Error(
-                "expected error parsing expression, but got none"
-              );
+              throw new Error("expected error parsing expression, but got none");
             }
           } catch (e: any) {
             // Did test expect parsing error?
             if (testCase.err?.kind === TestErrorKind.Parsing) {
               // Test expects parsing error
               const pe = e as ExpressionError;
-              expect(errorWithExpression(pe, testCase.expr)).toContain(
-                testCase.err.value
-              );
+              expect(errorWithExpression(pe, testCase.expr)).toContain(testCase.err.value);
               return;
             }
 
-            throw new Error(
-              `unexpected error parsing expression: ${e.message} ${e.stack}`
-            );
+            throw new Error(`unexpected error parsing expression: ${e.message} ${e.stack}`);
           }
 
           // Evaluate expression
@@ -158,28 +148,20 @@ describe("x-lang tests", () => {
             }
 
             if (testCase.err?.kind === TestErrorKind.Evaluation) {
-              throw new Error(
-                "expected error evaluating expression, but got none"
-              );
+              throw new Error("expected error evaluating expression, but got none");
             }
 
             expect(kindStr(result.kind)).toBe(testCase.result.kind);
 
-            expect(JSON.stringify(result, replacer)).toEqual(
-              JSON.stringify(testCase.result.value, replacer)
-            );
+            expect(JSON.stringify(result, replacer)).toEqual(JSON.stringify(testCase.result.value, replacer));
           } catch (e: any) {
             if (testCase.err?.kind === TestErrorKind.Evaluation) {
               const pe = e as ExpressionError;
-              expect(errorWithExpression(pe, testCase.expr)).toContain(
-                testCase.err.value
-              );
+              expect(errorWithExpression(pe, testCase.expr)).toContain(testCase.err.value);
               return;
             }
 
-            throw new Error(
-              `unexpected error evaluating expression: ${e.message} ${e.stack}`
-            );
+            throw new Error(`unexpected error evaluating expression: ${e.message} ${e.stack}`);
           }
         });
       });
@@ -189,9 +171,7 @@ describe("x-lang tests", () => {
 
 function errorWithExpression(e: ExpressionError, expr: string): string {
   if (e.pos !== undefined) {
-    return `${e.message}. Located at position ${
-      e.pos.column + 1
-    } within expression: ${expr}`;
+    return `${e.message}. Located at position ${e.pos.column + 1} within expression: ${expr}`;
   }
 
   return `${e.message}. Located within expression: ${expr}`;

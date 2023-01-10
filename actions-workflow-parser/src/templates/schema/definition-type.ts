@@ -6,5 +6,5 @@ export enum DefinitionType {
   Sequence,
   Mapping,
   OneOf,
-  AllowedValues,
+  AllowedValues
 }

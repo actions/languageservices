@@ -1,4 +1,4 @@
-import { Pos, Token, tokenString } from "./lexer";
+import {Pos, Token, tokenString} from "./lexer";
 
 export const MAX_PARSER_DEPTH = 50;
 export const MAX_EXPRESSION_LENGTH = 21000;
@@ -13,7 +13,7 @@ export enum ErrorType {
   ErrorTooFewParameters,
   ErrorTooManyParameters,
   ErrorUnrecognizedContext,
-  ErrorUnrecognizedFunction,
+  ErrorUnrecognizedFunction
 }
 
 export class ExpressionError extends Error {
@@ -42,8 +42,8 @@ function errorDescription(typ: ErrorType): string {
       return "Too few parameters supplied";
     case ErrorType.ErrorTooManyParameters:
       return "Too many parameters supplied";
-      case ErrorType.ErrorUnrecognizedContext:
-        return "Unrecognized named-value";
+    case ErrorType.ErrorUnrecognizedContext:
+      return "Unrecognized named-value";
     case ErrorType.ErrorUnrecognizedFunction:
       return "Unrecognized function";
     default: // Should never reach here.

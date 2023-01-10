@@ -6,31 +6,31 @@ export enum TokenType {
   InsertExpression,
   Boolean,
   Number,
-  Null,
+  Null
 }
 
 export function tokenTypeName(type: TokenType): string {
   switch (type) {
     case TokenType.String:
-      return "StringToken"
+      return "StringToken";
     case TokenType.Sequence:
-      return "SequenceToken"
+      return "SequenceToken";
     case TokenType.Mapping:
-      return "MappingToken"
+      return "MappingToken";
     case TokenType.BasicExpression:
-      return "BasicExpressionToken"
+      return "BasicExpressionToken";
     case TokenType.InsertExpression:
-      return "InsertExpressionToken"
+      return "InsertExpressionToken";
     case TokenType.Boolean:
-      return "BooleanToken"
+      return "BooleanToken";
     case TokenType.Number:
-      return "NumberToken"
+      return "NumberToken";
     case TokenType.Null:
-      return "NullToken"
+      return "NullToken";
     default: {
       // Use never to ensure exhaustiveness
-      const exhaustiveCheck: never = type
-      throw new Error(`Unhandled token type: ${type} ${exhaustiveCheck}}`)
+      const exhaustiveCheck: never = type;
+      throw new Error(`Unhandled token type: ${type} ${exhaustiveCheck}}`);
     }
   }
 }
