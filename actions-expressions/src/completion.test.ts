@@ -1,4 +1,5 @@
-import {complete, CompletionItem, DescriptionDictionary, trimTokenVector} from "./completion";
+import {complete, CompletionItem, trimTokenVector} from "./completion";
+import {DescriptionDictionary} from "./completion/descriptionDictionary";
 import {BooleanData} from "./data/boolean";
 import {Dictionary} from "./data/dictionary";
 import {StringData} from "./data/string";

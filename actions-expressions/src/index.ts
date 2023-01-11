@@ -1,5 +1,6 @@
 export {Expr} from "./ast";
-export {complete, CompletionItem, DescriptionDictionary, DescriptionPair, isDescriptionDictionary} from "./completion";
+export {complete, CompletionItem} from "./completion";
+export {DescriptionDictionary, DescriptionPair, isDescriptionDictionary} from "./completion/descriptionDictionary";
 export * as data from "./data";
 export {ExpressionError} from "./errors";
 export {Evaluator} from "./evaluator";
