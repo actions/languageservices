@@ -1,7 +1,8 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {Kind} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
+import {getDescription} from "./descriptions";
 import {getEnvContext} from "./env";
 import {getGithubContext} from "./github";
 import {getInputsContext} from "./inputs";
@@ -13,7 +14,7 @@ import {getStrategyContext} from "./strategy";
 
 // ContextValue is the type of the value returned by a context provider
 // Null indicates that the context provider doesn't have any value to provide
-export type ContextValue = data.Dictionary | data.Null;
+export type ContextValue = DescriptionDictionary | data.Null;
 
 export enum Mode {
   Completion,
@@ -26,12 +27,12 @@ export async function getContext(
   config: ContextProviderConfig | undefined,
   workflowContext: WorkflowContext,
   mode: Mode
-): Promise<data.Dictionary> {
-  const context = new data.Dictionary();
+): Promise<DescriptionDictionary> {
+  const context = new DescriptionDictionary();
 
   const filteredNames = filterContextNames(names, workflowContext);
   for (const contextName of filteredNames) {
-    let value = getDefaultContext(contextName, workflowContext, mode) || new data.Dictionary();
+    let value = getDefaultContext(contextName, workflowContext, mode) || new DescriptionDictionary();
     if (value.kind === Kind.Null) {
       context.add(contextName, value);
       continue;
@@ -75,7 +76,11 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
       });
 
     case "secrets":
-      return objectToDictionary({GITHUB_TOKEN: "***"});
+      return new DescriptionDictionary({
+        key: "GITHUB_TOKEN",
+        value: new data.StringData("***"),
+        description: getDescription("secrets", "GITHUB_TOKEN")
+      });
 
     case "steps":
       return getStepsContext(workflowContext);
@@ -87,8 +92,9 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
   return undefined;
 }
 
-function objectToDictionary(object: {[key: string]: string}): data.Dictionary {
-  const dictionary = new data.Dictionary();
+function objectToDictionary(object: {[key: string]: string}): DescriptionDictionary {
+  const dictionary = new DescriptionDictionary();
+
   for (const key in object) {
     dictionary.add(key, new data.StringData(object[key]));
   }

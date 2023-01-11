@@ -1,11 +1,11 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {isMapping, isSequence} from "@github/actions-workflow-parser";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {WorkflowContext} from "../context/workflow-context";
 
-export function getJobContext(workflowContext: WorkflowContext): data.Dictionary {
+export function getJobContext(workflowContext: WorkflowContext): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
-  const jobContext = new data.Dictionary();
+  const jobContext = new DescriptionDictionary();
   const job = workflowContext.job;
   if (!job) {
     return jobContext;
@@ -21,7 +21,7 @@ export function getJobContext(workflowContext: WorkflowContext): data.Dictionary
   // Services
   const jobServices = job.services;
   if (jobServices && isMapping(jobServices)) {
-    const servicesContext = new data.Dictionary();
+    const servicesContext = new DescriptionDictionary();
     for (const service of jobServices) {
       if (!isMapping(service.value)) {
         continue;

@@ -1,5 +1,4 @@
-import {data} from "@github/actions-expressions";
-import {isDictionary} from "@github/actions-expressions/data/dictionary";
+import {data, DescriptionDictionary, isDescriptionDictionary} from "@github/actions-expressions";
 import {parseActionReference} from "@github/actions-languageservice/action";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
 import {isActionStep} from "@github/actions-workflow-parser/model/type-guards";
@@ -10,9 +9,9 @@ import {getActionOutputs} from "./action-outputs";
 export async function getStepsContext(
   octokit: Octokit,
   cache: TTLCache,
-  defaultContext: data.Dictionary | undefined,
+  defaultContext: DescriptionDictionary | undefined,
   workflowContext: WorkflowContext
-): Promise<data.Dictionary | undefined> {
+): Promise<DescriptionDictionary | undefined> {
   if (!defaultContext || !workflowContext.job) {
     return defaultContext;
   }
@@ -26,7 +25,7 @@ export async function getStepsContext(
 
   // Copy the default context for each step
   // If the step is an action, add the action outputs to the context
-  const stepsContext = new data.Dictionary();
+  const stepsContext = new DescriptionDictionary();
   for (const step of workflowContext.job.steps) {
     if (!contextSteps.has(step.id)) {
       continue;
@@ -38,7 +37,7 @@ export async function getStepsContext(
       continue;
     }
 
-    if (!isActionStep(step) || !isDictionary(defaultStepContext)) {
+    if (!isActionStep(step) || !isDescriptionDictionary(defaultStepContext)) {
       stepsContext.add(step.id, defaultStepContext);
       continue;
     }
@@ -49,23 +48,23 @@ export async function getStepsContext(
       continue;
     }
 
-    const stepContext = new data.Dictionary();
-    for (const {key, value} of defaultStepContext.pairs()) {
+    const stepContext = new DescriptionDictionary();
+    for (const {key, value, description} of defaultStepContext.pairs()) {
       switch (key) {
         case "outputs":
           const outputs = await getActionOutputs(octokit, cache, action);
           if (!outputs) {
-            stepContext.add(key, value);
+            stepContext.add(key, value, description);
             continue;
           }
-          const outputsDict = new data.Dictionary();
+          const outputsDict = new DescriptionDictionary();
           for (const [key, value] of Object.entries(outputs)) {
-            outputsDict.add(key, new data.StringData(value.description));
+            outputsDict.add(key, new data.StringData(value.description), value.description);
           }
           stepContext.add("outputs", outputsDict);
           break;
         default:
-          stepContext.add(key, value);
+          stepContext.add(key, value, description);
       }
     }
     stepsContext.add(step.id, stepContext);

@@ -1,4 +1,4 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {getStepsContext as getDefaultStepsContext} from "@github/actions-languageservice/context-providers/steps";
 import {Octokit} from "@octokit/rest";
 import nock from "nock";
@@ -80,18 +80,29 @@ it("adds action outputs", async () => {
   expect(stepsContext).toBeDefined();
 
   expect(stepsContext).toEqual(
-    new data.Dictionary({
+    new DescriptionDictionary({
       key: "cache-primes",
-      value: new data.Dictionary(
+      value: new DescriptionDictionary(
         {
           key: "outputs",
-          value: new data.Dictionary({
+          value: new DescriptionDictionary({
             key: "cache-hit",
-            value: new data.StringData("A boolean value to indicate an exact match was found for the primary key")
+            value: new data.StringData("A boolean value to indicate an exact match was found for the primary key"),
+            description: "A boolean value to indicate an exact match was found for the primary key"
           })
         },
-        {key: "conclusion", value: new data.Null()},
-        {key: "outcome", value: new data.Null()}
+        {
+          key: "conclusion",
+          value: new data.Null(),
+          description:
+            "The result of a completed step after `continue-on-error` is applied. Possible values are `success`, `failure`, `cancelled`, or `skipped`. When a `continue-on-error` step fails, the `outcome` is `failure`, but the final conclusion is `success`."
+        },
+        {
+          key: "outcome",
+          value: new data.Null(),
+          description:
+            "The result of a completed step before `continue-on-error` is applied. Possible values are `success`, `failure`, `cancelled`, or `skipped`. When a `continue-on-error` step fails, the `outcome` is `failure`, but the final conclusion is `success`."
+        }
       )
     })
   );

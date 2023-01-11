@@ -1,4 +1,4 @@
-import {complete, CompletionItem, trimTokenVector} from "./completion";
+import {complete, CompletionItem, DescriptionDictionary, trimTokenVector} from "./completion";
 import {BooleanData} from "./data/boolean";
 import {Dictionary} from "./data/dictionary";
 import {StringData} from "./data/string";
@@ -18,6 +18,14 @@ const testContext = new Dictionary(
         value: new StringData("")
       }
     )
+  },
+  {
+    key: "github",
+    value: new DescriptionDictionary({
+      key: "actor",
+      value: new StringData(""),
+      description: "The name of the person or app that initiated the workflow. For example, octocat."
+    })
   },
   {
     key: "secrets",
@@ -77,6 +85,14 @@ describe("auto-complete", () => {
       expect(testComplete("1 == env.F")).toEqual(expected);
       expect(testComplete("env.")).toEqual(expected);
       expect(testComplete("env.FOO")).toEqual(expected);
+    });
+
+    it("includes descriptions", () => {
+      expect(testComplete("github.")).toContainEqual<CompletionItem>({
+        label: "actor",
+        function: false,
+        description: "The name of the person or app that initiated the workflow. For example, octocat."
+      });
     });
 
     it("provides suggestions for secrets", () => {

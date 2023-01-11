@@ -1,9 +1,10 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {Step} from "@github/actions-workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
+import {getDescription} from "./descriptions";
 
-export function getStepsContext(workflowContext: WorkflowContext): data.Dictionary {
-  const d = new data.Dictionary();
+export function getStepsContext(workflowContext: WorkflowContext): DescriptionDictionary {
+  const d = new DescriptionDictionary();
   if (!workflowContext.job?.steps) {
     return d;
   }
@@ -26,15 +27,15 @@ export function getStepsContext(workflowContext: WorkflowContext): data.Dictiona
   return d;
 }
 
-function stepContext(): data.Dictionary {
+function stepContext(): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#steps-context
-  const d = new data.Dictionary();
+  const d = new DescriptionDictionary();
 
-  d.add("outputs", new data.Null());
+  d.add("outputs", new data.Null(), getDescription("steps", "outputs"));
 
   // Can be "success", "failure", "cancelled", or "skipped"
-  d.add("conclusion", new data.Null());
-  d.add("outcome", new data.Null());
+  d.add("conclusion", new data.Null(), getDescription("steps", "conclusion"));
+  d.add("outcome", new data.Null(), getDescription("steps", "outcome"));
 
   return d;
 }

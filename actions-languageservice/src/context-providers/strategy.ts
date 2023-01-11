@@ -1,22 +1,22 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {isMapping, isScalar, isString} from "@github/actions-workflow-parser";
 import {WorkflowContext} from "../context/workflow-context";
 import {scalarToData} from "../utils/scalar-to-data";
 
-export function getStrategyContext(workflowContext: WorkflowContext): data.Dictionary {
+export function getStrategyContext(workflowContext: WorkflowContext): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#strategy-context
   const keys = ["fail-fast", "job-index", "job-total", "max-parallel"];
 
   const strategy = workflowContext.job?.strategy;
   if (!strategy || !isMapping(strategy)) {
-    return new data.Dictionary(
+    return new DescriptionDictionary(
       ...keys.map(key => {
         return {key, value: new data.Null()};
       })
     );
   }
 
-  const strategyContext = new data.Dictionary();
+  const strategyContext = new DescriptionDictionary();
   for (const pair of strategy) {
     if (!isString(pair.key)) {
       continue;

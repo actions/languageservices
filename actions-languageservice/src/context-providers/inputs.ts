@@ -1,9 +1,9 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {InputConfig} from "@github/actions-workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 
-export function getInputsContext(workflowContext: WorkflowContext): data.Dictionary {
-  const d = new data.Dictionary();
+export function getInputsContext(workflowContext: WorkflowContext): DescriptionDictionary {
+  const d = new DescriptionDictionary();
 
   const events = workflowContext?.template?.events;
   if (!events) {
@@ -23,22 +23,22 @@ export function getInputsContext(workflowContext: WorkflowContext): data.Diction
   return d;
 }
 
-function addInputs(d: data.Dictionary, inputs: {[inputName: string]: InputConfig}) {
+function addInputs(d: DescriptionDictionary, inputs: {[inputName: string]: InputConfig}) {
   for (const inputName of Object.keys(inputs)) {
     const input = inputs[inputName];
     switch (input.type) {
       case "choice":
         if (input.default) {
-          d.add(inputName, new data.StringData(input.default as string));
+          d.add(inputName, new data.StringData(input.default as string), input.description);
         } else {
           // Default to the first input or an empty string
-          d.add(inputName, new data.StringData((input.options || [""])[0]));
+          d.add(inputName, new data.StringData((input.options || [""])[0]), input.description);
         }
         break;
 
       case "environment":
         if (input.default) {
-          d.add(inputName, new data.StringData(input.default as string));
+          d.add(inputName, new data.StringData(input.default as string), input.description);
         } else {
           // For now default to an empty value if there is no default value. This will always be an environment, so
           // we could also dynamically look up environments and default to the first one, but leaving this as a
@@ -48,12 +48,12 @@ function addInputs(d: data.Dictionary, inputs: {[inputName: string]: InputConfig
         break;
 
       case "boolean":
-        d.add(inputName, new data.BooleanData((input.default as boolean) || false));
+        d.add(inputName, new data.BooleanData((input.default as boolean) || false), input.description);
         break;
 
       case "string":
       default:
-        d.add(inputName, new data.StringData((input.default as string) || inputName));
+        d.add(inputName, new data.StringData((input.default as string) || inputName), input.description);
         break;
     }
   }
