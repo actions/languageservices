@@ -3,7 +3,7 @@
   "$schema": "./descriptionsSchema.json",
   "github": {
     "action": {
-      "description": "The name of the action currently running, or the [`id`](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsid) of a step. GitHub Actions removes special characters, and uses the name `__run` when the current step runs a script without an `id`. If you use the same action more than once in the same job, the name will include a suffix with the sequence number with underscore before it. For example, the first script you run will have the name `__run`, and the second script will be named `__run_2`. Similarly, the second invocation of `actions/checkout` will be `actionscheckout2`."
+      "description": "The name of the action currently running, or the [`id`](https://docs.github.com/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsid) of a step. GitHub Actions removes special characters, and uses the name `__run` when the current step runs a script without an `id`. If you use the same action more than once in the same job, the name will include a suffix with the sequence number with underscore before it. For example, the first script you run will have the name `__run`, and the second script will be named `__run_2`. Similarly, the second invocation of `actions/checkout` will be `actionscheckout2`."
     },
     "action_path": {
       "description": "The path where an action is located. This property is only supported in composite actions. You can use this path to access files located in the same repository as the action."
@@ -27,10 +27,10 @@
       "description": "The `base_ref` or target branch of the pull request in a workflow run. This property is only available when the event that triggers a workflow run is either `pull_request` or `pull_request_target`."
     },
     "env": {
-      "description": "Path on the runner to the file that sets environment variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see [Workflow commands](https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-environment-variable)."
+      "description": "Path on the runner to the file that sets environment variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see [Workflow commands](https://docs.github.com/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-environment-variable)."
     },
     "event": {
-      "description": "The full event webhook payload. You can access individual properties of the event using this context. This object is identical to the webhook payload of the event that triggered the workflow run, and is different for each event. The webhooks for each GitHub Actions event is linked in [Event that trigger workflows](/articles/events-that-trigger-workflows/). For example, for a workflow run triggered by the [`push` event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#push), this object contains the contents of the [push webhook payload](https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push)."
+      "description": "The full event webhook payload. You can access individual properties of the event using this context. This object is identical to the webhook payload of the event that triggered the workflow run, and is different for each event. The webhooks for each GitHub Actions event is linked in [Event that trigger workflows](/articles/events-that-trigger-workflows/). For example, for a workflow run triggered by the [`push` event](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows#push), this object contains the contents of the [push webhook payload](https://docs.github.com/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#push)."
     },
     "event_name": {
       "description": "The name of the event that triggered the workflow run."
@@ -76,7 +76,7 @@
       }
     },
     "path": {
-      "description": "Path on the runner to the file that sets system `PATH` variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see [Workflow commands](https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#adding-a-system-path)."
+      "description": "Path on the runner to the file that sets system `PATH` variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see [Workflow commands](https://docs.github.com/actions/learn-github-actions/workflow-commands-for-github-actions#adding-a-system-path)."
     },
     "repository": {
       "description": "The owner and repository name. For example, `Codertocat/Hello-World`."
@@ -114,10 +114,10 @@
       "description": "The URL of the GitHub server. For example: `https://github.com`."
     },
     "sha": {
-      "description": "The commit SHA that triggered the workflow. The value of this commit SHA depends on the event that triggered the workflow. For more information, see [Events that trigger workflows.](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows) For example, `ffac537e6cbbf934b08745a378932722df287a53`."
+      "description": "The commit SHA that triggered the workflow. The value of this commit SHA depends on the event that triggered the workflow. For more information, see [Events that trigger workflows.](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows) For example, `ffac537e6cbbf934b08745a378932722df287a53`."
     },
     "token": {
-      "description": "A token to authenticate on behalf of the GitHub App installed on your repository. This is functionally equivalent to the `GITHUB_TOKEN` secret. For more information, see [Automatic token authentication](https://docs.github.com/en/actions/security-guides/automatic-token-authentication).\nNote: This context property is set by the Actions runner, and is only available within the execution `steps` of a job. Otherwise, the value of this property will be `null`."
+      "description": "A token to authenticate on behalf of the GitHub App installed on your repository. This is functionally equivalent to the `GITHUB_TOKEN` secret. For more information, see [Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication).\nNote: This context property is set by the Actions runner, and is only available within the execution `steps` of a job. Otherwise, the value of this property will be `null`."
     },
     "triggering_actor": {
       "description": "The username of the user that initiated the workflow run. If the workflow run is a re-run, this value may differ from `github.actor`. Any workflow re-runs will use the privileges of `github.actor`, even if the actor initiating the re-run (`github.triggering_actor`) has different privileges."
@@ -131,7 +131,7 @@
   },
   "secrets": {
     "GITHUB_TOKEN": {
-      "description": "`GITHUB_TOKEN` is a secret that is automatically created for every workflow run, and is always included in the secrets context. For more information, see [Automatic token authentication](https://docs.github.com/en/actions/security-guides/automatic-token-authentication)."
+      "description": "`GITHUB_TOKEN` is a secret that is automatically created for every workflow run, and is always included in the secrets context. For more information, see [Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication)."
     }
   },
   "steps": {
