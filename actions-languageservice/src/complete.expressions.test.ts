@@ -1,5 +1,5 @@
-import {data} from "@github/actions-expressions";
-import {CompletionItemKind} from "vscode-languageserver-types";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
+import {CompletionItem, CompletionItemKind} from "vscode-languageserver-types";
 import {complete, getExpressionInput} from "./complete";
 import {ContextProviderConfig} from "./context-providers/config";
 import {registerLogger} from "./log";
@@ -10,9 +10,10 @@ const contextProviderConfig: ContextProviderConfig = {
   getContext: async (context: string) => {
     switch (context) {
       case "github":
-        return new data.Dictionary({
+        return new DescriptionDictionary({
           key: "event",
-          value: new data.StringData("push")
+          value: new data.StringData("push"),
+          description: "The event that triggered the workflow"
         });
     }
 
@@ -55,6 +56,20 @@ describe("expressions", () => {
         "startsWith",
         "toJson"
       ]);
+    });
+
+    it("contains description", async () => {
+      const input = "run-name: ${{ github.| }}";
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+
+      expect(result).toContainEqual<CompletionItem>({
+        label: "api_url",
+        documentation: {
+          kind: "markdown",
+          value: "The URL of the GitHub Actions REST API."
+        },
+        kind: CompletionItemKind.Variable
+      });
     });
 
     it("single region with existing input", async () => {
@@ -319,11 +334,11 @@ env:
 jobs:
   a:
     runs-on: ubuntu-latest
-    env: 
+    env:
       envjoba: job_a_env
   b:
     runs-on: ubuntu-latest
-    env: 
+    env:
       envjobb: job_b_env
     steps:
     - name: step a
@@ -387,7 +402,7 @@ jobs:
     it("includes expected keys", async () => {
       const input = `
   on: push
-  
+
   jobs:
     test:
       runs-on: ubuntu-latest
@@ -452,7 +467,7 @@ jobs:
   on:
     schedule:
     - cron: '0 0 * * *'
-    
+
   jobs:
     test:
       runs-on: ubuntu-latest
@@ -469,7 +484,7 @@ jobs:
     it("includes event payload", async () => {
       const input = `
   on: [push, pull_request]
-    
+
   jobs:
     test:
       runs-on: ubuntu-latest

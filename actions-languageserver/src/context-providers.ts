@@ -1,4 +1,4 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {ContextProviderConfig} from "@github/actions-languageservice";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
 import {isMapping, isString} from "@github/actions-workflow-parser";
@@ -23,7 +23,7 @@ export function contextProviders(
 
   const getContext = async (
     name: string,
-    defaultContext: data.Dictionary | undefined,
+    defaultContext: DescriptionDictionary | undefined,
     workflowContext: WorkflowContext
   ) => {
     switch (name) {
@@ -46,8 +46,19 @@ export function contextProviders(
 
         const secrets = await getSecrets(octokit, cache, repo, environmentName);
 
-        defaultContext = defaultContext || new data.Dictionary();
-        secrets.forEach(secret => defaultContext!.add(secret.value, new data.StringData("***")));
+        defaultContext = defaultContext || new DescriptionDictionary();
+        secrets.repoSecrets
+          .sort((a, b) => a.value.localeCompare(b.value))
+          .forEach(secret => defaultContext!.add(secret.value, new data.StringData("***"), "Repository secret"));
+        secrets.environmentSecrets
+          .sort((a, b) => a.value.localeCompare(b.value))
+          .forEach(secret =>
+            defaultContext!.add(
+              secret.value,
+              new data.StringData("***"),
+              `Secret for environment \`${environmentName}\``
+            )
+          );
         return defaultContext;
       }
       case "steps": {

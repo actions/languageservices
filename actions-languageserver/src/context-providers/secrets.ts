@@ -8,28 +8,21 @@ export async function getSecrets(
   cache: TTLCache,
   repo: RepositoryContext,
   environmentName?: string
-): Promise<StringData[]> {
-  const secrets: StringData[] = [];
-
-  // Repo secrets
-  const repoSecrets = await cache.get(`${repo.owner}/${repo.name}/secrets`, undefined, () =>
-    fetchSecrets(octokit, repo.owner, repo.name)
-  );
-
-  secrets.push(...repoSecrets);
-
-  // Environment secrets
-  if (environmentName) {
-    const envSecrets = await cache.get(
-      `${repo.owner}/${repo.name}/secrets/environment/${environmentName}`,
-      undefined,
-      () => fetchEnvironmentSecrets(octokit, repo.id, environmentName)
-    );
-
-    secrets.push(...envSecrets);
-  }
-
-  return secrets.sort();
+): Promise<{
+  repoSecrets: StringData[];
+  environmentSecrets: StringData[];
+}> {
+  return {
+    repoSecrets: await cache.get(`${repo.owner}/${repo.name}/secrets`, undefined, () =>
+      fetchSecrets(octokit, repo.owner, repo.name)
+    ),
+    environmentSecrets:
+      (environmentName &&
+        (await cache.get(`${repo.owner}/${repo.name}/secrets/environment/${environmentName}`, undefined, () =>
+          fetchEnvironmentSecrets(octokit, repo.id, environmentName)
+        ))) ||
+      []
+  };
 }
 
 async function fetchSecrets(octokit: Octokit, owner: string, name: string): Promise<StringData[]> {

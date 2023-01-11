@@ -1,3 +1,4 @@
+import {DescriptionPair} from "./completion/descriptionDictionary";
 import {Dictionary, isDictionary} from "./data/dictionary";
 import {ExpressionData} from "./data/expressiondata";
 import {Evaluator} from "./evaluator";
@@ -97,7 +98,7 @@ function contextKeys(context: ExpressionData): CompletionItem[] {
     return (
       context
         .pairs()
-        .map(x => completionItemFromContext(x.key))
+        .map(x => completionItemFromContext(x))
         // Sort contexts
         .sort((a, b) => a.label.localeCompare(b.label))
     );
@@ -106,12 +107,14 @@ function contextKeys(context: ExpressionData): CompletionItem[] {
   return [];
 }
 
-function completionItemFromContext(context: string): CompletionItem {
+function completionItemFromContext(pair: DescriptionPair): CompletionItem {
+  const context = pair.key.toString();
   const parenIndex = context.indexOf("(");
   const isFunc = parenIndex >= 0 && context.indexOf(")") >= 0;
 
   return {
     label: isFunc ? context.substring(0, parenIndex) : context,
+    description: pair.description,
     function: isFunc
   };
 }

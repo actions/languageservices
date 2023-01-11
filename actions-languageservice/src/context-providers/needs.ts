@@ -1,10 +1,10 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {isScalar, isString} from "@github/actions-workflow-parser";
 import {Job} from "@github/actions-workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 
-export function getNeedsContext(workflowContext: WorkflowContext): data.Dictionary {
-  const d = new data.Dictionary();
+export function getNeedsContext(workflowContext: WorkflowContext): DescriptionDictionary {
+  const d = new DescriptionDictionary();
   if (!workflowContext.job || !workflowContext.job.needs) {
     return d;
   }
@@ -17,9 +17,9 @@ export function getNeedsContext(workflowContext: WorkflowContext): data.Dictiona
   return d;
 }
 
-function needsJobContext(job?: Job): data.Dictionary {
+function needsJobContext(job?: Job): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
-  const d = new data.Dictionary();
+  const d = new DescriptionDictionary();
 
   d.add("outputs", jobOutputs(job));
 
@@ -28,8 +28,8 @@ function needsJobContext(job?: Job): data.Dictionary {
   return d;
 }
 
-function jobOutputs(job?: Job): data.Dictionary {
-  const d = new data.Dictionary();
+function jobOutputs(job?: Job): DescriptionDictionary {
+  const d = new DescriptionDictionary();
   if (!job?.outputs) {
     return d;
   }
