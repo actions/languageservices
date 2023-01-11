@@ -19,6 +19,11 @@ export class DescriptionDictionary extends Dictionary {
   }
 
   override add(key: string, value: ExpressionData, description?: string): void {
+    if (this.get(key) !== undefined) {
+      // Key already added, ignore
+      return;
+    }
+
     super.add(key, value);
     if (description) {
       this.descriptions.set(key, description);

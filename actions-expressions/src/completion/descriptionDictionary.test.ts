@@ -12,7 +12,8 @@ describe("description dictionary", () => {
   it("does not add duplicate entries", () => {
     const d = new DescriptionDictionary();
     d.add("ABC", new StringData("val1"));
-    d.add("abc", new StringData("val2"));
+    d.add("ABC", new StringData("val2"));
+    d.add("abc", new StringData("val3"));
 
     expect(d.pairs()).toEqual([{key: "ABC", value: new StringData("val1")}]);
   });
