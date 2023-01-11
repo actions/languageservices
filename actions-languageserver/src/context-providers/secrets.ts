@@ -13,7 +13,7 @@ export async function getSecrets(
   environmentSecrets: StringData[];
 }> {
   return {
-    repoSecrets: await await cache.get(`${repo.owner}/${repo.name}/secrets`, undefined, () =>
+    repoSecrets: await cache.get(`${repo.owner}/${repo.name}/secrets`, undefined, () =>
       fetchSecrets(octokit, repo.owner, repo.name)
     ),
     environmentSecrets:
