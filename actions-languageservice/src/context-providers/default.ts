@@ -2,7 +2,7 @@ import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {Kind} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
-import {getDescription} from "./descriptions";
+import {getDescription, RootContext} from "./descriptions";
 import {getEnvContext} from "./env";
 import {getGithubContext} from "./github";
 import {getInputsContext} from "./inputs";
@@ -40,7 +40,7 @@ export async function getContext(
 
     value = (await config?.getContext(contextName, value, workflowContext)) || value;
 
-    context.add(contextName, value);
+    context.add(contextName, value, getDescription(RootContext, contextName));
   }
 
   return context;

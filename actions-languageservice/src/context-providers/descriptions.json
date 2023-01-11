@@ -1,6 +1,44 @@
 
 {
   "$schema": "./descriptionsSchema.json",
+  "root": {
+    "github": {
+      "description": "Information about the workflow run. For more information, see [`github` context](https://docs.github.com/actions/learn-github-actions/contexts#github-context)."
+    },
+    "env": {
+      "description": "Contains variables set in a workflow, job, or step. For more information, see [`env` context](https://docs.github.com/actions/learn-github-actions/contexts#env-context)."
+    },
+    "vars": {
+      "description": "Contains variables set at the repository, organization, or environment levels. For more information, see [`vars` context](https://docs.github.com/actions/learn-github-actions/contexts#vars-context)."
+    },
+    "job": {
+      "description": "Information about the currently running job. For more information, see [`job` context](https://docs.github.com/actions/learn-github-actions/contexts#job-context)."
+    },
+    "jobs": {
+      "description": "For reusable workflows only, contains outputs of jobs from the reusable workflow. For more information, see [`jobs` context](https://docs.github.com/actions/learn-github-actions/contexts#jobs-context)."
+    },
+    "steps": {
+      "description": "Information about the steps that have been run in the current job. For more information, see [`steps` context](https://docs.github.com/actions/learn-github-actions/contexts#steps-context)."
+    },
+    "runner": {
+      "description": "Information about the runner that is running the current job. For more information, see [`runner` context](https://docs.github.com/actions/learn-github-actions/contexts#runner-context)."
+    },
+    "secrets": {
+      "description": "Contains the names and values of secrets that are available to a workflow run. For more information, see [`secrets` context](https://docs.github.com/actions/learn-github-actions/contexts#secrets-context)."
+    },
+    "strategy": {
+      "description": "Information about the matrix execution strategy for the current job. For more information, see [`strategy` context](https://docs.github.com/actions/learn-github-actions/contexts#strategy-context)."
+    },
+    "matrix": {
+      "description": "Contains the matrix properties defined in the workflow that apply to the current job. For more information, see [`matrix` context](https://docs.github.com/actions/learn-github-actions/contexts#matrix-context)."
+    },
+    "needs": {
+      "description": "Contains the outputs of all jobs that are defined as a dependency of the current job. For more information, see [`needs` context](https://docs.github.com/actions/learn-github-actions/contexts#needs-context)."
+    },
+    "inputs": {
+      "description": "Contains the inputs of a reusable or manually triggered workflow. For more information, see [`inputs` context](https://docs.github.com/actions/learn-github-actions/contexts#inputs-context)."
+    }
+  },
   "github": {
     "action": {
       "description": "The name of the action currently running, or the [`id`](https://docs.github.com/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsid) of a step. GitHub Actions removes special characters, and uses the name `__run` when the current step runs a script without an `id`. If you use the same action more than once in the same job, the name will include a suffix with the sequence number with underscore before it. For example, the first script you run will have the name `__run`, and the second script will be named `__run_2`. Similarly, the second invocation of `actions/checkout` will be `actionscheckout2`."
