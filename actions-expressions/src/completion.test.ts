@@ -70,6 +70,12 @@ describe("auto-complete", () => {
     });
   });
 
+  describe("in multi-line expressions", () => {
+    it("includes built-in functions", () => {
+      expect(testComplete("1 == (\nto").map(x => x.label)).toContainEqual("toJson");
+    });
+  });
+
   describe("for contexts", () => {
     it("provides suggestions for env", () => {
       const expected = completionItems("BAR_TEST", "FOO");
