@@ -1,5 +1,7 @@
 import descriptions from "./descriptions.json";
 
+export const RootContext = "root";
+
 /**
  * Get a description for a built-in context
  * @param context Name of the context, for example `github`
