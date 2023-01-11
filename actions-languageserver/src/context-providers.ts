@@ -47,12 +47,18 @@ export function contextProviders(
         const secrets = await getSecrets(octokit, cache, repo, environmentName);
 
         defaultContext = defaultContext || new DescriptionDictionary();
-        secrets.repoSecrets.forEach(secret =>
-          defaultContext!.add(secret.value, new data.StringData("***"), "Repository secret")
-        );
-        secrets.environmentSecrets.forEach(secret =>
-          defaultContext!.add(secret.value, new data.StringData("***"), `Secret for environment \`${environmentName}\``)
-        );
+        secrets.repoSecrets
+          .sort((a, b) => a.value.localeCompare(b.value))
+          .forEach(secret => defaultContext!.add(secret.value, new data.StringData("***"), "Repository secret"));
+        secrets.environmentSecrets
+          .sort((a, b) => a.value.localeCompare(b.value))
+          .forEach(secret =>
+            defaultContext!.add(
+              secret.value,
+              new data.StringData("***"),
+              `Secret for environment \`${environmentName}\``
+            )
+          );
         return defaultContext;
       }
       case "steps": {
