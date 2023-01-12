@@ -374,8 +374,7 @@ jobs:
     });
   });
 
-
-  it("sets a range for invalid tokens", async () => {
+  it("sets a range for token key", async () => {
     const input = "on: push\njobs:\n  build:\n    runs-o|";
     const result = await complete(...getPositionFromCursor(input));
 
@@ -390,7 +389,7 @@ jobs:
     });
   });
 
-  it("sets a 0-length range while no initial token", async () => {
+  it("sets a 0-length range while no initial token key", async () => {
     const input = "on: push\njobs:\n  build:\n    |";
     const result = await complete(...getPositionFromCursor(input));
 
