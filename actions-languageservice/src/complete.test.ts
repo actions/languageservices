@@ -312,7 +312,7 @@ jobs:
 
     // Includes detail when available. Using continue-on-error as a sample here.
     expect(result.map(x => (x.documentation as MarkupContent)?.value)).toContain(
-      "Prevents a job from failing when a step fails. Set to true to allow a job to pass when this step fails."
+      "Prevents a job from failing when a step fails. Set to `true` to allow a job to pass when this step fails."
     );
   });
 
@@ -337,9 +337,7 @@ o|
     const result = await complete(...getPositionFromCursor(input));
     const onResult = result.find(x => x.label === "on");
     expect(onResult).not.toBeUndefined();
-    expect((onResult!.documentation as MarkupContent).value).toEqual(
-      "The name of the GitHub event that triggers the workflow. You can provide a single event string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. For a list of available events, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows."
-    );
+    expect((onResult!.documentation as MarkupContent).value).toContain("The GitHub event that triggers the workflow.");
   });
 
   it("event list includes descriptions when available ", async () => {
@@ -348,8 +346,8 @@ o|
     const result = await complete(...getPositionFromCursor(input));
     const dispatchResult = result.find(x => x.label === "workflow_dispatch");
     expect(dispatchResult).not.toBeUndefined();
-    expect((dispatchResult!.documentation as MarkupContent).value).toEqual(
-      "You can now create workflows that are manually triggered with the new workflow_dispatch event. You will then see a 'Run workflow' button on the Actions tab, enabling you to easily trigger a run."
+    expect((dispatchResult!.documentation as MarkupContent).value).toContain(
+      "The `workflow_dispatch` event allows you to manually trigger a workflow run."
     );
   });
 

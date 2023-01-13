@@ -85,7 +85,7 @@ on:
     types:
       - created
       - closed
-      - opened
+      - reopened
       - edited
       - deleted
   project_card:
@@ -327,7 +327,7 @@ jobs:
       "types": [
         "created",
         "closed",
-        "opened",
+        "reopened",
         "edited",
         "deleted"
       ]
