@@ -102,13 +102,12 @@ export async function complete(
   let replaceRange: Range | undefined;
   if (token?.range) {
     replaceRange = mapRange(token.range);
-  }
-  else if (!token) {
+  } else if (!token) {
     // Not a valid token, create a range from the current position
     const line = newDoc.getText({start: {line: position.line, character: 0}, end: position});
     // Get the length of the current word
     const val = line.match(/[\w_-]*$/)?.[0].length || 0;
-    replaceRange = Range.create({ line: position.line, character: position.character - val } as Position, position);
+    replaceRange = Range.create({line: position.line, character: position.character - val}, position);
   }
 
   return values.map(value => {
