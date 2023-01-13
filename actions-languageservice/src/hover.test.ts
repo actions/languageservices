@@ -9,9 +9,7 @@ jobs:
     runs-on: [self-hosted]`;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual(
-      "The name of the GitHub event that triggers the workflow. You can provide a single event string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. For a list of available events, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows."
-    );
+    expect(result?.contents).toContain("The GitHub event that triggers the workflow.");
   });
 
   it("on a value", async () => {
@@ -44,8 +42,8 @@ jobs:
     pe|rmissions: read-all`;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual(
-      "You can modify the default permissions granted to the GITHUB_TOKEN, adding or removing access as required, so that you only allow the minimum required access."
+    expect(result?.contents).toContain(
+      "You can use `permissions` to modify the default permissions granted to the `GITHUB_TOKEN`"
     );
   });
 
