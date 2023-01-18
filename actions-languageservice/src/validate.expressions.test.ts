@@ -359,7 +359,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: step a
-      env: 
+      env:
         step_env: job_a_env
       run: echo "hello \${{ env.step_env }}
 `;
@@ -376,7 +376,7 @@ env:
 jobs:
   a:
     runs-on: ubuntu-latest
-    env: 
+    env:
       envjoba: job_a_env
     steps:
     - name: step a
@@ -395,7 +395,7 @@ env:
 jobs:
   a:
     runs-on: ubuntu-latest
-    env: 
+    env:
       envjoba: job_a_env
     steps:
     - name: step a
@@ -1185,6 +1185,8 @@ jobs:
     - run: echo "hello \${{ github.event.inputs.name }}"
     - run: echo "hello \${{ github.event.inputs.third-name }}"
     - run: echo "hello \${{ github.event.inputs.random }}"
+    - run: echo "hello \${{ inputs.random }}"
+      name: "\${{ fromJSON('test') == inputs.name }}"
 `;
       const result = await validate(createDocument("wf.yaml", input));
 
@@ -1202,6 +1204,20 @@ jobs:
             }
           },
           severity: DiagnosticSeverity.Warning
+        },
+        {
+          message: "Context access might be invalid: random",
+          range: {
+            end: {
+              character: 43,
+              line: 20
+            },
+            start: {
+              character: 23,
+              line: 20
+            }
+          },
+          severity: 2
         }
       ]);
     });

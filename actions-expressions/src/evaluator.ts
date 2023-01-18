@@ -14,14 +14,13 @@ import {
 import * as data from "./data";
 import {FilteredArray} from "./filtered_array";
 import {wellKnownFunctions} from "./funcs";
+import {FunctionDefinition} from "./funcs/info";
 import {idxHelper} from "./idxHelper";
 import {TokenType} from "./lexer";
 import {equals, falsy, greaterThan, lessThan, truthy} from "./result";
 
-export class EvaluationError extends Error {}
-
 export class Evaluator implements ExprVisitor<data.ExpressionData> {
-  constructor(private n: Expr, private context: data.Dictionary) {}
+  constructor(private n: Expr, private context: data.Dictionary, private functions?: Map<string, FunctionDefinition>) {}
 
   public evaluate(): data.ExpressionData {
     return this.eval(this.n);
@@ -109,7 +108,7 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
       try {
         idxResult = this.eval(ia.index);
       } catch (e) {
-        throw new Error(`could not evaluate index for index access: ${e}`);
+        throw new Error(`could not evaluate index for index access: ${e}`, {cause: e});
       }
       idx = new idxHelper(false, idxResult);
     }
@@ -150,14 +149,12 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
     // Evaluate arguments
     const args = functionCall.args.map(arg => this.eval(arg));
 
-    return fcall(functionCall, args);
+    // Get function definitions
+    const functionName = functionCall.functionName.lexeme.toLowerCase();
+    const f = this.functions?.get(functionName) || wellKnownFunctions[functionName];
+
+    return f.call(...args);
   }
-}
-
-function fcall(fc: FunctionCall, args: data.ExpressionData[]): data.ExpressionData {
-  const f = wellKnownFunctions[fc.functionName.lexeme.toLowerCase()];
-
-  return f.call(...args);
 }
 
 function filteredArrayAccess(fa: FilteredArray, idx: idxHelper): data.ExpressionData {

@@ -1,4 +1,11 @@
-import {Evaluator, Lexer, Parser} from "@github/actions-expressions";
+import {
+  data,
+  Evaluator,
+  ExpressionEvaluationError,
+  Lexer,
+  Parser,
+  wellKnownFunctions
+} from "@github/actions-expressions";
 import {Expr} from "@github/actions-expressions/ast";
 import {
   convertWorkflowTemplate,
@@ -202,7 +209,7 @@ async function validateExpression(
     try {
       const context = await getContext(namedContexts, contextProviderConfig, workflowContext, Mode.Validation);
 
-      const e = new Evaluator(expr, wrapDictionary(context));
+      const e = new Evaluator(expr, wrapDictionary(context), validatorFunctions);
       e.evaluate();
 
       // Any invalid context access would've thrown an error via the `ErrorDictionary`, for now we don't have to check the actual
@@ -214,7 +221,25 @@ async function validateExpression(
           severity: DiagnosticSeverity.Warning,
           range: mapRange(expression.range)
         });
+      } else if (e instanceof ExpressionEvaluationError) {
+        diagnostics.push({
+          message: `Expression might be invalid: ${e.message}`,
+          severity: DiagnosticSeverity.Error,
+          range: mapRange(expression.range)
+        });
       }
     }
   }
 }
+
+// Custom implementations for standard actions-expression functions used during validation. For example,
+// for fromJson we'll most likely not have a valid input. In order to not throw, we'll always return an
+// empty dictionary.
+const validatorFunctions = new Map(
+  Object.entries({
+    fromjson: {
+      ...wellKnownFunctions.fromjson,
+      call: () => new data.Dictionary()
+    }
+  })
+);
