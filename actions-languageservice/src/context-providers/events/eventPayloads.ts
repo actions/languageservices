@@ -18,6 +18,7 @@ import label from "./label.json";
 import marketplace_purchase from "./marketplace_purchase.json";
 import member from "./member.json";
 import membership from "./membership.json";
+import merge_group from "./merge_group.json";
 import meta from "./meta.json";
 import milestone from "./milestone.json";
 import org_block from "./org_block.json";
@@ -70,6 +71,7 @@ export const eventPayloads: {[key: string]: Object} = {
   marketplace_purchase,
   member,
   membership,
+  merge_group,
   meta,
   milestone,
   org_block,
