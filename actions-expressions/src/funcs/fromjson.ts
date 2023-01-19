@@ -1,5 +1,6 @@
 import {ExpressionData} from "../data";
 import {reviver} from "../data/reviver";
+import {ExpressionEvaluationError} from "../errors";
 import {FunctionDefinition} from "./info";
 
 export const fromjson: FunctionDefinition = {
@@ -16,7 +17,10 @@ export const fromjson: FunctionDefinition = {
       throw new Error("empty input");
     }
 
-    const d = JSON.parse(is, reviver);
-    return d;
+    try {
+      return JSON.parse(is, reviver);
+    } catch (e) {
+      throw new ExpressionEvaluationError("Error parsing JSON when evaluating fromJson", {cause: e});
+    }
   }
 };
