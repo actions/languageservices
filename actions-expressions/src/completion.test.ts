@@ -88,6 +88,8 @@ describe("auto-complete", () => {
       expect(testComplete("1 == toJS")).toContainEqual(expected);
       expect(testComplete("1 == (toJS")).toContainEqual(expected);
       expect(testComplete("toJS| == 1")).toContainEqual(expected);
+      expect(testComplete("(toJS| == (foo.bar)")).toContainEqual(expected);
+      expect(testComplete("(((toJS| == (foo.bar)")).toContainEqual(expected);
     });
 
     it("removes parentheses from passed in function context", () => {

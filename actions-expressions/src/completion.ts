@@ -144,6 +144,7 @@ export function trimTokenVector(tokenVector: Token[]): Token[] {
           // Encountered an open parenthesis without a closing first, stop here
           break;
         }
+        openParen--;
         tokenIdx--;
         continue;
 
