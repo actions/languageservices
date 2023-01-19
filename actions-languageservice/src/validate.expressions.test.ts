@@ -1185,6 +1185,7 @@ jobs:
     - run: echo "hello \${{ github.event.inputs.name }}"
     - run: echo "hello \${{ github.event.inputs.third-name }}"
     - run: echo "hello \${{ github.event.inputs.random }}"
+    - run: echo \${{ fromJSON(inputs.random2) }}
     - run: echo "hello \${{ inputs.random }}"
       name: "\${{ fromJSON('test') == inputs.name }}"
 `;
@@ -1206,15 +1207,29 @@ jobs:
           severity: DiagnosticSeverity.Warning
         },
         {
+          message: "Context access might be invalid: random2",
+          range: {
+            end: {
+              character: 47,
+              line: 20
+            },
+            start: {
+              character: 16,
+              line: 20
+            }
+          },
+          severity: 2
+        },
+        {
           message: "Context access might be invalid: random",
           range: {
             end: {
               character: 43,
-              line: 20
+              line: 21
             },
             start: {
               character: 23,
-              line: 20
+              line: 21
             }
           },
           severity: 2
