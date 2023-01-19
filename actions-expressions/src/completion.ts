@@ -3,7 +3,7 @@ import {Dictionary, isDictionary} from "./data/dictionary";
 import {ExpressionData} from "./data/expressiondata";
 import {Evaluator} from "./evaluator";
 import {wellKnownFunctions} from "./funcs";
-import {FunctionInfo} from "./funcs/info";
+import {FunctionDefinition, FunctionInfo} from "./funcs/info";
 import {Lexer, Token, TokenType} from "./lexer";
 import {Parser} from "./parser";
 
@@ -13,15 +13,27 @@ export type CompletionItem = {
   function: boolean;
 };
 
-// Complete returns a list of completion items for the given expression.
-//
-// The main functionality is auto-completing functions and context access:
-// We can only provide assistance if the input is in one of the following forms (with | denoting the cursor position):
-// - context.path.inp| or context.path['inp| -- auto-complete context access
-// - context.path.| or context.path['| -- auto-complete context access
-// - toJS| -- auto-complete function call or top-level
-// - | -- auto-complete function call or top-level context access
-export function complete(input: string, context: Dictionary, extensionFunctions: FunctionInfo[]): CompletionItem[] {
+/**
+ * Complete returns a list of completion items for the given expression.
+ * The main functionality is auto-completing functions and context access:
+ * We can only provide assistance if the input is in one of the following forms (with | denoting the cursor position):
+ * - context.path.inp| or context.path['inp| -- auto-complete context access
+ * - context.path.| or context.path['| -- auto-complete context access
+ * - toJS| -- auto-complete function call or top-level
+ * - | -- auto-complete function call or top-level context access
+ *
+ * @param input Input expression
+ * @param context Context available for the expression
+ * @param extensionFunctions List of functions available
+ * @param functions Optional map of functions to use during evaluation
+ * @returns Array of completion items
+ */
+export function complete(
+  input: string,
+  context: Dictionary,
+  extensionFunctions: FunctionInfo[],
+  functions?: Map<string, FunctionDefinition>
+): CompletionItem[] {
   // Lex
   const lexer = new Lexer(input);
   const lexResult = lexer.lex();
@@ -70,7 +82,7 @@ export function complete(input: string, context: Dictionary, extensionFunctions:
   );
   const expr = p.parse();
 
-  const ev = new Evaluator(expr, context);
+  const ev = new Evaluator(expr, context, functions);
   const result = ev.evaluate();
 
   return contextKeys(result);
@@ -122,9 +134,25 @@ function completionItemFromContext(pair: DescriptionPair): CompletionItem {
 export function trimTokenVector(tokenVector: Token[]): Token[] {
   let tokenIdx = tokenVector.length;
 
+  let openParen = 0;
+
   while (tokenIdx > 0) {
     const token = tokenVector[tokenIdx - 1];
     switch (token.type) {
+      case TokenType.LEFT_PAREN:
+        if (openParen == 0) {
+          // Encountered an open parenthesis without a closing first, stop here
+          break;
+        }
+        openParen--;
+        tokenIdx--;
+        continue;
+
+      case TokenType.RIGHT_PAREN:
+        openParen++;
+        tokenIdx--;
+        continue;
+
       case TokenType.IDENTIFIER:
       case TokenType.DOT:
       case TokenType.EOF:

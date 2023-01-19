@@ -37,6 +37,10 @@ describe("expressions", () => {
     expect(test("${{ github.| == 'test' }}")).toBe(" github.");
     expect(test("test ${{ github.| == 'test' }}")).toBe(" github.");
     expect(test("${{ vars }} ${{ gh |}}")).toBe(" gh ");
+
+    expect(test("${{ test.|")).toBe(" test.");
+    expect(test("${{ test.| }}")).toBe(" test.");
+    expect(test("${{ 1 == (test.|)")).toBe(" 1 == (test.");
   });
 
   describe("top-level auto-complete", () => {
@@ -56,6 +60,16 @@ describe("expressions", () => {
         "startsWith",
         "toJson"
       ]);
+    });
+
+    it("within parentheses", async () => {
+      const result = await complete(
+        ...getPositionFromCursor("run-name: ${{ 1 == (github.|) }}"),
+        undefined,
+        contextProviderConfig
+      );
+
+      expect(result.map(x => x.label)).toEqual(["event"]);
     });
 
     it("contains description", async () => {
@@ -200,6 +214,25 @@ jobs:
 
         expect(result.map(x => x.label)).toEqual(["event"]);
       });
+    });
+
+    it("nested with parentheses", async () => {
+      const input = `on:
+  workflow_dispatch:
+    inputs:
+      test:
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      foo: '{}'
+    steps:
+      - name: "\${{ fromJSON('test') == (inputs.|) }}"`;
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["test"]);
     });
 
     it("nested auto-complete", async () => {
