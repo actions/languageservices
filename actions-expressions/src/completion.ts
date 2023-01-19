@@ -141,7 +141,7 @@ export function trimTokenVector(tokenVector: Token[]): Token[] {
     switch (token.type) {
       case TokenType.LEFT_PAREN:
         if (openParen == 0) {
-          // Encounterend an open parenthesis witout a closing first, stop here
+          // Encountered an open parenthesis without a closing first, stop here
           break;
         }
         tokenIdx--;
