@@ -36,6 +36,13 @@ const testContext = new Dictionary(
     })
   },
   {
+    key: "vars",
+    value: new Dictionary({
+      key: "VAR_NAME",
+      value: new BooleanData(true)
+    })
+  },
+  {
     key: "hashFiles(1,255)",
     value: new Dictionary()
   }
@@ -108,6 +115,14 @@ describe("auto-complete", () => {
       expect(testComplete("secrets.A")).toEqual(expected);
       expect(testComplete("1 == secrets.F")).toEqual(expected);
       expect(testComplete("toJSON(secrets.")).toEqual(expected);
+    });
+
+    it("provides suggestions for variables", () => {
+      const expected = completionItems("VAR_NAME");
+
+      expect(testComplete("vars.V")).toEqual(expected);
+      expect(testComplete("1 == vars.F")).toEqual(expected);
+      expect(testComplete("toJSON(vars.")).toEqual(expected);
     });
 
     it("provides suggestions for contexts in function call", () => {

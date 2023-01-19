@@ -4,6 +4,7 @@ import {WorkflowContext} from "@github/actions-languageservice/context/workflow-
 import {Octokit} from "@octokit/rest";
 import {getSecrets} from "./context-providers/secrets";
 import {getStepsContext} from "./context-providers/steps";
+import {getVariables} from "./context-providers/variables";
 import {RepositoryContext} from "./initializationOptions";
 import {TTLCache} from "./utils/cache";
 
@@ -28,7 +29,8 @@ export function contextProviders(
     switch (name) {
       case "secrets":
         return await getSecrets(workflowContext, octokit, cache, repo, defaultContext);
-
+      case "vars":
+        return await getVariables(workflowContext, octokit, cache, repo, defaultContext);
       case "steps":
         return await getStepsContext(octokit, cache, defaultContext, workflowContext);
     }
