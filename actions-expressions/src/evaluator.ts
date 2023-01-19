@@ -20,6 +20,12 @@ import {TokenType} from "./lexer";
 import {equals, falsy, greaterThan, lessThan, truthy} from "./result";
 
 export class Evaluator implements ExprVisitor<data.ExpressionData> {
+  /**
+   * Creates a new evaluator
+   * @param n Parsed expression to evaluate
+   * @param context Context data to use
+   * @param functions Optional map of function implementations. If given, these will be preferred over the built-in functions.
+   */
   constructor(private n: Expr, private context: data.Dictionary, private functions?: Map<string, FunctionDefinition>) {}
 
   public evaluate(): data.ExpressionData {
