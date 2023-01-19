@@ -451,7 +451,6 @@ class TemplateReader {
     const allowedContext = definitionInfo.allowedContext;
     const raw = token.source || token.value;
 
-    // Check if the value is definitely a literal
     let startExpression: number = raw.indexOf(OPEN_EXPRESSION);
     if (startExpression < 0) {
       // Doesn't contain "${{"

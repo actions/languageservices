@@ -14,6 +14,8 @@ import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} 
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
+import {validatorFunctions} from "./expression-validation/functions";
+import {error} from "./log";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
 import {guessIndentation} from "./utils/indentation-guesser";
@@ -75,13 +77,14 @@ export async function complete(
 
       // Transform the overall position into a node relative position
       let relCharPos: number = 0;
-      const lineDiff = newPos.line - token.range!.start[0];
-      if (token.range!.start[0] !== token.range!.end[0]) {
+      const range = mapRange(token.range!);
+      if (range.start.line !== range.end.line) {
         const lines = currentInput.split("\n");
+        const lineDiff = newPos.line - range.start.line - 1;
         const linesBeforeCusor = lines.slice(0, lineDiff);
-        relCharPos = linesBeforeCusor.join("\n").length + 1 + newPos.character;
+        relCharPos = linesBeforeCusor.join("\n").length + newPos.character + 1;
       } else {
-        relCharPos = newPos.character - token.range!.start[1] + 1;
+        relCharPos = newPos.character - range.start.character;
       }
 
       const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
@@ -89,9 +92,14 @@ export async function complete(
       const allowedContext = token.definitionInfo?.allowedContext || [];
       const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 
-      return completeExpression(expressionInput, context, []).map(item =>
-        mapExpressionCompletionItem(item, currentInput[relCharPos])
-      );
+      try {
+        return completeExpression(expressionInput, context, [], validatorFunctions).map(item =>
+          mapExpressionCompletionItem(item, currentInput[relCharPos])
+        );
+      } catch (e: any) {
+        error(`Error while completing expression: '${e?.message || "<no details>"}'`);
+        return [];
+      }
     }
   }
 

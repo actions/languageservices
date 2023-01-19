@@ -1,6 +1,6 @@
 import {isCollection, isDocument, isMap, isPair, isScalar, isSeq, LineCounter, parseDocument, Scalar} from "yaml";
-import {LinePos} from "yaml/dist/errors";
-import {NodeBase} from "yaml/dist/nodes/Node";
+import type {LinePos} from "yaml/dist/errors";
+import type {NodeBase} from "yaml/dist/nodes/Node";
 import {ObjectReader} from "../templates/object-reader";
 import {EventType, ParseEvent} from "../templates/parse-event";
 import {TemplateContext} from "../templates/template-context";
@@ -110,14 +110,8 @@ export class YamlObjectReader implements ObjectReader {
       case "boolean":
         return new BooleanToken(fileId, range, value, undefined);
       case "string": {
-        // If the string is a YAML block string, include the original source
         let source: string | undefined;
-        if (
-          (token.type === "BLOCK_LITERAL" || // | multi-line strings
-            token.type === "BLOCK_FOLDED") && // > multi-line strings
-          token.srcToken &&
-          token.srcToken.type === "block-scalar"
-        ) {
+        if (token.srcToken && "source" in token.srcToken) {
           source = token.srcToken.source;
         }
 

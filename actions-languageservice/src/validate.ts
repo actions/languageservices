@@ -1,11 +1,4 @@
-import {
-  data,
-  Evaluator,
-  ExpressionEvaluationError,
-  Lexer,
-  Parser,
-  wellKnownFunctions
-} from "@github/actions-expressions";
+import {Evaluator, ExpressionEvaluationError, Lexer, Parser} from "@github/actions-expressions";
 import {Expr} from "@github/actions-expressions/ast";
 import {
   convertWorkflowTemplate,
@@ -29,6 +22,7 @@ import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
+import {validatorFunctions} from "./expression-validation/functions";
 import {error} from "./log";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
@@ -231,15 +225,3 @@ async function validateExpression(
     }
   }
 }
-
-// Custom implementations for standard actions-expression functions used during validation. For example,
-// for fromJson we'll most likely not have a valid input. In order to not throw, we'll always return an
-// empty dictionary.
-const validatorFunctions = new Map(
-  Object.entries({
-    fromjson: {
-      ...wellKnownFunctions.fromjson,
-      call: () => new data.Dictionary()
-    }
-  })
-);
