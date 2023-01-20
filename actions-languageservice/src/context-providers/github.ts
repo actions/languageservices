@@ -89,17 +89,26 @@ function getEventContext(workflowContext: WorkflowContext): ExpressionData {
   for (const e of events) {
     const payload = eventPayloads[e];
     if (payload) {
-      merge(d, payload);
+      const anyKeys = ANY_KEYS[e] || [];
+      merge(d, payload, anyKeys);
     }
   }
 
   return d;
 }
 
-function merge(d: data.Dictionary, toAdd: Object): data.Dictionary {
+// These events have a top-level object that can be any type
+const ANY_KEYS: Record<string, string[]> = {
+  repository_dispatch: ["client_payload"]
+};
+
+function merge(d: data.Dictionary, toAdd: Object, anyKeys: string[]): data.Dictionary {
   for (const [key, value] of Object.entries(toAdd)) {
-    if (value && typeof value === "object" && !d.get(key)) {
-      d.add(key, merge(new data.Dictionary(), value));
+    if (anyKeys.includes(key)) {
+      d.add(key, new data.Null());
+    } else if (value && typeof value === "object" && !d.get(key)) {
+      // Only use anyKeys for the top-level object
+      d.add(key, merge(new data.Dictionary(), value, []));
     } else {
       d.add(key, new data.Null());
     }

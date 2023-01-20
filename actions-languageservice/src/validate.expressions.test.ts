@@ -1236,5 +1236,23 @@ jobs:
         }
       ]);
     });
+
+    it("allows any property in client_payload", async () => {
+      const input = `
+on:
+  repository_dispatch:
+    types: [test]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ github.event.client_payload.anything }}
+      - run: echo \${{ github.event.client_payload.branch }}`
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
   });
 });
