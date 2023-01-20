@@ -30,6 +30,7 @@ describe("expressions", () => {
       return getExpressionInput(doc.getText(), pos.character);
     };
 
+    // With ${{ }}
     expect(test("${{ gh |")).toBe(" gh ");
     expect(test("${{ gh |}}")).toBe(" gh ");
     expect(test("${{ vars| == 'test' }}")).toBe(" vars");
@@ -41,6 +42,18 @@ describe("expressions", () => {
     expect(test("${{ test.|")).toBe(" test.");
     expect(test("${{ test.| }}")).toBe(" test.");
     expect(test("${{ 1 == (test.|)")).toBe(" 1 == (test.");
+
+    // Without ${{ }}
+    expect(test("gh |")).toBe("gh ");
+    expect(test("gh |}}")).toBe("gh ");
+    expect(test("vars| == 'test' }}")).toBe("vars");
+    expect(test("fromJso|('test').bar == 'test' }}")).toBe("fromJso");
+    expect(test("github.| == 'test' }}")).toBe("github.");
+    expect(test("github.| == 'test' }}")).toBe("github.");
+
+    expect(test("test.|")).toBe("test.");
+    expect(test("test.| }}")).toBe("test.");
+    expect(test("1 == (test.|)")).toBe("1 == (test.");
   });
 
   describe("top-level auto-complete", () => {
@@ -250,30 +263,90 @@ jobs:
       expect(result.map(x => x.label)).toEqual(["arch", "name", "os", "temp", "tool_cache"]);
     });
 
-    it("job if", async () => {
-      const input = `on: push
+    describe("job if", () => {
+      describe("without ${{", () => {
+        it("simple", async () => {
+          const input = `on: push
 jobs:
   build:
     if: github.|
     runs-on: ubuntu-latest
     steps:
     - run: echo`;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-      expect(result.map(x => x.label)).toEqual(["event"]);
+          expect(result.map(x => x.label)).toEqual(["event"]);
+        });
+
+        it("complex", async () => {
+          const input = `on: push
+jobs:
+  build:
+    if: false && github.| == 'some-repo'
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`;
+          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+          expect(result.map(x => x.label)).toEqual(["event"]);
+        });
+      });
+
+      describe("with ${{", () => {
+        it("simple", async () => {
+          const input = `on: push
+jobs:
+  build:
+    if: \${{ github.| }}
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`;
+          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+          expect(result.map(x => x.label)).toEqual(["event"]);
+        });
+
+        it("complex", async () => {
+          const input = `on: push
+jobs:
+  build:
+    if: \${{ false && github.| == 'some-repo' }}
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`;
+          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+          expect(result.map(x => x.label)).toEqual(["event"]);
+        });
+      });
     });
 
-    it("step if", async () => {
-      const input = `on: push
+    describe("step if", () => {
+      it("with ${{", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+      if: \${{ github.| }}`;
+        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+        expect(result.map(x => x.label)).toEqual(["event"]);
+      });
+
+      it("without ${{", async () => {
+        const input = `on: push
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - run: echo
       if: github.|`;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-      expect(result.map(x => x.label)).toEqual(["event"]);
+        expect(result.map(x => x.label)).toEqual(["event"]);
+      });
     });
   });
 

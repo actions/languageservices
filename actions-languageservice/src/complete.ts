@@ -27,12 +27,14 @@ import {definitionValues} from "./value-providers/definition";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
-  const startPos = input.lastIndexOf(OPEN_EXPRESSION, pos);
+  let startPos = input.lastIndexOf(OPEN_EXPRESSION, pos);
   if (startPos === -1) {
-    return input;
+    startPos = 0;
+  } else {
+    startPos += OPEN_EXPRESSION.length;
   }
 
-  return input.substring(startPos + OPEN_EXPRESSION.length, pos);
+  return input.substring(startPos, pos);
 }
 
 export async function complete(
