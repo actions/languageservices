@@ -1,5 +1,24 @@
-import {hover} from "./hover";
+import {isString} from "@github/actions-workflow-parser/.";
+import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
+import {DescriptionProvider, hover, HoverConfig} from "./hover";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
+
+function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
+  return {
+    descriptionProvider: {
+      getDescription: async (_, token, __) => {
+        if (!isString(token)) {
+          throw new Error("Test provider only supports string tokens");
+        }
+
+        expect((token as StringToken).value).toEqual(tokenValue);
+        expect(token.definition!.key).toEqual(tokenKey);
+
+        return description;
+      }
+    } satisfies DescriptionProvider
+  } satisfies HoverConfig
+}
 
 describe("hover", () => {
   it("on a key", async () => {
@@ -75,5 +94,39 @@ jobs:
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual("Runs your workflow when you push a commit or tag.");
+  });
+});
+
+describe("hover with description provider", () => {
+  it("uses the description provider", async () => {
+    const input = `
+on: push
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref|: main
+`;
+
+    const result = await hover(...getPositionFromCursor(input), testHoverConfig("ref", "string", "The branch, tag or SHA to checkout."));
+    expect(result).not.toBeUndefined();
+    expect(result?.contents).toEqual("The branch, tag or SHA to checkout.");
+  });
+
+  it("falls back to the token description", async () => {
+    const input = `
+on: push
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - uses|: actions/checkout@v2
+`;
+
+    const result = await hover(...getPositionFromCursor(input), testHoverConfig("uses", "non-empty-string", undefined));
+    expect(result).not.toBeUndefined();
+    expect(result?.contents).toEqual("Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image.");
   });
 });
