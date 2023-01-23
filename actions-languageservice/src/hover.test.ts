@@ -76,4 +76,28 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual("Runs your workflow when you push a commit or tag.");
   });
+
+  it("on a cron schedule", async () => {
+    const input = `on:
+  schedule:
+    - cron: '0,30 0|,12 * * *'
+`;
+    const result = await hover(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result?.contents).toEqual(
+      "Runs at 0 and 30 minutes past the hour, at 00:00 and 12:00\n\n" +
+      "Actions schedules run at most every 5 minutes. " +
+      "[Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
+    );
+  });
+
+  it("on an invalid cron schedule", async () => {
+    const input = `on:
+  schedule:
+    - cron: '0 0 |* * * * *'
+`;
+    const result = await hover(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result?.contents).toEqual("Invalid cron expression");
+  });
 });

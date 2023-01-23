@@ -60,7 +60,8 @@ export function getSentence(cronspec: string): string | undefined {
     return
   }
 
-  return desc
+  // Make first character lowercase
+  return "Runs " + desc.charAt(0).toLowerCase() + desc.slice(1)
 }
 
 function parseCronPart(part: string, range: Range): number[] | undefined {
