@@ -60,6 +60,36 @@ This project is just one of multiple implementations of the GitHub Actions Expre
 
 If you do want to contribute, please run [prettier](https://prettier.io/) to format your code and add unit tests as appropriate before submitting your PR. [./testdata](./testdata) contains test cases that all implementations should pass, please also make sure those tests are still passing.
 
+### Build
+
+```bash
+$ npm run build
+```
+
+or to watch for changes
+
+```bash
+$ npm run watch
+```
+
+### Test
+
+```bash
+$ npm test
+```
+
+or to watch for changes and run tests:
+
+```bash
+$ npm run test-watch
+```
+
+### Lint
+
+```bash
+$ npm run format-check
+```
+
 ## License
 
 This project is licensed under the terms of the MIT open source license. Please refer to [MIT](../LICENSE) for the full terms.
