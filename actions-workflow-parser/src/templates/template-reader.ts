@@ -1,5 +1,6 @@
 // template-reader *just* does schema validation
 
+import {getSentence} from "../model/converter/cron";
 import {ObjectReader} from "./object-reader";
 import {TemplateSchema} from "./schema";
 import {DefinitionInfo} from "./schema/definition-info";
@@ -215,6 +216,7 @@ class TemplateReader {
       const nextPropertyDef = this._schema.matchPropertyAndFilter(mappingDefinitions, nextKey.value);
       if (nextPropertyDef) {
         const nextDefinition = new DefinitionInfo(definition, nextPropertyDef.type);
+        const nextValue = this.readValue(nextDefinition);
 
         // Store the definition on the key, the value may have its own definition
         nextKey.definitionInfo = nextDefinition;
@@ -224,8 +226,17 @@ class TemplateReader {
         if (nextPropertyDef.description) {
           nextKey.description = nextPropertyDef.description;
         }
-
-        const nextValue = this.readValue(nextDefinition);
+        else if (upperKey === "CRON") {
+          // Schedules are a special case, we have to calculate the description
+          if (isString(nextValue)) {
+            nextValue.description = getSentence((nextValue as StringToken).value)
+            nextValue.description += "\nActions schedules run at most every 5 minutes." +
+              " [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)";
+          }
+          else {
+            nextValue.description = "Cron expression must be a string"
+          }
+        }
 
         mapping.add(nextKey, nextValue);
         continue;
