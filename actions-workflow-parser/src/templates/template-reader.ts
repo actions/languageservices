@@ -225,22 +225,6 @@ class TemplateReader {
         if (nextPropertyDef.description) {
           nextKey.description = nextPropertyDef.description;
         }
-        else if (upperKey === "CRON") {
-          // Schedules are a special case, we have to calculate the description
-          if (isString(nextValue)) {
-            const cronDescription = getSentence((nextValue as StringToken).value)
-            if (cronDescription) {
-              nextValue.description = cronDescription + "\n\nActions schedules run at most every 5 minutes." +
-                " [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)";
-            }
-            else {
-              nextValue.description = "Invalid cron expression"
-            }
-          }
-          else {
-            nextValue.description = "Cron expression must be a string"
-          }
-        }
 
         mapping.add(nextKey, nextValue);
         continue;
