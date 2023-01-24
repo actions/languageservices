@@ -56,7 +56,7 @@ console.log(result.coerceString()) // true
 
 See also [CONTRIBUTING.md](../CONTRIBUTING.md) at the root of the repository.
 
-This project is just one of multiple implementations of the GitHub Actions Expressions language. We therefore cannot accept contributions that add new language features or significantly change the behavior or existing language features. If you would like to propose a change to the language itself, please use our [Community Forum](https://github.com/community/community/discussions/categories/actions-and-packages).
+This project is just one of multiple implementations of the GitHub Actions Expressions language. We therefore cannot accept contributions that add new language features or significantly change the behavior of existing language features. If you would like to propose a change to the language itself, please use our [Community Forum](https://github.com/community/community/discussions/categories/actions-and-packages).
 
 If you do want to contribute, please run [prettier](https://prettier.io/) to format your code and add unit tests as appropriate before submitting your PR. [./testdata](./testdata) contains test cases that all implementations should pass, please also make sure those tests are still passing.
 
