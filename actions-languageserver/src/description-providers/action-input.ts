@@ -31,5 +31,23 @@ export async function getActionInputDescription(
     return undefined;
   }
 
-  return metadata.inputs[inputName]?.description;
+  const input = metadata.inputs[inputName];
+  if (!input) {
+    return undefined;
+  }
+
+  let description = input.description;
+
+  const deprecated = input.deprecationMessage !== undefined;
+
+  if (deprecated) {
+    // Validation will include the deprecation message, so don't duplicate it here
+    description += `\n\n**Deprecated**`;
+  }
+
+  if (input.required) {
+    description += "\n\n**Required**";
+  }
+
+  return description;
 }
