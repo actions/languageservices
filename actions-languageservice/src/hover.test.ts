@@ -86,8 +86,8 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
       "Runs at 0 and 30 minutes past the hour, at 00:00 and 12:00\n\n" +
-      "Actions schedules run at most every 5 minutes. " +
-      "[Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
+        "Actions schedules run at most every 5 minutes. " +
+        "[Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
     );
   });
 

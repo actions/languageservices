@@ -99,7 +99,6 @@ function getEventContext(workflowContext: WorkflowContext): ExpressionData {
 function merge(d: data.Dictionary, toAdd: Object): data.Dictionary {
   for (const [key, value] of Object.entries(toAdd)) {
     if (value && typeof value === "object" && !d.get(key)) {
-
       if (!Array.isArray(value) && Object.entries(value).length === 0) {
         // Allow an empty object to be any value
         d.add(key, new data.Null());

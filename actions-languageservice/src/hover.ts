@@ -36,8 +36,9 @@ function getHover(tokenResult: TokenResult): Hover | null {
   if (tokenResult.parent && isCronMapping(tokenResult.parent) && isString(token)) {
     let description = getSentence((token as StringToken).value);
     if (description) {
-      description += "\n\nActions schedules run at most every 5 minutes." +
-        " [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
+      description +=
+        "\n\nActions schedules run at most every 5 minutes." +
+        " [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)";
       return {
         contents: description,
         range: mapRange(token.range)
@@ -72,5 +73,5 @@ function getHover(tokenResult: TokenResult): Hover | null {
 }
 
 function isCronMapping(token: TemplateToken): boolean {
-  return token.definition?.key === "cron-mapping"
+  return token.definition?.key === "cron-mapping";
 }
