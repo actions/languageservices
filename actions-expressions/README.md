@@ -15,7 +15,7 @@ npm install @github/actions-expressions
 ### Simple example
 
 ```ts
-import { Parser, Lexer, Evaluator, data } from '@actions/expressions';
+import { Parser, Lexer, Evaluator, data } from '@github/actions-expressions';
 
 const lexer = new Lexer("1 == 2");
 const lr = lexer.lex();
@@ -32,7 +32,7 @@ console.log(result.coerceString()) // false
 ### With context data
 
 ```ts
-import { Parser, Lexer, Evaluator, data } from '@actions/expressions';
+import { Parser, Lexer, Evaluator, data } from '@github/actions-expressions';
 
 const lexer = new Lexer("'monalisa' == context.name");
 const lr = lexer.lex();
