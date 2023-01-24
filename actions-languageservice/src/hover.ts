@@ -12,7 +12,7 @@ import {info} from "./log";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
-import {getSentence} from "@github/actions-workflow-parser/model/converter/cron";
+import {getCronDescription} from "@github/actions-workflow-parser/model/converter/cron";
 
 export type DescriptionProvider = {
   getDescription(context: WorkflowContext, token: TemplateToken, path: TemplateToken[]): Promise<string | undefined>;
@@ -40,20 +40,13 @@ export async function hover(document: TextDocument, position: Position, config?:
 
   if (tokenResult.parent && isCronMappingValue(tokenResult)) {
     const tokenValue = (token as StringToken).value
-    let description = getSentence(tokenValue);
+    let description = getCronDescription(tokenValue);
     if (description) {
-      description +=
-        "\n\nActions schedules run at most every 5 minutes." +
-        " [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)";
       return {
         contents: description,
         range: mapRange(token.range)
       } as Hover;
     }
-    return {
-      contents: "Invalid cron expression",
-      range: mapRange(token.range)
-    } as Hover;
   }
 
   let description = await getDescription(document, config, result, token, tokenResult.path);
@@ -90,7 +83,7 @@ async function getDescription(
 }
 
 function isCronMappingValue(tokenResult: TokenResult): boolean {
-  return tokenResult.parent?.definition?.key === "cron-mapping" &&
-    (tokenResult.token as StringToken).value !== "cron" &&
-    isString(tokenResult.token!);
+  //return tokenResult.parent?.definition?.key === "cron-mapping" &&
+  return isString(tokenResult.token!) &&
+    (tokenResult.token as StringToken).value !== "cron"
 }

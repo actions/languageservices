@@ -1,4 +1,4 @@
-import { isValidCron, getSchedule, getSentence } from "./cron"
+import { isValidCron, getSchedule, getCronDescription } from "./cron"
 
 describe("cron", () => {
   describe("valid cron", () => {
@@ -145,13 +145,15 @@ describe("cron", () => {
     }
   })
 
-  describe("getSentence", () => {
+  describe("getCronDescription", () => {
     it(`Produces a sentence for valid cron`, () => {
-      expect(getSentence("0 * * * *")).toEqual("Every hour")
+      expect(getCronDescription("0 * * * *")).toEqual("Runs every hour\n\n" +
+        "Actions schedules run at most every 5 minutes. [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
+      )
     })
 
     it(`Returns nothing for invalid cron`, () => {
-      expect(getSentence("* * * * * *")).toBeUndefined()
+      expect(getCronDescription("* * * * * *")).toBeUndefined()
     })
   })
 })

@@ -215,7 +215,6 @@ class TemplateReader {
       const nextPropertyDef = this._schema.matchPropertyAndFilter(mappingDefinitions, nextKey.value);
       if (nextPropertyDef) {
         const nextDefinition = new DefinitionInfo(definition, nextPropertyDef.type);
-        const nextValue = this.readValue(nextDefinition);
 
         // Store the definition on the key, the value may have its own definition
         nextKey.definitionInfo = nextDefinition;
@@ -226,6 +225,7 @@ class TemplateReader {
           nextKey.description = nextPropertyDef.description;
         }
 
+        const nextValue = this.readValue(nextDefinition);
         mapping.add(nextKey, nextValue);
         continue;
       }

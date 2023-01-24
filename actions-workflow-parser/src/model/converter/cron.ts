@@ -40,7 +40,7 @@ export function isValidCron(cron: string): boolean {
   )
 }
 
-export function getSentence(cronspec: string): string | undefined {
+export function getCronDescription(cronspec: string): string | undefined {
   const schedule = getSchedule(cronspec)
   if (!schedule) {
     return
@@ -61,7 +61,10 @@ export function getSentence(cronspec: string): string | undefined {
   }
 
   // Make first character lowercase
-  return "Runs " + desc.charAt(0).toLowerCase() + desc.slice(1)
+  let result = "Runs " + desc.charAt(0).toLowerCase() + desc.slice(1)
+  result += "\n\nActions schedules run at most every 5 minutes." +
+    " [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)";
+  return result
 }
 
 function parseCronPart(part: string, range: Range): number[] | undefined {
@@ -194,8 +197,6 @@ export function getSchedule(cron: string): Schedule | undefined {
     dow: parseCronPart(dow, DOW_RANGE)
   }
 }
-
-// Helpers
 
 // Converts a string integer or a short name to a number
 function convertToNumber(value: string, names?: Record<string, number>): number {

@@ -110,7 +110,7 @@ jobs:
     );
   });
 
-  it("on a cron identifier", async () => {
+  it("on a cron mapping key", async () => {
     const input = `on:
   schedule:
     - c|ron: '0 0 * * *'
@@ -127,7 +127,7 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual("Invalid cron expression");
+    expect(result?.contents).toEqual("");
   });
 });
 
