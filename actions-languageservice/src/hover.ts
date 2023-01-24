@@ -90,7 +90,7 @@ async function getDescription(
 }
 
 function isCronMappingValue(tokenResult: TokenResult): boolean {
-  return tokenResult.parent?.definition?.key === "cron-mapping" && 
-    (tokenResult.token as StringToken).value !== "cron" && 
+  return tokenResult.parent?.definition?.key === "cron-mapping" &&
+    (tokenResult.token as StringToken).value !== "cron" &&
     isString(tokenResult.token!);
 }
