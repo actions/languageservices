@@ -1,6 +1,5 @@
 // template-reader *just* does schema validation
 
-import {getSentence} from "../model/converter/cron";
 import {ObjectReader} from "./object-reader";
 import {TemplateSchema} from "./schema";
 import {DefinitionInfo} from "./schema/definition-info";
