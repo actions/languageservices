@@ -1,7 +1,8 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {getStepsContext as getDefaultStepsContext} from "@github/actions-languageservice/context-providers/steps";
 import {Octokit} from "@octokit/rest";
-import nock from "nock";
+import fetchMock from "fetch-mock";
+
 import {createWorkflowContext} from "../test-utils/workflow-context";
 import {TTLCache} from "../utils/cache";
 import {getStepsContext} from "./steps";
@@ -54,14 +55,6 @@ const actionMetadata = {
   }
 };
 
-beforeEach(() => {
-  nock.disableNetConnect();
-});
-
-afterEach(() => {
-  nock.cleanAll();
-});
-
 it("returns default context when job is undefined", async () => {
   const workflowContext = createWorkflowContext(workflow, undefined);
   const defaultContext = getDefaultStepsContext(workflowContext);
@@ -71,12 +64,23 @@ it("returns default context when job is undefined", async () => {
 });
 
 it("adds action outputs", async () => {
-  nock("https://api.github.com").get("/repos/actions/cache/contents/action.yml?ref=v3").reply(200, actionMetadata);
+  const mock = fetchMock
+    .sandbox()
+    .getOnce("https://api.github.com/repos/actions/cache/contents/action.yml?ref=v3", actionMetadata);
 
   const workflowContext = createWorkflowContext(workflow, "build");
   const defaultContext = getDefaultStepsContext(workflowContext);
 
-  const stepsContext = await getStepsContext(new Octokit(), new TTLCache(), defaultContext, workflowContext);
+  const stepsContext = await getStepsContext(
+    new Octokit({
+      request: {
+        fetch: mock
+      }
+    }),
+    new TTLCache(),
+    defaultContext,
+    workflowContext
+  );
   expect(stepsContext).toBeDefined();
 
   expect(stepsContext).toEqual(
