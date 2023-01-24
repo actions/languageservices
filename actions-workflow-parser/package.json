@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@github/actions-expressions": "^0.1.96",
+    "cronstrue": "^2.21.0",
     "yaml": "^2.0.0-8"
   },
   "engines": {
