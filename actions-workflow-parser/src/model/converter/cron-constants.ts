@@ -12,8 +12,8 @@ const MONTHS = {
   sep: 9,
   oct: 10,
   nov: 11,
-  dec: 12,
-}
+  dec: 12
+};
 
 const DAYS = {
   sun: 0,
@@ -22,11 +22,11 @@ const DAYS = {
   wed: 3,
   thu: 4,
   fri: 5,
-  sat: 6,
-}
+  sat: 6
+};
 
-export const MINUTE_RANGE = { min: 0, max: 59 }
-export const HOUR_RANGE = { min: 0, max: 23 }
-export const DOM_RANGE = { min: 1, max: 31 }
-export const MONTH_RANGE = { min: 1, max: 12, names: MONTHS }
-export const DOW_RANGE = { min: 0, max: 6, names: DAYS }
+export const MINUTE_RANGE = {min: 0, max: 59};
+export const HOUR_RANGE = {min: 0, max: 23};
+export const DOM_RANGE = {min: 1, max: 31};
+export const MONTH_RANGE = {min: 1, max: 12, names: MONTHS};
+export const DOW_RANGE = {min: 0, max: 6, names: DAYS};

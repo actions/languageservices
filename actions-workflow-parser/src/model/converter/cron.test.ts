@@ -1,4 +1,4 @@
-import { isValidCron, getSchedule, getCronDescription } from "./cron"
+import {isValidCron, getCronDescription} from "./cron";
 
 describe("cron", () => {
   describe("valid cron", () => {
@@ -18,15 +18,15 @@ describe("cron", () => {
       ["0 0 * * SUN-TUE", "accepts day of week short name range"],
       ["0 0 * * SUN-2", "accepts day of week range combined with number"],
       ["0 2-4/5 * * *", "accepts range with step"],
-      ["0   0  *  *               *", "accepts multiple spaces"],
-    ]
+      ["0   0  *  *               *", "accepts multiple spaces"]
+    ];
 
     for (const [cron, reason] of valid) {
       it(`${cron} should be valid: ${reason}`, () => {
-        expect(isValidCron(cron)).toBe(true)
-      })
+        expect(isValidCron(cron)).toBe(true);
+      });
     }
-  })
+  });
 
   describe("invalid cron", () => {
     const invalid = [
@@ -54,106 +54,26 @@ describe("cron", () => {
       ["0 2/4-5 * * *", "step size may not be a range"],
       ["0 2-4-6 * * *", "range may not contain multiple -"],
       ["0 2/4/6 * * *", "step may not contain multiple /"],
-      ["0 * * */FEB */TUE", "step size may not be a short name"],
-    ]
+      ["0 * * */FEB */TUE", "step size may not be a short name"]
+    ];
 
     for (const [cron, reason] of invalid) {
       it(`${cron} should be invalid: ${reason}`, () => {
-        expect(isValidCron(cron)).toBe(false)
-      })
+        expect(isValidCron(cron)).toBe(false);
+      });
     }
-  })
-
-  describe("getSchedule", () => {
-    const testCases = [
-      {
-        cron: "0 1 2 3 4",
-        expected: {
-          minutes: [0],
-          hours: [1],
-          dom: [2],
-          months: [3],
-          dow: [4],
-        }
-      },
-      {
-        cron: "2,4 * * * *",
-        expected: {
-          minutes: [2, 4],
-          hours: undefined,
-          dom: undefined,
-          months: undefined,
-          dow: undefined,
-        }
-      },
-      {
-        cron: "2-4 * * * *",
-        expected: {
-          minutes: [2, 3, 4],
-          hours: undefined,
-          dom: undefined,
-          months: undefined,
-          dow: undefined,
-        }
-      },
-      {
-        cron: "*/15 * * * *",
-        expected: {
-          minutes: [0, 15, 30, 45],
-          hours: undefined,
-          dom: undefined,
-          months: undefined,
-          dow: undefined,
-        }
-      },
-      {
-        cron: "10/15 * * * *",
-        expected: {
-          minutes: [10, 25, 40, 55],
-          hours: undefined,
-          dom: undefined,
-          months: undefined,
-          dow: undefined,
-        }
-      },
-      {
-        cron: "5,*/20 * * * *",
-        expected: {
-          minutes: [0, 5, 20, 40],
-          hours: undefined,
-          dom: undefined,
-          months: undefined,
-          dow: undefined,
-        }
-      },
-      {
-        cron: "* * * JAN SUN",
-        expected: {
-          minutes: undefined,
-          hours: undefined,
-          dom: undefined,
-          months: [1],
-          dow: [0],
-        }
-      },
-    ]
-
-    for (const testCase of testCases) {
-      it(`getSchedule '${testCase.cron}'`, () => {
-        expect(getSchedule(testCase.cron)).toEqual(testCase.expected)
-      })
-    }
-  })
+  });
 
   describe("getCronDescription", () => {
     it(`Produces a sentence for valid cron`, () => {
-      expect(getCronDescription("0 * * * *")).toEqual("Runs every hour\n\n" +
-        "Actions schedules run at most every 5 minutes. [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
-      )
-    })
+      expect(getCronDescription("0 * * * *")).toEqual(
+        "Runs every hour\n\n" +
+          "Actions schedules run at most every 5 minutes. [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
+      );
+    });
 
     it(`Returns nothing for invalid cron`, () => {
-      expect(getCronDescription("* * * * * *")).toBeUndefined()
-    })
-  })
-})
+      expect(getCronDescription("* * * * * *")).toBeUndefined();
+    });
+  });
+});
