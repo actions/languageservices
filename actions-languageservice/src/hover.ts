@@ -1,7 +1,10 @@
 import {convertWorkflowTemplate, parseWorkflow, ParseWorkflowResult} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
+import {TokenResult} from "./utils/find-token";
 import {File} from "@github/actions-workflow-parser/workflows/file";
+import {isString} from "@github/actions-workflow-parser/templates/tokens/type-guards";
+import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Hover} from "vscode-languageserver-types";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
@@ -9,6 +12,7 @@ import {info} from "./log";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
+import {getCronDescription} from "@github/actions-workflow-parser/model/converter/cron";
 
 export type DescriptionProvider = {
   getDescription(context: WorkflowContext, token: TemplateToken, path: TemplateToken[]): Promise<string | undefined>;
@@ -26,14 +30,26 @@ export async function hover(document: TextDocument, position: Position, config?:
   };
   const result = parseWorkflow(file.name, [file], nullTrace);
 
-  const {token, path} = findToken(position, result.value);
+  const tokenResult = findToken(position, result.value);
+  const token = tokenResult.token;
   if (!token?.definition) {
     return null;
   }
 
   info(`Calculating hover for token with definition ${token.definition.key}`);
 
-  let description = await getDescription(document, config, result, token, path);
+  if (tokenResult.parent && isCronMappingValue(tokenResult)) {
+    const tokenValue = (token as StringToken).value
+    let description = getCronDescription(tokenValue);
+    if (description) {
+      return {
+        contents: description,
+        range: mapRange(token.range)
+      } as Hover;
+    }
+  }
+
+  let description = await getDescription(document, config, result, token, tokenResult.path);
 
   const allowedContext = token.definitionInfo?.allowedContext;
   if (allowedContext && allowedContext?.length > 0) {
@@ -63,4 +79,10 @@ async function getDescription(
   const workflowContext = getWorkflowContext(document.uri, template, path);
   const description = await config.descriptionProvider.getDescription(workflowContext, token, path);
   return description || defaultDescription;
+}
+
+function isCronMappingValue(tokenResult: TokenResult): boolean {
+  return tokenResult.parent?.definition?.key === "cron-mapping" &&
+    isString(tokenResult.token!) &&
+    tokenResult.token.value !== "cron"
 }

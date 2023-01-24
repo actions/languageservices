@@ -1248,7 +1248,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo \${{ github.event.client_payload.anything }}
-      - run: echo \${{ github.event.client_payload.branch }}`
+      - run: echo \${{ github.event.client_payload.branch }}`;
 
       const result = await validate(createDocument("wf.yaml", input));
 

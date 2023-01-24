@@ -226,7 +226,6 @@ class TemplateReader {
         }
 
         const nextValue = this.readValue(nextDefinition);
-
         mapping.add(nextKey, nextValue);
         continue;
       }
