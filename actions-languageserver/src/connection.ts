@@ -23,6 +23,7 @@ import {TTLCache} from "./utils/cache";
 import {valueProviders} from "./value-providers";
 import {getActionInputs} from "./value-providers/action-inputs";
 import {Commands} from "./commands";
+import {descriptionProvider} from "./description-provider";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -120,7 +121,9 @@ export function initConnection(connection: Connection) {
   });
 
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
-    return hover(documents.get(textDocument.uri)!, position);
+    return hover(documents.get(textDocument.uri)!, position, {
+      descriptionProvider: descriptionProvider(sessionToken, cache)
+    });
   });
 
   connection.onRequest("workspace/executeCommand", (params: ExecuteCommandParams) => {

@@ -359,7 +359,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: step a
-      env: 
+      env:
         step_env: job_a_env
       run: echo "hello \${{ env.step_env }}
 `;
@@ -376,7 +376,7 @@ env:
 jobs:
   a:
     runs-on: ubuntu-latest
-    env: 
+    env:
       envjoba: job_a_env
     steps:
     - name: step a
@@ -395,7 +395,7 @@ env:
 jobs:
   a:
     runs-on: ubuntu-latest
-    env: 
+    env:
       envjoba: job_a_env
     steps:
     - name: step a
@@ -1185,6 +1185,9 @@ jobs:
     - run: echo "hello \${{ github.event.inputs.name }}"
     - run: echo "hello \${{ github.event.inputs.third-name }}"
     - run: echo "hello \${{ github.event.inputs.random }}"
+    - run: echo \${{ fromJSON(inputs.random2) }}
+    - run: echo "hello \${{ inputs.random }}"
+      name: "\${{ fromJSON('test') == inputs.name }}"
 `;
       const result = await validate(createDocument("wf.yaml", input));
 
@@ -1202,8 +1205,54 @@ jobs:
             }
           },
           severity: DiagnosticSeverity.Warning
+        },
+        {
+          message: "Context access might be invalid: random2",
+          range: {
+            end: {
+              character: 47,
+              line: 20
+            },
+            start: {
+              character: 16,
+              line: 20
+            }
+          },
+          severity: 2
+        },
+        {
+          message: "Context access might be invalid: random",
+          range: {
+            end: {
+              character: 43,
+              line: 21
+            },
+            start: {
+              character: 23,
+              line: 21
+            }
+          },
+          severity: 2
         }
       ]);
+    });
+
+    it("allows any property in client_payload", async () => {
+      const input = `
+on:
+  repository_dispatch:
+    types: [test]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ github.event.client_payload.anything }}
+      - run: echo \${{ github.event.client_payload.branch }}`
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
     });
   });
 });

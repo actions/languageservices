@@ -1,5 +1,24 @@
-import {hover} from "./hover";
+import {isString} from "@github/actions-workflow-parser/.";
+import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
+import {DescriptionProvider, hover, HoverConfig} from "./hover";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
+
+function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
+  return {
+    descriptionProvider: {
+      getDescription: async (_, token, __) => {
+        if (!isString(token)) {
+          throw new Error("Test provider only supports string tokens");
+        }
+
+        expect((token as StringToken).value).toEqual(tokenValue);
+        expect(token.definition!.key).toEqual(tokenKey);
+
+        return description;
+      }
+    } satisfies DescriptionProvider
+  } satisfies HoverConfig
+}
 
 describe("hover", () => {
   it("on a key", async () => {
@@ -9,9 +28,7 @@ jobs:
     runs-on: [self-hosted]`;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual(
-      "The name of the GitHub event that triggers the workflow. You can provide a single event string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. For a list of available events, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows."
-    );
+    expect(result?.contents).toContain("The GitHub event that triggers the workflow.");
   });
 
   it("on a value", async () => {
@@ -44,8 +61,8 @@ jobs:
     pe|rmissions: read-all`;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual(
-      "You can modify the default permissions granted to the GITHUB_TOKEN, adding or removing access as required, so that you only allow the minimum required access."
+    expect(result?.contents).toContain(
+      "You can use `permissions` to modify the default permissions granted to the `GITHUB_TOKEN`"
     );
   });
 
@@ -77,5 +94,63 @@ jobs:
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual("Runs your workflow when you push a commit or tag.");
+  });
+
+
+  it("shows context inherited from parent nodes", async () => {
+    const input = `
+on: push
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref|: main
+`;
+
+    const result = await hover(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+
+    // The `ref` is a `string` definition and inherits the context from `step-with`
+    const expected = "**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
+    expect(result?.contents).toEqual(expected);
+  });
+});
+
+describe("hover with description provider", () => {
+  it("uses the description provider", async () => {
+    const input = `
+on: push
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref|: main
+`;
+
+    const result = await hover(...getPositionFromCursor(input), testHoverConfig("ref", "string", "The branch, tag or SHA to checkout."));
+    expect(result).not.toBeUndefined();
+
+    const expected = "The branch, tag or SHA to checkout.\n\n" +
+      "**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
+    expect(result?.contents).toEqual(expected);
+  });
+
+  it("falls back to the token description", async () => {
+    const input = `
+on: push
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - uses|: actions/checkout@v2
+`;
+
+    const result = await hover(...getPositionFromCursor(input), testHoverConfig("uses", "non-empty-string", undefined));
+    expect(result).not.toBeUndefined();
+    expect(result?.contents).toEqual("Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image.");
   });
 });

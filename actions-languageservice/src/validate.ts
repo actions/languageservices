@@ -1,4 +1,4 @@
-import {Evaluator, Lexer, Parser} from "@github/actions-expressions";
+import {Evaluator, ExpressionEvaluationError, Lexer, Parser} from "@github/actions-expressions";
 import {Expr} from "@github/actions-expressions/ast";
 import {
   convertWorkflowTemplate,
@@ -22,6 +22,7 @@ import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
+import {validatorFunctions} from "./expression-validation/functions";
 import {error} from "./log";
 import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
@@ -202,7 +203,7 @@ async function validateExpression(
     try {
       const context = await getContext(namedContexts, contextProviderConfig, workflowContext, Mode.Validation);
 
-      const e = new Evaluator(expr, wrapDictionary(context));
+      const e = new Evaluator(expr, wrapDictionary(context), validatorFunctions);
       e.evaluate();
 
       // Any invalid context access would've thrown an error via the `ErrorDictionary`, for now we don't have to check the actual
@@ -212,6 +213,12 @@ async function validateExpression(
         diagnostics.push({
           message: `Context access might be invalid: ${e.keyName}`,
           severity: DiagnosticSeverity.Warning,
+          range: mapRange(expression.range)
+        });
+      } else if (e instanceof ExpressionEvaluationError) {
+        diagnostics.push({
+          message: `Expression might be invalid: ${e.message}`,
+          severity: DiagnosticSeverity.Error,
           range: mapRange(expression.range)
         });
       }

@@ -1,8 +1,10 @@
 import {complete, CompletionItem, trimTokenVector} from "./completion";
+import {DescriptionDictionary} from "./completion/descriptionDictionary";
 import {BooleanData} from "./data/boolean";
 import {Dictionary} from "./data/dictionary";
 import {StringData} from "./data/string";
-import {FunctionInfo} from "./funcs/info";
+import {wellKnownFunctions} from "./funcs";
+import {FunctionDefinition, FunctionInfo} from "./funcs/info";
 import {Lexer, TokenType} from "./lexer";
 
 const testContext = new Dictionary(
@@ -20,9 +22,34 @@ const testContext = new Dictionary(
     )
   },
   {
+    key: "github",
+    value: new DescriptionDictionary(
+      {
+        key: "actor",
+        value: new StringData(""),
+        description: "The name of the person or app that initiated the workflow. For example, octocat."
+      },
+      {
+        key: "inputs",
+        value: new DescriptionDictionary({
+          key: "name",
+          value: new StringData("monalisa"),
+          description: "The name of a person"
+        })
+      }
+    )
+  },
+  {
     key: "secrets",
     value: new Dictionary({
       key: "AWS_TOKEN",
+      value: new BooleanData(true)
+    })
+  },
+  {
+    key: "vars",
+    value: new Dictionary({
+      key: "VAR_NAME",
       value: new BooleanData(true)
     })
   },
@@ -34,11 +61,11 @@ const testContext = new Dictionary(
 
 const testFunctions: FunctionInfo[] = [];
 
-const testComplete = (input: string): CompletionItem[] => {
+const testComplete = (input: string, functions?: Map<string, FunctionDefinition>): CompletionItem[] => {
   const pos = input.indexOf("|");
   input = input.replace("|", "");
 
-  const results = complete(input.slice(0, pos >= 0 ? pos : input.length), testContext, testFunctions);
+  const results = complete(input.slice(0, pos >= 0 ? pos : input.length), testContext, testFunctions, functions);
 
   return results;
 };
@@ -59,7 +86,10 @@ describe("auto-complete", () => {
       expect(testComplete("to")).toContainEqual(expected);
       expect(testComplete("toJs")).toContainEqual(expected);
       expect(testComplete("1 == toJS")).toContainEqual(expected);
+      expect(testComplete("1 == (toJS")).toContainEqual(expected);
       expect(testComplete("toJS| == 1")).toContainEqual(expected);
+      expect(testComplete("(toJS| == (foo.bar)")).toContainEqual(expected);
+      expect(testComplete("(((toJS| == (foo.bar)")).toContainEqual(expected);
     });
 
     it("removes parentheses from passed in function context", () => {
@@ -70,13 +100,57 @@ describe("auto-complete", () => {
     });
   });
 
+  describe("in multi-line expressions", () => {
+    it("includes built-in functions", () => {
+      expect(testComplete("1 == (\nto").map(x => x.label)).toContainEqual("toJson");
+    });
+  });
+
+  describe("functions", () => {
+    it("uses provided function definitions", () => {
+      expect(
+        testComplete(
+          "fromJson('invalid').|",
+          new Map(
+            Object.entries({
+              fromjson: {
+                ...wellKnownFunctions.fromjson,
+                call: () =>
+                  new Dictionary({
+                    key: "foo",
+                    value: new StringData("bar")
+                  })
+              }
+            })
+          )
+        )
+      ).toEqual<CompletionItem[]>([{label: "foo", function: false}]);
+    });
+  });
+
   describe("for contexts", () => {
-    it("provides suggestions for env", () => {
+    it("provides suggestions for top-level context", () => {
       const expected = completionItems("BAR_TEST", "FOO");
       expect(testComplete("env.X")).toEqual(expected);
       expect(testComplete("1 == env.F")).toEqual(expected);
       expect(testComplete("env.")).toEqual(expected);
       expect(testComplete("env.FOO")).toEqual(expected);
+      expect(testComplete("(env).")).toEqual(expected);
+    });
+
+    it("provides suggestions for nested context", () => {
+      const expected: CompletionItem[] = [
+        {
+          label: "name",
+          function: false,
+          description: "The name of a person"
+        }
+      ];
+      expect(testComplete("github.inputs.|")).toEqual(expected);
+      expect(testComplete("(github).inputs.|")).toEqual(expected);
+      expect(testComplete("(github.inputs).|")).toEqual(expected);
+      expect(testComplete("'test' == github.inputs.|")).toEqual(expected);
+      expect(testComplete("github.inputs.| == 'monalisa'")).toEqual(expected);
     });
 
     it("provides suggestions for secrets", () => {
@@ -87,8 +161,35 @@ describe("auto-complete", () => {
       expect(testComplete("toJSON(secrets.")).toEqual(expected);
     });
 
+    it("provides suggestions for variables", () => {
+      const expected = completionItems("VAR_NAME");
+
+      expect(testComplete("vars.V")).toEqual(expected);
+      expect(testComplete("1 == vars.F")).toEqual(expected);
+      expect(testComplete("toJSON(vars.")).toEqual(expected);
+    });
+
     it("provides suggestions for contexts in function call", () => {
       expect(testComplete("toJSON(env.|)")).toEqual(completionItems("BAR_TEST", "FOO"));
+      expect(testComplete("toJSON(secrets.")).toEqual(completionItems("AWS_TOKEN"));
+    });
+
+    describe("with descriptions", () => {
+      it("top-level", () => {
+        expect(testComplete("github.")).toContainEqual<CompletionItem>({
+          label: "actor",
+          function: false,
+          description: "The name of the person or app that initiated the workflow. For example, octocat."
+        });
+      });
+
+      it("nested", () => {
+        expect(testComplete("github.inputs.")).toContainEqual<CompletionItem>({
+          label: "name",
+          function: false,
+          description: "The name of a person"
+        });
+      });
     });
   });
 });
@@ -113,6 +214,21 @@ describe("trimTokenVector", () => {
     {
       input: "github.mona == github.act",
       expected: [TokenType.IDENTIFIER, TokenType.DOT, TokenType.IDENTIFIER, TokenType.EOF]
+    },
+    {
+      input: "github.mona == (github).act",
+      expected: [
+        TokenType.LEFT_PAREN,
+        TokenType.IDENTIFIER,
+        TokenType.RIGHT_PAREN,
+        TokenType.DOT,
+        TokenType.IDENTIFIER,
+        TokenType.EOF
+      ]
+    },
+    {
+      input: "github.mona == (github.",
+      expected: [TokenType.IDENTIFIER, TokenType.DOT, TokenType.EOF]
     },
     {
       input: "github['test'].",

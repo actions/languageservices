@@ -50,3 +50,5 @@ function errorDescription(typ: ErrorType): string {
       return "Unknown error";
   }
 }
+
+export class ExpressionEvaluationError extends Error {}

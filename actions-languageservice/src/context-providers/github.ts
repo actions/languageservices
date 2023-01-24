@@ -1,11 +1,12 @@
-import {data} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {ExpressionData} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
+import {getDescription} from "./descriptions";
 import {eventPayloads} from "./events/eventPayloads";
 import {getInputsContext} from "./inputs";
 
-export function getGithubContext(workflowContext: WorkflowContext): data.Dictionary {
-  // https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
+export function getGithubContext(workflowContext: WorkflowContext): DescriptionDictionary {
+  // https://docs.github.com/en/actions/learn-github-actions/contexts#github-cwontext
   const keys = [
     "action",
     "action_path",
@@ -43,13 +44,23 @@ export function getGithubContext(workflowContext: WorkflowContext): data.Diction
     "workspace"
   ];
 
-  return new data.Dictionary(
+  return new DescriptionDictionary(
     ...keys.map(key => {
+      const description = getDescription("github", key);
+
       if (key == "event") {
-        return {key, value: getEventContext(workflowContext)};
+        return {
+          key,
+          value: getEventContext(workflowContext),
+          description
+        };
       }
 
-      return {key, value: new data.Null()};
+      return {
+        key,
+        value: new data.Null(),
+        description
+      };
     })
   );
 }
@@ -88,6 +99,13 @@ function getEventContext(workflowContext: WorkflowContext): ExpressionData {
 function merge(d: data.Dictionary, toAdd: Object): data.Dictionary {
   for (const [key, value] of Object.entries(toAdd)) {
     if (value && typeof value === "object" && !d.get(key)) {
+
+      if (!Array.isArray(value) && Object.entries(value).length === 0) {
+        // Allow an empty object to be any value
+        d.add(key, new data.Null());
+        continue;
+      }
+
       d.add(key, merge(new data.Dictionary(), value));
     } else {
       d.add(key, new data.Null());

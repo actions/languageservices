@@ -92,16 +92,14 @@ jobs:
         case "name": {
           const nameKey = pair.key.assertString("name");
           expect(nameKey.definition).not.toBeUndefined();
-          expect(nameKey.description).toBe("The name of the workflow.");
+          expect(nameKey.description).toContain("The name of the workflow");
           break;
         }
         case "on": {
           const onKey = pair.key.assertString("on");
           const onValue = pair.value.assertString("push");
           expect(onKey.definition).not.toBeUndefined();
-          expect(onKey.description).toBe(
-            "The name of the GitHub event that triggers the workflow. You can provide a single event string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. For a list of available events, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows."
-          );
+          expect(onKey.description).toContain("The GitHub event that triggers the workflow.");
           expect(onValue.definition).not.toBeUndefined();
           expect(onValue.description).toBe("Runs your workflow when you push a commit or tag.");
           break;

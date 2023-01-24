@@ -21,4 +21,12 @@ describe("getPositionFromCursor", () => {
     expect(position).toEqual({line: 0, character: 0});
     expect(newDoc.getText()).toEqual("on: push\njobs:");
   });
+
+  it("handles a cursor in the middle of the document", () => {
+    const input = "on: push\n  jobs|:\n    build:";
+    const [newDoc, position] = getPositionFromCursor(input);
+
+    expect(position).toEqual({line: 1, character: 6});
+    expect(newDoc.getText()).toEqual("on: push\n  jobs:\n    build:");
+  });
 });

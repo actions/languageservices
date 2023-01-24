@@ -1,5 +1,5 @@
-import {data} from "@github/actions-expressions";
-import {CompletionItemKind} from "vscode-languageserver-types";
+import {data, DescriptionDictionary} from "@github/actions-expressions";
+import {CompletionItem, CompletionItemKind} from "vscode-languageserver-types";
 import {complete, getExpressionInput} from "./complete";
 import {ContextProviderConfig} from "./context-providers/config";
 import {registerLogger} from "./log";
@@ -10,9 +10,10 @@ const contextProviderConfig: ContextProviderConfig = {
   getContext: async (context: string) => {
     switch (context) {
       case "github":
-        return new data.Dictionary({
+        return new DescriptionDictionary({
           key: "event",
-          value: new data.StringData("push")
+          value: new data.StringData("push"),
+          description: "The event that triggered the workflow"
         });
     }
 
@@ -29,6 +30,7 @@ describe("expressions", () => {
       return getExpressionInput(doc.getText(), pos.character);
     };
 
+    // With ${{ }}
     expect(test("${{ gh |")).toBe(" gh ");
     expect(test("${{ gh |}}")).toBe(" gh ");
     expect(test("${{ vars| == 'test' }}")).toBe(" vars");
@@ -36,6 +38,22 @@ describe("expressions", () => {
     expect(test("${{ github.| == 'test' }}")).toBe(" github.");
     expect(test("test ${{ github.| == 'test' }}")).toBe(" github.");
     expect(test("${{ vars }} ${{ gh |}}")).toBe(" gh ");
+
+    expect(test("${{ test.|")).toBe(" test.");
+    expect(test("${{ test.| }}")).toBe(" test.");
+    expect(test("${{ 1 == (test.|)")).toBe(" 1 == (test.");
+
+    // Without ${{ }}
+    expect(test("gh |")).toBe("gh ");
+    expect(test("gh |}}")).toBe("gh ");
+    expect(test("vars| == 'test' }}")).toBe("vars");
+    expect(test("fromJso|('test').bar == 'test' }}")).toBe("fromJso");
+    expect(test("github.| == 'test' }}")).toBe("github.");
+    expect(test("github.| == 'test' }}")).toBe("github.");
+
+    expect(test("test.|")).toBe("test.");
+    expect(test("test.| }}")).toBe("test.");
+    expect(test("1 == (test.|)")).toBe("1 == (test.");
   });
 
   describe("top-level auto-complete", () => {
@@ -55,6 +73,30 @@ describe("expressions", () => {
         "startsWith",
         "toJson"
       ]);
+    });
+
+    it("within parentheses", async () => {
+      const result = await complete(
+        ...getPositionFromCursor("run-name: ${{ 1 == (github.|) }}"),
+        undefined,
+        contextProviderConfig
+      );
+
+      expect(result.map(x => x.label)).toEqual(["event"]);
+    });
+
+    it("contains description", async () => {
+      const input = "run-name: ${{ github.| }}";
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+
+      expect(result).toContainEqual<CompletionItem>({
+        label: "api_url",
+        documentation: {
+          kind: "markdown",
+          value: "The URL of the GitHub Actions REST API."
+        },
+        kind: CompletionItemKind.Variable
+      });
     });
 
     it("single region with existing input", async () => {
@@ -187,6 +229,25 @@ jobs:
       });
     });
 
+    it("nested with parentheses", async () => {
+      const input = `on:
+  workflow_dispatch:
+    inputs:
+      test:
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      foo: '{}'
+    steps:
+      - name: "\${{ fromJSON('test') == (inputs.|) }}"`;
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["test"]);
+    });
+
     it("nested auto-complete", async () => {
       const input = "run-name: ${{ github.| }}";
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
@@ -202,30 +263,90 @@ jobs:
       expect(result.map(x => x.label)).toEqual(["arch", "name", "os", "temp", "tool_cache"]);
     });
 
-    it("job if", async () => {
-      const input = `on: push
+    describe("job if", () => {
+      describe("without ${{", () => {
+        it("simple", async () => {
+          const input = `on: push
 jobs:
   build:
     if: github.|
     runs-on: ubuntu-latest
     steps:
     - run: echo`;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-      expect(result.map(x => x.label)).toEqual(["event"]);
+          expect(result.map(x => x.label)).toEqual(["event"]);
+        });
+
+        it("complex", async () => {
+          const input = `on: push
+jobs:
+  build:
+    if: false && github.| == 'some-repo'
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`;
+          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+          expect(result.map(x => x.label)).toEqual(["event"]);
+        });
+      });
+
+      describe("with ${{", () => {
+        it("simple", async () => {
+          const input = `on: push
+jobs:
+  build:
+    if: \${{ github.| }}
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`;
+          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+          expect(result.map(x => x.label)).toEqual(["event"]);
+        });
+
+        it("complex", async () => {
+          const input = `on: push
+jobs:
+  build:
+    if: \${{ false && github.| == 'some-repo' }}
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`;
+          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+          expect(result.map(x => x.label)).toEqual(["event"]);
+        });
+      });
     });
 
-    it("step if", async () => {
-      const input = `on: push
+    describe("step if", () => {
+      it("with ${{", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+      if: \${{ github.| }}`;
+        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+        expect(result.map(x => x.label)).toEqual(["event"]);
+      });
+
+      it("without ${{", async () => {
+        const input = `on: push
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - run: echo
       if: github.|`;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
 
-      expect(result.map(x => x.label)).toEqual(["event"]);
+        expect(result.map(x => x.label)).toEqual(["event"]);
+      });
     });
   });
 
@@ -319,11 +440,11 @@ env:
 jobs:
   a:
     runs-on: ubuntu-latest
-    env: 
+    env:
       envjoba: job_a_env
   b:
     runs-on: ubuntu-latest
-    env: 
+    env:
       envjobb: job_b_env
     steps:
     - name: step a
@@ -387,7 +508,7 @@ jobs:
     it("includes expected keys", async () => {
       const input = `
   on: push
-  
+
   jobs:
     test:
       runs-on: ubuntu-latest
@@ -452,7 +573,7 @@ jobs:
   on:
     schedule:
     - cron: '0 0 * * *'
-    
+
   jobs:
     test:
       runs-on: ubuntu-latest
@@ -469,7 +590,7 @@ jobs:
     it("includes event payload", async () => {
       const input = `
   on: [push, pull_request]
-    
+
   jobs:
     test:
       runs-on: ubuntu-latest

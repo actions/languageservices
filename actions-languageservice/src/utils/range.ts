@@ -1,5 +1,5 @@
-import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
-import {Range} from "vscode-languageserver-types";
+import {Position as TokenPosition, TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
+import {Position, Range} from "vscode-languageserver-types";
 
 export function mapRange(range: TokenRange | undefined): Range {
   if (!range) {
@@ -16,13 +16,14 @@ export function mapRange(range: TokenRange | undefined): Range {
   }
 
   return {
-    start: {
-      line: range.start[0] - 1,
-      character: range.start[1] - 1
-    },
-    end: {
-      line: range.end[0] - 1,
-      character: range.end[1] - 1
-    }
+    start: mapPosition(range.start),
+    end: mapPosition(range.end)
+  };
+}
+
+export function mapPosition(position: TokenPosition): Position {
+  return {
+    line: position[0] - 1,
+    character: position[1] - 1
   };
 }

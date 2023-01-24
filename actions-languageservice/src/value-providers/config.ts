@@ -4,7 +4,7 @@ export interface Value {
   /** Label of this value */
   label: string;
 
-  /** Optional description to show when auto-completing or hovering */
+  /** Optional description to show when auto-completing */
   description?: string;
 
   /** Whether this value is deprecated */

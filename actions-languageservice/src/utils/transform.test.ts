@@ -37,7 +37,7 @@ jobs:
 jobs:
   build:
     runs-on:
-      - dummy`);
+      - key`);
     expect(newPos.character).toEqual(9);
   });
 
@@ -53,7 +53,23 @@ jobs:
 jobs:
   build:
     runs-on:
-      dummy:`);
+      key:`);
     expect(newPos.character).toEqual(7);
+  });
+
+  it("does not transform expression lines", () => {
+    const [doc, pos] = getPositionFromCursor(`on: push
+jobs:
+  build:
+    runs-on:
+      \${{ github| }}`);
+    const [newDoc, newPos] = transform(doc, pos);
+
+    expect(newDoc.getText()).toEqual(`on: push
+jobs:
+  build:
+    runs-on:
+      \${{ github }}`);
+    expect(newPos.character).toEqual(16);
   });
 });
