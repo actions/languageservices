@@ -10,8 +10,5 @@
   "devDependencies": {
     "lerna": "^6.0.3"
   },
-  "name": "actions-languageservices",
-  "dependencies": {
-    "cronstrue": "^2.21.0"
-  }
+  "name": "actions-languageservices"
 }
