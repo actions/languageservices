@@ -150,13 +150,7 @@ function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: Value
       });
       break;
 
-    case ValueProviderKind.SuggestedValues:
-      diagnostics.push({
-        message: `Value '${token.value}' might not be valid`,
-        severity: DiagnosticSeverity.Warning,
-        range: mapRange(token.range)
-      });
-      break;
+    // no messages for SuggestedValues
   }
 }
 

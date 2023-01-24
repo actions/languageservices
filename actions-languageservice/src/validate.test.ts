@@ -73,21 +73,7 @@ jobs:
       {valueProviderConfig: defaultValueProviders}
     );
 
-    expect(result.length).toBe(1);
-    expect(result[0]).toEqual({
-      message: "Value 'does-not-exist' might not be valid",
-      severity: DiagnosticSeverity.Warning,
-      range: {
-        end: {
-          character: 27,
-          line: 3
-        },
-        start: {
-          character: 13,
-          line: 3
-        }
-      }
-    } as Diagnostic);
+    expect(result.length).toBe(0);
   });
 
   it("value in sequence not returned by value provider", async () => {
@@ -106,21 +92,7 @@ jobs:
       {valueProviderConfig: defaultValueProviders}
     );
 
-    expect(result.length).toBe(1);
-    expect(result[0]).toEqual({
-      message: "Value 'does-not-exist' might not be valid",
-      severity: DiagnosticSeverity.Warning,
-      range: {
-        end: {
-          character: 20,
-          line: 5
-        },
-        start: {
-          character: 6,
-          line: 5
-        }
-      }
-    } as Diagnostic);
+    expect(result.length).toBe(0);
   });
 
   it("single value not returned by allowed value provider", async () => {
