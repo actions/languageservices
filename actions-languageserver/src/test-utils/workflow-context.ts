@@ -19,7 +19,7 @@ export function createWorkflowContext(workflow: string, job?: string, stepIndex?
     context.job = template.jobs.find(j => j.id.value === job);
   }
 
-  if (stepIndex) {
+  if (stepIndex !== undefined) {
     context.step = context.job?.steps[stepIndex];
   }
 
