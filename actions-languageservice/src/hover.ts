@@ -51,11 +51,10 @@ export async function hover(document: TextDocument, position: Position, config?:
 
   let description = await getDescription(document, config, result, token, tokenResult.path);
 
-  if (token.definition.evaluatorContext.length > 0) {
+  const allowedContext = token.definitionInfo?.allowedContext;
+  if (allowedContext && allowedContext?.length > 0) {
     // Only add padding if there is a description
-    description += `${description.length > 0 ? `\n\n` : ""}**Context:** ${token.definition.evaluatorContext.join(
-      ", "
-    )}`;
+    description += `${description.length > 0 ? `\n\n` : ""}**Context:** ${allowedContext.join(", ")}`;
   }
 
   return {

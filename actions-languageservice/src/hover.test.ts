@@ -129,6 +129,26 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual("");
   });
+
+  it("shows context inherited from parent nodes", async () => {
+    const input = `
+on: push
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref|: main
+`;
+
+    const result = await hover(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+
+    // The `ref` is a `string` definition and inherits the context from `step-with`
+    const expected = "**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
+    expect(result?.contents).toEqual(expected);
+  });
 });
 
 describe("hover with description provider", () => {
@@ -146,7 +166,10 @@ jobs:
 
     const result = await hover(...getPositionFromCursor(input), testHoverConfig("ref", "string", "The branch, tag or SHA to checkout."));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual("The branch, tag or SHA to checkout.");
+
+    const expected = "The branch, tag or SHA to checkout.\n\n" +
+      "**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
+    expect(result?.contents).toEqual(expected);
   });
 
   it("falls back to the token description", async () => {
