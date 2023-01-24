@@ -33,8 +33,9 @@ function getHover(tokenResult: TokenResult): Hover | null {
   if (!token) {
     return null;
   }
-  if (tokenResult.parent && isCronMapping(tokenResult.parent) && isString(token)) {
-    let description = getSentence((token as StringToken).value);
+  if (tokenResult.parent && isCronMappingValue(tokenResult)) {
+    const tokenValue = (token as StringToken).value
+    let description = getSentence(tokenValue);
     if (description) {
       description +=
         "\n\nActions schedules run at most every 5 minutes." +
@@ -72,6 +73,8 @@ function getHover(tokenResult: TokenResult): Hover | null {
   return null;
 }
 
-function isCronMapping(token: TemplateToken): boolean {
-  return token.definition?.key === "cron-mapping";
+function isCronMappingValue(tokenResult: TokenResult): boolean {
+  return tokenResult.parent?.definition?.key === "cron-mapping" && 
+    (tokenResult.token as StringToken).value !== "cron" && 
+    isString(tokenResult.token!);
 }

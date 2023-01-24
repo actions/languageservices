@@ -91,6 +91,16 @@ jobs:
     );
   });
 
+  it("on a cron identifier", async () => {
+    const input = `on:
+  schedule:
+    - c|ron: '0 0 * * *'
+`;
+    const result = await hover(...getPositionFromCursor(input));
+    expect(result).not.toBeUndefined();
+    expect(result?.contents).toEqual("");
+  });
+
   it("on an invalid cron schedule", async () => {
     const input = `on:
   schedule:
