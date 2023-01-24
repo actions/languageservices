@@ -8,14 +8,6 @@ type Range = {
   names?: Record<string, number>;
 };
 
-type Schedule = {
-  minutes?: number[];
-  hours?: number[];
-  dom?: number[];
-  months?: number[];
-  dow?: number[];
-};
-
 export function isValidCron(cron: string): boolean {
   // https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#schedule
 
