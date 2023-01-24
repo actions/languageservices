@@ -1,4 +1,5 @@
 import {ActionReference, ActionInputs, ActionOutputs, actionIdentifier} from "@github/actions-languageservice/action";
+import {error} from "@github/actions-languageservice/log";
 import {Octokit, RestEndpointMethodTypes} from "@octokit/rest";
 import {parse} from "yaml";
 import {TTLCache} from "./cache";
@@ -20,30 +21,17 @@ export async function fetchActionMetadata(
     return undefined;
   }
 
-  return parseActionMetadata(metadata);
+  // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+  return parse(metadata);
 }
 
 async function getActionMetadata(client: Octokit, action: ActionReference): Promise<string | undefined> {
   let resp: RestEndpointMethodTypes["repos"]["getContent"]["response"];
   try {
-    resp = await client.repos.getContent({
-      owner: action.owner,
-      repo: action.name,
-      ref: action.ref,
-      path: action.path ? `${action.path}/action.yml` : "action.yml"
-    });
+    resp = await fetchAction(client, action);
   } catch (e: any) {
-    // If action.yml doesn't exist, try action.yaml
-    if (e.status === 404) {
-      resp = await client.repos.getContent({
-        owner: action.owner,
-        repo: action.name,
-        ref: action.ref,
-        path: action.path ? `${action.path}/action.yaml` : "action.yaml"
-      });
-    } else {
-      throw e;
-    }
+    error(`Failed to fetch action metadata for ${actionIdentifier(action)}: '${e?.message || "<no details>"}'`);
+    return;
   }
 
   // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28
@@ -56,13 +44,28 @@ async function getActionMetadata(client: Octokit, action: ActionReference): Prom
     return undefined;
   }
 
-  const text = Buffer.from(resp.data.content, "base64").toString("utf8");
-  // Remove any null bytes
-  return text.replace(/\0/g, "");
+  return Buffer.from(resp.data.content, "base64").toString("utf8");
 }
 
-// https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
-async function parseActionMetadata(content: string): Promise<ActionMetadata> {
-  const metadata: ActionMetadata = parse(content);
-  return metadata;
+async function fetchAction(client: Octokit, action: ActionReference) {
+  try {
+    return await client.repos.getContent({
+      owner: action.owner,
+      repo: action.name,
+      ref: action.ref,
+      path: action.path ? `${action.path}/action.yml` : "action.yml"
+    });
+  } catch (e: any) {
+    // If action.yml doesn't exist, try action.yaml
+    if (e.status === 404) {
+      return await client.repos.getContent({
+        owner: action.owner,
+        repo: action.name,
+        ref: action.ref,
+        path: action.path ? `${action.path}/action.yaml` : "action.yaml"
+      });
+    } else {
+      throw e;
+    }
+  }
 }
