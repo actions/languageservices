@@ -372,6 +372,36 @@ jobs:
     });
   });
 
+  it("sets a range for token key", async () => {
+    const input = "on: push\njobs:\n  build:\n    runs-o|";
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    expect(result.map(e => e.label)).toContain("runs-on");
+
+    let textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
+    expect(textEdit.newText).toEqual("runs-on");
+    expect(textEdit.range).toEqual({
+      start: {line: 3, character: 4},
+      end: {line: 3, character: 10}
+    });
+  });
+
+  it("sets a 0-length range while no initial token key", async () => {
+    const input = "on: push\njobs:\n  build:\n    |";
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    expect(result.map(e => e.label)).toContain("runs-on");
+
+    let textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
+    expect(textEdit.newText).toEqual("runs-on");
+    expect(textEdit.range).toEqual({
+      start: {line: 3, character: 4},
+      end: {line: 3, character: 4}
+    });
+  });
+
   describe("completes with indentation", () => {
     it("default indentation", async () => {
       const input = `on: push
