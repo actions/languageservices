@@ -21,7 +21,7 @@ export async function fetchActionMetadata(
     return undefined;
   }
 
-  // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
+  // https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions
   return parse(metadata);
 }
 
@@ -34,7 +34,7 @@ async function getActionMetadata(client: Octokit, action: ActionReference): Prom
     return;
   }
 
-  // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28
+  // https://docs.github.com/rest/repos/contents?apiVersion=2022-11-28
   // Ignore directories (array of files) and non-file content
   if (resp.data === undefined || Array.isArray(resp.data) || resp.data.type !== "file") {
     return undefined;
