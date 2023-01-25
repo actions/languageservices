@@ -16,9 +16,9 @@ npm install @actions/languageserver
 
 For the server, import the module. It detects whether it's running in a Node.js environment or a web worker and initializes the appropriate connection.
 
-`server.js`:
+`server.ts`:
 
-```js
+```typescript
 import "@actions/languageserver";
 ```
 
@@ -26,7 +26,7 @@ For the client, create a new `LanguageClient` pointing to the server module.
 
 `client.ts`:
 
-```js
+```typescript
 import {LanguageClient, ServerOptions, TransportKind} from "vscode-languageclient/node";
 
 const debugOptions = {execArgv: ["--nolazy", "--inspect=6010"]};
@@ -34,8 +34,7 @@ const debugOptions = {execArgv: ["--nolazy", "--inspect=6010"]};
 const clientOptions: LanguageClientOptions = {
   documentSelector: [{
     pattern: "**/.github/workflows/*.{yaml,yml}"
-  }],
-  progressOnInitialization: true
+  }]
 };
 
 const serverModule = context.asAbsolutePath(path.join("dist", "server.js"));
@@ -87,8 +86,7 @@ const clientOptions: LanguageClientOptions = {
   documentSelector: [{
     pattern: "**/.github/workflows/*.{yaml,yml}"
   }],
-  initializationOptions: initializationOptions,
-  progressOnInitialization: true
+  initializationOptions: initializationOptions
 };
 
 const client = new LanguageClient("actions-language", "GitHub Actions Language Server", serverOptions, clientOptions);

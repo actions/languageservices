@@ -34,7 +34,7 @@ TODO
 
 Validate a workflow file, returns an array of [`Diagnostic`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnostic) objects.
 
-```js
+```typescript
 const config: ValidationConfig = {
   valueProviderConfig: valueProviders(sessionToken, repoContext, cache),
   contextProviderConfig: contextProviders(sessionToken, repoContext, cache),
@@ -47,7 +47,7 @@ const result = await validate(textDocument, config); // result is an array of `D
 
 Get information when [hovering](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_hover) over a token in the workflow file.
 
-```js
+```typescript
 import {hover} from "@actions/languageservice";
 
 const document = {
