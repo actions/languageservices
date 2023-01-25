@@ -1254,5 +1254,21 @@ jobs:
 
       expect(result).toEqual([]);
     });
+
+    it("allows any event property for workflow_call", async () => {
+      const input = `
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ github.event.anything }}`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
   });
 });

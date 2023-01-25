@@ -47,6 +47,7 @@ import status from "./status.json";
 import team from "./team.json";
 import team_add from "./team_add.json";
 import watch from "./watch.json";
+import workflow_call from "./workflow_call.json";
 import workflow_dispatch from "./workflow_dispatch.json";
 import workflow_run from "./workflow_run.json";
 
@@ -101,6 +102,7 @@ export const eventPayloads: {[key: string]: Object} = {
   team,
   team_add,
   watch,
+  workflow_call,
   workflow_dispatch,
   workflow_run
 };

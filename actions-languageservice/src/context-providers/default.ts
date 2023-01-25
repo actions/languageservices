@@ -52,7 +52,7 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
       return getEnvContext(workflowContext);
 
     case "github":
-      return getGithubContext(workflowContext);
+      return getGithubContext(workflowContext, mode);
 
     case "inputs":
       return getInputsContext(workflowContext);
