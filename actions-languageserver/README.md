@@ -7,7 +7,7 @@
 The [package](https://www.npmjs.com/package/@actions/languageserver) contains TypeScript types and compiled ECMAScript modules.
 
 ```bash
-$ npm install @actions/languageserver
+npm install @actions/languageserver
 ```
 
 ## Usage
@@ -103,31 +103,31 @@ If you do want to contribute, please run [prettier](https://prettier.io/) to for
 ### Build
 
 ```bash
-$ npm run build
+npm run build
 ```
 
 or to watch for changes
 
 ```bash
-$ npm run watch
+npm run watch
 ```
 
 ### Test
 
 ```bash
-$ npm test
+npm test
 ```
 
 or to watch for changes and run tests:
 
 ```bash
-$ npm run test-watch
+npm run test-watch
 ```
 
 ### Lint
 
 ```bash
-$ npm run format-check
+npm run format-check
 ```
 
 ## License

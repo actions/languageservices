@@ -7,7 +7,7 @@ This package contains the logic for the GitHub Actions workflows language server
 The [package](https://www.npmjs.com/package/@actions/languageservice) contains TypeScript types and compiled ECMAScript modules.
 
 ```bash
-$ npm install @actions/languageservice
+npm install @actions/languageservice
 ```
 
 ## Usage
@@ -71,31 +71,31 @@ If you do want to contribute, please run [prettier](https://prettier.io/) to for
 ### Build
 
 ```bash
-$ npm run build
+npm run build
 ```
 
 or to watch for changes
 
 ```bash
-$ npm run watch
+npm run watch
 ```
 
 ### Test
 
 ```bash
-$ npm test
+npm test
 ```
 
 or to watch for changes and run tests:
 
 ```bash
-$ npm run test-watch
+npm run test-watch
 ```
 
 ### Lint
 
 ```bash
-$ npm run format-check
+npm run format-check
 ```
 
 ## License

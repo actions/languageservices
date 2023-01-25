@@ -9,13 +9,13 @@ This is a web-based playground hosting the [language server](../actions-language
 Even though the package is part of the `npm` workspace, it needs its dependencies to be installed locally in order to run `webpack-dev-server`. To do so, run:
 
 ```bash
-$ npm i --workspaces=no
+npm i --workspaces=no
 ```
 
 then
 
 ```bash
-$ npm start
+npm start
 ```
 
 to build and serve the app at `localhost:8080`.
