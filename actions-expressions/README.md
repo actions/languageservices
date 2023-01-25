@@ -7,7 +7,7 @@
 The [package](https://www.npmjs.com/package/@actions/expressions) contains TypeScript types and compiled ECMAScript modules.
 
 ```bash
-npm install @github/actions-expressions
+npm install @actions/expressions
 ```
 
 ## Usage
@@ -54,7 +54,7 @@ console.log(result.coerceString()) // true
 
 ## Contributing
 
-See also [CONTRIBUTING.md](../CONTRIBUTING.md) at the root of the repository.
+See [CONTRIBUTING.md](../CONTRIBUTING.md) at the root of the repository for general guidelines and recommendations.
 
 This project is just one of multiple implementations of the GitHub Actions Expressions language. We therefore cannot accept contributions that add new language features or significantly change the behavior of existing language features. If you would like to propose a change to the language itself, please use our [Community Forum](https://github.com/community/community/discussions/categories/actions-and-packages).
 
@@ -63,31 +63,31 @@ If you do want to contribute, please run [prettier](https://prettier.io/) to for
 ### Build
 
 ```bash
-$ npm run build
+npm run build
 ```
 
 or to watch for changes
 
 ```bash
-$ npm run watch
+npm run watch
 ```
 
 ### Test
 
 ```bash
-$ npm test
+npm test
 ```
 
 or to watch for changes and run tests:
 
 ```bash
-$ npm run test-watch
+npm run test-watch
 ```
 
 ### Lint
 
 ```bash
-$ npm run format-check
+npm run format-check
 ```
 
 ## License
