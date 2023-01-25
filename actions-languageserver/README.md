@@ -7,7 +7,7 @@
 The [package](https://www.npmjs.com/package/@actions/languageserver) contains TypeScript types and compiled ECMAScript modules.
 
 ```bash
-$ npm install @github/actions-languageserver
+$ npm install @actions/languageserver
 ```
 
 ## Usage
