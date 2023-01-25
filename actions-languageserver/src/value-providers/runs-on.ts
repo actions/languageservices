@@ -2,6 +2,8 @@ import {Value} from "@github/actions-languageservice/value-providers/config";
 import {Octokit} from "@octokit/rest";
 import {TTLCache} from "../utils/cache";
 
+// Limitation: getRunnerLabels returns default hosted labels and labels for repository self-hosted runners.
+// It doesn't return labels for organization runners visible to the repository.
 export async function getRunnerLabels(client: Octokit, cache: TTLCache, owner: string, name: string): Promise<Value[]> {
   const defaultLabels = [
     "ubuntu-latest",
