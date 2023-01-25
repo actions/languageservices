@@ -111,8 +111,7 @@ describe("action descriptions", () => {
     expect(await getDescription("typo", mock)).toBeUndefined();
   });
 
-  // TODO: https://github.com/github/c2c-actions-experience/issues/7056
-  it.failing("action does not exist", async () => {
+  it("action does not exist", async () => {
     const mock = fetchMock
       .sandbox()
       .getOnce("https://api.github.com/repos/actions/checkout/contents/action.yml?ref=v3", 404)
@@ -121,8 +120,7 @@ describe("action descriptions", () => {
     expect(await getDescription("repository", mock)).toBeUndefined();
   });
 
-  // TODO: https://github.com/github/c2c-actions-experience/issues/7056
-  it.failing("invalid permissions", async () => {
+  it("invalid permissions", async () => {
     const mock = fetchMock
       .sandbox()
       .getOnce("https://api.github.com/repos/actions/checkout/contents/action.yml?ref=v3", 403);
