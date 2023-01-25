@@ -455,7 +455,7 @@ class TemplateReader {
       // Doesn't contain "${{"
       // Check if value should still be evaluated as an expression
       if (definitionInfo.definition instanceof StringDefinition && definitionInfo.definition.isExpression) {
-        const expression = this.parseIntoExpressionToken(token.range!, raw, allowedContext, token);
+        const expression = this.parseIntoExpressionToken(token.range!, raw, allowedContext, token, definitionInfo);
         if (expression) {
           return expression;
         }
@@ -520,7 +520,7 @@ class TemplateReader {
           };
         }
 
-        const expression = this.parseIntoExpressionToken(tr, rawExpression, allowedContext, token);
+        const expression = this.parseIntoExpressionToken(tr, rawExpression, allowedContext, token, definitionInfo);
 
         if (!expression) {
           // Record that we've hit an error but continue to validate any other expressions
@@ -615,9 +615,10 @@ class TemplateReader {
     tr: TokenRange,
     rawExpression: string,
     allowedContext: string[],
-    token: TemplateToken
+    token: TemplateToken,
+    definitionInfo: DefinitionInfo | undefined
   ): ExpressionToken | undefined {
-    const parseExpressionResult = this.parseExpression(tr, rawExpression, allowedContext, token.definitionInfo);
+    const parseExpressionResult = this.parseExpression(tr, rawExpression, allowedContext, definitionInfo);
 
     // Check for error
     if (parseExpressionResult.error) {
