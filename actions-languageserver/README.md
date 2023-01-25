@@ -19,7 +19,7 @@ For the server, import the module. It detects whether it's running in a Node.js 
 `server.js`:
 
 ```js
-import "@github/actions-languageserver";
+import "@actions/languageserver";
 ```
 
 For the client, create a new `LanguageClient` pointing to the server module.
