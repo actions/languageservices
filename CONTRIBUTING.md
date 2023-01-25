@@ -27,15 +27,17 @@ Please note that this project is released with a [Contributor Code of Conduct][c
 
 ## Prerequisites for running and testing code
 
+This repository contains multiple packages and uses [npm workspaces](https://docs.npmjs.com/cli/v9/using-npm/workspaces?v=true) to manage the dependencies between them.
+
 These are one time installations required to be able to test your changes locally as part of the pull request (PR) submission process.
 
-1. Install [Node.js](https://nodejs.org/en/download/) for your platform
+1. Install [Node.js](https://nodejs.org/en/download/) for your platform (>= version 18). Ensure you also use a recent version of `npm` that supports workspaces (>= version 7).
 1. Install the dependencies. From the repository root run:
 ```bash
 $ npm i
 ```
 
-This repository contains multiple packages and uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to manage the dependencies between them.
+
 
 ## Submitting a pull request
 
