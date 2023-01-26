@@ -40,7 +40,7 @@
   "dependencies": {
     "@github/actions-languageservice": "^0.1.101",
     "@github/actions-workflow-parser": "^0.1.101",
-    "@octokit/rest": "^19.0.5",
+    "@octokit/rest": "^19.0.7",
     "vscode-languageserver": "^8.0.2",
     "vscode-languageserver-textdocument": "^1.0.7",
     "yaml": "^2.1.3"

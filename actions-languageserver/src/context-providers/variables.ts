@@ -94,19 +94,15 @@ export async function getRemoteVariables(
 
 async function fetchVariables(octokit: Octokit, owner: string, name: string): Promise<Pair[]> {
   try {
-    const response = (await octokit.paginate("GET /repos/{owner}/{repo}/actions/variables{?per_page}", {
-      owner: owner,
-      repo: name
-    })) as {
-      name: string;
-      value: string;
-      created_at: string;
-      updated_at: string;
-    }[];
-
-    return response.map(variable => {
-      return {key: variable.name, value: new StringData(variable.value)};
-    });
+    return await octokit.paginate(octokit.actions.listRepoVariables,
+      {
+        owner: owner,
+        repo: name,
+        per_page: 100
+      },
+      response => response.data.map(variable => {
+        return {key: variable.name, value: new StringData(variable.value)};
+      }));
   } catch (e) {
     console.log("Failure to retrieve variables: ", e);
   }
@@ -120,22 +116,15 @@ async function fetchEnvironmentVariables(
   environmentName: string
 ): Promise<Pair[]> {
   try {
-    const response = (await octokit.paginate(
-      "GET /repositories/{repository_id}/environments/{environment_name}/variables{?per_page}",
+    return await octokit.paginate(octokit.actions.listEnvironmentVariables,
       {
         repository_id: repositoryId,
-        environment_name: environmentName
-      }
-    )) as {
-      name: string;
-      value: string;
-      created_at: string;
-      updated_at: string;
-    }[];
-
-    return response.map(variable => {
-      return {key: variable.name, value: new StringData(variable.value)};
-    });
+        environment_name: environmentName,
+        per_page: 100
+      },
+      response => response.data.map(variable => {
+        return {key: variable.name, value: new StringData(variable.value)};
+      }));
   } catch (e) {
     console.log("Failure to retrieve environment variables: ", e);
   }
