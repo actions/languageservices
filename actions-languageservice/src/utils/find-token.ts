@@ -141,13 +141,16 @@ function posInToken(pos: Position, token: TemplateToken): boolean {
   const tokenChar = pos.character + 1;
 
   // Check lines
-  if (r.start[0] > tokenLine || tokenLine > r.end[0]) {
+  if (r.start.line > tokenLine || tokenLine > r.end.line) {
     return false;
   }
 
   // Position is within the token lines. Check character/column if pos line matches
   // start or end
-  if ((r.start[0] === tokenLine && tokenChar < r.start[1]) || (r.end[0] === tokenLine && tokenChar > r.end[1])) {
+  if (
+    (r.start.line === tokenLine && tokenChar < r.start.column) ||
+    (r.end.line === tokenLine && tokenChar > r.end.column)
+  ) {
     return false;
   }
 
@@ -163,14 +166,14 @@ function onSameLine(pos: Position, key: TemplateToken, value: TemplateToken): bo
     return false;
   }
 
-  if (value.range.start[0] !== value.range.end[0]) {
+  if (value.range.start.line !== value.range.end.line) {
     // Token occupies multiple lines, can't be an empty node
     return false;
   }
 
   // TokenRange is one-based, Position is zero-based
   const posLine = pos.line + 1;
-  if (posLine != value.range.start[0]) {
+  if (posLine != value.range.start.line) {
     return false;
   }
 

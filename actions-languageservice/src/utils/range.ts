@@ -23,7 +23,7 @@ export function mapRange(range: TokenRange | undefined): Range {
 
 export function mapPosition(position: TokenPosition): Position {
   return {
-    line: position[0] - 1,
-    character: position[1] - 1
+    line: position.line - 1,
+    character: position.column - 1
   };
 }
