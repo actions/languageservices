@@ -1,4 +1,4 @@
-import descriptions from "./descriptions.json";
+import descriptions from "./descriptions.json" assert { type: 'json' };
 
 export const RootContext = "root";
 
