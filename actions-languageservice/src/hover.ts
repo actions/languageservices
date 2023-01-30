@@ -39,7 +39,7 @@ export async function hover(document: TextDocument, position: Position, config?:
   info(`Calculating hover for token with definition ${token.definition.key}`);
 
   if (tokenResult.parent && isCronMappingValue(tokenResult)) {
-    const tokenValue = (token as StringToken).value
+    const tokenValue = (token as StringToken).value;
     let description = getCronDescription(tokenValue);
     if (description) {
       return {
@@ -82,7 +82,9 @@ async function getDescription(
 }
 
 function isCronMappingValue(tokenResult: TokenResult): boolean {
-  return tokenResult.parent?.definition?.key === "cron-mapping" &&
+  return (
+    tokenResult.parent?.definition?.key === "cron-mapping" &&
     isString(tokenResult.token!) &&
     tokenResult.token.value !== "cron"
+  );
 }
