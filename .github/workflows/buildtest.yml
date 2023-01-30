@@ -18,9 +18,9 @@ jobs:
         node-version: 16.15
         cache: 'npm'
         registry-url: 'https://npm.pkg.github.com'
-    - run: npm run format-check -ws
     - run: npm ci
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - run: npm run format-check -ws
     - run: npm run build -ws
     - run: npm test -ws
