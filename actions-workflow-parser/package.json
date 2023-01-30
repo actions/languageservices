@@ -1,6 +1,6 @@
 {
   "name": "@github/actions-workflow-parser",
-  "version": "0.1.104",
+  "version": "0.1.105",
   "license": "MIT",
   "type": "module",
   "source": "./src/index.ts",
@@ -40,7 +40,7 @@
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@github/actions-expressions": "^0.1.104",
+    "@github/actions-expressions": "^0.1.105",
     "cronstrue": "^2.21.0",
     "yaml": "^2.0.0-8"
   },
