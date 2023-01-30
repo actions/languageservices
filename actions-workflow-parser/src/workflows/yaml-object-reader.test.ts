@@ -74,8 +74,8 @@ it("YAML errors include range information", () => {
 
   const error = context.errors.getErrors()[0];
   expect(error.range).toEqual({
-    start: [7, 38],
-    end: [7, 63]
+    start: {line: 7, column: 38},
+    end: {line: 7, column: 63}
   });
 });
 

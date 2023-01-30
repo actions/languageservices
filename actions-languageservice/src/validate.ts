@@ -168,8 +168,8 @@ function getProviderContext(
 ): WorkflowContext {
   const {parent, path} = findToken(
     {
-      line: token.range!.start[0] - 1,
-      character: token.range!.start[1] - 1
+      line: token.range!.start.line - 1,
+      character: token.range!.start.column - 1
     },
     root
   );

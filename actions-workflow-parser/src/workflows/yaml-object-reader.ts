@@ -89,8 +89,8 @@ export class YamlObjectReader implements ObjectReader {
       const elp = this.lineCounter.linePos(endPos);
 
       return {
-        start: [slp.line, slp.col],
-        end: [elp.line, elp.col]
+        start: {line: slp.line, column: slp.col},
+        end: {line: elp.line, column: elp.col}
       };
     }
 
@@ -216,7 +216,7 @@ function rangeFromLinePos(linePos: [LinePos] | [LinePos, LinePos] | undefined): 
     return;
   }
   // TokenRange and linePos are both 1-based
-  const start: Position = [linePos[0].line, linePos[0].col];
-  const end: Position = linePos.length == 2 ? [linePos[1].line, linePos[1].col] : start;
+  const start: Position = {line: linePos[0].line, column: linePos[0].col};
+  const end: Position = linePos.length == 2 ? {line: linePos[1].line, column: linePos[1].col} : start;
   return {start, end};
 }
