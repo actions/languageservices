@@ -7,19 +7,33 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  prepare-npm:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js 16.x
+    - name: Use Node.js 16.15
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: 16.15
         cache: 'npm'
         registry-url: 'https://npm.pkg.github.com'
+  build:
+    runs-on: ubuntu-latest
+    needs: prepare-npm
+    steps:
     - run: npm ci
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - run: npm run build -ws
-    - run: npm test -ws
+  test:
+    runs-on: ubuntu-latest
+    needs: prepare-npm
+    steps:
+      - run: npm test -ws
+  format:
+    runs-on: ubuntu-latest
+    needs: prepare-npm
+    steps:
+      - run: npm run format-check -ws
+
+
