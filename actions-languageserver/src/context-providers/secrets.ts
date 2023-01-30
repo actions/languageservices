@@ -92,13 +92,15 @@ async function getRemoteSecrets(
 
 async function fetchSecrets(octokit: Octokit, owner: string, name: string): Promise<StringData[]> {
   try {
-    return await octokit.paginate(octokit.actions.listRepoSecrets,
+    return await octokit.paginate(
+      octokit.actions.listRepoSecrets,
       {
         owner,
         repo: name,
         per_page: 100
       },
-      response => response.data.map(secret => new StringData(secret.name)));
+      response => response.data.map(secret => new StringData(secret.name))
+    );
   } catch (e) {
     console.log("Failure to retrieve secrets: ", e);
   }
@@ -112,13 +114,15 @@ async function fetchEnvironmentSecrets(
   environmentName: string
 ): Promise<StringData[]> {
   try {
-    return await octokit.paginate(octokit.actions.listEnvironmentSecrets,
+    return await octokit.paginate(
+      octokit.actions.listEnvironmentSecrets,
       {
         repository_id: repositoryId,
         environment_name: environmentName,
         per_page: 100
       },
-      response => response.data.map(secret => new StringData(secret.name)));
+      response => response.data.map(secret => new StringData(secret.name))
+    );
   } catch (e) {
     console.log("Failure to retrieve environment secrets: ", e);
   }

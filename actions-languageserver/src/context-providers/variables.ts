@@ -94,15 +94,18 @@ export async function getRemoteVariables(
 
 async function fetchVariables(octokit: Octokit, owner: string, name: string): Promise<Pair[]> {
   try {
-    return await octokit.paginate(octokit.actions.listRepoVariables,
+    return await octokit.paginate(
+      octokit.actions.listRepoVariables,
       {
         owner: owner,
         repo: name,
         per_page: 100
       },
-      response => response.data.map(variable => {
-        return {key: variable.name, value: new StringData(variable.value)};
-      }));
+      response =>
+        response.data.map(variable => {
+          return {key: variable.name, value: new StringData(variable.value)};
+        })
+    );
   } catch (e) {
     console.log("Failure to retrieve variables: ", e);
   }
@@ -116,15 +119,18 @@ async function fetchEnvironmentVariables(
   environmentName: string
 ): Promise<Pair[]> {
   try {
-    return await octokit.paginate(octokit.actions.listEnvironmentVariables,
+    return await octokit.paginate(
+      octokit.actions.listEnvironmentVariables,
       {
         repository_id: repositoryId,
         environment_name: environmentName,
         per_page: 100
       },
-      response => response.data.map(variable => {
-        return {key: variable.name, value: new StringData(variable.value)};
-      }));
+      response =>
+        response.data.map(variable => {
+          return {key: variable.name, value: new StringData(variable.value)};
+        })
+    );
   } catch (e) {
     console.log("Failure to retrieve environment variables: ", e);
   }
