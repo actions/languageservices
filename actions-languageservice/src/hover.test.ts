@@ -17,7 +17,7 @@ function testHoverConfig(tokenValue: string, tokenKey: string, description?: str
         return description;
       }
     } satisfies DescriptionProvider
-  } satisfies HoverConfig
+  } satisfies HoverConfig;
 }
 
 describe("hover", () => {
@@ -146,7 +146,8 @@ jobs:
     expect(result).not.toBeUndefined();
 
     // The `ref` is a `string` definition and inherits the context from `step-with`
-    const expected = "**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
+    const expected =
+      "**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)";
     expect(result?.contents).toEqual(expected);
   });
 });
@@ -164,11 +165,15 @@ jobs:
           ref|: main
 `;
 
-    const result = await hover(...getPositionFromCursor(input), testHoverConfig("ref", "string", "The branch, tag or SHA to checkout."));
+    const result = await hover(
+      ...getPositionFromCursor(input),
+      testHoverConfig("ref", "string", "The branch, tag or SHA to checkout.")
+    );
     expect(result).not.toBeUndefined();
 
-    const expected = "The branch, tag or SHA to checkout.\n\n" +
-      "**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
+    const expected =
+      "The branch, tag or SHA to checkout.\n\n" +
+      "**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)";
     expect(result?.contents).toEqual(expected);
   });
 
@@ -184,6 +189,8 @@ jobs:
 
     const result = await hover(...getPositionFromCursor(input), testHoverConfig("uses", "non-empty-string", undefined));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual("Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image.");
+    expect(result?.contents).toEqual(
+      "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image."
+    );
   });
 });
