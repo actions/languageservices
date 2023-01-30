@@ -32,6 +32,11 @@ export interface RepositoryContext {
   owner: string;
 
   /**
+   * Indicates if the repository is owned by an organization
+   */
+  organizationOwned: boolean;
+
+  /**
    * Repository name
    */
   name: string;
