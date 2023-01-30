@@ -33,20 +33,19 @@ export async function getRunnerLabels(client: Octokit, cache: TTLCache, owner: s
 async function fetchRunnerLabels(client: Octokit, owner: string, name: string): Promise<Set<string>> {
   const labels = new Set<string>();
   try {
-     const itor = client.paginate.iterator(client.actions.listSelfHostedRunnersForRepo,
-      {
-        owner,
-        repo: name,
-        per_page: 100
-      });
+    const itor = client.paginate.iterator(client.actions.listSelfHostedRunnersForRepo, {
+      owner,
+      repo: name,
+      per_page: 100
+    });
 
-     for await (const response of itor) {
+    for await (const response of itor) {
       for (const runner of response.data) {
         for (const label of runner.labels) {
           labels.add(label.name);
         }
       }
-     }
+    }
   } catch (e) {
     console.log("Failure to retrieve runner labels: ", e);
   }

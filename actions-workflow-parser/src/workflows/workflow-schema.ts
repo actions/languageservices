@@ -1,6 +1,6 @@
 import {JSONObjectReader} from "../templates/json-object-reader";
 import {TemplateSchema} from "../templates/schema";
-import WorkflowSchema from "../workflow-v1.0.json" assert { type: 'json' };
+import WorkflowSchema from "../workflow-v1.0.json" assert {type: "json"};
 
 let schema: TemplateSchema;
 
