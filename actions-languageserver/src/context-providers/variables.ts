@@ -42,6 +42,15 @@ export async function getVariables(
     }
   >();
 
+  variables.organizationVariables.forEach(variable =>
+    variablesMap.set(variable.key.toLowerCase(), {
+      key: variable.key,
+      value: new data.StringData(variable.value.coerceString()),
+      description: `${variable.value.coerceString()} - Organization variable`
+    })
+  );
+
+  // Override org variables with repo variables
   variables.repoVariables.forEach(variable =>
     variablesMap.set(variable.key.toLowerCase(), {
       key: variable.key,
@@ -77,6 +86,7 @@ export async function getRemoteVariables(
 ): Promise<{
   repoVariables: Pair[];
   environmentVariables: Pair[];
+  organizationVariables: Pair[];
 }> {
   // Repo variables
   return {
@@ -88,7 +98,10 @@ export async function getRemoteVariables(
         (await cache.get(`${repo.owner}/${repo.name}/vars/environment/${environmentName}`, undefined, () =>
           fetchEnvironmentVariables(octokit, repo.id, environmentName)
         ))) ||
-      []
+      [],
+    organizationVariables: await cache.get(`${repo.owner}/vars`, undefined, () =>
+      fetchOrganizationVariables(octokit, repo)
+    )
   };
 }
 
@@ -133,6 +146,26 @@ async function fetchEnvironmentVariables(
     );
   } catch (e) {
     console.log("Failure to retrieve environment variables: ", e);
+  }
+
+  return [];
+}
+
+async function fetchOrganizationVariables(octokit: Octokit, repo: RepositoryContext): Promise<Pair[]> {
+  try {
+    const variables: {name: string; value: string}[] = await octokit.paginate(
+      "GET /repos/{owner}/{repo}/actions/organization-variables",
+      {
+        owner: repo.owner,
+        repo: repo.name,
+        per_page: 100
+      }
+    );
+    return variables.map(variable => {
+      return {key: variable.name, value: new StringData(variable.value)};
+    });
+  } catch (e) {
+    console.log("Failure to retrieve organization variables: ", e);
   }
 
   return [];
