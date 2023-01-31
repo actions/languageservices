@@ -9,17 +9,13 @@ import {RepositoryContext} from "./initializationOptions";
 import {TTLCache} from "./utils/cache";
 
 export function contextProviders(
-  sessionToken: string | undefined,
+  client: Octokit | undefined,
   repo: RepositoryContext | undefined,
   cache: TTLCache
 ): ContextProviderConfig {
-  if (!repo || !sessionToken) {
+  if (!repo || !client) {
     return {getContext: (_: string) => Promise.resolve(undefined)};
   }
-
-  const octokit = new Octokit({
-    auth: sessionToken
-  });
 
   const getContext = async (
     name: string,
@@ -28,11 +24,11 @@ export function contextProviders(
   ) => {
     switch (name) {
       case "secrets":
-        return await getSecrets(workflowContext, octokit, cache, repo, defaultContext);
+        return await getSecrets(workflowContext, client, cache, repo, defaultContext);
       case "vars":
-        return await getVariables(workflowContext, octokit, cache, repo, defaultContext);
+        return await getVariables(workflowContext, client, cache, repo, defaultContext);
       case "steps":
-        return await getStepsContext(octokit, cache, defaultContext, workflowContext);
+        return await getStepsContext(client, cache, defaultContext, workflowContext);
     }
   };
 

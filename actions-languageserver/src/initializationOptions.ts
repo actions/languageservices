@@ -10,6 +10,11 @@ export interface InitializationOptions {
   sessionToken?: string;
 
   /**
+   * Optional user agent to use when making calls to github.com
+   */
+  userAgent?: string;
+
+  /**
    * List of repositories that the language server should be aware of
    */
   repos?: RepositoryContext[];
