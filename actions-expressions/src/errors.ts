@@ -20,7 +20,7 @@ export class ExpressionError extends Error {
   constructor(private typ: ErrorType, private tok: Token) {
     super(`${errorDescription(typ)}: '${tokenString(tok)}'`);
 
-    this.pos = this.tok.pos;
+    this.pos = this.tok.range.start;
   }
 
   public pos: Pos;

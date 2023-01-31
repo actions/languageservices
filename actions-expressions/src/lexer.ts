@@ -36,13 +36,18 @@ export type Pos = {
   column: number;
 };
 
+export type Range = {
+  start: Pos;
+  end: Pos;
+};
+
 export type Token = {
   type: TokenType;
 
   lexeme: string;
   value?: string | number | boolean;
 
-  pos: Pos;
+  range: Range;
 };
 
 export function tokenString(tok: Token): string {
@@ -192,7 +197,7 @@ export class Lexer {
     this.tokens.push({
       type: TokenType.EOF,
       lexeme: "",
-      pos: this.pos()
+      range: this.range()
     });
 
     return {
@@ -204,6 +209,20 @@ export class Lexer {
     return {
       line: this.line,
       column: this.start - this.lastLineOffset
+    };
+  }
+
+  private endPos(): Pos {
+    return {
+      line: this.line,
+      column: this.offset - this.lastLineOffset
+    };
+  }
+
+  private range(): Range {
+    return {
+      start: this.pos(),
+      end: this.endPos()
     };
   }
 
@@ -240,10 +259,6 @@ export class Lexer {
     return this.input[this.offset++];
   }
 
-  private reverse(): string {
-    return this.input[--this.offset];
-  }
-
   private match(expected: string): boolean {
     if (this.atEnd()) {
       return false;
@@ -260,7 +275,7 @@ export class Lexer {
     this.tokens.push({
       type,
       lexeme: this.input.substring(this.start, this.offset),
-      pos: this.pos(),
+      range: this.range(),
       value
     });
   }
