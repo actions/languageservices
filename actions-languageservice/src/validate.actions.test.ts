@@ -10,7 +10,7 @@ registerLogger(new TestLogger());
 
 const validationConfig: ValidationConfig = {
   getActionInputs: async (ref: ActionReference) => {
-    let inputs: Record<string, ActionInput> = {};
+    let inputs: Record<string, ActionInput> | undefined = undefined;
     switch (ref.owner + "/" + ref.name + "@" + ref.ref) {
       case "actions/checkout@v3":
         inputs = {
@@ -58,6 +58,7 @@ const validationConfig: ValidationConfig = {
     return inputs;
   }
 };
+
 describe("validate action steps", () => {
   it("valid action reference", async () => {
     const input = `
@@ -71,6 +72,35 @@ jobs:
     const result = await validate(createDocument("wf.yaml", input), validationConfig);
 
     expect(result).toEqual([]);
+  });
+
+  it("action does not exist", async () => {
+    const input = `
+    on: push
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/does-not-exist@v3
+    `;
+    const result = await validate(createDocument("wf.yaml", input), validationConfig);
+
+    expect(result).toEqual([
+      {
+        message: "Unable to resolve action `actions/does-not-exist@v3`, repository or version not found",
+        range: {
+          end: {
+            character: 41,
+            line: 6
+          },
+          start: {
+            character: 16,
+            line: 6
+          }
+        },
+        severity: DiagnosticSeverity.Error
+      }
+    ]);
   });
 
   it("invalid input", async () => {
