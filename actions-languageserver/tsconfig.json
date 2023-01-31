@@ -8,7 +8,8 @@
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "node",
-    "lib": ["es6", "webworker"]
+    "lib": ["es6", "webworker"],
+    "resolveJsonModule": true
   },
   "watchOptions": {
     "watchFile": "useFsEvents",

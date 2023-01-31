@@ -16,19 +16,20 @@ import {
   TextDocumentSyncKind
 } from "vscode-languageserver";
 import {TextDocument} from "vscode-languageserver-textdocument";
+import {getClient} from "./client";
+import {Commands} from "./commands";
 import {contextProviders} from "./context-providers";
+import {descriptionProvider} from "./description-provider";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions";
 import {onCompletion} from "./on-completion";
 import {TTLCache} from "./utils/cache";
 import {valueProviders} from "./value-providers";
 import {getActionInputs} from "./value-providers/action-inputs";
-import {Commands} from "./commands";
-import {descriptionProvider} from "./description-provider";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
-  let sessionToken: string | undefined;
+  let client: Octokit | undefined;
   let repos: RepositoryContext[] = [];
   const cache = new TTLCache();
 
@@ -49,7 +50,11 @@ export function initConnection(connection: Connection) {
     );
 
     const options: InitializationOptions = params.initializationOptions;
-    sessionToken = options.sessionToken;
+
+    if (options.sessionToken) {
+      client = getClient(options.sessionToken, options.userAgent);
+    }
+
     if (options.repos) {
       repos = options.repos;
     }
@@ -93,15 +98,13 @@ export function initConnection(connection: Connection) {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
 
     const config: ValidationConfig = {
-      valueProviderConfig: valueProviders(sessionToken, repoContext, cache),
-      contextProviderConfig: contextProviders(sessionToken, repoContext, cache),
+      valueProviderConfig: valueProviders(client, repoContext, cache),
+      contextProviderConfig: contextProviders(client, repoContext, cache),
       getActionInputs: async action => {
-        if (sessionToken) {
-          const octokit = new Octokit({
-            auth: sessionToken
-          });
-          return await getActionInputs(octokit, cache, action);
+        if (client) {
+          return await getActionInputs(client, cache, action);
         }
+
         return undefined;
       }
     };
@@ -114,7 +117,7 @@ export function initConnection(connection: Connection) {
     return await onCompletion(
       position,
       documents.get(textDocument.uri)!,
-      sessionToken,
+      client,
       repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri)),
       cache
     );
@@ -122,7 +125,7 @@ export function initConnection(connection: Connection) {
 
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
     return hover(documents.get(textDocument.uri)!, position, {
-      descriptionProvider: descriptionProvider(sessionToken, cache)
+      descriptionProvider: descriptionProvider(client, cache)
     });
   });
 
