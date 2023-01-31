@@ -1,6 +1,6 @@
 {
   "name": "@github/actions-expressions",
-  "version": "0.1.107",
+  "version": "0.1.108",
   "license": "MIT",
   "type": "module",
   "source": "./src/index.ts",
