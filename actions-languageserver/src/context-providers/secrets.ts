@@ -142,6 +142,10 @@ async function fetchEnvironmentSecrets(
 }
 
 async function fetchOrganizationSecrets(octokit: Octokit, repo: RepositoryContext): Promise<StringData[]> {
+  if (!repo.organizationOwned) {
+    return [];
+  }
+
   try {
     const secrets: {name: string}[] = await octokit.paginate("GET /repos/{owner}/{repo}/actions/organization-secrets", {
       owner: repo.owner,

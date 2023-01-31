@@ -152,6 +152,10 @@ async function fetchEnvironmentVariables(
 }
 
 async function fetchOrganizationVariables(octokit: Octokit, repo: RepositoryContext): Promise<Pair[]> {
+  if (!repo.organizationOwned) {
+    return [];
+  }
+
   try {
     const variables: {name: string; value: string}[] = await octokit.paginate(
       "GET /repos/{owner}/{repo}/actions/organization-variables",
