@@ -1,11 +1,12 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {ExpressionData} from "@github/actions-expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
+import {Mode} from "./default";
 import {getDescription} from "./descriptions";
 import {eventPayloads} from "./events/eventPayloads";
 import {getInputsContext} from "./inputs";
 
-export function getGithubContext(workflowContext: WorkflowContext): DescriptionDictionary {
+export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#github-cwontext
   const keys = [
     "action",
@@ -51,7 +52,7 @@ export function getGithubContext(workflowContext: WorkflowContext): DescriptionD
       if (key == "event") {
         return {
           key,
-          value: getEventContext(workflowContext),
+          value: getEventContext(workflowContext, mode),
           description
         };
       }
@@ -65,12 +66,19 @@ export function getGithubContext(workflowContext: WorkflowContext): DescriptionD
   );
 }
 
-function getEventContext(workflowContext: WorkflowContext): ExpressionData {
+function getEventContext(workflowContext: WorkflowContext, mode: Mode): ExpressionData {
   const d = new data.Dictionary();
   const eventsConfig = workflowContext?.template?.events;
 
   if (!eventsConfig) {
     return d;
+  }
+
+  // For callable workflows, the event is inherited from the calling workflow
+  // Allow any value for this case
+  // This includes github.event.inputs, which is only available via the inputs context
+  if (eventsConfig.workflow_call && mode == Mode.Validation) {
+    return new data.Null();
   }
 
   const inputs = getInputsContext(workflowContext);

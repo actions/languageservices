@@ -612,6 +612,24 @@ jobs:
       // pull_request is part of the pull_request event payload
       expect(result.map(x => x.label)).toContain("pull_request");
     });
+
+    it("includes event payload for workflow_call", async () => {
+      const input = `
+  on: [workflow_call]
+
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - run: echo \${{ github.event.| }}
+    `;
+
+      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+
+      // We don't validate github.event for workflow_call,
+      // but there should still be auto-completion suggestions
+      expect(result.length).toBeGreaterThan(0);
+    });
   });
 
   describe("steps context", () => {

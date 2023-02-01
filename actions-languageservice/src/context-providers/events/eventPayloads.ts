@@ -47,6 +47,7 @@ import status from "./status.json" assert {type: "json"};
 import team from "./team.json" assert {type: "json"};
 import team_add from "./team_add.json" assert {type: "json"};
 import watch from "./watch.json" assert {type: "json"};
+import workflow_call from "./workflow_call.json" assert {type: "json"};
 import workflow_dispatch from "./workflow_dispatch.json" assert {type: "json"};
 import workflow_run from "./workflow_run.json" assert {type: "json"};
 
@@ -101,6 +102,7 @@ export const eventPayloads: {[key: string]: Object} = {
   team,
   team_add,
   watch,
+  workflow_call,
   workflow_dispatch,
   workflow_run
 };

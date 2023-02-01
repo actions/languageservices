@@ -1164,7 +1164,45 @@ jobs:
       ]);
     });
 
-    it("validates event inputs", async () => {
+    it("validates event inputs via github.event", async () => {
+      const input = `
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        type: string
+        default: some value
+      another-name:
+        type: string
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ github.event.inputs.name }}"
+    - run: echo "hello \${{ github.event.inputs.another-name }}"
+    - run: echo "hello \${{ github.event.inputs.random }}"
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: random",
+          range: {
+            start: {
+              character: 23,
+              line: 15
+            },
+            end: {
+              character: 56,
+              line: 15
+            }
+          },
+          severity: 2
+        }
+      ]);
+    });
+
+    it("validates event inputs via inputs context", async () => {
       const input = `
 on:
   workflow_dispatch:
@@ -1182,9 +1220,6 @@ jobs:
   a:
     runs-on: ubuntu-latest
     steps:
-    - run: echo "hello \${{ github.event.inputs.name }}"
-    - run: echo "hello \${{ github.event.inputs.third-name }}"
-    - run: echo "hello \${{ github.event.inputs.random }}"
     - run: echo \${{ fromJSON(inputs.random2) }}
     - run: echo "hello \${{ inputs.random }}"
       name: "\${{ fromJSON('test') == inputs.name }}"
@@ -1193,46 +1228,32 @@ jobs:
 
       expect(result).toEqual([
         {
+          message: "Context access might be invalid: random2",
+          range: {
+            start: {
+              character: 16,
+              line: 17
+            },
+            end: {
+              character: 47,
+              line: 17
+            }
+          },
+          severity: 2
+        },
+        {
           message: "Context access might be invalid: random",
           range: {
-            end: {
-              character: 56,
-              line: 19
-            },
             start: {
               character: 23,
-              line: 19
+              line: 18
+            },
+            end: {
+              character: 43,
+              line: 18
             }
           },
           severity: DiagnosticSeverity.Warning
-        },
-        {
-          message: "Context access might be invalid: random2",
-          range: {
-            end: {
-              character: 47,
-              line: 20
-            },
-            start: {
-              character: 16,
-              line: 20
-            }
-          },
-          severity: 2
-        },
-        {
-          message: "Context access might be invalid: random",
-          range: {
-            end: {
-              character: 43,
-              line: 21
-            },
-            start: {
-              character: 23,
-              line: 21
-            }
-          },
-          severity: 2
         }
       ]);
     });
@@ -1249,6 +1270,22 @@ jobs:
     steps:
       - run: echo \${{ github.event.client_payload.anything }}
       - run: echo \${{ github.event.client_payload.branch }}`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("allows any event property for workflow_call", async () => {
+      const input = `
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ github.event.anything }}`;
 
       const result = await validate(createDocument("wf.yaml", input));
 
