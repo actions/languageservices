@@ -455,7 +455,7 @@ class TemplateReader {
       // Doesn't contain "${{"
       // Check if value should still be evaluated as an expression
       if (definitionInfo.definition instanceof StringDefinition && definitionInfo.definition.isExpression) {
-        const expression = this.parseIntoExpressionToken(token.range!, raw, allowedContext, token);
+        const expression = this.parseIntoExpressionToken(token.range!, raw, allowedContext, token, definitionInfo);
         if (expression) {
           return expression;
         }
@@ -500,11 +500,11 @@ class TemplateReader {
         );
 
         let tr = token.range!;
-        if (tr.start[0] === tr.end[0]) {
+        if (tr.start.line === tr.end.line) {
           // If it's a single line expression, adjust the range to only cover the sub-expression
           tr = {
-            start: [tr.start[0], tr.start[1] + startExpression],
-            end: [tr.end[0], tr.start[1] + endExpression + 1]
+            start: {line: tr.start.line, column: tr.start.column + startExpression},
+            end: {line: tr.end.line, column: tr.start.column + endExpression + 1}
           };
         } else {
           // Adjust the range to only cover the expression for multi-line strings
@@ -515,12 +515,12 @@ class TemplateReader {
           const adjustedEnd = endExpression - beginningOfLine + 1;
 
           tr = {
-            start: [tr.start[0] + adjustedStartLine, adjustedStart],
-            end: [tr.start[0] + adjustedStartLine, adjustedEnd]
+            start: {line: tr.start.line + adjustedStartLine, column: adjustedStart},
+            end: {line: tr.start.line + adjustedStartLine, column: adjustedEnd}
           };
         }
 
-        const expression = this.parseIntoExpressionToken(tr, rawExpression, allowedContext, token);
+        const expression = this.parseIntoExpressionToken(tr, rawExpression, allowedContext, token, definitionInfo);
 
         if (!expression) {
           // Record that we've hit an error but continue to validate any other expressions
@@ -615,9 +615,10 @@ class TemplateReader {
     tr: TokenRange,
     rawExpression: string,
     allowedContext: string[],
-    token: TemplateToken
+    token: TemplateToken,
+    definitionInfo: DefinitionInfo | undefined
   ): ExpressionToken | undefined {
-    const parseExpressionResult = this.parseExpression(tr, rawExpression, allowedContext, token.definitionInfo);
+    const parseExpressionResult = this.parseExpression(tr, rawExpression, allowedContext, definitionInfo);
 
     // Check for error
     if (parseExpressionResult.error) {

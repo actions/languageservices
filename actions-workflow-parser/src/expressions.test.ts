@@ -85,15 +85,15 @@ jobs:
       [
         "${{ github.event_name }}",
         {
-          start: [7, 16],
-          end: [7, 40]
+          start: {line: 7, column: 16},
+          end: {line: 7, column: 40}
         }
       ],
       [
         "${{ github.ref }}",
         {
-          start: [8, 24],
-          end: [8, 41]
+          start: {line: 8, column: 24},
+          end: {line: 8, column: 41}
         }
       ]
     ]);
@@ -160,16 +160,16 @@ jobs:
       {
         prefix: "test.yaml (Line: 6, Col: 14)",
         range: {
-          start: [7, 16],
-          end: [7, 40]
+          start: {line: 7, column: 16},
+          end: {line: 7, column: 40}
         },
         rawMessage: "Unrecognized function: 'fromJSON2'"
       },
       {
         prefix: "test.yaml (Line: 6, Col: 14)",
         range: {
-          start: [8, 24],
-          end: [8, 51]
+          start: {line: 8, column: 24},
+          end: {line: 8, column: 51}
         },
         rawMessage: "Unrecognized function: 'toJSON2'"
       }

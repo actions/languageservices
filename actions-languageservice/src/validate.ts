@@ -150,13 +150,7 @@ function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: Value
       });
       break;
 
-    case ValueProviderKind.SuggestedValues:
-      diagnostics.push({
-        message: `Value '${token.value}' might not be valid`,
-        severity: DiagnosticSeverity.Warning,
-        range: mapRange(token.range)
-      });
-      break;
+    // no messages for SuggestedValues
   }
 }
 
@@ -168,8 +162,8 @@ function getProviderContext(
 ): WorkflowContext {
   const {parent, path} = findToken(
     {
-      line: token.range!.start[0] - 1,
-      character: token.range!.start[1] - 1
+      line: token.range!.start.line - 1,
+      character: token.range!.start.column - 1
     },
     root
   );

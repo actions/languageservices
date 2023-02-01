@@ -9,34 +9,30 @@ import {getEnvironments} from "./value-providers/job-environment";
 import {getRunnerLabels} from "./value-providers/runs-on";
 
 export function valueProviders(
-  sessionToken: string | undefined,
+  client: Octokit | undefined,
   repo: RepositoryContext | undefined,
   cache: TTLCache
 ): ValueProviderConfig {
-  if (!repo || !sessionToken) {
+  if (!repo || !client) {
     return {};
   }
-
-  const octokit = new Octokit({
-    auth: sessionToken
-  });
 
   return {
     "job-environment": {
       kind: ValueProviderKind.AllowedValues,
-      get: (_: WorkflowContext) => getEnvironments(octokit, cache, repo.owner, repo.name)
+      get: (_: WorkflowContext) => getEnvironments(client, cache, repo.owner, repo.name)
     },
     "job-environment-name": {
       kind: ValueProviderKind.AllowedValues,
-      get: (_: WorkflowContext) => getEnvironments(octokit, cache, repo.owner, repo.name)
+      get: (_: WorkflowContext) => getEnvironments(client, cache, repo.owner, repo.name)
     },
     "runs-on": {
       kind: ValueProviderKind.SuggestedValues,
-      get: (_: WorkflowContext) => getRunnerLabels(octokit, cache, repo.owner, repo.name)
+      get: (_: WorkflowContext) => getRunnerLabels(client, cache, repo.owner, repo.name)
     },
     "step-with": {
       kind: ValueProviderKind.AllowedValues,
-      get: (context: WorkflowContext) => getActionInputValues(octokit, cache, context)
+      get: (context: WorkflowContext) => getActionInputValues(client, cache, context)
     }
   };
 }

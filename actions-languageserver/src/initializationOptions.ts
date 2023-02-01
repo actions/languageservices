@@ -10,6 +10,11 @@ export interface InitializationOptions {
   sessionToken?: string;
 
   /**
+   * Optional user agent to use when making calls to github.com
+   */
+  userAgent?: string;
+
+  /**
    * List of repositories that the language server should be aware of
    */
   repos?: RepositoryContext[];
@@ -30,6 +35,11 @@ export interface RepositoryContext {
    * Repository owner
    */
   owner: string;
+
+  /**
+   * Indicates if the repository is owned by an organization
+   */
+  organizationOwned: boolean;
 
   /**
    * Repository name

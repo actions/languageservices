@@ -42,11 +42,11 @@ export abstract class TemplateToken {
   }
 
   public get line(): number | undefined {
-    return this.range?.start[0];
+    return this.range?.start.line;
   }
 
   public get col(): number | undefined {
-    return this.range?.start[1];
+    return this.range?.start.column;
   }
 
   public get definition(): Definition | undefined {

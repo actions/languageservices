@@ -32,8 +32,8 @@ describe("parseWorkflow", () => {
 
     expect(result.context.errors.getErrors()).toEqual([
       new TemplateValidationError("Required property is missing: runs-on", "test.yaml (Line: 4, Col: 5)", undefined, {
-        start: [4, 5],
-        end: [5, 24]
+        start: {line: 4, column: 5},
+        end: {line: 5, column: 24}
       })
     ]);
   });
@@ -62,8 +62,8 @@ jobs:
         "test.yaml (Line: 6, Col: 13)",
         undefined,
         {
-          start: [6, 13],
-          end: [6, 37]
+          start: {line: 6, column: 13},
+          end: {line: 6, column: 37}
         }
       )
     ]);

@@ -41,6 +41,15 @@ export async function getSecrets(
     }
   >();
 
+  secrets.orgSecrets.forEach(secret =>
+    secretsMap.set(secret.value.toLowerCase(), {
+      key: secret.value,
+      value: new data.StringData("***"),
+      description: "Organization secret"
+    })
+  );
+
+  // Override org secrets with repo secrets
   secrets.repoSecrets.forEach(secret =>
     secretsMap.set(secret.value.toLowerCase(), {
       key: secret.value,
@@ -76,6 +85,7 @@ async function getRemoteSecrets(
 ): Promise<{
   repoSecrets: StringData[];
   environmentSecrets: StringData[];
+  orgSecrets: StringData[];
 }> {
   return {
     repoSecrets: await cache.get(`${repo.owner}/${repo.name}/secrets`, undefined, () =>
@@ -86,18 +96,22 @@ async function getRemoteSecrets(
         (await cache.get(`${repo.owner}/${repo.name}/secrets/environment/${environmentName}`, undefined, () =>
           fetchEnvironmentSecrets(octokit, repo.id, environmentName)
         ))) ||
-      []
+      [],
+    orgSecrets: await cache.get(`${repo.owner}/secrets`, undefined, () => fetchOrganizationSecrets(octokit, repo))
   };
 }
 
 async function fetchSecrets(octokit: Octokit, owner: string, name: string): Promise<StringData[]> {
   try {
-    const response = await octokit.actions.listRepoSecrets({
-      owner,
-      repo: name
-    });
-
-    return response.data.secrets.map(secret => new StringData(secret.name));
+    return await octokit.paginate(
+      octokit.actions.listRepoSecrets,
+      {
+        owner,
+        repo: name,
+        per_page: 100
+      },
+      response => response.data.map(secret => new StringData(secret.name))
+    );
   } catch (e) {
     console.log("Failure to retrieve secrets: ", e);
   }
@@ -111,14 +125,36 @@ async function fetchEnvironmentSecrets(
   environmentName: string
 ): Promise<StringData[]> {
   try {
-    const response = await octokit.actions.listEnvironmentSecrets({
-      repository_id: repositoryId,
-      environment_name: environmentName
-    });
-
-    return response.data.secrets.map(secret => new StringData(secret.name));
+    return await octokit.paginate(
+      octokit.actions.listEnvironmentSecrets,
+      {
+        repository_id: repositoryId,
+        environment_name: environmentName,
+        per_page: 100
+      },
+      response => response.data.map(secret => new StringData(secret.name))
+    );
   } catch (e) {
     console.log("Failure to retrieve environment secrets: ", e);
+  }
+
+  return [];
+}
+
+async function fetchOrganizationSecrets(octokit: Octokit, repo: RepositoryContext): Promise<StringData[]> {
+  if (!repo.organizationOwned) {
+    return [];
+  }
+
+  try {
+    const secrets: {name: string}[] = await octokit.paginate("GET /repos/{owner}/{repo}/actions/organization-secrets", {
+      owner: repo.owner,
+      repo: repo.name,
+      per_page: 100
+    });
+    return secrets.map(secret => new StringData(secret.name));
+  } catch (e) {
+    console.log("Failure to retrieve organization secrets: ", e);
   }
 
   return [];

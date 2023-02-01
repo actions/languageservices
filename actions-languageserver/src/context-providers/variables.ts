@@ -42,6 +42,15 @@ export async function getVariables(
     }
   >();
 
+  variables.organizationVariables.forEach(variable =>
+    variablesMap.set(variable.key.toLowerCase(), {
+      key: variable.key,
+      value: new data.StringData(variable.value.coerceString()),
+      description: `${variable.value.coerceString()} - Organization variable`
+    })
+  );
+
+  // Override org variables with repo variables
   variables.repoVariables.forEach(variable =>
     variablesMap.set(variable.key.toLowerCase(), {
       key: variable.key,
@@ -77,6 +86,7 @@ export async function getRemoteVariables(
 ): Promise<{
   repoVariables: Pair[];
   environmentVariables: Pair[];
+  organizationVariables: Pair[];
 }> {
   // Repo variables
   return {
@@ -88,25 +98,27 @@ export async function getRemoteVariables(
         (await cache.get(`${repo.owner}/${repo.name}/vars/environment/${environmentName}`, undefined, () =>
           fetchEnvironmentVariables(octokit, repo.id, environmentName)
         ))) ||
-      []
+      [],
+    organizationVariables: await cache.get(`${repo.owner}/vars`, undefined, () =>
+      fetchOrganizationVariables(octokit, repo)
+    )
   };
 }
 
 async function fetchVariables(octokit: Octokit, owner: string, name: string): Promise<Pair[]> {
   try {
-    const response = (await octokit.paginate("GET /repos/{owner}/{repo}/actions/variables{?per_page}", {
-      owner: owner,
-      repo: name
-    })) as {
-      name: string;
-      value: string;
-      created_at: string;
-      updated_at: string;
-    }[];
-
-    return response.map(variable => {
-      return {key: variable.name, value: new StringData(variable.value)};
-    });
+    return await octokit.paginate(
+      octokit.actions.listRepoVariables,
+      {
+        owner: owner,
+        repo: name,
+        per_page: 100
+      },
+      response =>
+        response.data.map(variable => {
+          return {key: variable.name, value: new StringData(variable.value)};
+        })
+    );
   } catch (e) {
     console.log("Failure to retrieve variables: ", e);
   }
@@ -120,24 +132,44 @@ async function fetchEnvironmentVariables(
   environmentName: string
 ): Promise<Pair[]> {
   try {
-    const response = (await octokit.paginate(
-      "GET /repositories/{repository_id}/environments/{environment_name}/variables{?per_page}",
+    return await octokit.paginate(
+      octokit.actions.listEnvironmentVariables,
       {
         repository_id: repositoryId,
-        environment_name: environmentName
-      }
-    )) as {
-      name: string;
-      value: string;
-      created_at: string;
-      updated_at: string;
-    }[];
+        environment_name: environmentName,
+        per_page: 100
+      },
+      response =>
+        response.data.map(variable => {
+          return {key: variable.name, value: new StringData(variable.value)};
+        })
+    );
+  } catch (e) {
+    console.log("Failure to retrieve environment variables: ", e);
+  }
 
-    return response.map(variable => {
+  return [];
+}
+
+async function fetchOrganizationVariables(octokit: Octokit, repo: RepositoryContext): Promise<Pair[]> {
+  if (!repo.organizationOwned) {
+    return [];
+  }
+
+  try {
+    const variables: {name: string; value: string}[] = await octokit.paginate(
+      "GET /repos/{owner}/{repo}/actions/organization-variables",
+      {
+        owner: repo.owner,
+        repo: repo.name,
+        per_page: 100
+      }
+    );
+    return variables.map(variable => {
       return {key: variable.name, value: new StringData(variable.value)};
     });
   } catch (e) {
-    console.log("Failure to retrieve environment variables: ", e);
+    console.log("Failure to retrieve organization variables: ", e);
   }
 
   return [];
