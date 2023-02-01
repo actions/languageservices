@@ -1,6 +1,4 @@
 include-source: false # Drop file/line/col from output
-skip:
-  - TypeScript
 ---
 on: push
 env:
@@ -12,7 +10,7 @@ jobs:
     steps:
     - run: echo Hello && World #string token
   build2:
-    if: false 
+    if: false
     runs-on: ubuntu-latest
     steps:
     - run: echo 1

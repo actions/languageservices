@@ -1,9 +1,7 @@
 include-source: true # Preserve file/line/col in serialized output
-skip:
-  - TypeScript
 ---
 # This is meant to cover all the different types of TemplateToken that are output
-# with include-source: true. Currently it is missing type 4 (insert expression) 
+# with include-source: true. Currently it is missing type 4 (insert expression)
 # and type 7 (null), once we have matrix strategy we should be able to get null or combine
 # this test with preserves-source-info-basic.yml.
 on: push

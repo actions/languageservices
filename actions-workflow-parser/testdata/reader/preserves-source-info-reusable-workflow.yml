@@ -1,7 +1,6 @@
 include-source: true # Preserve file/line/col in serialized output
 skip:
   - Go
-  - TypeScript
 ---
 on: push
 jobs:
@@ -33,46 +32,34 @@ jobs:
 {
   "jobs": [
     {
-      "Type": "reusableWorkflowJob",
-      "Id": {
+      "type": "reusableWorkflowJob",
+      "id": {
         "type": 0,
         "file": 1,
         "line": 3,
         "col": 3,
         "lit": "build"
       },
-      "Name": {
+      "name": {
         "type": 0,
         "file": 1,
         "line": 3,
         "col": 3,
         "lit": "build"
       },
-      "Needs": [],
-      "If": {
+      "needs": [],
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": {
+      "ref": {
         "type": 0,
         "file": 1,
         "line": 4,
         "col": 11,
         "lit": "some-org-1/some-repo-1/.github/workflows/build.yml@v1"
       },
-      "Permissions": null,
-      "InputDefinitions": null,
-      "InputValues": null,
-      "SecretDefinitions": null,
-      "SecretValues": null,
-      "InheritSecrets": false,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": null,
-      "Jobs": [
+      "jobs": [
         {
           "type": "job",
           "id": {
@@ -120,46 +107,34 @@ jobs:
       ]
     },
     {
-      "Type": "reusableWorkflowJob",
-      "Id": {
+      "type": "reusableWorkflowJob",
+      "id": {
         "type": 0,
         "file": 1,
         "line": 5,
         "col": 3,
         "lit": "deploy"
       },
-      "Name": {
+      "name": {
         "type": 0,
         "file": 1,
         "line": 5,
         "col": 3,
         "lit": "deploy"
       },
-      "Needs": [],
-      "If": {
+      "needs": [],
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": {
+      "ref": {
         "type": 0,
         "file": 1,
         "line": 6,
         "col": 11,
         "lit": "some-org-2/some-repo-2/.github/workflows/deploy.yml@v2"
       },
-      "Permissions": null,
-      "InputDefinitions": null,
-      "InputValues": null,
-      "SecretDefinitions": null,
-      "SecretValues": null,
-      "InheritSecrets": false,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": null,
-      "Jobs": [
+      "jobs": [
         {
           "type": "job",
           "id": {

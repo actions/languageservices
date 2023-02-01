@@ -1,7 +1,4 @@
 include-source: false # Drop file/line/col from output
-skip:
-  - Go
-  - TypeScript
 ---
 on: push
 jobs:
@@ -35,7 +32,7 @@ jobs:
 
           # Customer-breaking change we discovered when upgrading from YamlDotNet.Signed 6.0.0 to YamlDotNet 12.0.2.
           # YamlDotNet 12.0.2 produces the error "While scanning a multi-line double-quoted scalar, found wrong indentation."
-          - "hello 
+          - "hello
           world"
 
     steps:

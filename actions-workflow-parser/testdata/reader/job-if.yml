@@ -1,6 +1,4 @@
 include-source: false # Drop file/line/col from output
-skip:
-  - TypeScript
 ---
 on: push
 env:
@@ -21,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo hi
-  build4:  
+  build4:
     needs:
       - build
       - build2
