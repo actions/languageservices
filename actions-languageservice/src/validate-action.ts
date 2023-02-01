@@ -25,6 +25,11 @@ export async function validateAction(
 
   const actionInputs = await config.getActionInputs(action);
   if (actionInputs === undefined) {
+    diagnostics.push({
+      severity: DiagnosticSeverity.Error,
+      range: mapRange(step.uses.range),
+      message: `Unable to resolve action \`${step.uses.value}\`, repository or version not found`
+    });
     return;
   }
 
