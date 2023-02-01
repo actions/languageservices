@@ -29,7 +29,7 @@ const validationConfig: ValidationConfig = {
           }
         };
         break;
-      case "actions/deploy-pages":
+      case "actions/deploy-pages@main":
         inputs = {
           token: {
             required: true,
@@ -67,7 +67,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 `;
     const result = await validate(createDocument("wf.yaml", input), validationConfig);
 
@@ -110,7 +110,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         notanoption: true
 `;
@@ -277,7 +277,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         notanoption: true
 `;
