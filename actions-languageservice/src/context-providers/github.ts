@@ -76,6 +76,7 @@ function getEventContext(workflowContext: WorkflowContext, mode: Mode): Expressi
 
   // For callable workflows, the event is inherited from the calling workflow
   // Allow any value for this case
+  // This includes github.event.inputs, which is only available via the inputs context
   if (eventsConfig.workflow_call && mode == Mode.Validation) {
     return new data.Null();
   }
