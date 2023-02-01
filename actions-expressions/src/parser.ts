@@ -196,7 +196,7 @@ export class Parser {
 
             if (this.match(TokenType.IDENTIFIER)) {
               let property = this.previous();
-              expr = new IndexAccess(expr, new Literal(new data.StringData(property.lexeme)));
+              expr = new IndexAccess(expr, new Literal(new data.StringData(property.lexeme), property));
             } else if (this.match(TokenType.STAR)) {
               expr = new IndexAccess(expr, new Star());
             } else {
@@ -254,19 +254,19 @@ export class Parser {
   private primary(): Expr {
     switch (true) {
       case this.match(TokenType.FALSE):
-        return new Literal(new data.BooleanData(false));
+        return new Literal(new data.BooleanData(false), this.previous());
 
       case this.match(TokenType.TRUE):
-        return new Literal(new data.BooleanData(true));
+        return new Literal(new data.BooleanData(true), this.previous());
 
       case this.match(TokenType.NULL):
-        return new Literal(new data.Null());
+        return new Literal(new data.Null(), this.previous());
 
       case this.match(TokenType.NUMBER):
-        return new Literal(new data.NumberData(this.previous().value as number));
+        return new Literal(new data.NumberData(this.previous().value as number), this.previous());
 
       case this.match(TokenType.STRING):
-        return new Literal(new data.StringData(this.previous().value as string));
+        return new Literal(new data.StringData(this.previous().value as string), this.previous());
 
       case this.match(TokenType.LEFT_PAREN):
         const expr = this.expression();
