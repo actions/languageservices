@@ -46,7 +46,7 @@ export async function hover(document: TextDocument, position: Position, config?:
   const {token, keyToken, parent} = tokenResult;
 
   const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
-  if (config?.contextProviderConfig && token && tokenDefinitionInfo) {
+  if (token && tokenDefinitionInfo) {
     if (isBasicExpression(token) || isPotentiallyExpression(token)) {
       info(`Calculating expression hover for token with definition ${tokenDefinitionInfo.definition.key}`);
 
@@ -55,7 +55,7 @@ export async function hover(document: TextDocument, position: Position, config?:
 
       const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
       const workflowContext = getWorkflowContext(document.uri, template, tokenResult.path);
-      const context = await getContext(namedContexts, config.contextProviderConfig, workflowContext, Mode.Completion);
+      const context = await getContext(namedContexts, config?.contextProviderConfig, workflowContext, Mode.Completion);
 
       const exprPos = mapToExpressionPos(token, position);
       if (exprPos) {
