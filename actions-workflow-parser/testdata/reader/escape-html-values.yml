@@ -1,6 +1,6 @@
 include-source: false # Drop file/line/col from output
 skip:
-  - Typescript
+  - TypeScript
 ---
 on: push
 env:
