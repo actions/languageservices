@@ -30,15 +30,16 @@ export function mapToExpressionPos(token: TemplateToken, position: Position): Ex
     for (const originalExp of token.originalExpressions) {
       // Find the original expression that contains the position
       if (posWithinRange(pos, originalExp.expressionRange!)) {
-        const tr = mapRange(originalExp.expressionRange);
+        const exprRange = mapRange(originalExp.expressionRange);
 
         return {
           expression: originalExp.expression,
+          // Adjust the position to point into the expression
           position: {
-            line: pos.line - tr.start.line - 1,
-            column: pos.column - tr.start.character - 1
+            line: pos.line - exprRange.start.line - 1,
+            column: pos.column - exprRange.start.character - 1
           },
-          documentRange: tr
+          documentRange: exprRange
         };
       }
     }
@@ -46,13 +47,14 @@ export function mapToExpressionPos(token: TemplateToken, position: Position): Ex
     return undefined;
   }
 
-  const tr = mapRange(token.expressionRange!);
+  const exprRange = mapRange(token.expressionRange!);
   return {
     expression: token.expression,
+    // Adjust the position to point into the expression
     position: {
-      line: pos.line - tr.start.line - 1,
-      column: pos.column - tr.start.character - 1
+      line: pos.line - exprRange.start.line - 1,
+      column: pos.column - exprRange.start.character - 1
     },
-    documentRange: tr
+    documentRange: exprRange
   };
 }

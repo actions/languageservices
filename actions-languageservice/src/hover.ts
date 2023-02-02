@@ -139,25 +139,25 @@ function expressionHover(
     const p = new Parser(lr.tokens, namedContexts, functions);
     const expr = p.parse();
 
-    const v = new HoverVisitor(position, context, [], validatorFunctions);
-    const hoverResult = v.hover(expr);
+    const hv = new HoverVisitor(position, context, [], validatorFunctions);
+    const hoverResult = hv.hover(expr);
     if (!hoverResult) {
       return null;
     }
 
-    const mr = hoverResult.range;
+    const exprRange = hoverResult.range;
 
     return {
       contents: hoverResult?.description || hoverResult?.label,
       // Map the expression range back to a document range
       range: {
         start: {
-          line: documentRange.start.line + mr.start.line,
-          character: documentRange.start.character + mr.start.column
+          line: documentRange.start.line + exprRange.start.line,
+          character: documentRange.start.character + exprRange.start.column
         },
         end: {
-          line: documentRange.start.line + mr.end.line,
-          character: documentRange.start.character + mr.end.column
+          line: documentRange.start.line + exprRange.end.line,
+          character: documentRange.start.character + exprRange.end.column
         }
       }
     };

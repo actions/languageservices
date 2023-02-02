@@ -99,7 +99,7 @@ describe("visitor", () => {
 
 async function hoverExpression(input: string) {
   const [td, pos] = getPositionFromCursor(input);
-  const allowedContext = ["github"]; //token.definitionInfo?.allowedContext || [];
+  const allowedContext = ["github"];
 
   const file: File = {
     name: td.uri,
@@ -114,7 +114,13 @@ async function hoverExpression(input: string) {
   const workflowContext = getWorkflowContext(td.uri, template, []);
   const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 
-  const r = new HoverVisitor(
+  const l = new Lexer(td.getText());
+  const lr = l.lex();
+
+  const p = new Parser(lr.tokens, ["github"], []);
+  const expr = p.parse();
+
+  const hv = new HoverVisitor(
     {
       line: pos.line,
       column: pos.character
@@ -123,12 +129,5 @@ async function hoverExpression(input: string) {
     [],
     validatorFunctions
   );
-
-  const l = new Lexer(td.getText());
-  const lr = l.lex();
-
-  const p = new Parser(lr.tokens, ["github"], []);
-  const expr = p.parse();
-
-  return r.hover(expr);
+  return hv.hover(expr);
 }
