@@ -31,17 +31,16 @@ jobs:
 {
   "jobs": [
     {
-      "Type": "reusableWorkflowJob",
-      "Id": "build",
-      "Name": "build",
-      "Needs": [],
-      "If": {
+      "type": "reusableWorkflowJob",
+      "id": "build",
+      "name": "build",
+      "needs": [],
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": "contoso/templates/.github/workflows/build.yml@v1",
-      "Permissions": null,
-      "InputDefinitions": {
+      "ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "input-definitions": {
         "type": 2,
         "map": [
           {
@@ -58,7 +57,7 @@ jobs:
           }
         ]
       },
-      "InputValues": {
+      "input-values": {
         "type": 2,
         "map": [
           {
@@ -70,15 +69,7 @@ jobs:
           }
         ]
       },
-      "SecretDefinitions": null,
-      "SecretValues": null,
-      "InheritSecrets": false,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": {
+      "strategy": {
         "type": 2,
         "map": [
           {
@@ -101,7 +92,7 @@ jobs:
           }
         ]
       },
-      "Jobs": [
+      "jobs": [
         {
           "type": "job",
           "id": "build-it",

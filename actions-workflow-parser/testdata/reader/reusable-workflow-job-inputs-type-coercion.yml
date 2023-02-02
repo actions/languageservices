@@ -35,17 +35,16 @@ jobs:
 {
   "jobs": [
     {
-      "Type": "reusableWorkflowJob",
-      "Id": "deploy",
-      "Name": "deploy",
-      "Needs": [],
-      "If": {
+      "type": "reusableWorkflowJob",
+      "id": "deploy",
+      "name": "deploy",
+      "needs": [],
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": "contoso/templates/.github/workflows/deploy.yml@v1",
-      "Permissions": null,
-      "InputDefinitions": {
+      "ref": "contoso/templates/.github/workflows/deploy.yml@v1",
+      "input-definitions": {
         "type": 2,
         "map": [
           {
@@ -98,7 +97,7 @@ jobs:
           }
         ]
       },
-      "InputValues": {
+      "input-values": {
         "type": 2,
         "map": [
           {
@@ -119,16 +118,7 @@ jobs:
           }
         ]
       },
-      "SecretDefinitions": null,
-      "SecretValues": null,
-      "InheritSecrets": false,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": null,
-      "Jobs": [
+      "jobs": [
         {
           "type": "job",
           "id": "job1",

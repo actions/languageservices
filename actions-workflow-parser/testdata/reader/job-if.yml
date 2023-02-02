@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo hi
-  build4:  
+  build4:
     needs:
       - build
       - build2

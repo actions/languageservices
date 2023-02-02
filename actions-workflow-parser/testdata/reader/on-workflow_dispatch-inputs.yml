@@ -1,7 +1,6 @@
 include-source: false # Drop file/line/col from output
 skip:
-  - Go
-  - Typescript
+  - TypeScript
 ---
 on:
   workflow_dispatch:
@@ -22,6 +21,10 @@ on:
           - debug
       # Defaults to string
       input4:
+      input5-Env:
+        description: 'Test environment'
+        type: environment
+        required: true
 jobs:
   my-job:
     runs-on: ubuntu-latest
@@ -33,7 +36,8 @@ jobs:
     "input1": "string",
     "input2": "boolean",
     "input3": "choice",
-    "input4": "string"
+    "input4": "string",
+    "input5-Env": "environment"
   },
   "jobs": [
     {

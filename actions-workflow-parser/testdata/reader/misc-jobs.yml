@@ -10,7 +10,7 @@ jobs:
     name: ${{ github.actor }}
     timeout-minutes: ${{ github.ref }}
     cancel-timeout-minutes: 300
-    concurrency: 
+    concurrency:
       group: ${{ github.ref }}
       cancel-in-progress: true
     env:
@@ -28,10 +28,10 @@ jobs:
   build2:
     runs-on: [self-hosted, linux]
     continue-on-error: true
-    name: Jobs Repro Hardcode 
+    name: Jobs Repro Hardcode
     timeout-minutes: 360
     cancel-timeout-minutes: 300
-    concurrency: 
+    concurrency:
       group: groupA
       cancel-in-progress: true
     env:

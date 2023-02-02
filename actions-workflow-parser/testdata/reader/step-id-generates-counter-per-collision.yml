@@ -6,10 +6,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: Actions/Capitalized@v2
       - uses: actions/setup-node@v2
       - uses: docker://alpine:latest
       - run: echo hello
       - uses: actions/checkout@v2
+      - uses: Actions/Capitalized@v2
       - uses: actions/setup-node@v3
       - uses: docker://alpine:latest
       - run: echo hello
@@ -33,6 +35,14 @@ jobs:
             "expr": "success()"
           },
           "uses": "actions/checkout@v2"
+        },
+        {
+          "id": "__Actions_Capitalized",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "uses": "Actions/Capitalized@v2"
         },
         {
           "id": "__actions_setup-node",
@@ -65,6 +75,14 @@ jobs:
             "expr": "success()"
           },
           "uses": "actions/checkout@v2"
+        },
+        {
+          "id": "__Actions_Capitalized_2",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "uses": "Actions/Capitalized@v2"
         },
         {
           "id": "__actions_setup-node_2",

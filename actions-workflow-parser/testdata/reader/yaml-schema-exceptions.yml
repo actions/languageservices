@@ -1,32 +1,34 @@
 include-source: false # Drop file/line/col from output
-skip:
-  - TypeScript
 ---
 on: push
+env:
+  UNDERSCORED_INT_AS_STRING: 12_345
+  UNDERSCORED_FLOAT_AS_STRING: 23_456.789_321
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Values are based on YAML 1.2 core schema - https://yaml.org/spec/1.2.0/#id2604037
         vector-1:
-          # Null, implicit type
-          - null
-          - Null
-          - NULL
-          - ~
-
-          # Null, explicit type
-          - !!null
-          - !!null null
-          - !!null ~
-          - !<tag:yaml.org,2002:null>
-          - !<tag:yaml.org,2002:null> null
-          - !<tag:yaml.org,2002:null> ~
+          - 12_345
+          - 23_456.789_321
     steps:
       - run: echo hi
 ---
 {
+  "env": {
+    "type": 2,
+    "map": [
+      {
+        "Key": "UNDERSCORED_INT_AS_STRING",
+        "Value": "12_345"
+      },
+      {
+        "Key": "UNDERSCORED_FLOAT_AS_STRING",
+        "Value": "23_456.789_321"
+      }
+    ]
+  },
   "jobs": [
     {
       "type": "job",
@@ -49,16 +51,8 @@ jobs:
                   "Value": {
                     "type": 1,
                     "seq": [
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null
+                      "12_345",
+                      "23_456.789_321"
                     ]
                   }
                 }
