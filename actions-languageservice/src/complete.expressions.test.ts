@@ -153,6 +153,24 @@ describe("expressions", () => {
       ]);
     });
 
+    it("multiple regions - first region", async () => {
+      const input = "run-name: test-${{ git| == 1 }}-${{ github.event }}";
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual([
+        "github",
+        "inputs",
+        "vars",
+        "contains",
+        "endsWith",
+        "format",
+        "fromJson",
+        "join",
+        "startsWith",
+        "toJson"
+      ]);
+    });
+
     it("multiple regions", async () => {
       const input = "run-name: test-${{ github }}-${{ | }}";
       const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
