@@ -41,7 +41,7 @@
       }
     },
     "workflow-name": {
-      "description": "The name of the workflow that GitHub displays on your repository's 'Actions' tab.\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#name)",
+      "description": "The name of the workflow that GitHub displays on your repository's 'Actions' tab.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#name)",
       "string": {}
     },
     "run-name": {
@@ -51,10 +51,10 @@
         "vars"
       ],
       "string": {},
-      "description": "The name for workflow runs generated from the workflow. GitHub displays the workflow run name in the list of workflow runs on your repository's 'Actions' tab.\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#run-name)"
+      "description": "The name for workflow runs generated from the workflow. GitHub displays the workflow run name in the list of workflow runs on your repository's 'Actions' tab.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#run-name)"
     },
     "on": {
-      "description": "The GitHub event that triggers the workflow. Events can be a single string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. View a full list of [events that trigger workflows](https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows).\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on)",
+      "description": "The GitHub event that triggers the workflow. Events can be a single string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. View a full list of [events that trigger workflows](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows).\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#on)",
       "one-of": [
         "string",
         "sequence",
@@ -71,7 +71,7 @@
       }
     },
     "on-strict": {
-      "description": "The GitHub event that triggers the workflow.  Events can be a single string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. View a full list of [events that trigger workflows](https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows).\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on)",
+      "description": "The GitHub event that triggers the workflow.  Events can be a single string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. View a full list of [events that trigger workflows](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows).\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#on)",
       "one-of": [
         "on-string-strict",
         "on-sequence-strict",
@@ -79,7 +79,7 @@
       ]
     },
     "on-mapping-strict": {
-      "description": "The GitHub event that triggers the workflow.  Events can be a single string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. View a full list of [events that trigger workflows](https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows).\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on)",
+      "description": "The GitHub event that triggers the workflow.  Events can be a single string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. View a full list of [events that trigger workflows](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows).\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#on)",
       "mapping": {
         "properties": {
           "branch_protection_rule": "branch-protection-rule",
@@ -268,8 +268,8 @@
     "check-suite-activity": {
       "description": "The types of check suite activity that trigger the workflow. Supported activity types: `completed`.",
       "one-of": [
-         "check-suite-activity-type",
-         "check-suite-activity-types"
+        "check-suite-activity-type",
+        "check-suite-activity-types"
       ]
     },
     "check-suite-activity-types": {
@@ -1242,13 +1242,13 @@
       ]
     },
     "repository-dispatch-string": {
-      "description": "You can use the GitHub API to trigger a webhook event called `repository_dispatch` when you want to trigger a workflow for activity that happens outside of GitHub. For more information, visit the [online documentation](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event).",
+      "description": "You can use the GitHub API to trigger a webhook event called `repository_dispatch` when you want to trigger a workflow for activity that happens outside of GitHub.",
       "string": {
         "constant": "branch_protection_rule"
       }
     },
     "repository-dispatch": {
-      "description": "You can use the GitHub API to trigger a webhook event called `repository_dispatch` when you want to trigger a workflow for activity that happens outside of GitHub. For more information, visit the [online documentation](https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event).",
+      "description": "You can use the GitHub API to trigger a webhook event called `repository_dispatch` when you want to trigger a workflow for activity that happens outside of GitHub.",
       "one-of": [
         "null",
         "repository-dispatch-mapping"
@@ -1399,7 +1399,7 @@
       "string": {
         "require-non-empty": true
       },
-      "description": "A string identifier to associate with the output."
+      "description": "A string identifier to associate with the output. The value of `<output_id>` is a map of the input's metadata. The `<output_id>` must be a unique identifier within the outputs object and must start with a letter or _ and contain only alphanumeric characters, -, or _."
     },
     "workflow-call-output-definition": {
       "mapping": {
@@ -1499,7 +1499,7 @@
       ]
     },
     "permissions": {
-      "description": "You can use `permissions` to modify the default permissions granted to the `GITHUB_TOKEN`, adding or removing access as required, so that you only allow the minimum required access.\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions)",
+      "description": "You can use `permissions` to modify the default permissions granted to the `GITHUB_TOKEN`, adding or removing access as required, so that you only allow the minimum required access.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#permissions)",
       "one-of": [
         "permissions-mapping",
         "permission-level-shorthand-read-all",
@@ -1509,19 +1509,58 @@
     "permissions-mapping": {
       "mapping": {
         "properties": {
-          "actions": "permission-level-any",
-          "checks": "permission-level-any",
-          "contents": "permission-level-any",
-          "deployments": "permission-level-any",
-          "discussions": "permission-level-any",
-          "id-token": "permission-level-write-or-no-access",
-          "issues": "permission-level-any",
-          "packages": "permission-level-any",
-          "pages": "permission-level-any",
-          "pull-requests": "permission-level-any",
-          "repository-projects": "permission-level-any",
-          "security-events": "permission-level-any",
-          "statuses": "permission-level-any"
+          "actions": {
+            "type": "permission-level-any",
+            "description": "Actions workflows, workflow runs, and artifacts."
+          },
+          "checks": {
+            "type": "permission-level-any",
+            "description": "Check runs and check suites."
+          },
+          "contents": {
+            "type": "permission-level-any",
+            "description": "Repository contents, commits, branches, downloads, releases, and merges."
+          },
+          "deployments": {
+            "type": "permission-level-any",
+            "description": "Deployments and deployment statuses."
+          },
+          "discussions": {
+            "type": "permission-level-any",
+            "description": "Discussions and related comments and labels."
+          },
+          "id-token": {
+            "type": "permission-level-write-or-no-access",
+            "description": "Token to request an OpenID Connect token."
+          },
+          "issues": {
+            "type": "permission-level-any",
+            "description": "Issues and related comments, assignees, labels, and milestones."
+          },
+          "packages": {
+            "type": "permission-level-any",
+            "description": "Packages published to the GitHub Package Platform."
+          },
+          "pages": {
+            "type": "permission-level-any",
+            "description": "Retrieve Pages statuses, configuration, and builds, as well as create new builds."
+          },
+          "pull-requests": {
+            "type": "permission-level-any",
+            "description": "Pull requests and related comments, assignees, labels, milestones, and merges."
+          },
+          "repository-projects": {
+            "type": "permission-level-any",
+            "description": "Classic projects within a repository."
+          },
+          "security-events": {
+            "type": "permission-level-any",
+            "description": "Code scanning and Dependabot alerts."
+          },
+          "statuses": {
+            "type": "permission-level-any",
+            "description": "Commit statuses."
+          }
         }
       }
     },
@@ -1576,7 +1615,7 @@
       }
     },
     "workflow-defaults": {
-      "description": "Use `defaults` to create a map of default settings that will apply to all jobs in the workflow. You can also set default settings that are only available to a job.\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#defaults)",
+      "description": "Use `defaults` to create a map of default settings that will apply to all jobs in the workflow. You can also set default settings that are only available to a job.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#defaults)",
       "mapping": {
         "properties": {
           "run": "workflow-defaults-run"
@@ -1592,7 +1631,7 @@
       }
     },
     "workflow-env": {
-      "description": "A map of environment variables that are available to the steps of all jobs in the workflow. You can also set environment variables that are only available to the steps of a single job or to a single step.\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#env)",
+      "description": "A map of environment variables that are available to the steps of all jobs in the workflow. You can also set environment variables that are only available to the steps of a single job or to a single step.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#env)",
       "context": [
         "github",
         "inputs",
@@ -1605,7 +1644,7 @@
       }
     },
     "jobs": {
-      "description": "A workflow run is made up of one or more `jobs`, which run in parallel by default. To run jobs sequentially, you can define dependencies on other jobs using the `jobs.<job_id>.needs` keyword. Each job runs in a runner environment specified by `runs-on`.\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobs)",
+      "description": "A workflow run is made up of one or more `jobs`, which run in parallel by default. To run jobs sequentially, you can define dependencies on other jobs using the `jobs.<job_id>.needs` keyword. Each job runs in a runner environment specified by `runs-on`.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobs)",
       "mapping": {
         "loose-key-type": "job-id",
         "loose-value-type": "job"
@@ -1667,7 +1706,7 @@
             "description": "The name of the job displayed on GitHub."
           },
           "uses": {
-            "description": "The location and version of a reusable workflow file to run as a job. Use one of the following syntaxes:\n\n* `{owner}/{repo}/.github/workflows/{filename}@{ref}` for reusable workflows in public and private repositories.\n* `./.github/workflows/{filename}` for reusable workflows in the same repository.\n\n{ref} can be a SHA, a release tag, or a branch name. Using the commit SHA is the safest for stability and security.",
+            "description": "The location and version of a reusable workflow file to run as a job. Use one of the following formats:\n\n* `{owner}/{repo}/.github/workflows/{filename}@{ref}` for reusable workflows in public and private repositories.\n* `./.github/workflows/{filename}` for reusable workflows in the same repository.\n\n{ref} can be a SHA, a release tag, or a branch name. Using the commit SHA is the safest for stability and security.",
             "type": "non-empty-string",
             "required": true
           },
@@ -1850,7 +1889,7 @@
       }
     },
     "workflow-concurrency": {
-      "description": "Concurrency ensures that only a single job or workflow using the same concurrency group will run at a time. A concurrency group can be any string or expression.\n\nYou can also specify `concurrency` at the job level.\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency)",
+      "description": "Concurrency ensures that only a single job or workflow using the same concurrency group will run at a time. A concurrency group can be any string or expression.\n\nYou can also specify `concurrency` at the job level.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#concurrency)",
       "context": [
         "github",
         "inputs",
@@ -1877,7 +1916,7 @@
       ]
     },
     "concurrency-mapping": {
-      "description": "Concurrency ensures that only a single job or workflow using the same concurrency group will run at a time. A concurrency group can be any string or expression.\n\nYou can also specify `concurrency` at the job level.\n\n[Documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#concurrency)",
+      "description": "Concurrency ensures that only a single job or workflow using the same concurrency group will run at a time. A concurrency group can be any string or expression.\n\nYou can also specify `concurrency` at the job level.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#concurrency)",
       "mapping": {
         "properties": {
           "group": {
