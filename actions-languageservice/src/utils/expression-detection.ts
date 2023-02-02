@@ -4,9 +4,9 @@ import {StringDefinition} from "@github/actions-workflow-parser/templates/schema
 import {OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 
-export function isStringExpression(token: TemplateToken): boolean {
-  const isExpression =
+export function isPotentiallyExpression(token: TemplateToken): boolean {
+  const isAlwaysExpression =
     token.definition?.definitionType === DefinitionType.String && (token.definition as StringDefinition).isExpression;
   const containsExpression = isString(token) && token.value.indexOf(OPEN_EXPRESSION) >= 0;
-  return isExpression || containsExpression;
+  return isAlwaysExpression || containsExpression;
 }

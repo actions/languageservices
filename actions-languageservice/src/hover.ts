@@ -19,9 +19,9 @@ import {HoverVisitor} from "./expression-hover/visitor";
 import {validatorFunctions} from "./expression-validation/functions";
 import {info} from "./log";
 import {nullTrace} from "./nulltrace";
+import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken, TokenResult} from "./utils/find-token";
 import {mapRange} from "./utils/range";
-import {isStringExpression} from "./utils/type-guards";
 
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
@@ -45,15 +45,12 @@ export async function hover(document: TextDocument, position: Position, config?:
   const tokenResult = findToken(position, result.value);
   const {token, keyToken, parent} = tokenResult;
 
-  const hoverToken = keyToken || parent || token;
-  if (config?.contextProviderConfig && token && hoverToken?.definition) {
-    const isStringExpressionToken = isStringExpression(token);
-    const isBasicExpressionToken = isBasicExpression(token);
+  const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
+  if (config?.contextProviderConfig && token && tokenDefinitionInfo) {
+    if (isBasicExpression(token) || isPotentiallyExpression(token)) {
+      info(`Calculating expression hover for token with definition ${tokenDefinitionInfo.definition.key}`);
 
-    if (isStringExpressionToken || isBasicExpressionToken) {
-      info(`Calculating expression hover for token with definition ${hoverToken.definition.key}`);
-
-      const allowedContext = hoverToken.definitionInfo?.allowedContext || [];
+      const allowedContext = tokenDefinitionInfo.allowedContext || [];
       const {namedContexts, functions} = splitAllowedContext(allowedContext);
 
       const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);

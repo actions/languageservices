@@ -21,12 +21,12 @@ import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {validatorFunctions} from "./expression-validation/functions";
 import {error} from "./log";
 import {nullTrace} from "./nulltrace";
+import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken} from "./utils/find-token";
 import {guessIndentation} from "./utils/indentation-guesser";
 import {mapRange} from "./utils/range";
 import {getRelCharOffset} from "./utils/rel-char-pos";
 import {transform} from "./utils/transform";
-import {isStringExpression} from "./utils/type-guards";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {definitionValues} from "./value-providers/definition";
@@ -77,10 +77,7 @@ export async function complete(
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
   if (token) {
-    const isStringExpressionToken = isStringExpression(token);
-    const isBasicExpressionToken = isBasicExpression(token);
-
-    if (isStringExpressionToken || isBasicExpressionToken) {
+    if (isBasicExpression(token) || isPotentiallyExpression(token)) {
       const allowedContext = token.definitionInfo?.allowedContext || [];
       const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 
