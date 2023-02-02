@@ -55,7 +55,7 @@ jobs:
     steps:
       - run: |
           echo \${{ github.event_name }}
-          echo 'hello' \${{ github.ref }}`
+          echo 'hello' \${{github.ref }}`
         }
       ],
       nullTrace
@@ -81,19 +81,27 @@ jobs:
     }
 
     expect(stepRun.originalExpressions).toHaveLength(2);
-    expect(stepRun.originalExpressions!.map(x => [x.toDisplayString(), x.range])).toEqual([
+    expect(stepRun.originalExpressions!.map(x => [x.toDisplayString(), x.range, x.expressionRange])).toEqual([
       [
         "${{ github.event_name }}",
         {
           start: {line: 7, column: 16},
           end: {line: 7, column: 40}
+        },
+        {
+          start: {line: 7, column: 20},
+          end: {line: 7, column: 37}
         }
       ],
       [
         "${{ github.ref }}",
         {
           start: {line: 8, column: 24},
-          end: {line: 8, column: 41}
+          end: {line: 8, column: 40}
+        },
+        {
+          start: {line: 8, column: 27},
+          end: {line: 8, column: 37}
         }
       ]
     ]);

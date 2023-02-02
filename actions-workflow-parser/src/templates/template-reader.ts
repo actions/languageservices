@@ -607,7 +607,8 @@ class TemplateReader {
       token.range,
       `format('${format.join("")}'${args.join("")})`,
       token.definitionInfo,
-      expressionTokens
+      expressionTokens,
+      undefined
     );
   }
 
@@ -615,10 +616,10 @@ class TemplateReader {
     tr: TokenRange,
     rawExpression: string,
     allowedContext: string[],
-    token: TemplateToken,
+    token: StringToken,
     definitionInfo: DefinitionInfo | undefined
   ): ExpressionToken | undefined {
-    const parseExpressionResult = this.parseExpression(tr, rawExpression, allowedContext, definitionInfo);
+    const parseExpressionResult = this.parseExpression(tr, token, rawExpression, allowedContext, definitionInfo);
 
     // Check for error
     if (parseExpressionResult.error) {
@@ -630,7 +631,8 @@ class TemplateReader {
   }
 
   private parseExpression(
-    range: TokenRange | undefined,
+    range: TokenRange,
+    token: StringToken,
     value: string,
     allowedContext: string[],
     definitionInfo: DefinitionInfo | undefined
@@ -665,9 +667,31 @@ class TemplateReader {
       };
     }
 
+    const startTrim = value.length - value.trimStart().length;
+    const endTrim = value.length - value.trimEnd().length;
+
+    const expressionRange: TokenRange = {
+      start: {
+        ...range.start,
+        column: range.start.column + OPEN_EXPRESSION.length + startTrim
+      },
+      end: {
+        ...range.end,
+        column: range.end.column - CLOSE_EXPRESSION.length - endTrim
+      }
+    };
+
     // Return the expression
     return <ParseExpressionResult>{
-      expression: new BasicExpressionToken(this._fileId, range, trimmed, definitionInfo, undefined),
+      expression: new BasicExpressionToken(
+        this._fileId,
+        range,
+        trimmed,
+        definitionInfo,
+        undefined,
+        token.source,
+        expressionRange
+      ),
       error: undefined
     };
   }

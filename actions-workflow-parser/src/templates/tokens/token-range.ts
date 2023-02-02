@@ -2,6 +2,7 @@
 export type Position = {
   /** The one-based line value */
   line: number;
+
   /** The one-based column value */
   column: number;
 };

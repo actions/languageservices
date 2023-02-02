@@ -52,7 +52,7 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
   let uses: StringToken | undefined;
   let continueOnError: boolean | undefined;
   let env: MappingToken | undefined;
-  const ifCondition = new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined);
+  const ifCondition = new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined);
   for (const item of mapping) {
     const key = item.key.assertString("steps item key");
     switch (key.value) {
