@@ -182,5 +182,39 @@
     "outcome": {
       "description": "The result of a completed step before `continue-on-error` is applied. Possible values are `success`, `failure`, `cancelled`, or `skipped`. When a `continue-on-error` step fails, the `outcome` is `failure`, but the final conclusion is `success`."
     }
+  },
+  "runner": {
+    "name": {
+      "description": "The name of the runner executing the job."
+    },
+    "os": {
+      "description": "The operating system of the runner executing the job. Possible values are `Linux`, `Windows`, or `macOS`."
+    },
+    "arch": {
+      "description": "The architecture of the runner executing the job. Possible values are `X86`, `X64`, `ARM`, or `ARM64`."
+    },
+    "temp": {
+      "description": "The path to a temporary directory on the runner. This directory is emptied at the beginning and end of each job. Note that files will not be removed if the runner's user account does not have permission to delete them."
+    },
+    "tool_cache": {
+      "description": "The path to the directory containing preinstalled tools for GitHub-hosted runners. For more information, see \"[About GitHub-hosted runners](https://docs.github.com/actions/reference/specifications-for-github-hosted-runners/#supported-software)\"."
+    },
+    "debug": {
+      "description": "This is set only if [debug logging](https://docs.github.com/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled, and always has the value of 1. It can be useful as an indicator to enable additional debugging or verbose logging in your own job steps."
+    }
+  },
+  "strategy": {
+    "fail-fast": {
+      "description": "The `fail-fast` setting for the job. Possible values are `true` or `false`. For more information, see [Workflow syntax for GitHub Actions: `jobs.<job_id>.strategy.fail-fast`](https://docs.github.com/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategyfail-fast)."
+    },
+    "max-parallel": {
+      "description": "The `max-parallel` setting for the job. For more information, see [Workflow syntax for GitHub Actions: `jobs.<job_id>.strategy.max-parallel`](https://docs.github.com/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel)."
+    },
+    "job-index": {
+      "description": "The index of the current job in the matrix. **Note:** This number is a zero-based number. The first job's index in the matrix is `0`."
+    },
+    "job-total": {
+      "description": "The total number of jobs in the matrix. **Note:** This number **is not** a zero-based number. For example, for a matrix with four jobs, the value of `job-total` is `4`."
+    }
   }
 }
