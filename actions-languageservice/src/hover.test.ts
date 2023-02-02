@@ -3,7 +3,7 @@ import {StringToken} from "@github/actions-workflow-parser/templates/tokens/stri
 import {DescriptionProvider, hover, HoverConfig} from "./hover";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 
-function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
+export function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
   return {
     descriptionProvider: {
       getDescription: async (_, token, __) => {

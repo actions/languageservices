@@ -124,8 +124,11 @@ export function initConnection(connection: Connection) {
   });
 
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
+    const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
+
     return hover(documents.get(textDocument.uri)!, position, {
-      descriptionProvider: descriptionProvider(client, cache)
+      descriptionProvider: descriptionProvider(client, cache),
+      contextProviderConfig: repoContext && contextProviders(client, repoContext, cache)
     });
   });
 

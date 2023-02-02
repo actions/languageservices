@@ -45,7 +45,7 @@ function stringToToken(value: string) {
 }
 
 function expressionToToken(expr: string) {
-  return new BasicExpressionToken(undefined, undefined, expr, undefined, undefined);
+  return new BasicExpressionToken(undefined, undefined, expr, undefined, undefined, undefined);
 }
 
 function contextFromStrategy(strategy?: TemplateToken) {
