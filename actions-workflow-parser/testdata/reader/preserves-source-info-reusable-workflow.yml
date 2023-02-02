@@ -1,6 +1,7 @@
 include-source: true # Preserve file/line/col in serialized output
 skip:
   - Go
+  - Typescript
 ---
 on: push
 jobs:

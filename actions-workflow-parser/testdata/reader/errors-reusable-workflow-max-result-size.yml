@@ -2,6 +2,7 @@ include-source: false # Drop file/line/col from output
 max-result-size: 2048
 skip:
   - Go
+  - TypeScript
 ---
 on: push
 jobs:

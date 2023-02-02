@@ -1,4 +1,6 @@
 include-source: false # Drop file/line/col from output
+skip:
+  - TypeScript
 max-result-size: 768
 ---
 on: push

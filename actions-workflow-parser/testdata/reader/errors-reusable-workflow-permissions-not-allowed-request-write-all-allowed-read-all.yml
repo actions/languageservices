@@ -1,6 +1,7 @@
 include-source: false # Drop file/line/col from output
 skip:
   - Go
+  - TypeScript
 permissions-policy: LimitedRead
 # Note, the workflow names are intentionally short so the error message doesn't get truncated too much
 ---

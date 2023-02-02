@@ -1,6 +1,7 @@
 include-source: false # Drop file/line/col from output
 skip:
   - Go
+  - Typescript
 permissions-policy: Write
 ---
 on: push

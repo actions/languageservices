@@ -1,4 +1,6 @@
 include-source: false # Drop file/line/col from output
+skip:
+  - Typescript
 ---
 on: push
 jobs:
