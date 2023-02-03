@@ -9,7 +9,7 @@ import {
 
 export type WorkflowTemplate = {
   events: EventsConfig;
-  jobs: Job[];
+  jobs: WorkflowJob[];
   concurrency: TemplateToken;
   env: TemplateToken;
 
@@ -28,21 +28,34 @@ export type ActionsEnvironmentReference = {
   url?: TemplateToken;
 };
 
-export type Job = {
-  type: string;
+export type WorkflowJob = Job | ReusableWorkflowJob;
+
+export type JobType = "job" | "reusableWorkflowJob";
+
+export type BaseJob = {
+  type: JobType;
   id: StringToken;
   name?: ScalarToken;
   needs?: StringToken[];
   if: BasicExpressionToken;
-  env?: MappingToken;
   concurrency?: TemplateToken;
-  environment?: TemplateToken;
   strategy?: TemplateToken;
+};
+
+// `job-factory` in the schema
+export type Job = BaseJob & {
+  env?: MappingToken;
+  environment?: TemplateToken;
   "runs-on"?: TemplateToken;
   container?: TemplateToken;
   services?: TemplateToken;
   outputs?: MappingToken;
   steps: Step[];
+};
+
+// `workflow-job` in the schema
+export type ReusableWorkflowJob = BaseJob & {
+  uses: StringToken;
 };
 
 export type Container = {

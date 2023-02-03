@@ -1,5 +1,6 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {isMapping, isSequence} from "@github/actions-workflow-parser";
+import {isReusableWorkflowJob} from "@github/actions-workflow-parser/model/type-guards";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {WorkflowContext} from "../context/workflow-context";
 
@@ -7,7 +8,7 @@ export function getJobContext(workflowContext: WorkflowContext): DescriptionDict
   // https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
   const jobContext = new DescriptionDictionary();
   const job = workflowContext.job;
-  if (!job) {
+  if (!job || isReusableWorkflowJob(job)) {
     return jobContext;
   }
 

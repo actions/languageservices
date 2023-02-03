@@ -1,5 +1,6 @@
 import {isMapping, isSequence, WorkflowTemplate} from "@github/actions-workflow-parser";
-import {Job, Step} from "@github/actions-workflow-parser/model/workflow-template";
+import {isJob, isReusableWorkflowJob} from "@github/actions-workflow-parser/model/type-guards";
+import {Step, WorkflowJob} from "@github/actions-workflow-parser/model/workflow-template";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
@@ -11,7 +12,7 @@ export interface WorkflowContext {
   template: WorkflowTemplate | undefined;
 
   /** If the context is for a position within a job, this will be the job */
-  job?: Job;
+  job?: WorkflowJob;
 
   /** If the context is for a position within a step, this will be the step */
   step?: Step;
@@ -54,7 +55,10 @@ export function getWorkflowContext(
     }
   }
 
-  context.step = findStep(context.job?.steps, stepsSequence, stepToken);
+  if (context.job && isJob(context.job)) {
+    context.step = findStep(context.job.steps, stepsSequence, stepToken);
+  }
+
   return context;
 }
 
