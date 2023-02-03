@@ -44,6 +44,7 @@ export type BaseJob = {
 
 // `job-factory` in the schema
 export type Job = BaseJob & {
+  type: "job";
   env?: MappingToken;
   environment?: TemplateToken;
   "runs-on"?: TemplateToken;
@@ -55,6 +56,7 @@ export type Job = BaseJob & {
 
 // `workflow-job` in the schema
 export type ReusableWorkflowJob = BaseJob & {
+  type: "reusableWorkflowJob";
   uses: StringToken;
 };
 
