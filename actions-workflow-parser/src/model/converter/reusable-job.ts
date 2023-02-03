@@ -11,7 +11,7 @@ export function convertResuableWorkflowJob(
   const base = convertBaseJob(context, jobKey, token);
 
   const result: ReusableWorkflowJob = {
-    type: "job",
+    type: "reusableWorkflowJob",
     id: base.id,
     name: base.name,
     needs: base.needs,
