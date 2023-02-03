@@ -1,7 +1,7 @@
 import {data, DescriptionDictionary, isDescriptionDictionary} from "@github/actions-expressions";
 import {parseActionReference} from "@github/actions-languageservice/action";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
-import {isActionStep, isReusableWorkflowJob} from "@github/actions-workflow-parser/model/type-guards";
+import {isActionStep} from "@github/actions-workflow-parser/model/type-guards";
 import {Octokit} from "@octokit/rest";
 import {TTLCache} from "../utils/cache";
 import {getActionOutputs} from "./action-outputs";
@@ -12,8 +12,7 @@ export async function getStepsContext(
   defaultContext: DescriptionDictionary | undefined,
   workflowContext: WorkflowContext
 ): Promise<DescriptionDictionary | undefined> {
-  const job = workflowContext.job;
-  if (!defaultContext || !job || isReusableWorkflowJob(job)) {
+  if (!defaultContext || !workflowContext.job) {
     return defaultContext;
   }
 
@@ -27,7 +26,7 @@ export async function getStepsContext(
   // Copy the default context for each step
   // If the step is an action, add the action outputs to the context
   const stepsContext = new DescriptionDictionary();
-  for (const step of job.steps) {
+  for (const step of workflowContext.job.steps) {
     if (!contextSteps.has(step.id)) {
       continue;
     }

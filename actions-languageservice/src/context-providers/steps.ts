@@ -1,12 +1,11 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {isReusableWorkflowJob} from "@github/actions-workflow-parser/model/type-guards";
 import {Step} from "@github/actions-workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 import {getDescription} from "./descriptions";
 
 export function getStepsContext(workflowContext: WorkflowContext): DescriptionDictionary {
   const d = new DescriptionDictionary();
-  if (!workflowContext.job || isReusableWorkflowJob(workflowContext.job)) {
+  if (!workflowContext.job?.steps) {
     return d;
   }
 

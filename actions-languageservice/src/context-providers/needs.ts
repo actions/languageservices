@@ -25,14 +25,15 @@ function needsJobContext(job?: WorkflowJob): DescriptionDictionary {
   if (job && isJob(job)) {
     d.add("outputs", jobOutputs(job));
   }
+
   // Can be "success", "failure", "cancelled", or "skipped"
   d.add("result", new data.Null());
   return d;
 }
 
-function jobOutputs(job: Job): DescriptionDictionary {
+function jobOutputs(job?: Job): DescriptionDictionary {
   const d = new DescriptionDictionary();
-  if (!job.outputs) {
+  if (!job?.outputs) {
     return d;
   }
 

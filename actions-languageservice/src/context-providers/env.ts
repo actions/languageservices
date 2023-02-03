@@ -1,6 +1,5 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {isScalar, isString} from "@github/actions-workflow-parser";
-import {isJob} from "@github/actions-workflow-parser/model/type-guards";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {WorkflowContext} from "../context/workflow-context";
 
@@ -13,9 +12,8 @@ export function getEnvContext(workflowContext: WorkflowContext): DescriptionDict
   }
 
   //job env
-  const job = workflowContext.job;
-  if (job && isJob(job) && job.env) {
-    envContext(job.env, d);
+  if (workflowContext.job && workflowContext.job.env) {
+    envContext(workflowContext.job.env, d);
   }
 
   //workflow env
