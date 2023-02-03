@@ -1,5 +1,6 @@
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
 import {convertWorkflowTemplate, parseWorkflow, TraceWriter} from "@github/actions-workflow-parser";
+import {isJob} from "@github/actions-workflow-parser/model/type-guards";
 
 const nullTrace: TraceWriter = {
   info: x => {},
@@ -19,8 +20,8 @@ export function createWorkflowContext(workflow: string, job?: string, stepIndex?
     context.job = template.jobs.find(j => j.id.value === job);
   }
 
-  if (stepIndex !== undefined) {
-    context.step = context.job?.steps[stepIndex];
+  if (stepIndex !== undefined && context.job && isJob(context.job)) {
+    context.step = context.job.steps[stepIndex];
   }
 
   return context;

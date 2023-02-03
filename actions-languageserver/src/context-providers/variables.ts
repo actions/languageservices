@@ -6,6 +6,7 @@ import {Pair} from "@github/actions-expressions/data/expressiondata";
 import {RepositoryContext} from "../initializationOptions";
 import {StringData} from "@github/actions-expressions/data/index";
 import {TTLCache} from "../utils/cache";
+import {isJob} from "@github/actions-workflow-parser/model/type-guards";
 
 export async function getVariables(
   workflowContext: WorkflowContext,
@@ -15,11 +16,13 @@ export async function getVariables(
   defaultContext: DescriptionDictionary | undefined
 ): Promise<DescriptionDictionary | undefined> {
   let environmentName: string | undefined;
-  if (workflowContext?.job?.environment) {
-    if (isString(workflowContext.job.environment)) {
-      environmentName = workflowContext.job.environment.value;
-    } else if (isMapping(workflowContext.job.environment)) {
-      for (const x of workflowContext.job.environment) {
+  const job = workflowContext?.job;
+  const environment = job && isJob(job) && job.environment;
+  if (environment) {
+    if (isString(environment)) {
+      environmentName = environment.value;
+    } else if (isMapping(environment)) {
+      for (const x of environment) {
         if (isString(x.key) && x.key.value === "name") {
           if (isString(x.value)) {
             environmentName = x.value.value;

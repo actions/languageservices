@@ -2,6 +2,7 @@ import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {StringData} from "@github/actions-expressions/data/string";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
 import {isMapping, isString} from "@github/actions-workflow-parser";
+import {isJob} from "@github/actions-workflow-parser/model/type-guards";
 import {Octokit} from "@octokit/rest";
 import {RepositoryContext} from "../initializationOptions";
 import {TTLCache} from "../utils/cache";
@@ -14,11 +15,13 @@ export async function getSecrets(
   defaultContext: DescriptionDictionary | undefined
 ): Promise<DescriptionDictionary> {
   let environmentName: string | undefined;
-  if (workflowContext?.job?.environment) {
-    if (isString(workflowContext.job.environment)) {
-      environmentName = workflowContext.job.environment.value;
-    } else if (isMapping(workflowContext.job.environment)) {
-      for (const x of workflowContext.job.environment) {
+  const job = workflowContext?.job;
+  const environment = job && isJob(job) && job.environment;
+  if (environment) {
+    if (isString(environment)) {
+      environmentName = environment.value;
+    } else if (isMapping(environment)) {
+      for (const x of environment) {
         if (isString(x.key) && x.key.value === "name") {
           if (isString(x.value)) {
             environmentName = x.value.value;
