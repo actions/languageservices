@@ -1,5 +1,6 @@
 import {convertWorkflowTemplate, parseWorkflow} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
+import {isJob} from "@github/actions-workflow-parser/model/type-guards";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {DocumentLink} from "vscode-languageserver-types";
@@ -27,7 +28,10 @@ export async function documentLinks(document: TextDocument): Promise<DocumentLin
   const gitHubBaseUri = "https://www.github.com/";
 
   for (const job of template?.jobs || []) {
-    for (const step of job?.steps || []) {
+    if (!job || !isJob(job)) {
+      continue;
+    }
+    for (const step of job.steps || []) {
       if ("uses" in step) {
         const actionRef = parseActionReference(step.uses.value);
         if (!actionRef) {

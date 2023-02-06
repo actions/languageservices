@@ -1,6 +1,7 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {isScalar, isString} from "@github/actions-workflow-parser";
-import {Job} from "@github/actions-workflow-parser/model/workflow-template";
+import {isJob} from "@github/actions-workflow-parser/model/type-guards";
+import {Job, WorkflowJob} from "@github/actions-workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 
 export function getNeedsContext(workflowContext: WorkflowContext): DescriptionDictionary {
@@ -17,11 +18,13 @@ export function getNeedsContext(workflowContext: WorkflowContext): DescriptionDi
   return d;
 }
 
-function needsJobContext(job?: Job): DescriptionDictionary {
+function needsJobContext(job?: WorkflowJob): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#needs-context
   const d = new DescriptionDictionary();
 
-  d.add("outputs", jobOutputs(job));
+  if (job && isJob(job)) {
+    d.add("outputs", jobOutputs(job));
+  }
 
   // Can be "success", "failure", "cancelled", or "skipped"
   d.add("result", new data.Null());
