@@ -40,6 +40,7 @@ export type BaseJob = {
   if: BasicExpressionToken;
   concurrency?: TemplateToken;
   strategy?: TemplateToken;
+  outputs?: MappingToken;
 };
 
 // `job-factory` in the schema
@@ -50,7 +51,6 @@ export type Job = BaseJob & {
   "runs-on"?: TemplateToken;
   container?: TemplateToken;
   services?: TemplateToken;
-  outputs?: MappingToken;
   steps: Step[];
 };
 

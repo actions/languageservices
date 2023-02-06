@@ -20,6 +20,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
   let needs: StringToken[] | undefined = undefined;
   let steps: Step[] = [];
   let workflowJobRef: StringToken | undefined;
+  let workflowJobInputs: MappingToken | undefined;
 
   for (const item of token) {
     const propertyName = item.key.assertString("job property name");
@@ -88,7 +89,11 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
         break;
 
       case "uses":
-        workflowJobRef = item.value.assertString("job item uses");
+        workflowJobRef = item.value.assertString("job uses value");
+        break;
+
+      case "with":
+        workflowJobInputs = item.value.assertMapping("uses-with value");
         break;
     }
   }
@@ -101,6 +106,9 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       needs: needs ?? [],
       if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       ref: workflowJobRef,
+      "input-definitions": undefined,
+      "input-values": workflowJobInputs,
+      outputs: undefined,
       concurrency,
       strategy
     };
