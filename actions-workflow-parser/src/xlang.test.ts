@@ -5,6 +5,7 @@ import {convertWorkflowTemplate} from "./model/convert";
 import {TraceWriter} from "./templates/trace-writer";
 import {File} from "./workflows/file";
 import {FileProvider} from "./workflows/file-provider";
+import {fileIdentifier, FileReference} from "./workflows/file-reference";
 import {parseWorkflow} from "./workflows/workflow-parser";
 
 interface TestOptions {
@@ -61,8 +62,8 @@ describe("x-lang tests", () => {
       }
 
       const testFileProvider: FileProvider = {
-        getFileContent: async (fileName: string) => {
-          const file = reusableWorkflows[fileName];
+        getFileContent: async (ref: FileReference) => {
+          const file = reusableWorkflows[fileIdentifier(ref)];
           if (file) {
             return file;
           }

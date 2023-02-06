@@ -1,6 +1,7 @@
 import {TemplateContext} from "../templates/template-context";
 import {TemplateToken, TemplateTokenError} from "../templates/tokens/template-token";
 import {FileProvider} from "../workflows/file-provider";
+import {parseFileReference} from "../workflows/file-reference";
 import {parseWorkflow} from "../workflows/workflow-parser";
 import {convertConcurrency} from "./converter/concurrency";
 import {convertOn} from "./converter/events";
@@ -97,7 +98,7 @@ export async function convertWorkflowTemplate(
         }
 
         try {
-          const file = await fileProvider.getFileContent(job.ref.value);
+          const file = await fileProvider.getFileContent(parseFileReference(job.ref.value));
           const workflow = parseWorkflow(file, context);
           if (!workflow.value) {
             continue;
