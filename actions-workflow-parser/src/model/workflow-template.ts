@@ -57,7 +57,10 @@ export type Job = BaseJob & {
 // `workflow-job` in the schema
 export type ReusableWorkflowJob = BaseJob & {
   type: "reusableWorkflowJob";
-  uses: StringToken;
+  ref: StringToken;
+  "input-definitions"?: MappingToken;
+  "input-values"?: MappingToken;
+  jobs?: WorkflowJob[];
 };
 
 export type Container = {

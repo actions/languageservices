@@ -8,12 +8,16 @@ const nullTrace: TraceWriter = {
   error: x => {}
 };
 
-export function createWorkflowContext(workflow: string, job?: string, stepIndex?: number): WorkflowContext {
+export async function createWorkflowContext(
+  workflow: string,
+  job?: string,
+  stepIndex?: number
+): Promise<WorkflowContext> {
   const parsed = parseWorkflow({name: "test.yaml", content: workflow}, nullTrace);
   if (!parsed.value) {
     throw new Error("Failed to parse workflow");
   }
-  const template = convertWorkflowTemplate(parsed.context, parsed.value);
+  const template = await convertWorkflowTemplate(parsed.context, parsed.value);
   const context: WorkflowContext = {uri: "test.yaml", template};
 
   if (job) {

@@ -60,7 +60,7 @@ const actionMetadata = {
 };
 
 async function getDescription(input: string, mock: fetchMock.FetchMockSandbox) {
-  const workflowContext = createWorkflowContext(workflow, "build", 0);
+  const workflowContext = await createWorkflowContext(workflow, "build", 0);
 
   return await getActionInputDescription(
     new Octokit({

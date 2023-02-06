@@ -56,7 +56,7 @@ const actionMetadata = {
 };
 
 it("returns default context when job is undefined", async () => {
-  const workflowContext = createWorkflowContext(workflow, undefined);
+  const workflowContext = await createWorkflowContext(workflow, undefined);
   const defaultContext = getDefaultStepsContext(workflowContext);
 
   const stepsContext = await getStepsContext(new Octokit(), new TTLCache(), defaultContext, workflowContext);
@@ -68,7 +68,7 @@ it("adds action outputs", async () => {
     .sandbox()
     .getOnce("https://api.github.com/repos/actions/cache/contents/action.yml?ref=v3", actionMetadata);
 
-  const workflowContext = createWorkflowContext(workflow, "build");
+  const workflowContext = await createWorkflowContext(workflow, "build");
   const defaultContext = getDefaultStepsContext(workflowContext);
 
   const stepsContext = await getStepsContext(
