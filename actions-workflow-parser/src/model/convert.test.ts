@@ -7,7 +7,7 @@ function serializeTemplate(template: unknown): unknown {
 }
 
 describe("convertWorkflowTemplate", () => {
-  it("converts workflow with one job", () => {
+  it("converts workflow with one job", async () => {
     const result = parseWorkflow(
       {
         name: "wf.yaml",
@@ -19,7 +19,7 @@ jobs:
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(serializeTemplate(template)).toEqual({
       events: {
@@ -43,7 +43,7 @@ jobs:
     });
   });
 
-  it("converts workflow if expressions", () => {
+  it("converts workflow if expressions", async () => {
     const result = parseWorkflow(
       {
         name: "wf.yaml",
@@ -59,7 +59,7 @@ jobs:
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(serializeTemplate(template)).toEqual({
       events: {
@@ -92,7 +92,7 @@ jobs:
     });
   });
 
-  it("converts workflow with empty needs", () => {
+  it("converts workflow with empty needs", async () => {
     const result = parseWorkflow(
       {
         name: "wf.yaml",
@@ -105,7 +105,7 @@ jobs:
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(serializeTemplate(template)).toEqual({
       errors: [
@@ -134,7 +134,7 @@ jobs:
     });
   });
 
-  it("converts workflow with needs errors", () => {
+  it("converts workflow with needs errors", async () => {
     const result = parseWorkflow(
       {
         name: "wf.yaml",
@@ -152,7 +152,7 @@ jobs:
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(serializeTemplate(template)).toEqual({
       errors: [
@@ -211,7 +211,7 @@ jobs:
     });
   });
 
-  it("converts workflow with invalid on", () => {
+  it("converts workflow with invalid on", async () => {
     const result = parseWorkflow(
       {
         name: "wf.yaml",
@@ -229,7 +229,7 @@ jobs:
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(template.jobs).not.toBeUndefined();
     expect(template.jobs).toHaveLength(1);
@@ -271,7 +271,7 @@ jobs:
     });
   });
 
-  it("converts workflow with invalid jobs", () => {
+  it("converts workflow with invalid jobs", async () => {
     const result = parseWorkflow(
       {
         name: "wf.yaml",
@@ -282,7 +282,7 @@ jobs:
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(template.jobs).not.toBeUndefined();
     expect(template.jobs).toHaveLength(0);

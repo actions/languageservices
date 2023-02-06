@@ -2,7 +2,7 @@ import {TemplateContext} from "../../templates/template-context";
 import {StringToken} from "../../templates/tokens";
 import {TemplateToken} from "../../templates/tokens/template-token";
 import {isMapping} from "../../templates/tokens/type-guards";
-import {Job} from "../workflow-template";
+import {WorkflowJob} from "../workflow-template";
 import {handleTemplateTokenErrors} from "./handle-errors";
 import {convertJob} from "./job";
 
@@ -11,9 +11,9 @@ type nodeInfo = {
   needs: StringToken[];
 };
 
-export function convertJobs(context: TemplateContext, token: TemplateToken): Job[] {
+export function convertJobs(context: TemplateContext, token: TemplateToken): WorkflowJob[] {
   if (isMapping(token)) {
-    const result: Job[] = [];
+    const result: WorkflowJob[] = [];
     const jobsWithSatisfiedNeeds: nodeInfo[] = [];
     const alljobsWithUnsatisfiedNeeds: nodeInfo[] = [];
 
@@ -49,7 +49,7 @@ export function convertJobs(context: TemplateContext, token: TemplateToken): Job
 function validateNeeds(
   token: TemplateToken,
   context: TemplateContext,
-  result: Job[],
+  result: WorkflowJob[],
   jobsWithSatisfiedNeeds: nodeInfo[],
   alljobsWithUnsatisfiedNeeds: nodeInfo[]
 ) {
