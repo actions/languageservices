@@ -53,13 +53,10 @@ describe("x-lang tests", () => {
       }
 
       const parseResult = parseWorkflow(
-        testFileName,
-        [
-          {
-            name: testFileName,
-            content: testInput
-          }
-        ],
+        {
+          name: testFileName,
+          content: testInput
+        },
         nullTrace
       );
 

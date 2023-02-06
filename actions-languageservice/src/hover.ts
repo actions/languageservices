@@ -37,7 +37,7 @@ export async function hover(document: TextDocument, position: Position, config?:
     name: document.uri,
     content: document.getText()
   };
-  const result = parseWorkflow(file.name, [file], nullTrace);
+  const result = parseWorkflow(file, nullTrace);
   if (!result.value) {
     return null;
   }

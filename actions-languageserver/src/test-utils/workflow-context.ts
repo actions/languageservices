@@ -9,7 +9,7 @@ const nullTrace: TraceWriter = {
 };
 
 export function createWorkflowContext(workflow: string, job?: string, stepIndex?: number): WorkflowContext {
-  const parsed = parseWorkflow("test.yaml", [{name: "test.yaml", content: workflow}], nullTrace);
+  const parsed = parseWorkflow({name: "test.yaml", content: workflow}, nullTrace);
   if (!parsed.value) {
     throw new Error("Failed to parse workflow");
   }

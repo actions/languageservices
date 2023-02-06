@@ -9,16 +9,13 @@ function serializeTemplate(template: unknown): unknown {
 describe("convertWorkflowTemplate", () => {
   it("converts workflow with one job", () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   build:
     runs-on: ubuntu-latest`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -48,11 +45,9 @@ jobs:
 
   it("converts workflow if expressions", () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   build:
     if: \${{ true }}
@@ -60,8 +55,7 @@ jobs:
   deploy:
     if: true
     runs-on: ubuntu-latest`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -100,17 +94,14 @@ jobs:
 
   it("converts workflow with empty needs", () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   build:
     needs: # comment to preserve whitespace in test
     runs-on: ubuntu-latest`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -145,11 +136,9 @@ jobs:
 
   it("converts workflow with needs errors", () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   job1:
     needs: [unknown-job, job3]
@@ -159,8 +148,7 @@ jobs:
   job3:
     needs: job1
     runs-on: ubuntu-latest`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -225,11 +213,9 @@ jobs:
 
   it("converts workflow with invalid on", () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on:
+      {
+        name: "wf.yaml",
+        content: `on:
   workflow_dispatch:
     inputs:
       test:
@@ -239,8 +225,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo hello`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -288,15 +273,12 @@ jobs:
 
   it("converts workflow with invalid jobs", () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   build:`
-        }
-      ],
+      },
       nullTrace
     );
 

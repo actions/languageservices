@@ -81,13 +81,10 @@ it("YAML errors include range information", () => {
 
 function parseAsWorkflow(content: string): TemplateToken | undefined {
   const result = parseWorkflow(
-    "test.yaml",
-    [
-      {
-        name: "test.yaml",
-        content: content
-      }
-    ],
+    {
+      name: "test.yaml",
+      content: content
+    },
     nullTrace
   );
 
