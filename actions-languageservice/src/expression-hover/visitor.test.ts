@@ -105,7 +105,7 @@ async function hoverExpression(input: string) {
     name: td.uri,
     content: td.getText()
   };
-  const result = parseWorkflow(file.name, [file], nullTrace);
+  const result = parseWorkflow(file, nullTrace);
   if (!result.value) {
     return undefined;
   }

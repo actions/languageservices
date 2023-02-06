@@ -8,13 +8,10 @@ import {getWorkflowContext, WorkflowContext} from "./workflow-context";
 function testGetWorkflowContext(input: string): WorkflowContext {
   const [textDocument, pos] = getPositionFromCursor(input);
   const result = parseWorkflow(
-    "wf.yaml",
-    [
-      {
-        content: textDocument.getText(),
-        name: "wf.yaml"
-      }
-    ],
+    {
+      content: textDocument.getText(),
+      name: "wf.yaml"
+    },
     nullTrace
   );
 

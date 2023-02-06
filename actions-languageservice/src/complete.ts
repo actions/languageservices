@@ -65,7 +65,7 @@ export async function complete(
     name: textDocument.uri,
     content: newDoc.getText()
   };
-  const result = parseWorkflow(file.name, [file], nullTrace);
+  const result = parseWorkflow(file, nullTrace);
   if (!result.value) {
     return [];
   }

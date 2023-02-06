@@ -14,7 +14,7 @@ export async function documentLinks(document: TextDocument): Promise<DocumentLin
     content: document.getText()
   };
 
-  const result = parseWorkflow(file.name, [file], nullTrace);
+  const result = parseWorkflow(file, nullTrace);
   if (!result.value) {
     return [];
   }

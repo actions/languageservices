@@ -6,13 +6,10 @@ import {TemplateToken} from "./template-token";
 describe("traverse", () => {
   it("returns parent token and key", () => {
     const workflow = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push`
-        }
-      ],
+      {
+        name: "wf.yaml",
+        content: `on: push`
+      },
       nullTrace
     );
 

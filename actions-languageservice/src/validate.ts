@@ -56,7 +56,7 @@ export async function validate(
   const diagnostics: Diagnostic[] = [];
 
   try {
-    const result: ParseWorkflowResult = parseWorkflow(file.name, [file], nullTrace);
+    const result: ParseWorkflowResult = parseWorkflow(file, nullTrace);
     if (result.value) {
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
       const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
