@@ -2,7 +2,6 @@ import {TemplateContext} from "../../templates/template-context";
 import {TemplateToken} from "../../templates/tokens";
 import {TokenType} from "../../templates/tokens/types";
 import {ReusableWorkflowJob} from "../workflow-template";
-import {convertOn} from "./events";
 import {handleTemplateTokenErrors} from "./handle-errors";
 import {convertJobs} from "./jobs";
 
@@ -28,15 +27,6 @@ export function convertReferencedWorkflow(
         break;
       }
     }
-  }
-
-  if (!onToken) {
-    return;
-  }
-
-  const events = convertOn(context, onToken);
-  if (events.workflow_call === undefined) {
-    context.error(onToken, "workflow_call key is not defined in the referenced workflow.");
   }
 }
 
