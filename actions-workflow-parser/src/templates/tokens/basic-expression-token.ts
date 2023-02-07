@@ -15,8 +15,6 @@ export class BasicExpressionToken extends ExpressionToken {
 
   public readonly originalExpressions: BasicExpressionToken[] | undefined;
 
-  public readonly source: string;
-
   /**
    * The range of the expression within the source string.
    *
