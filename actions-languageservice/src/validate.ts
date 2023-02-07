@@ -43,11 +43,7 @@ export type ValidationConfig = {
  * @param textDocument Document to validate
  * @returns Array of diagnostics
  */
-export async function validate(
-  textDocument: TextDocument,
-  config?: ValidationConfig
-  // TODO: Support multiple files, context for API calls
-): Promise<Diagnostic[]> {
+export async function validate(textDocument: TextDocument, config?: ValidationConfig): Promise<Diagnostic[]> {
   const file: File = {
     name: textDocument.uri,
     content: textDocument.getText()
