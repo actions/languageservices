@@ -1,7 +1,7 @@
 include-source: false # Drop file/line/col from output
-max-depth: 5
 skip:
   - TypeScript
+max-depth: 5
 ---
 on: push
 jobs:

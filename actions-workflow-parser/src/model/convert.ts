@@ -1,9 +1,14 @@
 import {TemplateContext} from "../templates/template-context";
 import {TemplateToken, TemplateTokenError} from "../templates/tokens/template-token";
+import {FileProvider} from "../workflows/file-provider";
+import {parseFileReference} from "../workflows/file-reference";
+import {parseWorkflow} from "../workflows/workflow-parser";
 import {convertConcurrency} from "./converter/concurrency";
 import {convertOn} from "./converter/events";
 import {handleTemplateTokenErrors} from "./converter/handle-errors";
 import {convertJobs} from "./converter/jobs";
+import {convertReferencedWorkflow} from "./converter/referencedWorkflow";
+import {isReusableWorkflowJob} from "./type-guards";
 import {WorkflowTemplate} from "./workflow-template";
 
 export enum ErrorPolicy {
@@ -11,11 +16,35 @@ export enum ErrorPolicy {
   TryConversion
 }
 
-export function convertWorkflowTemplate(
+export type WorkflowTemplateConverterOptions = {
+  /**
+   * The maximum depth of reusable workflows allowed in the workflow.
+   * If this depth is exceeded, an error will be reported.
+   * If {@link fetchReusableWorkflowDepth} is less than this value, the maximum depth
+   * won't be enforced.
+   * Default: 4
+   */
+  maxReusableWorkflowDepth?: number;
+  /**
+   * The depth to fetch reusable workflows, up to {@link maxReusableWorkflowDepth}.
+   * Currently only a fetch depth of 0 or 1 is supported.
+   * Default: 0
+   */
+  fetchReusableWorkflowDepth?: number;
+};
+
+const defaultOptions: Required<WorkflowTemplateConverterOptions> = {
+  maxReusableWorkflowDepth: 4,
+  fetchReusableWorkflowDepth: 0
+};
+
+export async function convertWorkflowTemplate(
   context: TemplateContext,
   root: TemplateToken,
-  errorPolicy: ErrorPolicy = ErrorPolicy.ReturnErrorsOnly
-): WorkflowTemplate {
+  errorPolicy: ErrorPolicy = ErrorPolicy.ReturnErrorsOnly,
+  fileProvider?: FileProvider,
+  options: WorkflowTemplateConverterOptions = defaultOptions
+): Promise<WorkflowTemplate> {
   const result = {} as WorkflowTemplate;
 
   if (context.errors.getErrors().length > 0 && errorPolicy === ErrorPolicy.ReturnErrorsOnly) {
@@ -23,6 +52,12 @@ export function convertWorkflowTemplate(
       Message: x.message
     }));
     return result;
+  }
+
+  const opts = getOptionsWithDefaults(options);
+
+  if (fileProvider === undefined && opts.fetchReusableWorkflowDepth > 0) {
+    context.error(root, new Error("A file provider is required to fetch reusable workflows"));
   }
 
   try {
@@ -49,6 +84,31 @@ export function convertWorkflowTemplate(
           break;
       }
     }
+
+    // Load referenced workflows
+    for (const job of result.jobs || []) {
+      if (isReusableWorkflowJob(job)) {
+        if (opts.maxReusableWorkflowDepth === 0) {
+          context.error(job.ref, new Error("Reusable workflows are not allowed"));
+          continue;
+        }
+
+        if (opts.fetchReusableWorkflowDepth === 0 || fileProvider === undefined) {
+          continue;
+        }
+
+        try {
+          const file = await fileProvider.getFileContent(parseFileReference(job.ref.value));
+          const workflow = parseWorkflow(file, context);
+          if (!workflow.value) {
+            continue;
+          }
+          convertReferencedWorkflow(context, workflow.value, job);
+        } catch {
+          context.error(job.ref, new Error("Unable to find reusable workflow"));
+        }
+      }
+    }
   } catch (err) {
     if (err instanceof TemplateTokenError) {
       context.error(err.token, err);
@@ -65,4 +125,17 @@ export function convertWorkflowTemplate(
   }
 
   return result;
+}
+
+function getOptionsWithDefaults(options: WorkflowTemplateConverterOptions): Required<WorkflowTemplateConverterOptions> {
+  return {
+    maxReusableWorkflowDepth:
+      options.maxReusableWorkflowDepth !== undefined
+        ? options.maxReusableWorkflowDepth
+        : defaultOptions.maxReusableWorkflowDepth,
+    fetchReusableWorkflowDepth:
+      options.fetchReusableWorkflowDepth !== undefined
+        ? options.fetchReusableWorkflowDepth
+        : defaultOptions.fetchReusableWorkflowDepth
+  };
 }

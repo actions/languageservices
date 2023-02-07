@@ -3,32 +3,32 @@ import {Lexer, Token, TokenType} from "./lexer";
 describe("lexer", () => {
   const tests: {
     input: string;
-    tokenType: TokenType[];
-    token?: Token;
+    tokenTypes: TokenType[];
+    tokens?: Token[];
   }[] = [
-    {input: "<", tokenType: [TokenType.LESS]},
-    {input: ">", tokenType: [TokenType.GREATER]},
+    {input: "<", tokenTypes: [TokenType.LESS]},
+    {input: ">", tokenTypes: [TokenType.GREATER]},
 
-    {input: "!=", tokenType: [TokenType.BANG_EQUAL]},
-    {input: "==", tokenType: [TokenType.EQUAL_EQUAL]},
-    {input: "<=", tokenType: [TokenType.LESS_EQUAL]},
-    {input: ">=", tokenType: [TokenType.GREATER_EQUAL]},
+    {input: "!=", tokenTypes: [TokenType.BANG_EQUAL]},
+    {input: "==", tokenTypes: [TokenType.EQUAL_EQUAL]},
+    {input: "<=", tokenTypes: [TokenType.LESS_EQUAL]},
+    {input: ">=", tokenTypes: [TokenType.GREATER_EQUAL]},
 
-    {input: "&&", tokenType: [TokenType.AND]},
-    {input: "||", tokenType: [TokenType.OR]},
+    {input: "&&", tokenTypes: [TokenType.AND]},
+    {input: "||", tokenTypes: [TokenType.OR]},
 
     // Numbers
-    {input: "12", tokenType: [TokenType.NUMBER]},
-    {input: "12.0", tokenType: [TokenType.NUMBER]},
-    {input: "0", tokenType: [TokenType.NUMBER]},
-    {input: "-0", tokenType: [TokenType.NUMBER]},
-    {input: "-12.0", tokenType: [TokenType.NUMBER]},
+    {input: "12", tokenTypes: [TokenType.NUMBER]},
+    {input: "12.0", tokenTypes: [TokenType.NUMBER]},
+    {input: "0", tokenTypes: [TokenType.NUMBER]},
+    {input: "-0", tokenTypes: [TokenType.NUMBER]},
+    {input: "-12.0", tokenTypes: [TokenType.NUMBER]},
 
     // Strings
-    {input: "'It''s okay'", tokenType: [TokenType.STRING]},
+    {input: "'It''s okay'", tokenTypes: [TokenType.STRING]},
     {
       input: "format('{0} == ''queued''', needs)",
-      tokenType: [
+      tokenTypes: [
         TokenType.IDENTIFIER,
         TokenType.LEFT_PAREN,
         TokenType.STRING,
@@ -41,87 +41,161 @@ describe("lexer", () => {
     // Arrays
     {
       input: "[1,2]",
-      tokenType: [TokenType.LEFT_BRACKET, TokenType.NUMBER, TokenType.COMMA, TokenType.NUMBER, TokenType.RIGHT_BRACKET]
+      tokenTypes: [TokenType.LEFT_BRACKET, TokenType.NUMBER, TokenType.COMMA, TokenType.NUMBER, TokenType.RIGHT_BRACKET]
     },
 
     // Simple expressions
     {
       input: "1 == 2",
-      tokenType: [TokenType.NUMBER, TokenType.EQUAL_EQUAL, TokenType.NUMBER]
+      tokenTypes: [TokenType.NUMBER, TokenType.EQUAL_EQUAL, TokenType.NUMBER]
     },
     {
       input: "1== 1",
-      tokenType: [TokenType.NUMBER, TokenType.EQUAL_EQUAL, TokenType.NUMBER]
+      tokenTypes: [TokenType.NUMBER, TokenType.EQUAL_EQUAL, TokenType.NUMBER]
     },
     {
       input: "1< 1",
-      tokenType: [TokenType.NUMBER, TokenType.LESS, TokenType.NUMBER]
+      tokenTypes: [TokenType.NUMBER, TokenType.LESS, TokenType.NUMBER]
     },
 
     // Identifiers
     {
       input: "github",
-      tokenType: [TokenType.IDENTIFIER],
-      token: {
-        type: TokenType.IDENTIFIER,
-        lexeme: "github",
-        pos: {
-          line: 0,
-          column: 0
+      tokenTypes: [TokenType.IDENTIFIER],
+      tokens: [
+        {
+          type: TokenType.IDENTIFIER,
+          lexeme: "github",
+          range: {
+            start: {
+              line: 0,
+              column: 0
+            },
+            end: {
+              line: 0,
+              column: 6
+            }
+          }
         }
-      }
+      ]
     },
 
     // Keywords
     {
       input: "true",
-      tokenType: [TokenType.TRUE],
-      token: {
-        type: TokenType.TRUE,
-        lexeme: "true",
-        pos: {
-          line: 0,
-          column: 0
+      tokenTypes: [TokenType.TRUE],
+      tokens: [
+        {
+          type: TokenType.TRUE,
+          lexeme: "true",
+          range: {
+            start: {
+              line: 0,
+              column: 0
+            },
+            end: {
+              line: 0,
+              column: 4
+            }
+          }
         }
-      }
+      ]
     },
 
     {
       input: "false",
-      tokenType: [TokenType.FALSE],
-      token: {
-        type: TokenType.FALSE,
-        lexeme: "false",
-        pos: {
-          line: 0,
-          column: 0
+      tokenTypes: [TokenType.FALSE],
+      tokens: [
+        {
+          type: TokenType.FALSE,
+          lexeme: "false",
+          range: {
+            start: {
+              line: 0,
+              column: 0
+            },
+            end: {
+              line: 0,
+              column: 5
+            }
+          }
         }
-      }
+      ]
     },
 
     {
       input: "null",
-      tokenType: [TokenType.NULL],
-      token: {
-        type: TokenType.NULL,
-        lexeme: "null",
-        pos: {
-          line: 0,
-          column: 0
+      tokenTypes: [TokenType.NULL],
+      tokens: [
+        {
+          type: TokenType.NULL,
+          lexeme: "null",
+          range: {
+            start: {
+              line: 0,
+              column: 0
+            },
+            end: {
+              line: 0,
+              column: 4
+            }
+          }
         }
-      }
+      ]
+    },
+
+    {
+      input: "github\n ==",
+      tokenTypes: [TokenType.IDENTIFIER, TokenType.EQUAL_EQUAL],
+      tokens: [
+        {
+          type: TokenType.IDENTIFIER,
+          lexeme: "github",
+          range: {
+            start: {
+              line: 0,
+              column: 0
+            },
+            end: {
+              line: 0,
+              column: 6
+            }
+          }
+        },
+        {
+          type: TokenType.EQUAL_EQUAL,
+          lexeme: "==",
+          range: {
+            start: {
+              line: 1,
+              column: 1
+            },
+            end: {
+              line: 1,
+              column: 3
+            }
+          }
+        }
+      ]
     }
   ];
 
-  test.each(tests)("$input", ({input, tokenType, token}: {input: string; tokenType: TokenType[]; token?: Token}) => {
-    const l = new Lexer(input);
+  test.each(tests)(
+    "$input",
+    ({input, tokenTypes, tokens}: {input: string; tokenTypes: TokenType[]; tokens?: Token[]}) => {
+      const l = new Lexer(input);
 
-    const r = l.lex();
+      const r = l.lex();
 
-    const want = r.tokens.map(t => t.type);
+      const got = r.tokens.map(t => t.type);
 
-    tokenType.push(TokenType.EOF);
+      tokenTypes.push(TokenType.EOF);
+      expect(got).toEqual(tokenTypes);
 
-    expect(want).toEqual(tokenType);
-  });
+      if (tokens) {
+        // Ignore the last EOF token
+        expect(r.tokens.slice(0, r.tokens.length - 1)).toEqual(tokens);
+      }
+    }
+  );
 });

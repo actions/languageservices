@@ -3,6 +3,9 @@ import * as path from "path";
 import * as YAML from "yaml";
 import {convertWorkflowTemplate} from "./model/convert";
 import {TraceWriter} from "./templates/trace-writer";
+import {File} from "./workflows/file";
+import {FileProvider} from "./workflows/file-provider";
+import {fileIdentifier, FileReference} from "./workflows/file-reference";
 import {parseWorkflow} from "./workflows/workflow-parser";
 
 interface TestOptions {
@@ -41,31 +44,53 @@ describe("x-lang tests", () => {
     const testOptions: TestOptions = YAML.parse(testDocs[0]);
     const unsupportedTest = contains(testOptions.skip, "TypeScript");
 
-    const test = () => {
-      let testFileName = ".github/workflows" + fileName.substring(fileName.lastIndexOf("/"));
-      let testInput = testDocs[1];
-      let expectedTemplate = testDocs[2].trim();
-      // TODO: when reusable workflows are implemented, implement correctly
+    const test = async () => {
+      const testFileName = ".github/workflows" + fileName.substring(fileName.lastIndexOf("/"));
+      const testInput = testDocs[1];
+      const expectedTemplate = testDocs[testDocs.length - 1].trim();
+
+      // For reusable workflow tests, additional workflows are passed in as pairs of
+      // file names and file contents
+      const reusableWorkflows: Record<string, File> = {};
       if (fileName.indexOf("reusable") !== -1) {
-        testFileName = testDocs[1];
-        testInput = testDocs[2];
-        expectedTemplate = testDocs[3].trim();
+        for (let i = 2; i < testDocs.length - 1; i = i + 2) {
+          reusableWorkflows[testDocs[i]] = {
+            name: testDocs[i],
+            content: testDocs[i + 1]
+          };
+        }
       }
 
-      const parseResult = parseWorkflow(
-        testFileName,
-        [
-          {
-            name: testFileName,
-            content: testInput
+      const testFileProvider: FileProvider = {
+        getFileContent: async (ref: FileReference) => {
+          const file = reusableWorkflows[fileIdentifier(ref)];
+          if (file) {
+            return file;
           }
-        ],
+
+          throw new Error("File not found: " + fileName);
+        }
+      };
+
+      const parseResult = parseWorkflow(
+        {
+          name: testFileName,
+          content: testInput
+        },
         nullTrace
       );
 
       expect(parseResult.value).not.toBeUndefined();
 
-      const workflowTemplate = convertWorkflowTemplate(parseResult.context, parseResult.value!);
+      const workflowTemplate = await convertWorkflowTemplate(
+        parseResult.context,
+        parseResult.value!,
+        undefined,
+        testFileProvider,
+        {
+          fetchReusableWorkflowDepth: 1
+        }
+      );
 
       // Unless this tests is only used by TypeScript, remove the events for now.
       // TODO: Remove this once we parse events everywhere

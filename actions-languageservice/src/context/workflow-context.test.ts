@@ -5,23 +5,20 @@ import {getPositionFromCursor} from "../test-utils/cursor-position";
 import {findToken} from "../utils/find-token";
 import {getWorkflowContext, WorkflowContext} from "./workflow-context";
 
-function testGetWorkflowContext(input: string): WorkflowContext {
+async function testGetWorkflowContext(input: string): Promise<WorkflowContext> {
   const [textDocument, pos] = getPositionFromCursor(input);
   const result = parseWorkflow(
-    "wf.yaml",
-    [
-      {
-        content: textDocument.getText(),
-        name: "wf.yaml"
-      }
-    ],
+    {
+      content: textDocument.getText(),
+      name: "wf.yaml"
+    },
     nullTrace
   );
 
   let template: WorkflowTemplate | undefined;
 
   if (result.value) {
-    template = convertWorkflowTemplate(result.context, result.value);
+    template = await convertWorkflowTemplate(result.context, result.value);
   }
 
   const {path} = findToken(pos, result.value);
@@ -30,8 +27,8 @@ function testGetWorkflowContext(input: string): WorkflowContext {
 }
 
 describe("getWorkflowContext", () => {
-  it("context for workflow", () => {
-    const context = testGetWorkflowContext(`on: push
+  it("context for workflow", async () => {
+    const context = await testGetWorkflowContext(`on: push
 name: te|st
 jobs:
   build:
@@ -44,8 +41,8 @@ jobs:
     expect(context.step).toBeUndefined();
   });
 
-  it("context for workflow job", () => {
-    const context = testGetWorkflowContext(`on: push
+  it("context for workflow job", async () => {
+    const context = await testGetWorkflowContext(`on: push
 jobs:
   build:
     runs-on: ubuntu-lat|est
@@ -57,8 +54,8 @@ jobs:
     expect(context.step).toBeUndefined();
   });
 
-  it("context for workflow run step", () => {
-    const context = testGetWorkflowContext(`on: push
+  it("context for workflow run step", async () => {
+    const context = await testGetWorkflowContext(`on: push
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -74,8 +71,8 @@ jobs:
     expect(step.run.toDisplayString()).toBe("echo Hello");
   });
 
-  it("context for workflow uses step", () => {
-    const context = testGetWorkflowContext(`on: push
+  it("context for workflow uses step", async () => {
+    const context = await testGetWorkflowContext(`on: push
 jobs:
   build:
     runs-on: ubuntu-latest

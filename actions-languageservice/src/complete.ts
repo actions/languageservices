@@ -1,4 +1,4 @@
-import {DescriptionDictionary, complete as completeExpression} from "@github/actions-expressions";
+import {complete as completeExpression, DescriptionDictionary} from "@github/actions-expressions";
 import {CompletionItem as ExpressionCompletionItem} from "@github/actions-expressions/completion";
 import {
   convertWorkflowTemplate,
@@ -8,8 +8,6 @@ import {
   parseWorkflow
 } from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
-import {DefinitionType} from "@github/actions-workflow-parser/templates/schema/definition-type";
-import {StringDefinition} from "@github/actions-workflow-parser/templates/schema/string-definition";
 import {OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
@@ -23,14 +21,15 @@ import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {validatorFunctions} from "./expression-validation/functions";
 import {error} from "./log";
 import {nullTrace} from "./nulltrace";
+import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken} from "./utils/find-token";
 import {guessIndentation} from "./utils/indentation-guesser";
 import {mapRange} from "./utils/range";
+import {getRelCharOffset} from "./utils/rel-char-pos";
 import {transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {definitionValues} from "./value-providers/definition";
-import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
@@ -66,22 +65,19 @@ export async function complete(
     name: textDocument.uri,
     content: newDoc.getText()
   };
-  const result = parseWorkflow(file.name, [file], nullTrace);
+  const result = parseWorkflow(file, nullTrace);
   if (!result.value) {
     return [];
   }
 
   const {token, keyToken, parent, path} = findToken(newPos, result.value);
-  const template = convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
+  const template = await convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
   const workflowContext = getWorkflowContext(textDocument.uri, template, path);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
   // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
   if (token) {
-    const isStringExpressionToken = isStringExpression(token);
-    const isBasicExpressionToken = isBasicExpression(token) && token.isExpression;
-
-    if (isStringExpressionToken || isBasicExpressionToken) {
+    if (isBasicExpression(token) || isPotentiallyExpression(token)) {
       const allowedContext = token.definitionInfo?.allowedContext || [];
       const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 
@@ -93,12 +89,14 @@ export async function complete(
   const indentString = " ".repeat(indentation.tabSize);
 
   const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext, indentString);
+
   let replaceRange: Range | undefined;
   if (token?.range) {
     replaceRange = mapRange(token.range);
   } else if (!token) {
     // Not a valid token, create a range from the current position
     const line = newDoc.getText({start: {line: position.line, character: 0}, end: position});
+
     // Get the length of the current word
     const val = line.match(/[\w_-]*$/)?.[0].length || 0;
     replaceRange = Range.create({line: position.line, character: position.character - val}, position);
@@ -214,12 +212,12 @@ function getExpressionCompletionItems(
     currentInput = stringToken.source || stringToken.value;
   }
 
-  const relCharPos = getRelCharPos(token.range!, currentInput, pos);
-  const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
+  const relCharOffset = getRelCharOffset(token.range!, currentInput, pos);
+  const expressionInput = (getExpressionInput(currentInput, relCharOffset) || "").trim();
 
   try {
     return completeExpression(expressionInput, context, [], validatorFunctions).map(item =>
-      mapExpressionCompletionItem(item, currentInput[relCharPos])
+      mapExpressionCompletionItem(item, currentInput[relCharOffset])
     );
   } catch (e: any) {
     error(`Error while completing expression: '${e?.message || "<no details>"}'`);
@@ -249,24 +247,4 @@ function mapExpressionCompletionItem(item: ExpressionCompletionItem, charAfterPo
     insertText: insertText,
     kind: item.function ? CompletionItemKind.Function : CompletionItemKind.Variable
   };
-}
-
-function getRelCharPos(tokenRange: TokenRange, currentInput: string, pos: Position): number {
-  // Transform the overall position into a node relative position
-  const range = mapRange(tokenRange);
-  if (range.start.line !== range.end.line) {
-    const lines = currentInput.split("\n");
-    const lineDiff = pos.line - range.start.line - 1;
-    const linesBeforeCusor = lines.slice(0, lineDiff);
-    return linesBeforeCusor.join("\n").length + pos.character + 1;
-  } else {
-    return pos.character - range.start.character;
-  }
-}
-
-function isStringExpression(token: TemplateToken): boolean {
-  const isExpression =
-    token.definition?.definitionType === DefinitionType.String && (token.definition as StringDefinition).isExpression;
-  const containsExpression = isString(token) && token.value.indexOf(OPEN_EXPRESSION) >= 0;
-  return isExpression || containsExpression;
 }

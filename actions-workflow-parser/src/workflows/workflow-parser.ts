@@ -11,15 +11,16 @@ export interface ParseWorkflowResult {
   value: TemplateToken | undefined;
 }
 
-export function parseWorkflow(entryFileName: string, files: File[], trace: TraceWriter): ParseWorkflowResult {
-  const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), trace);
+export function parseWorkflow(entryFile: File, trace: TraceWriter): ParseWorkflowResult;
+export function parseWorkflow(entryFile: File, context: TemplateContext): ParseWorkflowResult;
+export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | TemplateContext): ParseWorkflowResult {
+  const context =
+    contextOrTrace instanceof TemplateContext
+      ? contextOrTrace
+      : new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), contextOrTrace);
 
-  // Add file ids
-  files.forEach(x => context.getFileId(x.name));
-
-  const fileId = context.getFileId(entryFileName);
-  const fileContent = files[fileId - 1].content;
-  const reader = new YamlObjectReader(context, fileId, fileContent);
+  const fileId = context.getFileId(entryFile.name);
+  const reader = new YamlObjectReader(context, fileId, entryFile.content);
   if (context.errors.count > 0) {
     // The file is not valid YAML, template errors could be misleading
     return {

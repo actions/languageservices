@@ -7,22 +7,19 @@ function serializeTemplate(template: unknown): unknown {
 }
 
 describe("convertWorkflowTemplate", () => {
-  it("converts workflow with one job", () => {
+  it("converts workflow with one job", async () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   build:
     runs-on: ubuntu-latest`
-        }
-      ],
+      },
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(serializeTemplate(template)).toEqual({
       events: {
@@ -46,13 +43,11 @@ jobs:
     });
   });
 
-  it("converts workflow if expressions", () => {
+  it("converts workflow if expressions", async () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   build:
     if: \${{ true }}
@@ -60,12 +55,11 @@ jobs:
   deploy:
     if: true
     runs-on: ubuntu-latest`
-        }
-      ],
+      },
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(serializeTemplate(template)).toEqual({
       events: {
@@ -98,23 +92,20 @@ jobs:
     });
   });
 
-  it("converts workflow with empty needs", () => {
+  it("converts workflow with empty needs", async () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   build:
     needs: # comment to preserve whitespace in test
     runs-on: ubuntu-latest`
-        }
-      ],
+      },
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(serializeTemplate(template)).toEqual({
       errors: [
@@ -143,13 +134,11 @@ jobs:
     });
   });
 
-  it("converts workflow with needs errors", () => {
+  it("converts workflow with needs errors", async () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   job1:
     needs: [unknown-job, job3]
@@ -159,12 +148,11 @@ jobs:
   job3:
     needs: job1
     runs-on: ubuntu-latest`
-        }
-      ],
+      },
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(serializeTemplate(template)).toEqual({
       errors: [
@@ -223,13 +211,11 @@ jobs:
     });
   });
 
-  it("converts workflow with invalid on", () => {
+  it("converts workflow with invalid on", async () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on:
+      {
+        name: "wf.yaml",
+        content: `on:
   workflow_dispatch:
     inputs:
       test:
@@ -239,12 +225,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: echo hello`
-        }
-      ],
+      },
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(template.jobs).not.toBeUndefined();
     expect(template.jobs).toHaveLength(1);
@@ -286,21 +271,18 @@ jobs:
     });
   });
 
-  it("converts workflow with invalid jobs", () => {
+  it("converts workflow with invalid jobs", async () => {
     const result = parseWorkflow(
-      "wf.yaml",
-      [
-        {
-          name: "wf.yaml",
-          content: `on: push
+      {
+        name: "wf.yaml",
+        content: `on: push
 jobs:
   build:`
-        }
-      ],
+      },
       nullTrace
     );
 
-    const template = convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
 
     expect(template.jobs).not.toBeUndefined();
     expect(template.jobs).toHaveLength(0);

@@ -17,7 +17,7 @@ export abstract class Expr {
 }
 
 export class Literal extends Expr {
-  constructor(public literal: ExpressionData) {
+  constructor(public literal: ExpressionData, public token: Token) {
     super();
   }
 

@@ -34,4 +34,8 @@ export class DescriptionDictionary extends Dictionary {
     const pairs = super.pairs();
     return pairs.map(p => ({...p, description: this.descriptions.get(p.key)}));
   }
+
+  getDescription(key: string): string | undefined {
+    return this.descriptions.get(key);
+  }
 }

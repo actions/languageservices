@@ -1,6 +1,5 @@
 include-source: false # Drop file/line/col from output
 skip:
-  - Go
   - TypeScript
 ---
 on: push

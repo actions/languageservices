@@ -6,19 +6,16 @@ import {parseWorkflow} from "./workflows/workflow-parser";
 describe("Workflow Expression Parsing", () => {
   it("preserves original expressions when building format", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content: `on: push
+      {
+        name: "test.yaml",
+        content: `on: push
 run-name: Test \${{ github.event_name }} \${{ github.ref }}
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - run: echo 'hello'`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -44,20 +41,17 @@ jobs:
 
   it("preserves original expressions when building format for multi-line strings", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content: `on: push
+      {
+        name: "test.yaml",
+        content: `on: push
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - run: |
           echo \${{ github.event_name }}
-          echo 'hello' \${{ github.ref }}`
-        }
-      ],
+          echo 'hello' \${{github.ref }}`
+      },
       nullTrace
     );
 
@@ -81,19 +75,27 @@ jobs:
     }
 
     expect(stepRun.originalExpressions).toHaveLength(2);
-    expect(stepRun.originalExpressions!.map(x => [x.toDisplayString(), x.range])).toEqual([
+    expect(stepRun.originalExpressions!.map(x => [x.toDisplayString(), x.range, x.expressionRange])).toEqual([
       [
         "${{ github.event_name }}",
         {
           start: {line: 7, column: 16},
           end: {line: 7, column: 40}
+        },
+        {
+          start: {line: 7, column: 20},
+          end: {line: 7, column: 37}
         }
       ],
       [
         "${{ github.ref }}",
         {
           start: {line: 8, column: 24},
-          end: {line: 8, column: 41}
+          end: {line: 8, column: 40}
+        },
+        {
+          start: {line: 8, column: 27},
+          end: {line: 8, column: 37}
         }
       ]
     ]);
@@ -101,11 +103,9 @@ jobs:
 
   it("return errors and string token with preserved expressions for (multiple) expression errors", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content: `on: push
+      {
+        name: "test.yaml",
+        content: `on: push
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -113,8 +113,7 @@ jobs:
       - run: |
           echo \${{ abc }}
           echo 'hello' \${{ gith }}`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -139,11 +138,9 @@ jobs:
 
   it("reports all errors for multi-line expressions at the correct locations", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content: `on: push
+      {
+        name: "test.yaml",
+        content: `on: push
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -151,8 +148,7 @@ jobs:
       - run: |
           echo \${{ fromJSON2('test') }}
           echo 'hello' \${{ toJSON2(inputs.test) }}`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -178,19 +174,16 @@ jobs:
 
   it("parses isExpression strings into expression tokens", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content: `on: push
+      {
+        name: "test.yaml",
+        content: `on: push
 jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
       - run: echo 'hello'`
-        }
-      ],
+      },
       nullTrace
     );
 

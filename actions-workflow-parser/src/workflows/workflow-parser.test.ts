@@ -11,7 +11,7 @@ jobs:
       - name: 'Hello \${{ fromJSON('test') == inputs.name }}'
         run: echo Hello, world!`;
 
-  const result = parseWorkflow("main.yaml", [{name: "main.yaml", content: content}], nullTrace);
+  const result = parseWorkflow({name: "main.yaml", content: content}, nullTrace);
 
   expect(result.context.errors.count).toBe(1);
   expect(result.value).toBeUndefined();

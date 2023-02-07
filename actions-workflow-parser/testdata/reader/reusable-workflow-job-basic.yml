@@ -66,19 +66,18 @@ jobs:
       ]
     },
     {
-      "Type": "reusableWorkflowJob",
-      "Id": "deploy-1",
-      "Name": "deploy-1",
-      "Needs": [
+      "type": "reusableWorkflowJob",
+      "id": "deploy-1",
+      "name": "deploy-1",
+      "needs": [
         "build"
       ],
-      "If": {
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": "contoso/templates/.github/workflows/deploy.yml@v1",
-      "Permissions": null,
-      "InputDefinitions": {
+      "ref": "contoso/templates/.github/workflows/deploy.yml@v1",
+      "input-definitions": {
         "type": 2,
         "map": [
           {
@@ -99,7 +98,7 @@ jobs:
           }
         ]
       },
-      "InputValues": {
+      "input-values": {
         "type": 2,
         "map": [
           {
@@ -108,7 +107,7 @@ jobs:
           }
         ]
       },
-      "SecretDefinitions": {
+      "secret-definitions": {
         "type": 2,
         "map": [
           {
@@ -129,7 +128,7 @@ jobs:
           }
         ]
       },
-      "SecretValues": {
+      "secret-values": {
         "type": 2,
         "map": [
           {
@@ -141,14 +140,7 @@ jobs:
           }
         ]
       },
-      "InheritSecrets": false,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": null,
-      "Jobs": [
+      "jobs": [
         {
           "type": "job",
           "id": "job1",
@@ -184,19 +176,18 @@ jobs:
       ]
     },
     {
-      "Type": "reusableWorkflowJob",
-      "Id": "deploy-2",
-      "Name": "deploy-2",
-      "Needs": [
+      "type": "reusableWorkflowJob",
+      "id": "deploy-2",
+      "name": "deploy-2",
+      "needs": [
         "build"
       ],
-      "If": {
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": "contoso/templates/.github/workflows/deploy.yml@v1",
-      "Permissions": null,
-      "InputDefinitions": {
+      "ref": "contoso/templates/.github/workflows/deploy.yml@v1",
+      "input-definitions": {
         "type": 2,
         "map": [
           {
@@ -217,7 +208,7 @@ jobs:
           }
         ]
       },
-      "InputValues": {
+      "input-values": {
         "type": 2,
         "map": [
           {
@@ -226,7 +217,7 @@ jobs:
           }
         ]
       },
-      "SecretDefinitions": {
+      "secret-definitions": {
         "type": 2,
         "map": [
           {
@@ -247,15 +238,8 @@ jobs:
           }
         ]
       },
-      "SecretValues": null,
-      "InheritSecrets": true,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": null,
-      "Jobs": [
+      "inherit-secrets": true,
+      "jobs": [
         {
           "type": "job",
           "id": "job1",

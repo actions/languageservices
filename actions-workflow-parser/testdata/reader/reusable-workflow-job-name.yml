@@ -1,7 +1,6 @@
 include-source: false # Drop file/line/col from output
 skip:
   - Go
-  - TypeScript
 ---
 on: push
 jobs:
@@ -26,28 +25,16 @@ jobs:
 {
   "jobs": [
     {
-      "Type": "reusableWorkflowJob",
-      "Id": "build",
-      "Name": "build",
-      "Needs": [],
-      "If": {
+      "type": "reusableWorkflowJob",
+      "id": "build",
+      "name": "build",
+      "needs": [],
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": "contoso/templates/.github/workflows/build.yml@v1",
-      "Permissions": null,
-      "InputDefinitions": null,
-      "InputValues": null,
-      "SecretDefinitions": null,
-      "SecretValues": null,
-      "InheritSecrets": false,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": null,
-      "Jobs": [
+      "ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "jobs": [
         {
           "type": "job",
           "id": "build-it",
@@ -71,28 +58,16 @@ jobs:
       ]
     },
     {
-      "Type": "reusableWorkflowJob",
-      "Id": "build1",
-      "Name": "custom name",
-      "Needs": [],
-      "If": {
+      "type": "reusableWorkflowJob",
+      "id": "build1",
+      "name": "custom name",
+      "needs": [],
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": "contoso/templates/.github/workflows/build.yml@v1",
-      "Permissions": null,
-      "InputDefinitions": null,
-      "InputValues": null,
-      "SecretDefinitions": null,
-      "SecretValues": null,
-      "InheritSecrets": false,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": null,
-      "Jobs": [
+      "ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "jobs": [
         {
           "type": "job",
           "id": "build-it",
@@ -116,31 +91,19 @@ jobs:
       ]
     },
     {
-      "Type": "reusableWorkflowJob",
-      "Id": "build2",
-      "Name": {
+      "type": "reusableWorkflowJob",
+      "id": "build2",
+      "name": {
         "type": 3,
         "expr": "github.ref"
       },
-      "Needs": [],
-      "If": {
+      "needs": [],
+      "if": {
         "type": 3,
         "expr": "success()"
       },
-      "Ref": "contoso/templates/.github/workflows/build.yml@v1",
-      "Permissions": null,
-      "InputDefinitions": null,
-      "InputValues": null,
-      "SecretDefinitions": null,
-      "SecretValues": null,
-      "InheritSecrets": false,
-      "Outputs": null,
-      "Defaults": null,
-      "Env": null,
-      "Concurrency": null,
-      "EmbeddedConcurrency": null,
-      "Strategy": null,
-      "Jobs": [
+      "ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "jobs": [
         {
           "type": "job",
           "id": "build-it",

@@ -1,7 +1,7 @@
 include-source: false # Drop file/line/col from output
-max-file-size: 124
 skip:
   - TypeScript
+max-file-size: 124
 ---
 on: push
 jobs:

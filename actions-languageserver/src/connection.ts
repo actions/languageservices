@@ -20,6 +20,7 @@ import {getClient} from "./client";
 import {Commands} from "./commands";
 import {contextProviders} from "./context-providers";
 import {descriptionProvider} from "./description-provider";
+import {getFileProvider} from "./file-provider";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions";
 import {onCompletion} from "./on-completion";
 import {TTLCache} from "./utils/cache";
@@ -106,7 +107,10 @@ export function initConnection(connection: Connection) {
         }
 
         return undefined;
-      }
+      },
+      fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
+        return await connection.sendRequest("actions/readFile", {path});
+      })
     };
     const result = await validate(textDocument, config);
 
@@ -124,8 +128,11 @@ export function initConnection(connection: Connection) {
   });
 
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
+    const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
+
     return hover(documents.get(textDocument.uri)!, position, {
-      descriptionProvider: descriptionProvider(client, cache)
+      descriptionProvider: descriptionProvider(client, cache),
+      contextProviderConfig: repoContext && contextProviders(client, repoContext, cache)
     });
   });
 

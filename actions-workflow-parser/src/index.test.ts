@@ -5,13 +5,10 @@ import {parseWorkflow} from "./workflows/workflow-parser";
 describe("parseWorkflow", () => {
   it("parses valid workflow", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content: "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n    - run: echo 'hello'"
-        }
-      ],
+      {
+        name: "test.yaml",
+        content: "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n    - run: echo 'hello'"
+      },
       nullTrace
     );
 
@@ -20,13 +17,10 @@ describe("parseWorkflow", () => {
 
   it("contains range for error", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content: "on: push\njobs:\n  build:\n    steps:\n    - run: echo 'hello'"
-        }
-      ],
+      {
+        name: "test.yaml",
+        content: "on: push\njobs:\n  build:\n    steps:\n    - run: echo 'hello'"
+      },
       nullTrace
     );
 
@@ -40,19 +34,16 @@ describe("parseWorkflow", () => {
 
   it("error range for expression is constrained to scalar node", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content: `on: push
+      {
+        name: "test.yaml",
+        content: `on: push
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: \${{ github.event = 12 }}
       run: echo 'hello'`
-        }
-      ],
+      },
       nullTrace
     );
 
@@ -71,14 +62,11 @@ jobs:
 
   it("tokens contain descriptions", () => {
     const result = parseWorkflow(
-      "test.yaml",
-      [
-        {
-          name: "test.yaml",
-          content:
-            "on: push\nname: hello\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n    - run: echo 'hello'"
-        }
-      ],
+      {
+        name: "test.yaml",
+        content:
+          "on: push\nname: hello\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n    - run: echo 'hello'"
+      },
       nullTrace
     );
 
