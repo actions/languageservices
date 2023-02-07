@@ -32,7 +32,7 @@ export function convertWorkflowJobInputs(context: TemplateContext, job: Reusable
 
   if (inputValues !== undefined) {
     for (const [_, [name, value]] of inputValues) {
-      if (inputDefinitions !== undefined && !inputDefinitions.has(name.toLowerCase())) {
+      if (!inputDefinitions?.has(name.toLowerCase())) {
         context.error(value, `Invalid input, ${name} is not defined in the referenced workflow.`);
       }
     }
