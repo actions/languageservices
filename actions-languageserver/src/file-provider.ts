@@ -2,22 +2,43 @@ import {File} from "@github/actions-workflow-parser/workflows/file";
 import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provider";
 import {fileIdentifier} from "@github/actions-workflow-parser/workflows/file-reference";
 import {Octokit} from "@octokit/rest";
+import path from "path";
 import {TTLCache} from "./utils/cache";
 
-export function getFileProvider(client: Octokit | undefined, cache: TTLCache): FileProvider | undefined {
-  if (!client) {
+export function getFileProvider(
+  client: Octokit | undefined,
+  cache: TTLCache,
+  workspace: string | undefined,
+  readFile: (path: string) => Promise<string>
+): FileProvider | undefined {
+  if (!client && !workspace) {
     return undefined;
   }
 
   return {
     getFileContent: async (ref): Promise<File> => {
-      if (!("repository" in ref)) {
-        throw new Error("Only remote file references are supported right now");
+      if ("repository" in ref) {
+        if (!client) {
+          throw new Error("Remote file references are not supported with this configuration");
+        }
+
+        return await cache.get(`file-content-${fileIdentifier(ref)}`, undefined, () =>
+          fetchWorkflowFile(client, ref.owner, ref.repository, ref.path, ref.version)
+        );
       }
 
-      return await cache.get(`file-content-${fileIdentifier(ref)}`, undefined, () =>
-        fetchWorkflowFile(client, ref.owner, ref.repository, ref.path, ref.version)
-      );
+      if (!workspace) {
+        throw new Error("Local file references are not supported with this configuration");
+      }
+
+      const file = await readFile(path.join(workspace, ref.path));
+      if (!file) {
+        throw new Error(`File not found: ${ref.path}`);
+      }
+      return {
+        name: ref.path,
+        content: file
+      };
     }
   };
 }
