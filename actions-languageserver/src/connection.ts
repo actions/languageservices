@@ -108,7 +108,9 @@ export function initConnection(connection: Connection) {
 
         return undefined;
       },
-      fileProvider: getFileProvider(client, cache)
+      fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
+        return await connection.sendRequest("actions/readFile", {path});
+      })
     };
     const result = await validate(textDocument, config);
 
