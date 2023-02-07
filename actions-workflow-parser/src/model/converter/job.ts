@@ -1,7 +1,7 @@
 import {TemplateContext} from "../../templates/template-context";
-import {StringToken, MappingToken, BasicExpressionToken, TemplateToken, ScalarToken} from "../../templates/tokens";
+import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
 import {isSequence, isString} from "../../templates/tokens/type-guards";
-import {WorkflowJob, Step} from "../workflow-template";
+import {Step, WorkflowJob} from "../workflow-template";
 import {convertConcurrency} from "./concurrency";
 import {convertToJobContainer, convertToJobServices} from "./container";
 import {handleTemplateTokenErrors} from "./handle-errors";
@@ -103,7 +103,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       type: "reusableWorkflowJob",
       id: jobKey,
       name: jobName(name, jobKey),
-      needs: needs ?? [],
+      needs,
       if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       ref: workflowJobRef,
       "input-definitions": undefined,
