@@ -103,7 +103,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       type: "reusableWorkflowJob",
       id: jobKey,
       name: jobName(name, jobKey),
-      needs,
+      needs: needs || [],
       if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       ref: workflowJobRef,
       "input-definitions": undefined,
