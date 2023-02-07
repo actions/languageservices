@@ -13,18 +13,21 @@ export function convertReferencedWorkflow(
 ) {
   const mapping = referencedWorkflow.assertMapping("root");
 
-  let onToken: TemplateToken | undefined;
+  // The language service doesn't currently handles on other documents,
+  // So use the ref in the original workflow as the error location
+  const tokenForErrors = job.ref;
+
   for (const pair of mapping) {
     const key = pair.key.assertString("root key");
     switch (key.value) {
       case "on": {
-        handleTemplateTokenErrors(mapping, context, undefined, () =>
+        handleTemplateTokenErrors(tokenForErrors, context, undefined, () =>
           convertReferencedWorkflowOn(context, pair.value, job)
         );
         break;
       }
       case "jobs": {
-        job.jobs = handleTemplateTokenErrors(mapping, context, [], () => convertJobs(context, pair.value));
+        job.jobs = handleTemplateTokenErrors(tokenForErrors, context, [], () => convertJobs(context, pair.value));
         break;
       }
     }
@@ -32,11 +35,12 @@ export function convertReferencedWorkflow(
 }
 
 function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken, job: ReusableWorkflowJob) {
+  const tokenForErrors = job.ref;
   switch (on.templateTokenType) {
     case TokenType.String: {
       const event = on.assertString("Reference workflow on value").value;
       if (event === "workflow_call") {
-        handleTemplateTokenErrors(on, context, undefined, () => convertWorkflowJobInputs(context, job));
+        handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobInputs(context, job));
         return;
       }
       break;
@@ -47,7 +51,7 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
       for (const eventToken of events) {
         const event = eventToken.assertString(`Reference workflow on value ${eventToken}`).value;
         if (event === "workflow_call") {
-          handleTemplateTokenErrors(on, context, undefined, () => convertWorkflowJobInputs(context, job));
+          handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobInputs(context, job));
           return;
         }
       }
@@ -64,7 +68,7 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
         }
 
         if (pair.value.templateTokenType === TokenType.Null) {
-          handleTemplateTokenErrors(on, context, undefined, () => convertWorkflowJobInputs(context, job));
+          handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobInputs(context, job));
           return;
         }
 
@@ -82,12 +86,12 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
           }
         }
 
-        handleTemplateTokenErrors(on, context, undefined, () => convertWorkflowJobInputs(context, job));
+        handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobInputs(context, job));
         return;
       }
       break;
     }
   }
 
-  context.error(on, "workflow_call key is not defined in the referenced workflow.");
+  context.error(tokenForErrors, "workflow_call key is not defined in the referenced workflow.");
 }
