@@ -205,19 +205,17 @@ function getExpressionCompletionItems(
   context: DescriptionDictionary,
   pos: Position
 ): CompletionItem[] {
-  let expressionInput = "";
   let currentInput = "";
-  let relCharPos: number = 0;
 
   if (isBasicExpression(token)) {
-    expressionInput = currentInput = token.expression;
-    relCharPos = getRelCharPos(token.range!, expressionInput, pos);
+    currentInput = token.source || token.expression;
   } else {
     const stringToken = token.assertString("Expected string token for expression completion");
     currentInput = stringToken.source || stringToken.value;
-    relCharPos = getRelCharPos(stringToken.range!, currentInput, pos);
-    expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
   }
+
+  const relCharPos = getRelCharPos(token.range!, currentInput, pos);
+  const expressionInput = (getExpressionInput(currentInput, relCharPos) || "").trim();
 
   try {
     return completeExpression(expressionInput, context, [], validatorFunctions).map(item =>

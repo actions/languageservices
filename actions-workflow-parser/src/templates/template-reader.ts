@@ -606,8 +606,9 @@ class TemplateReader {
       this._fileId,
       token.range,
       `format('${format.join("")}'${args.join("")})`,
-      token.definitionInfo,
-      expressionTokens
+      definitionInfo,
+      expressionTokens,
+      raw
     );
   }
 
@@ -667,7 +668,7 @@ class TemplateReader {
 
     // Return the expression
     return <ParseExpressionResult>{
-      expression: new BasicExpressionToken(this._fileId, range, trimmed, definitionInfo, undefined),
+      expression: new BasicExpressionToken(this._fileId, range, trimmed, definitionInfo, undefined, value),
       error: undefined
     };
   }

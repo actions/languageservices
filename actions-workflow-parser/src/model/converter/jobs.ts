@@ -111,7 +111,7 @@ function convertJob(context: TemplateContext, jobKey: StringToken, token: Mappin
     id: jobKey,
     name: undefined,
     needs: undefined,
-    if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined),
+    if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, "success()"),
     env: undefined,
     concurrency: undefined,
     environment: undefined,

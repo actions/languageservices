@@ -13,6 +13,8 @@ export class BasicExpressionToken extends ExpressionToken {
 
   public readonly originalExpressions: BasicExpressionToken[] | undefined;
 
+  public readonly source: string;
+
   /**
    * @param originalExpressions If the basic expression was transformed from individual expressions, these will be the original ones
    */
@@ -21,11 +23,13 @@ export class BasicExpressionToken extends ExpressionToken {
     range: TokenRange | undefined,
     expression: string,
     definitionInfo: DefinitionInfo | undefined,
-    originalExpressions: BasicExpressionToken[] | undefined
+    originalExpressions: BasicExpressionToken[] | undefined,
+    source: string
   ) {
     super(TokenType.BasicExpression, file, range, undefined, definitionInfo);
     this.expr = expression;
     this.originalExpressions = originalExpressions;
+    this.source = source;
   }
 
   public get expression(): string {
@@ -34,8 +38,22 @@ export class BasicExpressionToken extends ExpressionToken {
 
   public override clone(omitSource?: boolean): TemplateToken {
     return omitSource
-      ? new BasicExpressionToken(undefined, undefined, this.expr, this.definitionInfo, this.originalExpressions)
-      : new BasicExpressionToken(this.file, this.range, this.expr, this.definitionInfo, this.originalExpressions);
+      ? new BasicExpressionToken(
+          undefined,
+          undefined,
+          this.expr,
+          this.definitionInfo,
+          this.originalExpressions,
+          this.source
+        )
+      : new BasicExpressionToken(
+          this.file,
+          this.range,
+          this.expr,
+          this.definitionInfo,
+          this.originalExpressions,
+          this.source
+        );
   }
 
   public override toString(): string {
