@@ -6,11 +6,14 @@ import {WorkflowContext} from "../context/workflow-context";
 
 export function getNeedsContext(workflowContext: WorkflowContext): DescriptionDictionary {
   const d = new DescriptionDictionary();
-  if (!workflowContext.job || !workflowContext.job.needs) {
+
+  const job = workflowContext.job || workflowContext.reusableWorkflowJob;
+
+  if (!job?.needs) {
     return d;
   }
 
-  for (const jobID of workflowContext.job.needs) {
+  for (const jobID of job.needs) {
     const job = workflowContext.template?.jobs.find(job => job.id.value === jobID.value);
     d.add(jobID.value, needsJobContext(job));
   }

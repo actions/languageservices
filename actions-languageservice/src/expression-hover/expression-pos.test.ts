@@ -1,4 +1,4 @@
-import {parseWorkflow} from "@github/actions-workflow-parser/.";
+import {parseWorkflow} from "@github/actions-workflow-parser";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {nullTrace} from "../nulltrace";
 import {getPositionFromCursor} from "../test-utils/cursor-position";
