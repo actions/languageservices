@@ -1,4 +1,4 @@
-import {DescriptionDictionary} from "@github/actions-expressions/.";
+import {DescriptionDictionary} from "@github/actions-expressions";
 import {WorkflowContext} from "../context/workflow-context";
 import {testGetWorkflowContext} from "../test-utils/test-workflow-context";
 import {getNeedsContext} from "./needs";
