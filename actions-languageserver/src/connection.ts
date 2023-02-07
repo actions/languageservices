@@ -20,6 +20,7 @@ import {getClient} from "./client";
 import {Commands} from "./commands";
 import {contextProviders} from "./context-providers";
 import {descriptionProvider} from "./description-provider";
+import {getFileProvider} from "./file-provider";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions";
 import {onCompletion} from "./on-completion";
 import {TTLCache} from "./utils/cache";
@@ -106,7 +107,8 @@ export function initConnection(connection: Connection) {
         }
 
         return undefined;
-      }
+      },
+      fileProvider: getFileProvider(client, cache)
     };
     const result = await validate(textDocument, config);
 
