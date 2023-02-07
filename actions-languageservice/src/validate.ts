@@ -14,6 +14,7 @@ import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/to
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {File} from "@github/actions-workflow-parser/workflows/file";
+import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provider";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 import {ActionInputs, ActionReference} from "./action";
@@ -35,6 +36,7 @@ export type ValidationConfig = {
   valueProviderConfig?: ValueProviderConfig;
   contextProviderConfig?: ContextProviderConfig;
   getActionInputs?(action: ActionReference): Promise<ActionInputs | undefined>;
+  fileProvider?: FileProvider;
 };
 
 /**
@@ -55,7 +57,15 @@ export async function validate(textDocument: TextDocument, config?: ValidationCo
     const result: ParseWorkflowResult = parseWorkflow(file, nullTrace);
     if (result.value) {
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
-      const template = await convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
+      const template = await convertWorkflowTemplate(
+        result.context,
+        result.value,
+        ErrorPolicy.TryConversion,
+        config?.fileProvider,
+        {
+          fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
+        }
+      );
 
       // Validate expressions and value providers
       await additionalValidations(diagnostics, textDocument.uri, template, result.value, config);
