@@ -3,6 +3,7 @@ import {TemplateToken} from "../../templates/tokens";
 import {TokenType} from "../../templates/tokens/types";
 import {ReusableWorkflowJob} from "../workflow-template";
 import {handleTemplateTokenErrors} from "./handle-errors";
+import {convertWorkflowJobInputs} from "./job/inputs";
 import {convertJobs} from "./jobs";
 
 export function convertReferencedWorkflow(
@@ -35,7 +36,7 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
     case TokenType.String: {
       const event = on.assertString("Reference workflow on value").value;
       if (event === "workflow_call") {
-        // TODO: Validate workflow job trigger
+        handleTemplateTokenErrors(on, context, undefined, () => convertWorkflowJobInputs(context, job));
         return;
       }
       break;
@@ -46,7 +47,7 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
       for (const eventToken of events) {
         const event = eventToken.assertString(`Reference workflow on value ${eventToken}`).value;
         if (event === "workflow_call") {
-          // TODO: Validate workflow job trigger
+          handleTemplateTokenErrors(on, context, undefined, () => convertWorkflowJobInputs(context, job));
           return;
         }
       }
@@ -63,7 +64,7 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
         }
 
         if (pair.value.templateTokenType === TokenType.Null) {
-          // TODO: Validate workflow job trigger
+          handleTemplateTokenErrors(on, context, undefined, () => convertWorkflowJobInputs(context, job));
           return;
         }
 
@@ -74,10 +75,14 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
             case "inputs":
               job["input-definitions"] = definition.value.assertMapping(`on-workflow_call-${definition.key}`);
               break;
+
+            case "outputs":
+              job.outputs = definition.value.assertMapping(`on-workflow_call-${definition.key}`);
+              break;
           }
         }
 
-        // TODO: Validate workflow job trigger
+        handleTemplateTokenErrors(on, context, undefined, () => convertWorkflowJobInputs(context, job));
         return;
       }
       break;
