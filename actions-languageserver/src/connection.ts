@@ -23,6 +23,7 @@ import {descriptionProvider} from "./description-provider";
 import {getFileProvider} from "./file-provider";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions";
 import {onCompletion} from "./on-completion";
+import {ReadFileRequest, Requests} from "./request";
 import {TTLCache} from "./utils/cache";
 import {valueProviders} from "./value-providers";
 import {getActionInputs} from "./value-providers/action-inputs";
@@ -109,7 +110,7 @@ export function initConnection(connection: Connection) {
         return undefined;
       },
       fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
-        return await connection.sendRequest("actions/readFile", {path});
+        return await connection.sendRequest(Requests.ReadFile, {path} satisfies ReadFileRequest);
       })
     };
     const result = await validate(textDocument, config);
