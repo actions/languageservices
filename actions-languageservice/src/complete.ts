@@ -13,6 +13,7 @@ import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/in
 import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
 import {File} from "@github/actions-workflow-parser/workflows/file";
+import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
@@ -43,11 +44,16 @@ export function getExpressionInput(input: string, pos: number): string {
   return input.substring(startPos, pos);
 }
 
+export type CompletionConfig = {
+  valueProviderConfig?: ValueProviderConfig;
+  contextProviderConfig?: ContextProviderConfig;
+  fileProvider?: FileProvider;
+};
+
 export async function complete(
   textDocument: TextDocument,
   position: Position,
-  valueProviderConfig?: ValueProviderConfig,
-  contextProviderConfig?: ContextProviderConfig
+  config?: CompletionConfig
 ): Promise<CompletionItem[]> {
   // Edge case: when completing a key like `foo:|`, do not calculate auto-completions
   const charBeforePos = textDocument.getText({
@@ -71,7 +77,15 @@ export async function complete(
   }
 
   const {token, keyToken, parent, path} = findToken(newPos, result.value);
-  const template = await convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
+  const template = await convertWorkflowTemplate(
+    result.context,
+    result.value,
+    ErrorPolicy.TryConversion,
+    config?.fileProvider,
+    {
+      fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
+    }
+  );
   const workflowContext = getWorkflowContext(textDocument.uri, template, path);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
@@ -79,7 +93,7 @@ export async function complete(
   if (token) {
     if (isBasicExpression(token) || isPotentiallyExpression(token)) {
       const allowedContext = token.definitionInfo?.allowedContext || [];
-      const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
+      const context = await getContext(allowedContext, config?.contextProviderConfig, workflowContext, Mode.Completion);
 
       return getExpressionCompletionItems(token, context, newPos);
     }
@@ -88,7 +102,7 @@ export async function complete(
   const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
   const indentString = " ".repeat(indentation.tabSize);
 
-  const values = await getValues(token, keyToken, parent, valueProviderConfig, workflowContext, indentString);
+  const values = await getValues(token, keyToken, parent, config?.valueProviderConfig, workflowContext, indentString);
 
   let replaceRange: Range | undefined;
   if (token?.range) {
