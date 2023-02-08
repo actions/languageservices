@@ -1,12 +1,17 @@
 import {WorkflowContext} from "../context/workflow-context";
 import {ValueProviderConfig, ValueProviderKind} from "./config";
 import {needs} from "./needs";
+import {reusableJobInputs} from "./reusable-job-inputs";
 import {stringsToValues} from "./strings-to-values";
 
 export const defaultValueProviders: ValueProviderConfig = {
   needs: {
     kind: ValueProviderKind.AllowedValues,
     get: needs
+  },
+  "workflow-job-with": {
+    kind: ValueProviderKind.AllowedValues,
+    get: async context => reusableJobInputs(context)
   },
   "runs-on": {
     kind: ValueProviderKind.SuggestedValues,
