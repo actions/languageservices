@@ -68,6 +68,25 @@ jobs:
   `
         };
 
+      case "./reusable-workflow-with-outputs.yaml":
+        return {
+          name: "reusable-workflow-with-outputs.yaml",
+          content: `
+on:
+  workflow_call:
+    outputs:
+      build_id:
+        description: 'The resulting build ID'
+        value: 123
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+`
+        };
+
       default:
         throw new Error("File not found");
     }

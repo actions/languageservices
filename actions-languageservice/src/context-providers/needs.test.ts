@@ -72,4 +72,57 @@ jobs:
     const context = getNeedsContext(workflowContext);
     expect(context.pairs().map(x => x.key)).toEqual(["test"]);
   });
+
+  describe("outputs", () => {
+    it("regular job with outputs", async () => {
+      const workflowContext = await testGetWorkflowContext(`
+on: push
+jobs:
+  a:
+    outputs:
+      build_id: my-build-id
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+  b:
+    uses: ./.github/workflows/some-reusable-wor|kflow.yml
+    needs: [a]
+`);
+
+      const context = getNeedsContext(workflowContext);
+
+      const needs = context.get("a") as DescriptionDictionary;
+      expect(needs).toBeDefined();
+
+      const outputs = needs.get("outputs") as DescriptionDictionary;
+      expect(outputs).toBeDefined();
+
+      expect(outputs.pairs().map(x => x.key)).toEqual(["build_id"]);
+    });
+
+    it("reusable job with outputs", async () => {
+      const workflowContext = await testGetWorkflowContext(`
+on: push
+jobs:
+  a:
+    uses: ./reusable-workflow-with-outputs.yaml
+
+  b:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+    - run: ec|ho
+`);
+
+      const context = getNeedsContext(workflowContext);
+
+      const needs = context.get("a") as DescriptionDictionary;
+      expect(needs).toBeDefined();
+
+      const outputs = needs.get("outputs") as DescriptionDictionary;
+      expect(outputs).toBeDefined();
+
+      expect(outputs.pairs().map(x => x.key)).toEqual(["build_id"]);
+    });
+  });
 });
