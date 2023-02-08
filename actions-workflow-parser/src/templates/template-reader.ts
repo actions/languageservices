@@ -606,9 +606,9 @@ class TemplateReader {
       this._fileId,
       token.range,
       `format('${format.join("")}'${args.join("")})`,
-      token.definitionInfo,
+      definitionInfo,
       expressionTokens,
-      undefined
+      raw
     );
   }
 
