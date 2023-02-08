@@ -4,6 +4,21 @@ import {needs} from "./needs";
 import {reusableJobInputs} from "./reusable-job-inputs";
 import {stringsToValues} from "./strings-to-values";
 
+export const DEFAULT_RUNNER_LABELS = [
+  "ubuntu-latest",
+  "ubuntu-22.04",
+  "ubuntu-20.04",
+  "ubuntu-18.04",
+  "windows-latest",
+  "windows-2022",
+  "windows-2019",
+  "macos-latest",
+  "macos-12",
+  "macos-11",
+  "macos-10.15",
+  "self-hosted"
+];
+
 export const defaultValueProviders: ValueProviderConfig = {
   needs: {
     kind: ValueProviderKind.AllowedValues,
@@ -15,20 +30,6 @@ export const defaultValueProviders: ValueProviderConfig = {
   },
   "runs-on": {
     kind: ValueProviderKind.SuggestedValues,
-    get: async (_: WorkflowContext) =>
-      stringsToValues([
-        "ubuntu-latest",
-        "ubuntu-22.04",
-        "ubuntu-20.04",
-        "ubuntu-18.04",
-        "windows-latest",
-        "windows-2022",
-        "windows-2019",
-        "macos-latest",
-        "macos-12",
-        "macos-11",
-        "macos-10.15",
-        "self-hosted"
-      ])
+    get: async (_: WorkflowContext) => stringsToValues(DEFAULT_RUNNER_LABELS)
   }
 };
