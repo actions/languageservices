@@ -133,7 +133,7 @@ class TemplateReader {
       else {
         this._context.error(mapping, "A mapping was not expected");
 
-        while (this._objectReader.allowMappingEnd()) {
+        while (!this._objectReader.allowMappingEnd()) {
           this.skipValue();
           this.skipValue();
         }
