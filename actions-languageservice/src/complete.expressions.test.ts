@@ -278,6 +278,13 @@ jobs:
       expect(result.map(x => x.label)).toEqual(["event"]);
     });
 
+    it("auto-complete complex partial", async () => {
+      const input = 'run-name: "run ${{ github.ev| }} run"';
+      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+
+      expect(result.map(x => x.label)).toEqual(["event"]);
+    });
+
     it("using default context provider", async () => {
       const input =
         "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    environment:\n      url: ${{ runner.| }}\n    steps:\n      - run: echo";
