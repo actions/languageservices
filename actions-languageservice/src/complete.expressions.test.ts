@@ -280,7 +280,7 @@ jobs:
 
     it("auto-complete complex partial", async () => {
       const input = 'run-name: "run ${{ github.ev| }} run"';
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["event"]);
     });
