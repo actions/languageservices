@@ -192,7 +192,7 @@ jobs:
         }
       }
     };
-    const result = await complete(...getPositionFromCursor(input), config);
+    const result = await complete(...getPositionFromCursor(input), {valueProviderConfig: config});
 
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(1);
@@ -210,7 +210,7 @@ jobs:
         }
       }
     };
-    const result = await complete(...getPositionFromCursor(input), config);
+    const result = await complete(...getPositionFromCursor(input), {valueProviderConfig: config});
 
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(1);
