@@ -59,7 +59,7 @@ describe("expressions", () => {
   describe("top-level auto-complete", () => {
     it("single region", async () => {
       const input = "run-name: ${{ | }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      const result = await complete(...getPositionFromCursor(input));
 
       expect(result.map(x => x.label)).toEqual([
         "github",
@@ -76,18 +76,16 @@ describe("expressions", () => {
     });
 
     it("within parentheses", async () => {
-      const result = await complete(
-        ...getPositionFromCursor("run-name: ${{ 1 == (github.|) }}"),
-        undefined,
+      const result = await complete(...getPositionFromCursor("run-name: ${{ 1 == (github.|) }}"), {
         contextProviderConfig
-      );
+      });
 
       expect(result.map(x => x.label)).toEqual(["event"]);
     });
 
     it("contains description", async () => {
       const input = "run-name: ${{ github.| }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      const result = await complete(...getPositionFromCursor(input));
 
       expect(result).toContainEqual<CompletionItem>({
         label: "api_url",
@@ -101,7 +99,7 @@ describe("expressions", () => {
 
     it("single region with existing input", async () => {
       const input = "run-name: ${{ g| }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual([
         "github",
@@ -119,7 +117,7 @@ describe("expressions", () => {
 
     it("single region with existing condition", async () => {
       const input = "run-name: ${{ g| == 'test' }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual([
         "github",
@@ -137,7 +135,7 @@ describe("expressions", () => {
 
     it("multiple regions with partial function", async () => {
       const input = "run-name: Run a ${{ inputs.test }} one-line script ${{ from|('test') == inputs.name }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual([
         "github",
@@ -155,7 +153,7 @@ describe("expressions", () => {
 
     it("multiple regions - first region", async () => {
       const input = "run-name: test-${{ git| == 1 }}-${{ github.event }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual([
         "github",
@@ -173,7 +171,7 @@ describe("expressions", () => {
 
     it("multiple regions", async () => {
       const input = "run-name: test-${{ github }}-${{ | }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual([
         "github",
@@ -199,7 +197,7 @@ jobs:
           first line
           test \${{ github.| }}
           test2`;
-        const result = await complete(...getPositionFromCursor(input, 1), undefined, contextProviderConfig);
+        const result = await complete(...getPositionFromCursor(input, 1), {contextProviderConfig});
 
         expect(result.map(x => x.label)).toEqual(["event"]);
       });
@@ -213,7 +211,7 @@ jobs:
           first line
           test \${{ github.| }}
           test2`;
-        const result = await complete(...getPositionFromCursor(input, 1), undefined, contextProviderConfig);
+        const result = await complete(...getPositionFromCursor(input, 1), {contextProviderConfig});
 
         expect(result.map(x => x.label)).toEqual(["event"]);
       });
@@ -227,7 +225,7 @@ jobs:
           first line
           test \${{ github.| }}
           test2`;
-        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+        const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
         expect(result.map(x => x.label)).toEqual(["event"]);
       });
@@ -241,7 +239,7 @@ jobs:
           first line
           test \${{ github.| }}
           test2`;
-        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+        const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
         expect(result.map(x => x.label)).toEqual(["event"]);
       });
@@ -261,21 +259,28 @@ jobs:
       foo: '{}'
     steps:
       - name: "\${{ fromJSON('test') == (inputs.|) }}"`;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["test"]);
     });
 
     it("nested auto-complete", async () => {
       const input = "run-name: ${{ github.| }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["event"]);
     });
 
     it("auto-complete partial", async () => {
       const input = "run-name: ${{ github.ev| }}";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+
+      expect(result.map(x => x.label)).toEqual(["event"]);
+    });
+
+    it("auto-complete complex partial", async () => {
+      const input = 'run-name: "run ${{ github.ev| }} run"';
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["event"]);
     });
@@ -283,7 +288,7 @@ jobs:
     it("using default context provider", async () => {
       const input =
         "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    environment:\n      url: ${{ runner.| }}\n    steps:\n      - run: echo";
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["arch", "name", "os", "temp", "tool_cache"]);
     });
@@ -298,7 +303,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: echo`;
-          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+          const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
           expect(result.map(x => x.label)).toEqual(["event"]);
         });
@@ -311,7 +316,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: echo`;
-          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+          const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
           expect(result.map(x => x.label)).toEqual(["event"]);
         });
@@ -326,7 +331,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: echo`;
-          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+          const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
           expect(result.map(x => x.label)).toEqual(["event"]);
         });
@@ -339,7 +344,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: echo`;
-          const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+          const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
           expect(result.map(x => x.label)).toEqual(["event"]);
         });
@@ -355,7 +360,7 @@ jobs:
     steps:
     - run: echo
       if: \${{ github.| }}`;
-        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+        const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
         expect(result.map(x => x.label)).toEqual(["event"]);
       });
@@ -368,7 +373,7 @@ jobs:
     steps:
     - run: echo
       if: github.|`;
-        const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+        const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
         expect(result.map(x => x.label)).toEqual(["event"]);
       });
@@ -388,7 +393,7 @@ jobs:
       with:
         deploy-key: \${{ secrets.|
 `;
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result.map(x => x.label)).toEqual(["GITHUB_TOKEN"]);
   });
@@ -412,7 +417,7 @@ jobs:
     steps:
     - run: echo "hello \${{ needs.|
 `;
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result.map(x => x.label)).toEqual(["b"]);
   });
@@ -431,7 +436,7 @@ jobs:
     steps:
     - run: echo "hello \${{ needs.a.|
 `;
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result.map(x => x.label)).toEqual(["outputs", "result"]);
   });
@@ -452,7 +457,7 @@ jobs:
     steps:
     - run: echo "hello \${{ needs.a.outputs.|
 `;
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result.map(x => x.label)).toEqual(["build_id"]);
   });
@@ -481,7 +486,7 @@ jobs:
       env:
         envstepb: step_b_env
 `;
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result.map(x => x.label)).toEqual(["envjobb", "envstepb", "envwf"]);
   });
@@ -509,7 +514,7 @@ jobs:
     steps:
     - run: echo "hello \${{ inputs.|
 `;
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result.map(x => x.label)).toEqual(["another-name", "name", "third-name"]);
   });
@@ -524,7 +529,7 @@ jobs:
     steps:
     - run: echo "hello \${{ inputs.|
 `;
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result).toEqual([]);
   });
@@ -542,7 +547,7 @@ jobs:
         - run: echo \${{ github.| }}
     `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      const result = await complete(...getPositionFromCursor(input));
 
       expect(result.map(x => x.label)).toContain("actor");
     });
@@ -570,7 +575,7 @@ jobs:
       steps:
       - run: echo "hello \${{ github.event.inputs.|
   `;
-      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      const result = await complete(...getPositionFromCursor(input));
 
       expect(result.map(x => x.label)).toEqual(["another-name", "name", "third-name"]);
     });
@@ -587,7 +592,7 @@ jobs:
         - run: echo \${{ github.event.| }}
     `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      const result = await complete(...getPositionFromCursor(input));
 
       expect(result.map(x => x.label)).not.toContain("inputs");
       expect(result.map(x => x.label)).not.toContain("schedule");
@@ -607,7 +612,7 @@ jobs:
         - run: echo \${{ github.event.| }}
     `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      const result = await complete(...getPositionFromCursor(input));
 
       expect(result.map(x => x.label)).toEqual(["repository", "schedule", "workflow"]);
     });
@@ -623,7 +628,7 @@ jobs:
         - run: echo \${{ github.event.| }}
     `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      const result = await complete(...getPositionFromCursor(input));
 
       // forced is part of the push event payload
       expect(result.map(x => x.label)).toContain("forced");
@@ -642,7 +647,7 @@ jobs:
         - run: echo \${{ github.event.| }}
     `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, undefined);
+      const result = await complete(...getPositionFromCursor(input));
 
       // We don't validate github.event for workflow_call,
       // but there should still be auto-completion suggestions
@@ -665,7 +670,7 @@ jobs:
     - id: c
       run: echo "hello \${{ steps.|
 `;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["a", "b"]);
     });
@@ -681,7 +686,7 @@ jobs:
       run: echo hello a
     - run: echo "hello \${{ steps.a.|
     `;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["conclusion", "outcome", "outputs"]);
     });
@@ -700,7 +705,7 @@ jobs:
     - id: c
       run: echo hello c
   `;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["a"]);
     });
@@ -717,7 +722,7 @@ jobs:
         run: echo hello b
       - run: echo "hello \${{ steps.|
   `;
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["b"]);
     });
@@ -736,7 +741,7 @@ jobs:
       - run: npm test > test-job-\${{ | }}.txt
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).not.toContain("strategy");
     });
@@ -757,7 +762,7 @@ jobs:
       - run: npm test > test-job-\${{ | }}.txt
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toContain("strategy");
     });
@@ -778,7 +783,7 @@ jobs:
       - run: npm test > test-job-\${{ strategy.| }}.txt
   `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["fail-fast", "job-index", "job-total", "max-parallel"]);
     });
@@ -797,7 +802,7 @@ jobs:
       - run: npm test > test-job-\${{ | }}.txt
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).not.toContain("strategy");
     });
@@ -818,7 +823,7 @@ jobs:
       - run: npm test > test-job-\${{ | }}.txt
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toContain("strategy");
     });
@@ -841,7 +846,7 @@ jobs:
           node-version: \${{ matrix.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["node", "os"]);
     });
@@ -873,7 +878,7 @@ jobs:
           node-version: \${{ matrix.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["animal", "color", "fruit", "shape"]);
     });
@@ -894,7 +899,7 @@ jobs:
           node-version: \${{ matrix.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual([]);
     });
@@ -918,7 +923,7 @@ jobs:
           node-version: \${{ matrix.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["animal", "fruit"]);
     });
@@ -940,7 +945,7 @@ jobs:
           node-version: \${{ matrix.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
       expect(result.map(x => x.label)).toEqual(["color"]);
     });
@@ -963,7 +968,7 @@ jobs:
       - run: echo \${{ job.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
       expect(result.map(x => x.label)).toEqual(["container", "services", "status"]);
     });
 
@@ -980,7 +985,7 @@ jobs:
         run: echo hi
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
       expect(result.map(x => x.label)).toEqual([
         "env",
         "github",
@@ -1014,7 +1019,7 @@ jobs:
         run: echo hi
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
       expect(result.map(x => x.label)).toEqual(["foo"]);
     });
 
@@ -1031,7 +1036,7 @@ jobs:
       - run: echo \${{ job.container.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
       expect(result.map(x => x.label)).toEqual(["id", "network"]);
     });
 
@@ -1051,7 +1056,7 @@ jobs:
       - run: echo \${{ job.services.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
       expect(result.map(x => x.label)).toEqual(["nginx", "redis"]);
     });
 
@@ -1072,7 +1077,7 @@ jobs:
       - run: echo \${{ job.services.nginx.| }}
 `;
 
-      const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
       expect(result.map(x => x.label)).toEqual(["id", "network", "ports"]);
     });
   });
@@ -1089,7 +1094,7 @@ jobs:
           - run: echo \${{ | }}.txt
     `;
 
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     // Built-in function
     const toJSON = result.find(x => x.label === "toJson");
@@ -1121,7 +1126,7 @@ jobs:
           - run: echo \${{ toJS|(github.event) }}
     `;
 
-    const result = await complete(...getPositionFromCursor(input), undefined, contextProviderConfig);
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result.find(x => x.label === "toJson")!.insertText).toBe("toJson");
   });

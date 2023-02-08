@@ -118,15 +118,20 @@ async function additionalValidations(
 
     // Allowed values coming from the schema have already been validated. Only check if
     // a value provider is defined for a token and if it is, validate the values match.
-    if (config?.valueProviderConfig && token.range && validationDefinition) {
+    if (token.range && validationDefinition) {
       const defKey = validationDefinition.key;
       if (defKey === "step-with") {
         // Action inputs should be validated already in validateAction
         continue;
       }
 
+      if (defKey === "workflow-job-with") {
+        // Reusable workflow job inputs are validated by the parser
+        continue;
+      }
+
       // Try a custom value provider first
-      let valueProvider = config.valueProviderConfig[defKey];
+      let valueProvider = config?.valueProviderConfig?.[defKey];
       if (!valueProvider) {
         // fall back to default
         valueProvider = defaultValueProviders[defKey];

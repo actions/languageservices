@@ -14,8 +14,9 @@ describe("completion", () => {
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(11);
-    expect(result[0].label).toEqual("macos-10.13");
+    expect(result.length).toEqual(12);
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("macos-latest");
   });
 
   it("needs", async () => {
@@ -46,26 +47,15 @@ jobs:
     const input = `on: push
 jobs:
   build:
-    runs-on: [self-hosted, u|]`;
+    runs-on: [ubuntu-latest, u|]`;
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(10);
+    expect(result.length).toEqual(11);
 
-    expect(result[0].label).toEqual("macos-10.13");
-  });
-
-  it("sequence filters out existing values", async () => {
-    const input = `on: push
-jobs:
-  build:
-      runs-on: [ubuntu-latest, u|]`;
-    const result = await complete(...getPositionFromCursor(input));
-
-    expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(10);
-
-    expect(result[0].label).toEqual("macos-10.13");
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("macos-latest");
+    expect(labels).not.toContain("ubuntu-latest");
   });
 
   it("one-of definition completion", async () => {
@@ -192,7 +182,7 @@ jobs:
         }
       }
     };
-    const result = await complete(...getPositionFromCursor(input), config);
+    const result = await complete(...getPositionFromCursor(input), {valueProviderConfig: config});
 
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(1);
@@ -210,7 +200,7 @@ jobs:
         }
       }
     };
-    const result = await complete(...getPositionFromCursor(input), config);
+    const result = await complete(...getPositionFromCursor(input), {valueProviderConfig: config});
 
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(1);

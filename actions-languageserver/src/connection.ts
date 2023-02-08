@@ -120,6 +120,7 @@ export function initConnection(connection: Connection) {
 
   connection.onCompletion(async ({position, textDocument}: TextDocumentPositionParams): Promise<CompletionItem[]> => {
     return await onCompletion(
+      connection,
       position,
       documents.get(textDocument.uri)!,
       client,

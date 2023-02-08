@@ -1,31 +1,16 @@
 import {Value} from "@github/actions-languageservice/value-providers/config";
+import {DEFAULT_RUNNER_LABELS} from "@github/actions-languageservice/value-providers/default";
 import {Octokit} from "@octokit/rest";
 import {TTLCache} from "../utils/cache";
 
 // Limitation: getRunnerLabels returns default hosted labels and labels for repository self-hosted runners.
 // It doesn't return labels for organization runners visible to the repository.
 export async function getRunnerLabels(client: Octokit, cache: TTLCache, owner: string, name: string): Promise<Value[]> {
-  const defaultLabels = [
-    "ubuntu-latest",
-    "ubuntu-22.04",
-    "ubuntu-20.04",
-    "ubuntu-18.04",
-    "windows-latest",
-    "windows-2022",
-    "windows-2019",
-    "windows-2016",
-    "macos-latest",
-    "macos-12",
-    "macos-11",
-    "macos-10.15",
-    "self-hosted"
-  ];
-
   const repoLabels = await cache.get(`${owner}/${name}/runner-labels`, undefined, () =>
     fetchRunnerLabels(client, owner, name)
   );
 
-  for (const label of defaultLabels) {
+  for (const label of DEFAULT_RUNNER_LABELS) {
     repoLabels.add(label);
   }
 
