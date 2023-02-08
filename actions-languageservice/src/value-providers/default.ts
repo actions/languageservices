@@ -18,15 +18,16 @@ export const defaultValueProviders: ValueProviderConfig = {
     get: async (_: WorkflowContext) =>
       stringsToValues([
         "ubuntu-latest",
+        "ubuntu-22.04",
+        "ubuntu-20.04",
         "ubuntu-18.04",
-        "ubuntu-16.04",
         "windows-latest",
+        "windows-2022",
         "windows-2019",
-        "windows-2016",
         "macos-latest",
+        "macos-12",
+        "macos-11",
         "macos-10.15",
-        "macos-10.14",
-        "macos-10.13",
         "self-hosted"
       ])
   }
