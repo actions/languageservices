@@ -5,6 +5,7 @@ import {ContextProviderConfig} from "./context-providers/config";
 import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {TestLogger} from "./test-utils/logger";
+import {testFileProvider} from "./test-utils/test-file-provider";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: async (context: string) => {
@@ -1129,5 +1130,25 @@ jobs:
     const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
     expect(result.find(x => x.label === "toJson")!.insertText).toBe("toJson");
+  });
+
+  it("Parsing errors don't prevent reusable workflows from being loaded", async () => {
+    const input = `
+on: push
+jobs:
+  a:
+    uses: ./reusable-workflow-with-outputs.yaml
+  b:
+    needs: [a]
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "hello \${{ needs.a.outputs.| }}"
+`;
+    const result = await complete(...getPositionFromCursor(input), {
+      contextProviderConfig,
+      fileProvider: testFileProvider
+    });
+
+    expect(result.map(x => x.label)).toEqual(["build_id"]);
   });
 });

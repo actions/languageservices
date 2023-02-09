@@ -68,11 +68,11 @@ it("YAML errors include range information", () => {
 
   const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
   const fileId = context.getFileId("test.yaml");
-  new YamlObjectReader(context, fileId, content);
+  const reader = new YamlObjectReader(fileId, content);
 
-  expect(context.errors.count).toBe(1);
+  expect(reader.errors.length).toBe(1);
 
-  const error = context.errors.getErrors()[0];
+  const error = reader.errors[0];
   expect(error.range).toEqual({
     start: {line: 7, column: 38},
     end: {line: 7, column: 63}

@@ -20,9 +20,12 @@ export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | Tem
       : new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), contextOrTrace);
 
   const fileId = context.getFileId(entryFile.name);
-  const reader = new YamlObjectReader(context, fileId, entryFile.content);
-  if (context.errors.count > 0) {
+  const reader = new YamlObjectReader(fileId, entryFile.content);
+  if (reader.errors.length > 0) {
     // The file is not valid YAML, template errors could be misleading
+    for (const err of reader.errors) {
+      context.error(fileId, err.message, err.range);
+    }
     return {
       context,
       value: undefined
