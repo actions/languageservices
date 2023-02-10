@@ -5,6 +5,7 @@ import {TextDocument} from "vscode-languageserver-textdocument";
 import {contextProviders} from "./context-providers";
 import {getFileProvider} from "./file-provider";
 import {RepositoryContext} from "./initializationOptions";
+import {Requests} from "./request";
 import {TTLCache} from "./utils/cache";
 import {valueProviders} from "./value-providers";
 
@@ -20,7 +21,7 @@ export async function onCompletion(
     valueProviderConfig: repoContext && valueProviders(client, repoContext, cache),
     contextProviderConfig: repoContext && contextProviders(client, repoContext, cache),
     fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
-      return await connection.sendRequest("actions/readFile", {path});
+      return await connection.sendRequest(Requests.ReadFile, {path});
     })
   });
 }
