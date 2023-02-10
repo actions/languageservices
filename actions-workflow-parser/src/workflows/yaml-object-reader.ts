@@ -15,20 +15,27 @@ import {
 } from "../templates/tokens/index";
 import {Position, TokenRange} from "../templates/tokens/token-range";
 
+export type YamlError = {
+  message: string;
+  range: TokenRange | undefined;
+};
+
 export class YamlObjectReader implements ObjectReader {
   private readonly _generator: Generator<ParseEvent>;
   private _current!: IteratorResult<ParseEvent>;
   private fileId?: number;
   private lineCounter = new LineCounter();
 
-  constructor(context: TemplateContext, fileId: number | undefined, content: string) {
+  public errors: YamlError[] = [];
+
+  constructor(fileId: number | undefined, content: string) {
     const doc = parseDocument(content, {
       lineCounter: this.lineCounter,
       keepSourceTokens: true,
       uniqueKeys: false // Uniqueness is validated by the template reader
     });
     for (const err of doc.errors) {
-      context.error(fileId, err.message, rangeFromLinePos(err.linePos));
+      this.errors.push({message: err.message, range: rangeFromLinePos(err.linePos)});
     }
     this._generator = this.getNodes(doc);
     this.fileId = fileId;
