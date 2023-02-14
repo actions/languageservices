@@ -29,51 +29,55 @@ export async function getSecrets(
     }
   }
 
-  const secrets = await getRemoteSecrets(octokit, cache, repo, environmentName);
-
-  // Build combined map of secrets
-  const secretsMap = new Map<
-    string,
-    {
-      key: string;
-      value: data.StringData;
-      description?: string;
-    }
-  >();
-
-  secrets.orgSecrets.forEach(secret =>
-    secretsMap.set(secret.value.toLowerCase(), {
-      key: secret.value,
-      value: new data.StringData("***"),
-      description: "Organization secret"
-    })
-  );
-
-  // Override org secrets with repo secrets
-  secrets.repoSecrets.forEach(secret =>
-    secretsMap.set(secret.value.toLowerCase(), {
-      key: secret.value,
-      value: new data.StringData("***"),
-      description: "Repository secret"
-    })
-  );
-
-  // Override repo secrets with environment secrets (if defined)
-  secrets.environmentSecrets.forEach(secret =>
-    secretsMap.set(secret.value.toLowerCase(), {
-      key: secret.value,
-      value: new data.StringData("***"),
-      description: `Secret for environment \`${environmentName}\``
-    })
-  );
-
   const secretsContext = defaultContext || new DescriptionDictionary();
+  try {
+    const secrets = await getRemoteSecrets(octokit, cache, repo, environmentName);
 
-  // Sort secrets by key and add to context
-  Array.from(secretsMap.values())
-    .sort((a, b) => a.key.localeCompare(b.key))
-    .forEach(secret => secretsContext?.add(secret.key, secret.value, secret.description));
+    // Build combined map of secrets
+    const secretsMap = new Map<
+      string,
+      {
+        key: string;
+        value: data.StringData;
+        description?: string;
+      }
+    >();
 
+    secrets.orgSecrets.forEach(secret =>
+      secretsMap.set(secret.value.toLowerCase(), {
+        key: secret.value,
+        value: new data.StringData("***"),
+        description: "Organization secret"
+      })
+    );
+
+    // Override org secrets with repo secrets
+    secrets.repoSecrets.forEach(secret =>
+      secretsMap.set(secret.value.toLowerCase(), {
+        key: secret.value,
+        value: new data.StringData("***"),
+        description: "Repository secret"
+      })
+    );
+
+    // Override repo secrets with environment secrets (if defined)
+    secrets.environmentSecrets.forEach(secret =>
+      secretsMap.set(secret.value.toLowerCase(), {
+        key: secret.value,
+        value: new data.StringData("***"),
+        description: `Secret for environment \`${environmentName}\``
+      })
+    );
+
+    // Sort secrets by key and add to context
+    Array.from(secretsMap.values())
+      .sort((a, b) => a.key.localeCompare(b.key))
+      .forEach(secret => secretsContext?.add(secret.key, secret.value, secret.description));
+  } catch (e: any) {
+    if (e.status === 403 || e.status === 404) {
+      secretsContext.complete = false;
+    }
+  }
   return secretsContext;
 }
 
@@ -88,9 +92,7 @@ async function getRemoteSecrets(
   orgSecrets: StringData[];
 }> {
   return {
-    repoSecrets: await cache.get(`${repo.owner}/${repo.name}/secrets`, undefined, () =>
-      fetchSecrets(octokit, repo.owner, repo.name)
-    ),
+    repoSecrets: await fetchSecrets(octokit, repo.owner, repo.name),
     environmentSecrets:
       (environmentName &&
         (await cache.get(`${repo.owner}/${repo.name}/secrets/environment/${environmentName}`, undefined, () =>
@@ -114,9 +116,8 @@ async function fetchSecrets(octokit: Octokit, owner: string, name: string): Prom
     );
   } catch (e) {
     console.log("Failure to retrieve secrets: ", e);
+    throw e;
   }
-
-  return [];
 }
 
 async function fetchEnvironmentSecrets(
@@ -136,9 +137,8 @@ async function fetchEnvironmentSecrets(
     );
   } catch (e) {
     console.log("Failure to retrieve environment secrets: ", e);
+    throw e;
   }
-
-  return [];
 }
 
 async function fetchOrganizationSecrets(octokit: Octokit, repo: RepositoryContext): Promise<StringData[]> {
@@ -155,7 +155,6 @@ async function fetchOrganizationSecrets(octokit: Octokit, repo: RepositoryContex
     return secrets.map(secret => new StringData(secret.name));
   } catch (e) {
     console.log("Failure to retrieve organization secrets: ", e);
+    throw e;
   }
-
-  return [];
 }

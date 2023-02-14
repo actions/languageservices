@@ -30,51 +30,55 @@ export async function getVariables(
     }
   }
 
-  const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
-
-  // Build combined map of variables
-  const variablesMap = new Map<
-    string,
-    {
-      key: string;
-      value: data.StringData;
-      description?: string;
-    }
-  >();
-
-  variables.organizationVariables.forEach(variable =>
-    variablesMap.set(variable.key.toLowerCase(), {
-      key: variable.key,
-      value: new data.StringData(variable.value.coerceString()),
-      description: `${variable.value.coerceString()} - Organization variable`
-    })
-  );
-
-  // Override org variables with repo variables
-  variables.repoVariables.forEach(variable =>
-    variablesMap.set(variable.key.toLowerCase(), {
-      key: variable.key,
-      value: new data.StringData(variable.value.coerceString()),
-      description: `${variable.value.coerceString()} - Repository variable`
-    })
-  );
-
-  // Override repo variables with environment veriables (if defined)
-  variables.environmentVariables.forEach(variable =>
-    variablesMap.set(variable.key.toLowerCase(), {
-      key: variable.key,
-      value: new data.StringData(variable.value.coerceString()),
-      description: `${variable.value.coerceString()} - Variable for environment \`${environmentName}\``
-    })
-  );
-
   const variablesContext = defaultContext || new DescriptionDictionary();
+  try {
+    const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
 
-  // Sort variables by key and add to context
-  Array.from(variablesMap.values())
-    .sort((a, b) => a.key.localeCompare(b.key))
-    .forEach(variable => variablesContext?.add(variable.key, variable.value, variable.description));
+    // Build combined map of variables
+    const variablesMap = new Map<
+      string,
+      {
+        key: string;
+        value: data.StringData;
+        description?: string;
+      }
+    >();
 
+    variables.organizationVariables.forEach(variable =>
+      variablesMap.set(variable.key.toLowerCase(), {
+        key: variable.key,
+        value: new data.StringData(variable.value.coerceString()),
+        description: `${variable.value.coerceString()} - Organization variable`
+      })
+    );
+
+    // Override org variables with repo variables
+    variables.repoVariables.forEach(variable =>
+      variablesMap.set(variable.key.toLowerCase(), {
+        key: variable.key,
+        value: new data.StringData(variable.value.coerceString()),
+        description: `${variable.value.coerceString()} - Repository variable`
+      })
+    );
+
+    // Override repo variables with environment veriables (if defined)
+    variables.environmentVariables.forEach(variable =>
+      variablesMap.set(variable.key.toLowerCase(), {
+        key: variable.key,
+        value: new data.StringData(variable.value.coerceString()),
+        description: `${variable.value.coerceString()} - Variable for environment \`${environmentName}\``
+      })
+    );
+
+    // Sort variables by key and add to context
+    Array.from(variablesMap.values())
+      .sort((a, b) => a.key.localeCompare(b.key))
+      .forEach(variable => variablesContext?.add(variable.key, variable.value, variable.description));
+  } catch (e: any) {
+    if (e.status === 403 || e.status === 404) {
+      variablesContext.complete = false;
+    }
+  }
   return variablesContext;
 }
 
@@ -121,9 +125,8 @@ async function fetchVariables(octokit: Octokit, owner: string, name: string): Pr
     );
   } catch (e) {
     console.log("Failure to retrieve variables: ", e);
+    throw e;
   }
-
-  return [];
 }
 
 async function fetchEnvironmentVariables(
@@ -146,9 +149,8 @@ async function fetchEnvironmentVariables(
     );
   } catch (e) {
     console.log("Failure to retrieve environment variables: ", e);
+    throw e;
   }
-
-  return [];
 }
 
 async function fetchOrganizationVariables(octokit: Octokit, repo: RepositoryContext): Promise<Pair[]> {
@@ -170,7 +172,6 @@ async function fetchOrganizationVariables(octokit: Octokit, repo: RepositoryCont
     });
   } catch (e) {
     console.log("Failure to retrieve organization variables: ", e);
+    throw e;
   }
-
-  return [];
 }
