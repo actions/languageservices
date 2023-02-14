@@ -31,30 +31,35 @@ export type WorkflowTemplateConverterOptions = {
    * Default: 0
    */
   fetchReusableWorkflowDepth?: number;
+
+  /**
+   * The error policy to use when converting the workflow.
+   * By default, conversion will be skipped if there are errors in the {@link TemplateContext}.
+   */
+  errorPolicy?: ErrorPolicy;
 };
 
 const defaultOptions: Required<WorkflowTemplateConverterOptions> = {
   maxReusableWorkflowDepth: 4,
-  fetchReusableWorkflowDepth: 0
+  fetchReusableWorkflowDepth: 0,
+  errorPolicy: ErrorPolicy.ReturnErrorsOnly
 };
 
 export async function convertWorkflowTemplate(
   context: TemplateContext,
   root: TemplateToken,
-  errorPolicy: ErrorPolicy = ErrorPolicy.ReturnErrorsOnly,
   fileProvider?: FileProvider,
   options: WorkflowTemplateConverterOptions = defaultOptions
 ): Promise<WorkflowTemplate> {
   const result = {} as WorkflowTemplate;
+  const opts = getOptionsWithDefaults(options);
 
-  if (context.errors.getErrors().length > 0 && errorPolicy === ErrorPolicy.ReturnErrorsOnly) {
+  if (context.errors.getErrors().length > 0 && opts.errorPolicy === ErrorPolicy.ReturnErrorsOnly) {
     result.errors = context.errors.getErrors().map(x => ({
       Message: x.message
     }));
     return result;
   }
-
-  const opts = getOptionsWithDefaults(options);
 
   if (fileProvider === undefined && opts.fetchReusableWorkflowDepth > 0) {
     context.error(root, new Error("A file provider is required to fetch reusable workflows"));
@@ -136,6 +141,7 @@ function getOptionsWithDefaults(options: WorkflowTemplateConverterOptions): Requ
     fetchReusableWorkflowDepth:
       options.fetchReusableWorkflowDepth !== undefined
         ? options.fetchReusableWorkflowDepth
-        : defaultOptions.fetchReusableWorkflowDepth
+        : defaultOptions.fetchReusableWorkflowDepth,
+    errorPolicy: options.errorPolicy !== undefined ? options.errorPolicy : defaultOptions.errorPolicy
   };
 }

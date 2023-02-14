@@ -19,7 +19,9 @@ export async function documentLinks(document: TextDocument): Promise<DocumentLin
     return [];
   }
 
-  const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+  const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+    errorPolicy: ErrorPolicy.TryConversion
+  });
 
   // Add links to referenced actions
   const actionLinks: DocumentLink[] = [];

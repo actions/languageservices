@@ -77,15 +77,10 @@ export async function complete(
   }
 
   const {token, keyToken, parent, path} = findToken(newPos, result.value);
-  const template = await convertWorkflowTemplate(
-    result.context,
-    result.value,
-    ErrorPolicy.TryConversion,
-    config?.fileProvider,
-    {
-      fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
-    }
-  );
+  const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
+    fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
+    errorPolicy: ErrorPolicy.TryConversion
+  });
   const workflowContext = getWorkflowContext(textDocument.uri, template, path);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create

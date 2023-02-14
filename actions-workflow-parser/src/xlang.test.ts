@@ -85,7 +85,6 @@ describe("x-lang tests", () => {
       const workflowTemplate = await convertWorkflowTemplate(
         parseResult.context,
         parseResult.value!,
-        undefined,
         testFileProvider,
         {
           fetchReusableWorkflowDepth: 1
