@@ -1,4 +1,5 @@
 import {DescriptionDictionary} from "@github/actions-expressions";
+import {StringData} from "@github/actions-expressions/data/string";
 import {WorkflowContext} from "../context/workflow-context";
 import {testGetWorkflowContext} from "../test-utils/test-workflow-context";
 import {getNeedsContext} from "./needs";
@@ -96,8 +97,13 @@ jobs:
 
       const outputs = needs.get("outputs") as DescriptionDictionary;
       expect(outputs).toBeDefined();
-
-      expect(outputs.pairs().map(x => x.key)).toEqual(["build_id"]);
+      expect(outputs.pairs()).toEqual([
+        {
+          key: "build_id",
+          value: new StringData("my-build-id"),
+          description: undefined
+        }
+      ]);
     });
 
     it("reusable job with outputs", async () => {
@@ -123,6 +129,13 @@ jobs:
       expect(outputs).toBeDefined();
 
       expect(outputs.pairs().map(x => x.key)).toEqual(["build_id"]);
+      expect(outputs.pairs()).toEqual([
+        {
+          key: "build_id",
+          value: new StringData("123"),
+          description: "The resulting build ID"
+        }
+      ]);
     });
   });
 });
