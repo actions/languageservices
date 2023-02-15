@@ -5,7 +5,7 @@ import {getReusableWorkflowInputDescription} from "./description-providers/reusa
 import {TTLCache} from "./utils/cache";
 
 export function descriptionProvider(client: Octokit | undefined, cache: TTLCache): DescriptionProvider {
-  const getDescription: DescriptionProvider["getDescription"] = async (context, token, path, fileProvider) => {
+  const getDescription: DescriptionProvider["getDescription"] = async (context, token, path, template) => {
     if (!client) {
       return undefined;
     }
@@ -15,8 +15,8 @@ export function descriptionProvider(client: Octokit | undefined, cache: TTLCache
       return await getActionInputDescription(client, cache, context.step, token);
     }
 
-    if (context.reusableWorkflowJob && fileProvider && parent.definition?.key === "workflow-job-with") {
-      return await getReusableWorkflowInputDescription(client, cache, context.reusableWorkflowJob, token, fileProvider);
+    if (context.reusableWorkflowJob && template && parent.definition?.key === "workflow-job-with") {
+      return await getReusableWorkflowInputDescription(client, cache, context.reusableWorkflowJob, token, template);
     }
   };
 

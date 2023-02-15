@@ -2,6 +2,7 @@ import {DescriptionDictionary, Parser} from "@github/actions-expressions";
 import {FunctionInfo} from "@github/actions-expressions/funcs/info";
 import {Lexer} from "@github/actions-expressions/lexer";
 import {convertWorkflowTemplate, parseWorkflow, ParseWorkflowResult} from "@github/actions-workflow-parser";
+import {WorkflowTemplate} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {getCronDescription} from "@github/actions-workflow-parser/model/converter/cron";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
@@ -35,7 +36,7 @@ export type DescriptionProvider = {
     context: WorkflowContext,
     token: TemplateToken,
     path: TemplateToken[],
-    fileProvider?: FileProvider
+    template?: WorkflowTemplate
   ): Promise<string | undefined>
 };
 
@@ -110,8 +111,8 @@ async function getDescription(
   path: TemplateToken[]
 ) {
   const defaultDescription = token.description || "";
-  // TODO fix this check
-  if (!result?.value || !config?.descriptionProvider) {
+  // TODO fix this check - description provider is null for rusable workflows
+  if (!result?.value/* || !config?.descriptionProvider*/) {
     return defaultDescription;
   }
 
@@ -125,7 +126,7 @@ async function getDescription(
     }
   );
   const workflowContext = getWorkflowContext(document.uri, template, path);
-  const description = await config.descriptionProvider.getDescription(workflowContext, token, path, config.fileProvider);
+  const description = await config?.descriptionProvider?.getDescription(workflowContext, token, path, template);
   return description || defaultDescription;
 }
 
