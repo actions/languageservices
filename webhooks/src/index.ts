@@ -8,7 +8,7 @@ const OUTPUT_PATH = "src/webhooks.json";
 
 const schema: any = await fetch(SCHEMA_URL).then(res => res.json());
 
-const rawWebhooks = Object.values(schema["x-webhooks"]) as any[];
+const rawWebhooks = Object.values(schema.webhooks || schema["x-webhooks"]) as any[];
 if (!rawWebhooks) {
   throw new Error("No webhooks found in schema");
 }
