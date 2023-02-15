@@ -4,6 +4,7 @@ import {TokenType} from "../../templates/tokens/types";
 import {ReusableWorkflowJob} from "../workflow-template";
 import {handleTemplateTokenErrors} from "./handle-errors";
 import {convertWorkflowJobInputs} from "./job/inputs";
+import {convertWorkflowJobSecrets} from "./job/secrets";
 import {convertJobs} from "./jobs";
 
 export function convertReferencedWorkflow(
@@ -41,6 +42,7 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
       const event = on.assertString("Reference workflow on value").value;
       if (event === "workflow_call") {
         handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobInputs(context, job));
+        handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobSecrets(context, job));
         return;
       }
       break;
@@ -52,6 +54,7 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
         const event = eventToken.assertString(`Reference workflow on value ${eventToken}`).value;
         if (event === "workflow_call") {
           handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobInputs(context, job));
+          handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobSecrets(context, job));
           return;
         }
       }
@@ -69,6 +72,7 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
 
         if (pair.value.templateTokenType === TokenType.Null) {
           handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobInputs(context, job));
+          handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobSecrets(context, job));
           return;
         }
 
@@ -83,10 +87,15 @@ function convertReferencedWorkflowOn(context: TemplateContext, on: TemplateToken
             case "outputs":
               job.outputs = definition.value.assertMapping(`on-workflow_call-${definition.key}`);
               break;
+
+            case "secrets":
+              job["secret-definitions"] = definition.value.assertMapping(`on-workflow_call-${definition.key}`);
+              break;
           }
         }
 
         handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobInputs(context, job));
+        handleTemplateTokenErrors(tokenForErrors, context, undefined, () => convertWorkflowJobSecrets(context, job));
         return;
       }
       break;

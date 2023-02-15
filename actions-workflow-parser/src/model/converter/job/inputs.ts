@@ -39,7 +39,7 @@ export function convertWorkflowJobInputs(context: TemplateContext, job: Reusable
   }
 }
 
-function createTokenMap(mapping: MappingToken | undefined, description: string): TokenMap | undefined {
+export function createTokenMap(mapping: MappingToken | undefined, description: string): TokenMap | undefined {
   if (!mapping) {
     return undefined;
   }
