@@ -1,8 +1,10 @@
+import {data, DescriptionDictionary} from "@github/actions-expressions/.";
 import {DiagnosticSeverity} from "vscode-languageserver-types";
+import {ContextProviderConfig} from "./context-providers/config";
 import {registerLogger} from "./log";
 import {createDocument} from "./test-utils/document";
 import {TestLogger} from "./test-utils/logger";
-import {validate} from "./validate";
+import {validate, ValidationConfig} from "./validate";
 
 registerLogger(new TestLogger());
 
@@ -19,6 +21,58 @@ jobs:
     steps:
       - run: echo`
       )
+    );
+
+    expect(result).toEqual([
+      {
+        message: "Context access might be invalid: does-not-exist",
+        range: {
+          end: {
+            character: 43,
+            line: 1
+          },
+          start: {
+            character: 15,
+            line: 1
+          }
+        },
+        severity: DiagnosticSeverity.Warning
+      }
+    ]);
+  });
+
+  it("partial skip access invalid context on incomplete", async () => {
+    const contextProviderConfig: ContextProviderConfig = {
+      getContext: async (context: string) => {
+        switch (context) {
+          case "secrets":
+            const dict = new DescriptionDictionary();
+            dict.complete = false;
+            return dict;
+        }
+
+        return undefined;
+      }
+    };
+
+    const validationConfig: ValidationConfig = {
+      contextProviderConfig: contextProviderConfig
+    };
+
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+run-name: name-\${{ github.does-not-exist }}
+env:
+  secret: \${{ secrets.secret-not-exist }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo`
+      ),
+      validationConfig
     );
 
     expect(result).toEqual([
