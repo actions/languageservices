@@ -53,7 +53,9 @@ export async function hover(document: TextDocument, position: Position, config?:
       const allowedContext = tokenDefinitionInfo.allowedContext || [];
       const {namedContexts, functions} = splitAllowedContext(allowedContext);
 
-      const template = await convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
+      const template = await convertWorkflowTemplate(result.context, result.value, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
       const workflowContext = getWorkflowContext(document.uri, template, tokenResult.path);
       const context = await getContext(namedContexts, config?.contextProviderConfig, workflowContext, Mode.Completion);
 
@@ -107,7 +109,9 @@ async function getDescription(
     return defaultDescription;
   }
 
-  const template = await convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
+  const template = await convertWorkflowTemplate(result.context, result.value, undefined, {
+    errorPolicy: ErrorPolicy.TryConversion
+  });
   const workflowContext = getWorkflowContext(document.uri, template, path);
   const description = await config.descriptionProvider.getDescription(workflowContext, token, path);
   return description || defaultDescription;

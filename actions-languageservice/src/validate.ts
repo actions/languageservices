@@ -57,15 +57,10 @@ export async function validate(textDocument: TextDocument, config?: ValidationCo
     const result: ParseWorkflowResult = parseWorkflow(file, nullTrace);
     if (result.value) {
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
-      const template = await convertWorkflowTemplate(
-        result.context,
-        result.value,
-        ErrorPolicy.TryConversion,
-        config?.fileProvider,
-        {
-          fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
-        }
-      );
+      const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
+        fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
+        errorPolicy: ErrorPolicy.TryConversion
+      });
 
       // Validate expressions and value providers
       await additionalValidations(diagnostics, textDocument.uri, template, result.value, config);

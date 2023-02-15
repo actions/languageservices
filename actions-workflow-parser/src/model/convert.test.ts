@@ -19,7 +19,9 @@ jobs:
       nullTrace
     );
 
-    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion
+    });
 
     expect(serializeTemplate(template)).toEqual({
       events: {
@@ -59,7 +61,9 @@ jobs:
       nullTrace
     );
 
-    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion
+    });
 
     expect(serializeTemplate(template)).toEqual({
       events: {
@@ -105,7 +109,9 @@ jobs:
       nullTrace
     );
 
-    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion
+    });
 
     expect(serializeTemplate(template)).toEqual({
       errors: [
@@ -152,7 +158,9 @@ jobs:
       nullTrace
     );
 
-    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion
+    });
 
     expect(serializeTemplate(template)).toEqual({
       errors: [
@@ -229,7 +237,9 @@ jobs:
       nullTrace
     );
 
-    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion
+    });
 
     expect(template.jobs).not.toBeUndefined();
     expect(template.jobs).toHaveLength(1);
@@ -282,7 +292,9 @@ jobs:
       nullTrace
     );
 
-    const template = await convertWorkflowTemplate(result.context, result.value!, ErrorPolicy.TryConversion);
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion
+    });
 
     expect(template.jobs).not.toBeUndefined();
     expect(template.jobs).toHaveLength(0);
