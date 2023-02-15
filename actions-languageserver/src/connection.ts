@@ -134,7 +134,10 @@ export function initConnection(connection: Connection) {
 
     return hover(documents.get(textDocument.uri)!, position, {
       descriptionProvider: descriptionProvider(client, cache),
-      contextProviderConfig: repoContext && contextProviders(client, repoContext, cache)
+      contextProviderConfig: repoContext && contextProviders(client, repoContext, cache),
+      fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
+        return await connection.sendRequest(Requests.ReadFile, {path});
+      })
     });
   });
 

@@ -9,6 +9,7 @@ import {StringToken} from "@github/actions-workflow-parser/templates/tokens/stri
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {isBasicExpression, isString} from "@github/actions-workflow-parser/templates/tokens/type-guards";
 import {File} from "@github/actions-workflow-parser/workflows/file";
+import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Hover} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
@@ -26,10 +27,16 @@ import {mapRange} from "./utils/range";
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
   contextProviderConfig?: ContextProviderConfig;
+  fileProvider?: FileProvider;
 };
 
 export type DescriptionProvider = {
-  getDescription(context: WorkflowContext, token: TemplateToken, path: TemplateToken[]): Promise<string | undefined>;
+  getDescription(
+    context: WorkflowContext,
+    token: TemplateToken,
+    path: TemplateToken[],
+    fileProvider?: FileProvider
+  ): Promise<string | undefined>
 };
 
 export async function hover(document: TextDocument, position: Position, config?: HoverConfig): Promise<Hover | null> {
@@ -103,13 +110,22 @@ async function getDescription(
   path: TemplateToken[]
 ) {
   const defaultDescription = token.description || "";
+  // TODO fix this check
   if (!result?.value || !config?.descriptionProvider) {
     return defaultDescription;
   }
 
-  const template = await convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
+  const template = await convertWorkflowTemplate(
+    result.context,
+    result.value,
+    ErrorPolicy.TryConversion,
+    config?.fileProvider,
+    {
+      fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
+    }
+  );
   const workflowContext = getWorkflowContext(document.uri, template, path);
-  const description = await config.descriptionProvider.getDescription(workflowContext, token, path);
+  const description = await config.descriptionProvider.getDescription(workflowContext, token, path, config.fileProvider);
   return description || defaultDescription;
 }
 
