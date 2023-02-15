@@ -1,0 +1,21 @@
+{
+  "name": "webhooks",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --build tsconfig.json",
+    "start": "npm run build && node dist/index.js",
+    "clean": "rimraf dist",
+    "format": "prettier --write '**/*.ts'",
+    "format-check": "prettier --check '**/*.ts'"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.2"
+  }
+}
