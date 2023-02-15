@@ -60,6 +60,9 @@ export type ReusableWorkflowJob = BaseJob & {
   ref: StringToken;
   "input-definitions"?: MappingToken;
   "input-values"?: MappingToken;
+  "secret-definitions"?: MappingToken;
+  "secret-values"?: MappingToken;
+  "inherit-secrets"?: boolean;
   jobs?: WorkflowJob[];
 };
 
