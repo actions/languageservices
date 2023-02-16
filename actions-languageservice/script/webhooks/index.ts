@@ -1,19 +1,17 @@
-import fetch from "node-fetch";
 import {promises as fs} from "fs";
 import Webhook from "./webhook.js";
 
-const SCHEMA_URL =
-  "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/dereferenced/api.github.com.deref.json";
-const OUTPUT_PATH = "src/webhooks.json";
+import schemaImport from "rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.deref.json" assert {type: "json"};
+const schema = schemaImport as any;
 
-const schema: any = await fetch(SCHEMA_URL).then(res => res.json());
+const OUTPUT_PATH = "./src/context-providers/events/webhooks.json";
 
 const rawWebhooks = Object.values(schema.webhooks || schema["x-webhooks"]) as any[];
 if (!rawWebhooks) {
   throw new Error("No webhooks found in schema");
 }
 
-const webhooks = [];
+const webhooks: Webhook[] = [];
 for (const webhook of Object.values(rawWebhooks)) {
   webhooks.push(new Webhook(webhook.post));
 }
