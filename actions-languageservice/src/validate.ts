@@ -17,7 +17,7 @@ import {File} from "@github/actions-workflow-parser/workflows/file";
 import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provider";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
-import {ActionInputs, ActionReference} from "./action";
+import {ActionMetadata, ActionReference} from "./action";
 
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
@@ -35,7 +35,7 @@ import {defaultValueProviders} from "./value-providers/default";
 export type ValidationConfig = {
   valueProviderConfig?: ValueProviderConfig;
   contextProviderConfig?: ContextProviderConfig;
-  getActionInputs?(action: ActionReference): Promise<ActionInputs | undefined>;
+  fetchActionMetadata?(action: ActionReference): Promise<ActionMetadata | undefined>;
   fileProvider?: FileProvider;
 };
 
