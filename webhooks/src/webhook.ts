@@ -2,8 +2,6 @@
 
 import {getBodyParams} from "./get-body-params.js";
 
-const NO_CHILD_PROPERTIES = ["action", "enterprise", "installation", "organization", "repository", "sender"];
-
 export default class Webhook {
   public description: string;
   public summary: string;
@@ -46,12 +44,5 @@ export default class Webhook {
     const isObject = schema !== null && typeof schema === "object";
 
     this.bodyParameters = isObject ? await getBodyParams(schema, true) : [];
-
-    // Removes the children of the common properties
-    this.bodyParameters.forEach(param => {
-      if (NO_CHILD_PROPERTIES.includes(param.name)) {
-        param.childParamsGroups = [];
-      }
-    });
   }
 }
