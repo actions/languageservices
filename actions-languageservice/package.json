@@ -54,9 +54,7 @@
   "types": "./dist/index.d.ts",
   "devDependencies": {
     "@types/jest": "^29.0.3",
-    "@types/node-fetch": "^2.6.2",
     "jest": "^29.0.3",
-    "node-fetch": "^3.3.0",
     "prettier": "^2.8.3",
     "rest-api-description": "github:github/rest-api-description",
     "rimraf": "^3.0.2",
