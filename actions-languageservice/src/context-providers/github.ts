@@ -1,9 +1,10 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
+import {data, DescriptionDictionary, isDescriptionDictionary} from "@github/actions-expressions";
 import {ExpressionData} from "@github/actions-expressions/data/expressiondata";
+import {TypesFilterConfig} from "@github/actions-workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 import {Mode} from "./default";
 import {getDescription} from "./descriptions";
-import {eventPayloads} from "./events/eventPayloads";
+import {getEventPayload} from "./events/eventPayloads";
 import {getInputsContext} from "./inputs";
 
 export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): DescriptionDictionary {
@@ -67,7 +68,7 @@ export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): 
 }
 
 function getEventContext(workflowContext: WorkflowContext, mode: Mode): ExpressionData {
-  const d = new data.Dictionary();
+  const d = new DescriptionDictionary();
   const eventsConfig = workflowContext?.template?.events;
 
   if (!eventsConfig) {
@@ -94,30 +95,73 @@ function getEventContext(workflowContext: WorkflowContext, mode: Mode): Expressi
   }
 
   const events = Object.keys(eventsConfig);
-  for (const e of events) {
-    const payload = eventPayloads[e];
-    if (payload) {
-      merge(d, payload);
+  for (const eventName of events) {
+    const event = eventsConfig[eventName] as TypesFilterConfig;
+
+    const types = getTypes(eventName, event.types);
+
+    for (const type of types) {
+      const payloadEventName = getPayloadEventName(eventName);
+      const eventPayload = getEventPayload(payloadEventName, type);
+
+      if (!eventPayload) {
+        continue;
+      }
+
+      // Merge the event payload into the event context
+      merge(d, eventPayload);
     }
   }
 
   return d;
 }
 
-function merge(d: data.Dictionary, toAdd: Object): data.Dictionary {
-  for (const [key, value] of Object.entries(toAdd)) {
-    if (value && typeof value === "object" && !d.get(key)) {
-      if (!Array.isArray(value) && Object.entries(value).length === 0) {
-        // Allow an empty object to be any value
-        d.add(key, new data.Null());
+function getPayloadEventName(eventName: string): string {
+  switch (eventName) {
+    // Some events are aliases for other webhooks
+    case "pull_request_target":
+      return "pull_request";
+
+    default:
+      return eventName;
+  }
+}
+
+function getTypes(event: string, types: string[] | undefined): string[] {
+  const typesOrDefault = (types: string[] | undefined, defaultTypes: string[]): string[] =>
+    !types || types.length === 0 ? defaultTypes : types;
+
+  switch (event) {
+    case "merge_group":
+      return typesOrDefault(types, ["checks_requested"]);
+
+    case "pull_request":
+    case "pull_request_target":
+      return typesOrDefault(types, ["opened", "reopened", "synchronize"]);
+
+    case "repository_dispatch":
+      // Types can be used for custom filtering for repository_dispatch events. Always use default
+      return ["default"];
+
+    default:
+      return typesOrDefault(types, ["default"]);
+  }
+}
+
+function merge(target: DescriptionDictionary, toMerge: DescriptionDictionary): DescriptionDictionary {
+  for (const p of toMerge.pairs()) {
+    if (isDescriptionDictionary(p.value)) {
+      const existingValue = target.get(p.key);
+      if (existingValue && isDescriptionDictionary(existingValue)) {
+        // Merge the dictionaries, do not overwrite existing values
+        merge(existingValue, p.value);
+
         continue;
       }
-
-      d.add(key, merge(new data.Dictionary(), value));
-    } else {
-      d.add(key, new data.Null());
     }
+
+    target.add(p.key, p.value, p.description);
   }
 
-  return d;
+  return target;
 }
