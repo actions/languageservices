@@ -26,6 +26,7 @@ import {onCompletion} from "./on-completion";
 import {ReadFileRequest, Requests} from "./request";
 import {fetchActionMetadata} from "./utils/action-metadata";
 import {TTLCache} from "./utils/cache";
+import {timeOperation} from "./utils/timer";
 import {valueProviders} from "./value-providers";
 
 export function initConnection(connection: Connection) {
@@ -93,7 +94,7 @@ export function initConnection(connection: Connection) {
   // The content of a text document has changed. This event is emitted
   // when the text document first opened or when its content has changed.
   documents.onDidChangeContent(change => {
-    validateTextDocument(change.document);
+    return timeOperation("validation", async () => await validateTextDocument(change.document));
   });
 
   async function validateTextDocument(textDocument: TextDocument): Promise<void> {
@@ -113,28 +114,34 @@ export function initConnection(connection: Connection) {
         return await connection.sendRequest(Requests.ReadFile, {path} satisfies ReadFileRequest);
       })
     };
-    const result = await validate(textDocument, config);
 
-    connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
+    const result = await validate(textDocument, config);
+    await connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
   }
 
   connection.onCompletion(async ({position, textDocument}: TextDocumentPositionParams): Promise<CompletionItem[]> => {
-    return await onCompletion(
-      connection,
-      position,
-      documents.get(textDocument.uri)!,
-      client,
-      repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri)),
-      cache
+    return timeOperation(
+      "completion",
+      async () =>
+        await onCompletion(
+          connection,
+          position,
+          documents.get(textDocument.uri)!,
+          client,
+          repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri)),
+          cache
+        )
     );
   });
 
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
-    const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
+    return timeOperation("hover", async () => {
+      const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
 
-    return hover(documents.get(textDocument.uri)!, position, {
-      descriptionProvider: descriptionProvider(client, cache),
-      contextProviderConfig: repoContext && contextProviders(client, repoContext, cache)
+      return await hover(documents.get(textDocument.uri)!, position, {
+        descriptionProvider: descriptionProvider(client, cache),
+        contextProviderConfig: repoContext && contextProviders(client, repoContext, cache)
+      });
     });
   });
 
