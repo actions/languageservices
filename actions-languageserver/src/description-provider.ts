@@ -16,7 +16,7 @@ export function descriptionProvider(client: Octokit | undefined, cache: TTLCache
     }
 
     if (context.reusableWorkflowJob && template && parent.definition?.key === "workflow-job-with") {
-      return await getReusableWorkflowInputDescription(client, cache, context.reusableWorkflowJob, token, template);
+      return await getReusableWorkflowInputDescription(context.reusableWorkflowJob, token, template);
     }
   };
 

@@ -112,7 +112,7 @@ async function getDescription(
 ) {
   const defaultDescription = token.description || "";
   // TODO fix this check - description provider is null for rusable workflows
-  if (!result?.value/* || !config?.descriptionProvider*/) {
+  if (!result?.value || !config?.descriptionProvider) {
     return defaultDescription;
   }
 
@@ -126,7 +126,7 @@ async function getDescription(
     }
   );
   const workflowContext = getWorkflowContext(document.uri, template, path);
-  const description = await config?.descriptionProvider?.getDescription(workflowContext, token, path, template);
+  const description = await config.descriptionProvider.getDescription(workflowContext, token, path, template);
   return description || defaultDescription;
 }
 
