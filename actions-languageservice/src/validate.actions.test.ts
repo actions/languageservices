@@ -1,5 +1,5 @@
 import {DiagnosticSeverity} from "vscode-languageserver-types";
-import {ActionInput, ActionReference} from "./action";
+import {ActionMetadata, ActionReference} from "./action";
 import {registerLogger} from "./log";
 import {createDocument} from "./test-utils/document";
 import {TestLogger} from "./test-utils/logger";
@@ -9,53 +9,63 @@ import {ValueProviderKind} from "./value-providers/config";
 registerLogger(new TestLogger());
 
 const validationConfig: ValidationConfig = {
-  getActionInputs: async (ref: ActionReference) => {
-    let inputs: Record<string, ActionInput> | undefined = undefined;
+  fetchActionMetadata: async (ref: ActionReference) => {
+    let metadata: ActionMetadata | undefined = undefined;
     switch (ref.owner + "/" + ref.name + "@" + ref.ref) {
       case "actions/checkout@v3":
-        inputs = {
-          repository: {
-            description: "Repository name with owner",
-            default: "${{ github.repository }}"
+        metadata = {
+          inputs: {
+            repository: {
+              description: "Repository name with owner",
+              default: "${{ github.repository }}"
+            }
           }
         };
         break;
       case "actions/setup-node@v1":
-        inputs = {
-          version: {
-            description: "Deprecated. Use node-version instead. Will not be supported after October 1, 2019",
-            deprecationMessage:
-              "The version property will not be supported after October 1, 2019. Use node-version instead"
+        metadata = {
+          inputs: {
+            version: {
+              description: "Deprecated. Use node-version instead. Will not be supported after October 1, 2019",
+              deprecationMessage:
+                "The version property will not be supported after October 1, 2019. Use node-version instead"
+            }
           }
         };
         break;
       case "actions/deploy-pages@main":
-        inputs = {
-          token: {
-            required: true,
-            description: "token to use",
-            default: "${{ github.token }}"
+        metadata = {
+          inputs: {
+            token: {
+              required: true,
+              description: "token to use",
+              default: "${{ github.token }}"
+            }
           }
         };
         break;
       case "actions/cache@v1":
-        inputs = {
-          path: {
-            description: "A directory to store and save the cache",
-            required: true
-          },
-          key: {
-            description: "An explicit key for restoring and saving the cache",
-            required: true
-          },
-          "restore-keys": {
-            description: "An ordered list of keys to use for restoring the cache if no cache hit occurred for key",
-            required: false
+        metadata = {
+          inputs: {
+            path: {
+              description: "A directory to store and save the cache",
+              required: true
+            },
+            key: {
+              description: "An explicit key for restoring and saving the cache",
+              required: true
+            },
+            "restore-keys": {
+              description: "An ordered list of keys to use for restoring the cache if no cache hit occurred for key",
+              required: false
+            }
           }
         };
         break;
+      case "actions/action-no-input@v1":
+        metadata = {};
     }
-    return inputs;
+    return metadata;
   }
 };
 
@@ -101,6 +111,20 @@ jobs:
         severity: DiagnosticSeverity.Error
       }
     ]);
+  });
+
+  it("action does not define inputs", async () => {
+    const input = `
+    on: push
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/action-no-input@v1
+    `;
+    const result = await validate(createDocument("wf.yaml", input), validationConfig);
+
+    expect(result).toEqual([]);
   });
 
   it("invalid input", async () => {

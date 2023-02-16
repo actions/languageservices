@@ -29,4 +29,5 @@ export type SerializedToken =
   | string
   | number
   | boolean
+  | null
   | undefined;

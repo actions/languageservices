@@ -110,7 +110,9 @@ async function hoverExpression(input: string) {
     return undefined;
   }
 
-  const template = await convertWorkflowTemplate(result.context, result.value, ErrorPolicy.TryConversion);
+  const template = await convertWorkflowTemplate(result.context, result.value, undefined, {
+    errorPolicy: ErrorPolicy.TryConversion
+  });
   const workflowContext = getWorkflowContext(td.uri, template, []);
   const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
 

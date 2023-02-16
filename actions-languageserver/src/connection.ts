@@ -24,9 +24,9 @@ import {getFileProvider} from "./file-provider";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions";
 import {onCompletion} from "./on-completion";
 import {ReadFileRequest, Requests} from "./request";
+import {fetchActionMetadata} from "./utils/action-metadata";
 import {TTLCache} from "./utils/cache";
 import {valueProviders} from "./value-providers";
-import {getActionInputs} from "./value-providers/action-inputs";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -102,9 +102,9 @@ export function initConnection(connection: Connection) {
     const config: ValidationConfig = {
       valueProviderConfig: valueProviders(client, repoContext, cache),
       contextProviderConfig: contextProviders(client, repoContext, cache),
-      getActionInputs: async action => {
+      fetchActionMetadata: async action => {
         if (client) {
-          return await getActionInputs(client, cache, action);
+          return await fetchActionMetadata(client, cache, action);
         }
 
         return undefined;

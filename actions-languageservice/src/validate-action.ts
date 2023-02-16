@@ -14,7 +14,7 @@ export async function validateAction(
   step: Step | undefined,
   config: ValidationConfig | undefined
 ): Promise<void> {
-  if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.getActionInputs) {
+  if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.fetchActionMetadata) {
     return;
   }
 
@@ -23,8 +23,8 @@ export async function validateAction(
     return;
   }
 
-  const actionInputs = await config.getActionInputs(action);
-  if (actionInputs === undefined) {
+  const actionMetadata = await config.fetchActionMetadata(action);
+  if (actionMetadata === undefined) {
     diagnostics.push({
       severity: DiagnosticSeverity.Error,
       range: mapRange(step.uses.range),
@@ -48,6 +48,11 @@ export async function validateAction(
     for (const {key} of withToken) {
       stepInputs.set(key.toString(), key);
     }
+  }
+
+  const actionInputs = actionMetadata.inputs;
+  if (actionInputs === undefined) {
+    return;
   }
 
   for (const [input, inputToken] of stepInputs) {

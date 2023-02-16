@@ -23,6 +23,6 @@ export class NullToken extends LiteralToken {
   }
 
   public override toJSON() {
-    return "null";
+    return null;
   }
 }

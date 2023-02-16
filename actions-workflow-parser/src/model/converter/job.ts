@@ -21,6 +21,8 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
   let steps: Step[] = [];
   let workflowJobRef: StringToken | undefined;
   let workflowJobInputs: MappingToken | undefined;
+  let inheritSecrets = false;
+  let workflowJobSecrets: MappingToken | undefined;
 
   for (const item of token) {
     const propertyName = item.key.assertString("job property name");
@@ -95,6 +97,12 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       case "with":
         workflowJobInputs = item.value.assertMapping("uses-with value");
         break;
+      case "secrets":
+        if (isString(item.value) && item.value.value === "inherit") {
+          inheritSecrets = true;
+        } else {
+          workflowJobSecrets = item.value.assertMapping("uses-secrets value");
+        }
     }
   }
 
@@ -108,6 +116,9 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       ref: workflowJobRef,
       "input-definitions": undefined,
       "input-values": workflowJobInputs,
+      "secret-definitions": undefined,
+      "secret-values": workflowJobSecrets,
+      "inherit-secrets": inheritSecrets || undefined,
       outputs: undefined,
       concurrency,
       strategy
