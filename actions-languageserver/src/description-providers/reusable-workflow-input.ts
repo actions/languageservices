@@ -22,10 +22,7 @@ export async function getReusableWorkflowInputDescription(
   if (templateReusableJob && reusableWorkflowJob["input-definitions"] && templateReusableJob["input-definitions"]) {
     // For each input in the reusable job, see if there's one that matches in the template
     for (const input of reusableWorkflowJob["input-definitions"]) {
-      const templateInput = templateReusableJob["input-definitions"].find(templateInput => templateInput.key.value === input.key.value);
-      if (templateInput) {
-        return "fuck me"
-      }
+      return "asd"
     }
 
   }
