@@ -32,7 +32,7 @@
     "clean": "rimraf dist",
     "format": "prettier --write '**/*.ts'",
     "format-check": "prettier --check '**/*.ts'",
-    "prepublishOnly": "npm run update-webhooks && npm run build && npm run test",
+    "prepublishOnly": "npm run build && npm run test",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test-watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
     "update-webhooks": "ts-node-esm script/webhooks/index.ts",
