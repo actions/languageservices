@@ -13,14 +13,10 @@ jobs:
     with:
       us|ername:
 `;
-    const result = await hover(
-      ...getPositionFromCursor(input),
-      testHoverConfig("username", "scalar-needs-context")
-    );
+    const result = await hover(...getPositionFromCursor(input), testHoverConfig("username", "scalar-needs-context"));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
-      "A username passed from the caller workflow\n\n" +
-      "**Context:** github, inputs, vars, needs, strategy, matrix"
+      "A username passed from the caller workflow\n\n**Context:** github, inputs, vars, needs, strategy, matrix"
     );
   });
 

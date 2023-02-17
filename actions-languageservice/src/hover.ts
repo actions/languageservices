@@ -26,7 +26,7 @@ import {nullTrace} from "./nulltrace";
 import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken, TokenResult} from "./utils/find-token";
 import {mapRange} from "./utils/range";
-import { ReusableWorkflowJob } from "@github/actions-workflow-parser/model/workflow-template";
+import {ReusableWorkflowJob} from "@github/actions-workflow-parser/model/workflow-template";
 
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
@@ -35,11 +35,7 @@ export type HoverConfig = {
 };
 
 export type DescriptionProvider = {
-  getDescription(
-    context: WorkflowContext,
-    token: TemplateToken,
-    path: TemplateToken[]
-  ): Promise<string | undefined>
+  getDescription(context: WorkflowContext, token: TemplateToken, path: TemplateToken[]): Promise<string | undefined>;
 };
 
 export async function hover(document: TextDocument, position: Position, config?: HoverConfig): Promise<Hover | null> {
@@ -58,7 +54,7 @@ export async function hover(document: TextDocument, position: Position, config?:
   const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
   const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
     errorPolicy: ErrorPolicy.TryConversion,
-    fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
+    fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
   });
   const workflowContext = getWorkflowContext(document.uri, template, tokenResult.path);
   if (token && tokenDefinitionInfo) {
@@ -94,7 +90,7 @@ export async function hover(document: TextDocument, position: Position, config?:
   }
 
   if (tokenResult.parent && isReusableWorkflowJobInput(tokenResult)) {
-    let description = getReusableWorkflowInputDescription(workflowContext, tokenResult, template)
+    let description = getReusableWorkflowInputDescription(workflowContext, tokenResult, template);
     description = appendContext(token, description);
     return {
       contents: description,
@@ -145,10 +141,7 @@ function isCronMappingValue(tokenResult: TokenResult): boolean {
 }
 
 function isReusableWorkflowJobInput(tokenResult: TokenResult): boolean {
-  return (
-    tokenResult.parent?.definition?.key === "workflow-job-with" &&
-    isString(tokenResult.token!)
-  );
+  return tokenResult.parent?.definition?.key === "workflow-job-with" && isString(tokenResult.token!);
 }
 
 function expressionHover(
@@ -195,8 +188,12 @@ function expressionHover(
   }
 }
 
-function getReusableWorkflowInputDescription(workflowContext: WorkflowContext, tokenResult: TokenResult, template: WorkflowTemplate): string {
-  const reusableWorkflowJob = workflowContext.reusableWorkflowJob
+function getReusableWorkflowInputDescription(
+  workflowContext: WorkflowContext,
+  tokenResult: TokenResult,
+  template: WorkflowTemplate
+): string {
+  const reusableWorkflowJob = workflowContext.reusableWorkflowJob;
 
   if (!reusableWorkflowJob || !isReusableWorkflowJob(reusableWorkflowJob)) {
     return "";
@@ -209,20 +206,19 @@ function getReusableWorkflowInputDescription(workflowContext: WorkflowContext, t
 
   // Find the reusable job in the template that matches the current reusable job
   const templateJob = template.jobs.find(job => {
-    return isReusableWorkflowJob(job) && job.id.value === reusableWorkflowJob.id.value
-  }) as ReusableWorkflowJob
+    return isReusableWorkflowJob(job) && job.id.value === reusableWorkflowJob.id.value;
+  }) as ReusableWorkflowJob;
 
   // Find the input description in the template, if any
   if (templateJob && reusableWorkflowJob["input-definitions"] && templateJob["input-definitions"]) {
-    const definition = templateJob["input-definitions"].find((tokenResult.token as StringToken).value)
+    const definition = templateJob["input-definitions"].find((tokenResult.token as StringToken).value);
     if (definition && isMapping(definition)) {
-      const description = definition.find(DESCRIPTION)
+      const description = definition.find(DESCRIPTION);
       if (description && isString(description)) {
-        return description.value
+        return description.value;
       }
     }
   }
 
-  return ""
+  return "";
 }
-
