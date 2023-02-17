@@ -1,3 +1,4 @@
+import {log} from "@github/actions-languageservice/log";
 import {Value} from "@github/actions-languageservice/value-providers/config";
 import {DEFAULT_RUNNER_LABELS} from "@github/actions-languageservice/value-providers/default";
 import {Octokit} from "@octokit/rest";
@@ -34,7 +35,7 @@ async function fetchRunnerLabels(client: Octokit, owner: string, name: string): 
       }
     }
   } catch (e) {
-    console.log("Failure to retrieve runner labels: ", e);
+    log(`Failure to retrieve runner labels: ${e}`);
   }
 
   return labels;
