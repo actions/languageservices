@@ -119,7 +119,8 @@ async function getDescription(
   }
 
   const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
-    errorPolicy: ErrorPolicy.TryConversion
+    errorPolicy: ErrorPolicy.TryConversion,
+    fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
   });
   const workflowContext = getWorkflowContext(document.uri, template, path);
   const description = await config.descriptionProvider.getDescription(workflowContext, token, path, template);
