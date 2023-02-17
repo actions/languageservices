@@ -26,6 +26,7 @@ import {nullTrace} from "./nulltrace";
 import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken, TokenResult} from "./utils/find-token";
 import {mapRange} from "./utils/range";
+import { ReusableWorkflowJob } from "@github/actions-workflow-parser/model/workflow-template";
 
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
@@ -206,11 +207,10 @@ function getReusableWorkflowInputDescription(workflowContext: WorkflowContext, t
     return "";
   }
 
-  // Filter out just reusable jobs
-  const templateJobs = template.jobs.filter(isReusableWorkflowJob);
-
   // Find the reusable job in the template that matches the current reusable job
-  const templateJob = templateJobs.find(job => job.id.value === reusableWorkflowJob!.id.value);
+  const templateJob = template.jobs.find(job => {
+    return isReusableWorkflowJob(job) && job.id.value === reusableWorkflowJob.id.value
+  }) as ReusableWorkflowJob
 
   // Find the input description in the template, if any
   if (templateJob && reusableWorkflowJob["input-definitions"] && templateJob["input-definitions"]) {
