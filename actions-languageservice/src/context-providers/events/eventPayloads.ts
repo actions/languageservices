@@ -1,108 +1,116 @@
-import check_run from "./check_run.json" assert {type: "json"};
-import check_suite from "./check_suite.json" assert {type: "json"};
-import commit_comment from "./commit_comment.json" assert {type: "json"};
-import content_reference from "./content_reference.json" assert {type: "json"};
-import create from "./create.json" assert {type: "json"};
-import deletePayload from "./delete.json" assert {type: "json"};
-import deploy_key from "./deploy_key.json" assert {type: "json"};
-import deployment from "./deployment.json" assert {type: "json"};
-import deployment_status from "./deployment_status.json" assert {type: "json"};
-import fork from "./fork.json" assert {type: "json"};
-import github_app_authorization from "./github_app_authorization.json" assert {type: "json"};
-import gollum from "./gollum.json" assert {type: "json"};
-import installation from "./installation.json" assert {type: "json"};
-import installation_repositories from "./installation_repositories.json" assert {type: "json"};
-import issue_comment from "./issue_comment.json" assert {type: "json"};
-import issues from "./issues.json" assert {type: "json"};
-import label from "./label.json" assert {type: "json"};
-import marketplace_purchase from "./marketplace_purchase.json" assert {type: "json"};
-import member from "./member.json" assert {type: "json"};
-import membership from "./membership.json" assert {type: "json"};
-import merge_group from "./merge_group.json" assert {type: "json"};
-import meta from "./meta.json" assert {type: "json"};
-import milestone from "./milestone.json" assert {type: "json"};
-import org_block from "./org_block.json" assert {type: "json"};
-import organization from "./organization.json" assert {type: "json"};
-import packagePayload from "./package_payload.json" assert {type: "json"};
-import page_build from "./page_build.json" assert {type: "json"};
-import ping from "./ping.json" assert {type: "json"};
-import project from "./project.json" assert {type: "json"};
-import project_card from "./project_card.json" assert {type: "json"};
-import project_column from "./project_column.json" assert {type: "json"};
-import publicPayload from "./public.json" assert {type: "json"};
-import pull_request from "./pull_request.json" assert {type: "json"};
-import pull_request_review from "./pull_request_review.json" assert {type: "json"};
-import pull_request_review_comment from "./pull_request_review_comment.json" assert {type: "json"};
-import push from "./push.json" assert {type: "json"};
-import release from "./release.json" assert {type: "json"};
-import repository from "./repository.json" assert {type: "json"};
-import repository_dispatch from "./repository_dispatch.json" assert {type: "json"};
-import repository_import from "./repository_import.json" assert {type: "json"};
-import repository_vulnerability_alert from "./repository_vulnerability_alert.json" assert {type: "json"};
-import schedule from "./schedule.json" assert {type: "json"};
-import security_advisory from "./security_advisory.json" assert {type: "json"};
-import sponsorship from "./sponsorship.json" assert {type: "json"};
-import star from "./star.json" assert {type: "json"};
-import status from "./status.json" assert {type: "json"};
-import team from "./team.json" assert {type: "json"};
-import team_add from "./team_add.json" assert {type: "json"};
-import watch from "./watch.json" assert {type: "json"};
-import workflow_call from "./workflow_call.json" assert {type: "json"};
-import workflow_dispatch from "./workflow_dispatch.json" assert {type: "json"};
-import workflow_run from "./workflow_run.json" assert {type: "json"};
+import {data, DescriptionDictionary} from "@github/actions-expressions";
 
-export const eventPayloads: {[key: string]: Object} = {
-  check_run,
-  check_suite,
-  commit_comment,
-  content_reference,
-  create,
-  delete: deletePayload,
-  deploy_key,
-  deployment,
-  deployment_status,
-  fork,
-  github_app_authorization,
-  gollum,
-  installation,
-  installation_repositories,
-  issue_comment,
-  issues,
-  label,
-  marketplace_purchase,
-  member,
-  membership,
-  merge_group,
-  meta,
-  milestone,
-  org_block,
-  organization,
-  package: packagePayload,
-  page_build,
-  ping,
-  project,
-  project_card,
-  project_column,
-  public: publicPayload,
-  pull_request,
-  pull_request_review,
-  pull_request_review_comment,
-  pull_request_target: pull_request,
-  push,
-  release,
-  repository,
-  repository_dispatch,
-  repository_import,
-  repository_vulnerability_alert,
+import webhooks from "./webhooks.json";
+
+import schedule from "./schedule.json" assert {type: "json"};
+import workflow_call from "./workflow_call.json" assert {type: "json"};
+
+const customEventPayloads: {[name: string]: unknown} = {
   schedule,
-  security_advisory,
-  sponsorship,
-  star,
-  status,
-  team,
-  team_add,
-  watch,
-  workflow_call,
-  workflow_dispatch,
-  workflow_run
+  workflow_call
 };
+
+type ParamType =
+  | "array of objects or null"
+  | "array of objects"
+  | "array of strings or null"
+  | "array of strings"
+  | "array"
+  | "boolean or null"
+  | "boolean or string or integer or object"
+  | "boolean"
+  | "integer or null"
+  | "integer or string or null"
+  | "integer or string"
+  | "integer"
+  | "null"
+  | "number"
+  | "object or null"
+  | "object or object or object or object"
+  | "object or object"
+  | "object or string"
+  | "object"
+  | "string or null"
+  | "string or number"
+  | "string or object or integer or null"
+  | "string or object or null"
+  | "string or object"
+  | "string";
+
+type Param = {
+  type: ParamType;
+  name: string;
+  in: "body";
+  isRequired: boolean;
+  description: string;
+  childParamsGroups?: Param[];
+  enum?: string[];
+};
+
+type Webhooks = {
+  [name: string]: {
+    [action: string]: {
+      descriptionHtml: string;
+      summaryHtml: string;
+      bodyParameters: Param[];
+    };
+  };
+};
+
+const webhookPayloads: Webhooks = webhooks as any;
+
+//
+// Manual work-arounds for webhook issues
+//
+const inputs = webhookPayloads?.["workflow_dispatch"]?.["default"].bodyParameters.find(p => p.name === "inputs");
+if (inputs) {
+  delete inputs.childParamsGroups;
+}
+
+export function getEventPayload(event: string, action: string = "default"): DescriptionDictionary | undefined {
+  const payload = webhookPayloads?.[event]?.[action];
+  if (!payload) {
+    // Not all events are real webhooks. Check if there is a custom payload for this event
+    const customPayload = customEventPayloads[event];
+    if (customPayload) {
+      return mergeObject(new DescriptionDictionary(), customPayload);
+    }
+
+    return undefined;
+  }
+
+  const d = new DescriptionDictionary();
+  payload.bodyParameters.forEach(p => mergeParam(d, p));
+  return d;
+}
+
+function mergeParam(target: DescriptionDictionary, param: Param) {
+  if (param.childParamsGroups?.length || 0 > 0) {
+    // If there are any child params, add this param as an object
+    const d = new DescriptionDictionary();
+    param.childParamsGroups?.forEach(p => mergeParam(d, p));
+    target.add(param.name, d, param.description);
+  } else {
+    // Otherwise add as a null value. We do not care about the actual content for validation
+    // auto-completion. Possible existence and the description are enough.
+    target.add(param.name, new data.Null(), param.description);
+  }
+}
+
+function mergeObject(d: DescriptionDictionary, toAdd: Object): DescriptionDictionary {
+  for (const [key, value] of Object.entries(toAdd)) {
+    if (value && typeof value === "object" && !d.get(key)) {
+      if (!Array.isArray(value) && Object.entries(value).length === 0) {
+        // Allow an empty object to be any value
+        d.add(key, new data.Null());
+        continue;
+      }
+
+      d.add(key, mergeObject(new DescriptionDictionary(), value));
+    } else {
+      d.add(key, new data.Null());
+    }
+  }
+
+  return d;
+}

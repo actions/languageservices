@@ -43,6 +43,16 @@ export function setLogLevel(ll: LogLevel) {
   logLevel = ll;
 }
 
+export function log(message: string): void {
+  if (logLevel > LogLevel.Debug) {
+    return;
+  }
+
+  for (const l of loggers) {
+    l.log(message);
+  }
+}
+
 export function info(message: string): void {
   if (logLevel > LogLevel.Info) {
     return;
@@ -70,11 +80,5 @@ export function error(message: string): void {
 
   for (const l of loggers) {
     l.error(message);
-  }
-}
-
-export function log(message: string): void {
-  for (const l of loggers) {
-    l.log(message);
   }
 }
