@@ -1,29 +1,8 @@
-import {isString} from "@github/actions-workflow-parser";
-import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
-import {CompletionItem, MarkupContent} from "vscode-languageserver-types";
-import {DescriptionProvider, hover, HoverConfig} from "./hover";
+import {hover} from "./hover";
+import {testHoverConfig} from "./hover.test";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {testFileProvider} from "./test-utils/test-file-provider";
 
-export function testHoverReusableWorkflowConfig(tokenValue: string, tokenKey: string) {
-  return {
-    descriptionProvider: {
-      getDescription: async (_, token, __) => {
-        if (!isString(token)) {
-          throw new Error("Test provider only supports string tokens");
-        }
-
-        expect((token as StringToken).value).toEqual(tokenValue);
-        expect(token.definition!.key).toEqual(tokenKey);
-
-        return token.description;
-      }
-    } satisfies DescriptionProvider,
-    fileProvider: testFileProvider
-  } satisfies HoverConfig;
-}
-
-describe("completion with reusable workflows", () => {
+describe("hover on reusable workflows", () => {
   it("hover on job input with description", async () => {
     const input = `
 on: push
@@ -36,7 +15,7 @@ jobs:
 `;
     const result = await hover(
       ...getPositionFromCursor(input),
-      testHoverReusableWorkflowConfig("username", "scalar-needs-context")
+      testHoverConfig("username", "scalar-needs-context")
     );
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(

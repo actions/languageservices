@@ -2,10 +2,12 @@ import {DescriptionDictionary, Parser} from "@github/actions-expressions";
 import {FunctionInfo} from "@github/actions-expressions/funcs/info";
 import {Lexer} from "@github/actions-expressions/lexer";
 import {convertWorkflowTemplate, parseWorkflow, ParseWorkflowResult} from "@github/actions-workflow-parser";
-import {WorkflowTemplate} from "@github/actions-workflow-parser";
+import {WorkflowTemplate, isMapping} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {getCronDescription} from "@github/actions-workflow-parser/model/converter/cron";
+import {isReusableWorkflowJob} from "@github/actions-workflow-parser/model/type-guards";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
+import {DESCRIPTION} from "@github/actions-workflow-parser/templates/template-constants";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {isBasicExpression, isString} from "@github/actions-workflow-parser/templates/tokens/type-guards";
@@ -35,8 +37,7 @@ export type DescriptionProvider = {
   getDescription(
     context: WorkflowContext,
     token: TemplateToken,
-    path: TemplateToken[],
-    template?: WorkflowTemplate
+    path: TemplateToken[]
   ): Promise<string | undefined>
 };
 
@@ -54,17 +55,17 @@ export async function hover(document: TextDocument, position: Position, config?:
   const {token, keyToken, parent} = tokenResult;
 
   const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
+  const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
+    errorPolicy: ErrorPolicy.TryConversion,
+    fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
+  });
+  const workflowContext = getWorkflowContext(document.uri, template, tokenResult.path);
   if (token && tokenDefinitionInfo) {
     if (isBasicExpression(token) || isPotentiallyExpression(token)) {
       info(`Calculating expression hover for token with definition ${tokenDefinitionInfo.definition.key}`);
 
       const allowedContext = tokenDefinitionInfo.allowedContext || [];
       const {namedContexts, functions} = splitAllowedContext(allowedContext);
-
-      const template = await convertWorkflowTemplate(result.context, result.value, undefined, {
-        errorPolicy: ErrorPolicy.TryConversion
-      });
-      const workflowContext = getWorkflowContext(document.uri, template, tokenResult.path);
       const context = await getContext(namedContexts, config?.contextProviderConfig, workflowContext, Mode.Completion);
 
       const exprPos = mapToExpressionPos(token, position);
@@ -80,7 +81,7 @@ export async function hover(document: TextDocument, position: Position, config?:
 
   info(`Calculating hover for token with definition ${token.definition.key}`);
 
-  if (tokenResult.parent && isCronMappingValue(tokenResult)) {
+  if (tokenResult.parent && isCronMappingValue(tokenResult) && isString(token)) {
     const tokenValue = (token as StringToken).value;
     const description = getCronDescription(tokenValue);
     if (description) {
@@ -91,13 +92,18 @@ export async function hover(document: TextDocument, position: Position, config?:
     }
   }
 
-  let description = await getDescription(document, config, result, token, tokenResult.path);
-
-  const allowedContext = token.definitionInfo?.allowedContext;
-  if (allowedContext && allowedContext?.length > 0) {
-    // Only add padding if there is a description
-    description += `${description.length > 0 ? `\n\n` : ""}**Context:** ${allowedContext.join(", ")}`;
+  if (tokenResult.parent && isReusableWorkflowJobInput(tokenResult)) {
+    let description = getReusableWorkflowInputDescription(workflowContext, tokenResult, template)
+    description = appendContext(token, description);
+    return {
+      contents: description,
+      range: mapRange(token.range)
+    } as Hover;
   }
+
+  let description = await getDescription(config, workflowContext, token, tokenResult.path);
+
+  description = appendContext(token, description);
 
   return {
     contents: description,
@@ -105,25 +111,27 @@ export async function hover(document: TextDocument, position: Position, config?:
   } satisfies Hover;
 }
 
+function appendContext(token: TemplateToken, description: string) {
+  const allowedContext = token.definitionInfo?.allowedContext;
+  if (allowedContext && allowedContext?.length > 0) {
+    // Only add padding if there is a description
+    description += `${description.length > 0 ? `\n\n` : ""}**Context:** ${allowedContext.join(", ")}`;
+  }
+  return description;
+}
+
 async function getDescription(
-  document: TextDocument,
   config: HoverConfig | undefined,
-  result: ParseWorkflowResult | undefined,
+  workflowContext: WorkflowContext,
   token: TemplateToken,
   path: TemplateToken[]
 ) {
   const defaultDescription = token.description || "";
-  // TODO fix this check - description provider is null for rusable workflows
-  if (!result?.value || !config?.descriptionProvider) {
+  if (!config?.descriptionProvider) {
     return defaultDescription;
   }
 
-  const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
-    errorPolicy: ErrorPolicy.TryConversion,
-    fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
-  });
-  const workflowContext = getWorkflowContext(document.uri, template, path);
-  const description = await config.descriptionProvider.getDescription(workflowContext, token, path, template);
+  const description = await config.descriptionProvider.getDescription(workflowContext, token, path);
   return description || defaultDescription;
 }
 
@@ -132,6 +140,13 @@ function isCronMappingValue(tokenResult: TokenResult): boolean {
     tokenResult.parent?.definition?.key === "cron-mapping" &&
     isString(tokenResult.token!) &&
     tokenResult.token.value !== "cron"
+  );
+}
+
+function isReusableWorkflowJobInput(tokenResult: TokenResult): boolean {
+  return (
+    tokenResult.parent?.definition?.key === "workflow-job-with" &&
+    isString(tokenResult.token!)
   );
 }
 
@@ -178,3 +193,36 @@ function expressionHover(
     return null;
   }
 }
+
+function getReusableWorkflowInputDescription(workflowContext: WorkflowContext, tokenResult: TokenResult, template: WorkflowTemplate): string {
+  const reusableWorkflowJob = workflowContext.reusableWorkflowJob
+
+  if (reusableWorkflowJob && !isReusableWorkflowJob(reusableWorkflowJob)) {
+    return "";
+  }
+
+  const inputName = tokenResult.token && isString(tokenResult.token) && tokenResult.token.value;
+  if (!inputName) {
+    return "";
+  }
+
+  // Filter out just reusable jobs
+  const templateJobs = template.jobs.filter(isReusableWorkflowJob);
+
+  // Find the reusable job in the template that matches the current reusable job
+  const templateJob = templateJobs.find(job => job.id.value === reusableWorkflowJob!.id.value);
+
+  // Find the input description in the template, if any
+  if (templateJob && reusableWorkflowJob!["input-definitions"] && templateJob["input-definitions"]) {
+    const definition = templateJob["input-definitions"].find((tokenResult.token! as StringToken).value)
+    if (definition && isMapping(definition)) {
+      const description = definition.find(DESCRIPTION)
+      if (description && isString(description)) {
+        return description.value
+      }
+    }
+  }
+
+  return ""
+}
+

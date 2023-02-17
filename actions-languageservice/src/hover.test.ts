@@ -2,6 +2,7 @@ import {isString} from "@github/actions-workflow-parser";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {DescriptionProvider, hover, HoverConfig} from "./hover";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
+import {testFileProvider} from "./test-utils/test-file-provider";
 
 export function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
   return {
@@ -16,7 +17,8 @@ export function testHoverConfig(tokenValue: string, tokenKey: string, descriptio
 
         return description;
       }
-    } satisfies DescriptionProvider
+    } satisfies DescriptionProvider,
+    fileProvider: testFileProvider
   } satisfies HoverConfig;
 }
 
