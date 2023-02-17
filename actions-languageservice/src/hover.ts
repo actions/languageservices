@@ -81,7 +81,7 @@ export async function hover(document: TextDocument, position: Position, config?:
 
   info(`Calculating hover for token with definition ${token.definition.key}`);
 
-  if (tokenResult.parent && isCronMappingValue(tokenResult) && isString(token)) {
+  if (tokenResult.parent && isCronMappingValue(tokenResult)) {
     const tokenValue = (token as StringToken).value;
     const description = getCronDescription(tokenValue);
     if (description) {
@@ -197,7 +197,7 @@ function expressionHover(
 function getReusableWorkflowInputDescription(workflowContext: WorkflowContext, tokenResult: TokenResult, template: WorkflowTemplate): string {
   const reusableWorkflowJob = workflowContext.reusableWorkflowJob
 
-  if (reusableWorkflowJob && !isReusableWorkflowJob(reusableWorkflowJob)) {
+  if (!reusableWorkflowJob || !isReusableWorkflowJob(reusableWorkflowJob)) {
     return "";
   }
 
@@ -213,8 +213,8 @@ function getReusableWorkflowInputDescription(workflowContext: WorkflowContext, t
   const templateJob = templateJobs.find(job => job.id.value === reusableWorkflowJob!.id.value);
 
   // Find the input description in the template, if any
-  if (templateJob && reusableWorkflowJob!["input-definitions"] && templateJob["input-definitions"]) {
-    const definition = templateJob["input-definitions"].find((tokenResult.token! as StringToken).value)
+  if (templateJob && reusableWorkflowJob["input-definitions"] && templateJob["input-definitions"]) {
+    const definition = templateJob["input-definitions"].find((tokenResult.token as StringToken).value)
     if (definition && isMapping(definition)) {
       const description = definition.find(DESCRIPTION)
       if (description && isString(description)) {
