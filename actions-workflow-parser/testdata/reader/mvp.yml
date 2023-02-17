@@ -1,6 +1,4 @@
 include-source: false # Drop file/line/col from output
-skip:
-  - TypeScript
 ---
 # This is a basic workflow to help you get started with Actions
 

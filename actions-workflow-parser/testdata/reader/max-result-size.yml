@@ -1,16 +1,14 @@
 include-source: false # Drop file/line/col from output
+max-result-size: 1128
 ---
 on: push
 jobs:
   job1:
-    runs-on: windows-2019
+    runs-on: ubuntu-latest
     steps:
-    - run: echo 1
-  job2:
-    runs-on: windows-2019
-    cancel-timeout-minutes: 5
-    steps:
-    - run: echo 2
+      - run: echo Deploying 1...
+      - run: echo Deploying 2...
+      - run: echo Deploying 3...
 ---
 {
   "jobs": [
@@ -22,7 +20,7 @@ jobs:
         "type": 3,
         "expr": "success()"
       },
-      "runs-on": "windows-2019",
+      "runs-on": "ubuntu-latest",
       "steps": [
         {
           "id": "__run",
@@ -30,28 +28,23 @@ jobs:
             "type": 3,
             "expr": "success()"
           },
-          "run": "echo 1"
-        }
-      ]
-    },
-    {
-      "type": "job",
-      "id": "job2",
-      "name": "job2",
-      "if": {
-        "type": 3,
-        "expr": "success()"
-      },
-      "cancel-timeout-minutes": 5,
-      "runs-on": "windows-2019",
-      "steps": [
+          "run": "echo Deploying 1..."
+        },
         {
-          "id": "__run",
+          "id": "__run_2",
           "if": {
             "type": 3,
             "expr": "success()"
           },
-          "run": "echo 2"
+          "run": "echo Deploying 2..."
+        },
+        {
+          "id": "__run_3",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "run": "echo Deploying 3..."
         }
       ]
     }

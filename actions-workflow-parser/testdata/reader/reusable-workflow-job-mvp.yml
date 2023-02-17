@@ -2,36 +2,36 @@ include-source: false # Drop file/line/col from output
 ---
 on: push
 jobs:
-  build:
-    uses: contoso/templates/.github/workflows/build.yml@v1
+  call_reusable:
+    uses: contoso/templates/.github/workflows/deploy.yml@v1
 ---
-contoso/templates/.github/workflows/build.yml@v1
+contoso/templates/.github/workflows/deploy.yml@v1
 ---
 on:
   workflow_call:
 jobs:
-  deploy:
+  simple_job:
     runs-on: ubuntu-latest
     steps:
-      - run: echo 1
+      - run: echo Hello
 ---
 {
   "jobs": [
     {
       "type": "reusableWorkflowJob",
-      "id": "build",
-      "name": "build",
+      "id": "call_reusable",
+      "name": "call_reusable",
       "needs": [],
       "if": {
         "type": 3,
         "expr": "success()"
       },
-      "ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "ref": "contoso/templates/.github/workflows/deploy.yml@v1",
       "jobs": [
         {
           "type": "job",
-          "id": "deploy",
-          "name": "deploy",
+          "id": "simple_job",
+          "name": "simple_job",
           "if": {
             "type": 3,
             "expr": "success()"
@@ -44,7 +44,7 @@ jobs:
                 "type": 3,
                 "expr": "success()"
               },
-              "run": "echo 1"
+              "run": "echo Hello"
             }
           ]
         }
