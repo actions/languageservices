@@ -92,7 +92,9 @@ async function getRemoteSecrets(
   orgSecrets: StringData[];
 }> {
   return {
-    repoSecrets: await fetchSecrets(octokit, repo.owner, repo.name),
+    repoSecrets: await cache.get(`${repo.owner}/${repo.name}/secrets`, undefined, () =>
+      fetchSecrets(octokit, repo.owner, repo.name)
+    ),
     environmentSecrets:
       (environmentName &&
         (await cache.get(`${repo.owner}/${repo.name}/secrets/environment/${environmentName}`, undefined, () =>
