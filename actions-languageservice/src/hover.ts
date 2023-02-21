@@ -15,7 +15,10 @@ import {Hover} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
-import {isReusableWorkflowJobInput, getReusableWorkflowInputDescription} from "./description-providers/reusable-job-inputs";
+import {
+  isReusableWorkflowJobInput,
+  getReusableWorkflowInputDescription
+} from "./description-providers/reusable-job-inputs";
 import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-pos";
 import {HoverVisitor} from "./expression-hover/visitor";
 import {validatorFunctions} from "./expression-validation/functions";

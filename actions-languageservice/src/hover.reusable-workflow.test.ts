@@ -49,10 +49,7 @@ jobs:
       - run: echo \${{ needs.build.outputs.bu|ild_id }}
 `;
 
-    const result = await hover(
-      ...getPositionFromCursor(input),
-      testHoverConfig("", "string-steps-context")
-    );
+    const result = await hover(...getPositionFromCursor(input), testHoverConfig("", "string-steps-context"));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
       "The resulting build ID\n\n**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
