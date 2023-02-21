@@ -66,7 +66,7 @@ export async function hover(document: TextDocument, position: Position, config?:
       if (exprPos) {
         let hover = expressionHover(exprPos, context, namedContexts, functions);
         if (hover) {
-          hover.contents = appendContext(token, hover.contents as string);
+          hover.contents = appendContext(hover.contents as string, allowedContext);
         }
         return hover;
       }
@@ -92,7 +92,7 @@ export async function hover(document: TextDocument, position: Position, config?:
 
   if (tokenResult.parent && isReusableWorkflowJobInput(tokenResult)) {
     let description = getReusableWorkflowInputDescription(workflowContext, tokenResult);
-    description = appendContext(token, description);
+    description = appendContext(description, token.definitionInfo?.allowedContext);
     return {
       contents: description,
       range: mapRange(token.range)
@@ -100,7 +100,7 @@ export async function hover(document: TextDocument, position: Position, config?:
   }
 
   let description = await getDescription(config, workflowContext, token, tokenResult.path);
-  description = appendContext(token, description);
+  description = appendContext(description, token.definitionInfo?.allowedContext);
 
   return {
     contents: description,
@@ -108,8 +108,7 @@ export async function hover(document: TextDocument, position: Position, config?:
   } satisfies Hover;
 }
 
-function appendContext(token: TemplateToken, description: string) {
-  const allowedContext = token.definitionInfo?.allowedContext;
+function appendContext(description: string, allowedContext?: string[]) {
   if (allowedContext && allowedContext?.length > 0) {
     // Only add padding if there is a description
     description += `${description.length > 0 ? `\n\n` : ""}**Context:** ${allowedContext.join(", ")}`;
