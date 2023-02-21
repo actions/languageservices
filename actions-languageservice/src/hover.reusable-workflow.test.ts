@@ -34,4 +34,28 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual("**Context:** github, inputs, vars, needs, strategy, matrix");
   });
+
+  it("hover on job output with description", async () => {
+    const input = `
+on: push
+
+jobs:
+  build:
+    uses: ./reusable-workflow-with-outputs.yaml
+  echo_outputs:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - run: echo \${{ needs.build.outputs.bu|ild_id }}
+`;
+
+    const result = await hover(
+      ...getPositionFromCursor(input),
+      testHoverConfig("", "string-steps-context")
+    );
+    expect(result).not.toBeUndefined();
+    expect(result?.contents).toEqual(
+      "The resulting build ID\n\n**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
+    );
+  });
 });

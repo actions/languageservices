@@ -15,10 +15,7 @@ import {Hover} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
-import {
-  isReusableWorkflowJobInput,
-  getReusableWorkflowInputDescription
-} from "./description-providers/reusable-job-inputs";
+import {isReusableWorkflowJobInput, getReusableWorkflowInputDescription} from "./description-providers/reusable-job-inputs";
 import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-pos";
 import {HoverVisitor} from "./expression-hover/visitor";
 import {validatorFunctions} from "./expression-validation/functions";
@@ -67,7 +64,11 @@ export async function hover(document: TextDocument, position: Position, config?:
 
       const exprPos = mapToExpressionPos(token, position);
       if (exprPos) {
-        return expressionHover(exprPos, context, namedContexts, functions);
+        let hover = expressionHover(exprPos, context, namedContexts, functions);
+        if (hover) {
+          hover.contents = appendContext(token, hover.contents as string);
+        }
+        return hover;
       }
     }
   }
