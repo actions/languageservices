@@ -2,7 +2,7 @@ import {hover} from "./hover";
 import {testHoverConfig} from "./hover.test";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 
-describe("hover on reusable workflows", () => {
+describe("hover.reusable-workflow", () => {
   it("hover on job input with description", async () => {
     const input = `
 on: push
@@ -51,8 +51,6 @@ jobs:
 
     const result = await hover(...getPositionFromCursor(input), testHoverConfig("", "string-steps-context"));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual(
-      "The resulting build ID\n\n**Context:** github, inputs, vars, needs, strategy, matrix, secrets, steps, job, runner, env, hashFiles(1,255)"
-    );
+    expect(result?.contents).toEqual("The resulting build ID");
   });
 });

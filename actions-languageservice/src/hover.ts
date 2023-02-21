@@ -67,11 +67,7 @@ export async function hover(document: TextDocument, position: Position, config?:
 
       const exprPos = mapToExpressionPos(token, position);
       if (exprPos) {
-        let hover = expressionHover(exprPos, context, namedContexts, functions);
-        if (hover) {
-          hover.contents = appendContext(hover.contents as string, allowedContext);
-        }
-        return hover;
+        return expressionHover(exprPos, context, namedContexts, functions);
       }
     }
   }
