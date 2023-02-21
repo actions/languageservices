@@ -68,6 +68,25 @@ jobs:
   `
         };
 
+      case "./reusable-workflow-with-inputs-no-description.yaml":
+        return {
+          name: "reusable-workflow-with-inputs.yaml",
+          content: `
+on:
+  workflow_call:
+    inputs:
+      username:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+  `
+        };
+
       case "./reusable-workflow-with-outputs.yaml":
         return {
           name: "reusable-workflow-with-outputs.yaml",

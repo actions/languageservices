@@ -137,10 +137,12 @@ export function initConnection(connection: Connection) {
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
     return timeOperation("hover", async () => {
       const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
-
       return await hover(documents.get(textDocument.uri)!, position, {
         descriptionProvider: descriptionProvider(client, cache),
-        contextProviderConfig: repoContext && contextProviders(client, repoContext, cache)
+        contextProviderConfig: repoContext && contextProviders(client, repoContext, cache),
+        fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
+          return await connection.sendRequest(Requests.ReadFile, {path});
+        })
       });
     });
   });
