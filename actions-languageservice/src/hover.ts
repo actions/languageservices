@@ -1,12 +1,10 @@
 import {DescriptionDictionary, Parser} from "@github/actions-expressions";
 import {FunctionInfo} from "@github/actions-expressions/funcs/info";
 import {Lexer} from "@github/actions-expressions/lexer";
-import {convertWorkflowTemplate, parseWorkflow, ParseWorkflowResult} from "@github/actions-workflow-parser";
-import {isMapping} from "@github/actions-workflow-parser";
+import {convertWorkflowTemplate, parseWorkflow} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {getCronDescription} from "@github/actions-workflow-parser/model/converter/cron";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
-import {DESCRIPTION} from "@github/actions-workflow-parser/templates/template-constants";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {isBasicExpression, isString} from "@github/actions-workflow-parser/templates/tokens/type-guards";
@@ -17,6 +15,10 @@ import {Hover} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
+import {
+  isReusableWorkflowJobInput,
+  getReusableWorkflowInputDescription
+} from "./description-providers/reusable-job-inputs";
 import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-pos";
 import {HoverVisitor} from "./expression-hover/visitor";
 import {validatorFunctions} from "./expression-validation/functions";
@@ -83,7 +85,7 @@ export async function hover(document: TextDocument, position: Position, config?:
       return {
         contents: description,
         range: mapRange(token.range)
-      } as Hover;
+      } satisfies Hover;
     }
   }
 
@@ -93,11 +95,10 @@ export async function hover(document: TextDocument, position: Position, config?:
     return {
       contents: description,
       range: mapRange(token.range)
-    } as Hover;
+    } satisfies Hover;
   }
 
   let description = await getDescription(config, workflowContext, token, tokenResult.path);
-
   description = appendContext(token, description);
 
   return {
@@ -136,10 +137,6 @@ function isCronMappingValue(tokenResult: TokenResult): boolean {
     isString(tokenResult.token!) &&
     tokenResult.token.value !== "cron"
   );
-}
-
-function isReusableWorkflowJobInput(tokenResult: TokenResult): boolean {
-  return tokenResult.parent?.definition?.key === "workflow-job-with" && isString(tokenResult.token!);
 }
 
 function expressionHover(
@@ -184,30 +181,4 @@ function expressionHover(
     info(`Encountered error trying to calculate expression hover: ${e}`);
     return null;
   }
-}
-
-function getReusableWorkflowInputDescription(workflowContext: WorkflowContext, tokenResult: TokenResult): string {
-  const reusableWorkflowJob = workflowContext.reusableWorkflowJob;
-
-  if (!reusableWorkflowJob) {
-    return "";
-  }
-
-  const inputName = tokenResult.token && isString(tokenResult.token) && tokenResult.token.value;
-  if (!inputName) {
-    return "";
-  }
-
-  // Find the input description in the template, if any
-  if (reusableWorkflowJob["input-definitions"]) {
-    const definition = reusableWorkflowJob["input-definitions"].find(inputName);
-    if (definition && isMapping(definition)) {
-      const description = definition.find(DESCRIPTION);
-      if (description && isString(description)) {
-        return description.value;
-      }
-    }
-  }
-
-  return "";
 }
