@@ -188,10 +188,7 @@ function expressionHover(
   }
 }
 
-function getReusableWorkflowInputDescription(
-  workflowContext: WorkflowContext,
-  tokenResult: TokenResult
-): string {
+function getReusableWorkflowInputDescription(workflowContext: WorkflowContext, tokenResult: TokenResult): string {
   const reusableWorkflowJob = workflowContext.reusableWorkflowJob;
 
   if (!reusableWorkflowJob) {
