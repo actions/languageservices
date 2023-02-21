@@ -2,10 +2,9 @@ import {DescriptionDictionary, Parser} from "@github/actions-expressions";
 import {FunctionInfo} from "@github/actions-expressions/funcs/info";
 import {Lexer} from "@github/actions-expressions/lexer";
 import {convertWorkflowTemplate, parseWorkflow, ParseWorkflowResult} from "@github/actions-workflow-parser";
-import {WorkflowTemplate, isMapping} from "@github/actions-workflow-parser";
+import {isMapping} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {getCronDescription} from "@github/actions-workflow-parser/model/converter/cron";
-import {isReusableWorkflowJob} from "@github/actions-workflow-parser/model/type-guards";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
 import {DESCRIPTION} from "@github/actions-workflow-parser/templates/template-constants";
 import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
@@ -26,7 +25,6 @@ import {nullTrace} from "./nulltrace";
 import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken, TokenResult} from "./utils/find-token";
 import {mapRange} from "./utils/range";
-import {ReusableWorkflowJob} from "@github/actions-workflow-parser/model/workflow-template";
 
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
