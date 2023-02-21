@@ -20,9 +20,12 @@ const nullTrace: TraceWriter = {
 };
 
 const testFiles = "./testdata/reader";
+const skippedTestsFile = "./testdata/skipped-tests.txt";
 
 describe("x-lang tests", () => {
   const files = fs.readdirSync(testFiles);
+
+  const skippedTests = new Set(fs.readFileSync(skippedTestsFile, "utf8").split(/\n/));
 
   for (const file of files) {
     const fileName = path.join(testFiles, file);
@@ -42,7 +45,7 @@ describe("x-lang tests", () => {
     expect(testDocs.length).toBeGreaterThanOrEqual(3);
 
     const testOptions: TestOptions = YAML.parse(testDocs[0]);
-    const unsupportedTest = contains(testOptions.skip, "TypeScript");
+    const unsupportedTest = skippedTests.has(file);
 
     const test = async () => {
       const testFileName = ".github/workflows" + fileName.substring(fileName.lastIndexOf("/"));

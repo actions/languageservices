@@ -1,54 +1,67 @@
 include-source: false # Drop file/line/col from output
 skip:
   - Go
-permissions-policy: LimitedRead
+permissions-policy: Write
 ---
 on: push
-permissions: write-all
 jobs:
+  # Inherit from default permissions policy
   build:
+    uses: contoso/templates/.github/workflows/build.yml@v1
+  # Override
+  build2:
+    permissions:
+      actions: write
     uses: contoso/templates/.github/workflows/build.yml@v1
 ---
 contoso/templates/.github/workflows/build.yml@v1
 ---
 on: workflow_call
 jobs:
-  # Inherits workflow level
   deploy:
     runs-on: ubuntu-latest
     steps:
       - run: echo 1
-  # Overrides workflow level
-  deploy2:
-    permissions:
-      actions: read
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo 1
-permissions:
-  actions: write
 ---
 {
-  "permissions": {
-    "actions": "write",
-    "checks": "write",
-    "contents": "write",
-    "deployments": "write",
-    "discussions": "write",
-    "id-token": "write",
-    "issues": "write",
-    "packages": "write",
-    "pages": "write",
-    "pull-requests": "write",
-    "repository-projects": "write",
-    "security-events": "write",
-    "statuses": "write"
-  },
   "jobs": [
     {
       "type": "reusableWorkflowJob",
       "id": "build",
       "name": "build",
+      "needs": [],
+      "if": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "ref": "contoso/templates/.github/workflows/build.yml@v1",
+      "jobs": [
+        {
+          "type": "job",
+          "id": "deploy",
+          "name": "deploy",
+          "if": {
+            "type": 3,
+            "expr": "success()"
+          },
+          "runs-on": "ubuntu-latest",
+          "steps": [
+            {
+              "id": "__run",
+              "if": {
+                "type": 3,
+                "expr": "success()"
+              },
+              "run": "echo 1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "reusableWorkflowJob",
+      "id": "build2",
+      "name": "build2",
       "needs": [],
       "if": {
         "type": 3,
@@ -69,29 +82,6 @@ permissions:
           },
           "permissions": {
             "actions": "write"
-          },
-          "runs-on": "ubuntu-latest",
-          "steps": [
-            {
-              "id": "__run",
-              "if": {
-                "type": 3,
-                "expr": "success()"
-              },
-              "run": "echo 1"
-            }
-          ]
-        },
-        {
-          "type": "job",
-          "id": "deploy2",
-          "name": "deploy2",
-          "if": {
-            "type": 3,
-            "expr": "success()"
-          },
-          "permissions": {
-            "actions": "read"
           },
           "runs-on": "ubuntu-latest",
           "steps": [

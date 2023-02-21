@@ -2,7 +2,6 @@ include-source: false # Drop file/line/col from output
 max-result-size: 2048
 skip:
   - Go
-  - TypeScript
 ---
 on: push
 jobs:
@@ -21,10 +20,7 @@ jobs:
 {
   "errors": [
     {
-      "Message": "contoso/templates/.github/workflows/deploy.yml@v1: Maximum object size exceeded"
-    },
-    {
-      "Message": "Unexpected type '' encountered while reading 'root'. The type 'MappingToken' was expected."
+      "Message": "In .github/workflows/errors-reusable-workflow-max-result-size.yml (Line: 4, Col: 20): Error from called workflow contoso/templates/.github/workflows/deploy.yml@v1: Maximum object size exceeded"
     }
   ]
 }

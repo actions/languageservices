@@ -1,7 +1,6 @@
 include-source: false # Drop file/line/col from output
 skip:
   - Go
-  - TypeScript
 permissions-policy: LimitedRead
 ---
 on: push
@@ -14,6 +13,8 @@ contoso/templates/.github/workflows/deploy.yml@v1
 on:  workflow_call
 permissions:
   actions: write
+  contents: write
+  packages: write
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,7 +24,7 @@ jobs:
 {
   "errors": [
     {
-      "Message": ".github/workflows/errors-reusable-workflow-permissions-not-allowed-workflow-level-from-caller-default.yml (Line: 3, Col: 3): Error calling workflow 'contoso/templates/.github/workflows/deploy.yml@v1'. The workflow 'contoso/templates/.github/workflows/deploy.yml@v1' is requesting 'actions: write', but is only allowed 'actions: none'."
+      "Message": ".github/workflows/errors-reusable-workflow-permissions-not-allowed-workflow-level-from-caller-default.yml (Line: 3, Col: 3): Error calling workflow 'contoso/templates/.github/workflows/deploy.yml@v1'. The workflow 'contoso/templates/.github/workflows/deploy.yml@v1' is requesting 'actions: write, contents: write, packages: write', but is only allowed 'actions: none, contents: read, packages: read'."
     }
   ]
 }
