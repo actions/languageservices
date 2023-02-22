@@ -7,7 +7,7 @@ export function getStrategyContext(workflowContext: WorkflowContext): Descriptio
   // https://docs.github.com/en/actions/learn-github-actions/contexts#strategy-context
   const keys = ["fail-fast", "job-index", "job-total", "max-parallel"];
 
-  const strategy = workflowContext.job?.strategy;
+  const strategy = workflowContext.job?.strategy ?? workflowContext.reusableWorkflowJob?.strategy;
   if (!strategy || !isMapping(strategy)) {
     return new DescriptionDictionary(
       ...keys.map(key => {

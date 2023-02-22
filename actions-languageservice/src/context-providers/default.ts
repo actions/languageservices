@@ -57,6 +57,7 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
     case "inputs":
       return getInputsContext(workflowContext);
 
+    case "reusableWorkflowJob":
     case "job":
       return getJobContext(workflowContext);
 
@@ -114,5 +115,5 @@ function filterContextNames(contextNames: string[], workflowContext: WorkflowCon
 }
 
 function hasStrategy(workflowContext: WorkflowContext): boolean {
-  return workflowContext.job?.strategy !== undefined;
+  return workflowContext.job?.strategy !== undefined || workflowContext.reusableWorkflowJob?.strategy !== undefined;
 }

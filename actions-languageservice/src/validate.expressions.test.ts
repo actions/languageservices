@@ -505,6 +505,45 @@ jobs:
       expect(result).toEqual([]);
     });
 
+    it("reference strategy in reusable workflow", async () => {
+      const input = `
+  on: push
+  
+  jobs:
+    test:
+      strategy:
+        fail-fast: true
+        matrix:
+          node: [14, 16]
+      uses: ./reusable-workflow-with-inputs.yaml
+      with:
+        username: User-\${{ strategy.fail-fast }}
+  `;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("reference matrix in reusable workflow", async () => {
+      const input = `
+  on: push
+  
+  jobs:
+    test:
+      strategy:
+        matrix:
+          node: [14, 16]
+      uses: ./reusable-workflow-with-inputs.yaml
+      with:
+        username: \${{ matrix.node }}
+  `;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
     it("reference outside of a matrix job", async () => {
       const input = `
 on: push

@@ -8,7 +8,7 @@ import {ContextValue, Mode} from "./default";
 
 export function getMatrixContext(workflowContext: WorkflowContext, mode: Mode): ContextValue {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#matrix-context
-  const strategy = workflowContext.job?.strategy;
+  const strategy = workflowContext.job?.strategy ?? workflowContext.reusableWorkflowJob?.strategy;
   if (!strategy || !isMapping(strategy)) {
     return new DescriptionDictionary();
   }
