@@ -1,6 +1,4 @@
 include-source: true # Preserve file/line/col in serialized output
-skip:
-  - TypeScript
 ---
 # This is meant to cover all the different types of TemplateToken that are output
 # with include-source: true. Currently it is missing type 4 (insert expression)
