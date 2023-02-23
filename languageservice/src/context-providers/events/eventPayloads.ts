@@ -93,6 +93,12 @@ function mergeParam(target: DescriptionDictionary, param: Param) {
   } else {
     // Otherwise add as a null value. We do not care about the actual content for validation
     // auto-completion. Possible existence and the description are enough.
+    //
+    // As a special case, if the param is already set, do not overwrite it.
+    if (!!target.get(param.name)) {
+      return;
+    }
+
     target.add(param.name, new data.Null(), param.description);
   }
 }
