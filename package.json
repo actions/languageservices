@@ -2,10 +2,10 @@
   "name": "actions-languageservices",
   "private": true,
   "workspaces": [
-    "./actions-expressions",
-    "./actions-workflow-parser",
-    "./actions-languageservice",
-    "./actions-languageserver",
+    "./expressions",
+    "./workflow-parser",
+    "./languageservice",
+    "./languageserver",
     "./browser-playground"
   ],
   "devDependencies": {
