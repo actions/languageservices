@@ -729,6 +729,107 @@ jobs:
     });
   });
 
+  describe("jobs context", () => {
+    it("includes defined jobs", async () => {
+      const input = `
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      result:
+        description: "one or two"
+        value: \${{ jobs.| }}
+jobs:
+  one:
+    runs-on: ubuntu-latest
+    steps:
+    - id: a
+      run: echo hello a
+  two:
+    runs-on: ubuntu-latest
+    steps:
+    - id: b
+      run: echo hello b
+`;
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+
+      expect(result.map(x => x.label)).toEqual(["one", "two"]);
+    });
+
+    it("jobs.<job_id>.result only", async () => {
+      const input = `
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      result:
+        description: "The result"
+        value: \${{ jobs.one.| }}
+jobs:
+  one:
+    runs-on: ubuntu-latest
+    steps:
+    - id: a
+      run: echo hello a
+`;
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+
+      expect(result.map(x => x.label)).toEqual(["result"]);
+    });
+
+    it("jobs.<job_id>", async () => {
+      const input = `
+on:
+  workflow_call:
+    outputs:
+      output1:
+        description: "A greeting"
+        value: \${{ jobs.example_job.| }}
+
+jobs:
+  example_job:
+    name: Generate output
+    runs-on: ubuntu-latest
+    # Map the job outputs to step outputs
+    outputs:
+      output1: "\${{ steps.a.outputs.greeting }}"
+    steps:
+      - id: a
+        run: echo "greeting=hello" >> $GITHUB_OUTPUT
+`;
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+
+      expect(result.map(x => x.label)).toEqual(["outputs", "result"]);
+    });
+    it("jobs.<job_id>.outputs", async () => {
+      const input = `
+on:
+  workflow_call:
+    outputs:
+      output1:
+        description: "A greeting"
+        value: \${{ jobs.example_job.outputs.| }}
+
+jobs:
+  example_job:
+    name: Generate output
+    runs-on: ubuntu-latest
+    # Map the job outputs to step outputs
+    outputs:
+      output1: "\${{ steps.a.outputs.greeting }}"
+      output2: "\${{ steps.b.outputs.greeting }}"
+    steps:
+      - id: a
+        run: echo "greeting=hello" >> $GITHUB_OUTPUT
+      - id: b
+        run: echo "greeting=hello" >> $GITHUB_OUTPUT
+`;
+      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+
+      expect(result.map(x => x.label)).toEqual(["output1", "output2"]);
+    });
+  });
+
   describe("strategy context", () => {
     it("strategy is not suggested when outside of a matrix job", async () => {
       const input = `

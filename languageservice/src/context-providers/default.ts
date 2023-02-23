@@ -7,6 +7,7 @@ import {getEnvContext} from "./env";
 import {getGithubContext} from "./github";
 import {getInputsContext} from "./inputs";
 import {getJobContext} from "./job";
+import {getJobsContext} from "./jobs";
 import {getMatrixContext} from "./matrix";
 import {getNeedsContext} from "./needs";
 import {getStepsContext} from "./steps";
@@ -60,6 +61,9 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
     case "reusableWorkflowJob":
     case "job":
       return getJobContext(workflowContext);
+
+    case "jobs":
+      return getJobsContext(workflowContext);
 
     case "matrix":
       return getMatrixContext(workflowContext, mode);

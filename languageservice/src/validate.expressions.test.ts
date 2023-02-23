@@ -404,6 +404,55 @@ jobs:
     });
   });
 
+  describe("jobs context", () => {
+    it("jobs.<job_id>.result", async () => {
+      const input = `
+on:
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      successful:
+        description: "Was job successful"
+        value: \${{ jobs.example_job.result }}
+
+jobs:
+  example_job:
+    runs-on: ubuntu-latest
+    steps:
+      - id: a
+        run: echo hello world`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
+    it("jobs.<job_id>.outputs.<output_name>", async () => {
+      const input = `
+on:
+  workflow_call:
+    outputs:
+      output1:
+        description: "A greeting"
+        value: \${{ jobs.example_job.outputs.output1 }}
+
+jobs:
+  example_job:
+    name: Generate output
+    runs-on: ubuntu-latest
+    # Map the job outputs to step outputs
+    outputs:
+      output1: "\${{ steps.a.outputs.greeting }}"
+    steps:
+      - id: a
+        run: echo "greeting=hello" >> $GITHUB_OUTPUT`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+  });
+
   describe("env context", () => {
     it("references env within scope", async () => {
       const input = `

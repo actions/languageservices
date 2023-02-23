@@ -172,6 +172,14 @@
       "description": "`GITHUB_TOKEN` is a secret that is automatically created for every workflow run, and is always included in the secrets context. For more information, see [Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication)."
     }
   },
+  "jobs": {
+    "outputs": {
+      "description": "The set of outputs of a job in a reusable workflow."
+    },
+    "result": {
+      "description": "The result of a job in the reusable workflow. Possible values are `success`, `failure`, `cancelled`, or `skipped`."
+    }
+  },
   "steps": {
     "outputs": {
       "description": "The set of outputs defined for the step."
