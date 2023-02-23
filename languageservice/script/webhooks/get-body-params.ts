@@ -157,6 +157,16 @@ export async function getBodyParams(schema: any, topLevel = false): Promise<any>
         param.description = param.anyOf[0].description;
         param.isRequired = param.anyOf[0].required;
       }
+    } else if (param && param.allOf && param.allOf.length > 0) {
+      paramType.push("object");
+
+      const firstObject = param.allOf[0];
+      param.description = firstObject.description;
+      param.isRequired = firstObject.required;
+
+      for (const a of param.allOf) {
+        childParamsGroups.push(...(await getBodyParams(a, false)));
+      }
     }
 
     const paramDecorated = await getTransformedParam(param, paramType, {
