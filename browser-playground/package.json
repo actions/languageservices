@@ -6,7 +6,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "@github/actions-languageserver": "^0.1.181",
+    "@actions/languageserver": "^0.1.152",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "monaco-editor-workers": "^0.34.2",
     "monaco-languageclient": "^4.0.3",
