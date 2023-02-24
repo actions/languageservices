@@ -1,4 +1,4 @@
-import {convertWorkflowTemplate, parseWorkflow, WorkflowTemplate} from "@github/actions-workflow-parser";
+import {convertWorkflowTemplate, parseWorkflow, WorkflowTemplate} from "@actions/workflow-parser";
 import {getWorkflowContext, WorkflowContext} from "../context/workflow-context";
 import {nullTrace} from "../nulltrace";
 import {findToken} from "../utils/find-token";

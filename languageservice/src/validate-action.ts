@@ -1,8 +1,8 @@
-import {isMapping} from "@github/actions-workflow-parser";
-import {isActionStep} from "@github/actions-workflow-parser/model/type-guards";
-import {Step} from "@github/actions-workflow-parser/model/workflow-template";
-import {ScalarToken} from "@github/actions-workflow-parser/templates/tokens/scalar-token";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
+import {isMapping} from "@actions/workflow-parser";
+import {isActionStep} from "@actions/workflow-parser/model/type-guards";
+import {Step} from "@actions/workflow-parser/model/workflow-template";
+import {ScalarToken} from "@actions/workflow-parser/templates/tokens/scalar-token";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
 import {parseActionReference} from "./action";
 import {mapRange} from "./utils/range";

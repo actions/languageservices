@@ -1,6 +1,6 @@
-import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
-import {convertWorkflowTemplate, NoOperationTraceWriter, parseWorkflow} from "@github/actions-workflow-parser";
-import {isJob} from "@github/actions-workflow-parser/model/type-guards";
+import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
+import {convertWorkflowTemplate, NoOperationTraceWriter, parseWorkflow} from "@actions/workflow-parser";
+import {isJob} from "@actions/workflow-parser/model/type-guards";
 
 export async function createWorkflowContext(
   workflow: string,

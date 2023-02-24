@@ -1,4 +1,4 @@
-import {log} from "@github/actions-languageservice/log";
+import {log} from "@actions/languageservice/log";
 
 export async function timeOperation<T>(name: string, f: () => T): Promise<T> {
   const start = Date.now();

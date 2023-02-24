@@ -1,9 +1,9 @@
-import {error} from "@github/actions-languageservice/log";
+import {error} from "@actions/languageservice/log";
 import {Octokit} from "@octokit/rest";
 import {RepositoryContext} from "../initializationOptions";
 import {TTLCache} from "./cache";
-import {getUsername} from "./username";
 import {errorStatus} from "./error";
+import {getUsername} from "./username";
 
 export type RepoPermission = "admin" | "write" | "read" | "none";
 

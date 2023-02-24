@@ -1,6 +1,6 @@
-import {isScalar, parseWorkflow} from "@github/actions-workflow-parser";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
-import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
+import {isScalar, parseWorkflow} from "@actions/workflow-parser";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {TokenType} from "@actions/workflow-parser/templates/tokens/types";
 import {nullTrace} from "../nulltrace";
 import {getPositionFromCursor} from "../test-utils/cursor-position";
 import {findToken} from "./find-token";

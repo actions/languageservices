@@ -1,4 +1,4 @@
-import {FunctionInfo} from "@github/actions-expressions/funcs/info";
+import {FunctionInfo} from "@actions/expressions/funcs/info";
 import {MAX_CONSTANT} from "./template-constants";
 
 export function splitAllowedContext(allowedContext: string[]): {

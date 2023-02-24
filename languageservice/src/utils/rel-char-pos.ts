@@ -1,4 +1,4 @@
-import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
+import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
 import {Position} from "vscode-languageserver-textdocument";
 import {mapRange} from "./range";
 

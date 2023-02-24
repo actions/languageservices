@@ -1,6 +1,6 @@
-import {data, isDescriptionDictionary} from "@github/actions-expressions";
-import {isDictionary} from "@github/actions-expressions/data/dictionary";
-import {ExpressionData, Pair} from "@github/actions-expressions/data/expressiondata";
+import {data, isDescriptionDictionary} from "@actions/expressions";
+import {isDictionary} from "@actions/expressions/data/dictionary";
+import {ExpressionData, Pair} from "@actions/expressions/data/expressiondata";
 
 export class AccessError extends Error {
   constructor(message: string, public readonly keyName: string) {

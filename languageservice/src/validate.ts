@@ -1,13 +1,14 @@
-import {Evaluator, ExpressionEvaluationError, Lexer, Parser} from "@github/actions-expressions";
-import {Expr} from "@github/actions-expressions/ast";
-import {isBasicExpression, isString, ParseWorkflowResult, WorkflowTemplate} from "@github/actions-workflow-parser";
-import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
-import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
-import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
-import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
-import {File} from "@github/actions-workflow-parser/workflows/file";
-import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provider";
+import {Evaluator, ExpressionEvaluationError, Lexer, Parser} from "@actions/expressions";
+import {Expr} from "@actions/expressions/ast";
+import {isBasicExpression, isString, ParseWorkflowResult, WorkflowTemplate} from "@actions/workflow-parser";
+import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
+import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
+import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
+import {File} from "@actions/workflow-parser/workflows/file";
+import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 import {ActionMetadata, ActionReference} from "./action";
@@ -19,11 +20,10 @@ import {validatorFunctions} from "./expression-validation/functions";
 import {error} from "./log";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
+import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
 import {validateAction} from "./validate-action";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
-import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
-import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
 
 export type ValidationConfig = {
   valueProviderConfig?: ValueProviderConfig;

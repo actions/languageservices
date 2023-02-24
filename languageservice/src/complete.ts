@@ -1,13 +1,13 @@
-import {complete as completeExpression, DescriptionDictionary} from "@github/actions-expressions";
-import {CompletionItem as ExpressionCompletionItem} from "@github/actions-expressions/completion";
-import {isBasicExpression, isSequence, isString} from "@github/actions-workflow-parser";
-import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
-import {OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
-import {File} from "@github/actions-workflow-parser/workflows/file";
-import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provider";
+import {complete as completeExpression, DescriptionDictionary} from "@actions/expressions";
+import {CompletionItem as ExpressionCompletionItem} from "@actions/expressions/completion";
+import {isBasicExpression, isSequence, isString} from "@actions/workflow-parser";
+import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {OPEN_EXPRESSION} from "@actions/workflow-parser/templates/template-constants";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/index";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
+import {TokenType} from "@actions/workflow-parser/templates/tokens/types";
+import {File} from "@actions/workflow-parser/workflows/file";
+import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
@@ -21,10 +21,10 @@ import {guessIndentation} from "./utils/indentation-guesser";
 import {mapRange} from "./utils/range";
 import {getRelCharOffset} from "./utils/rel-char-pos";
 import {isPlaceholder, transform} from "./utils/transform";
+import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {definitionValues} from "./value-providers/definition";
-import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position

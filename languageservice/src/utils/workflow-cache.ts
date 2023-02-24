@@ -1,16 +1,11 @@
-import {
-  convertWorkflowTemplate,
-  parseWorkflow,
-  ParseWorkflowResult,
-  WorkflowTemplate
-} from "@github/actions-workflow-parser";
-import {File} from "@github/actions-workflow-parser/workflows/file";
-import {WorkflowTemplateConverterOptions} from "@github/actions-workflow-parser/model/convert";
-import {TemplateContext} from "@github/actions-workflow-parser/templates/template-context";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
+import {convertWorkflowTemplate, parseWorkflow, ParseWorkflowResult, WorkflowTemplate} from "@actions/workflow-parser";
+import {WorkflowTemplateConverterOptions} from "@actions/workflow-parser/model/convert";
+import {TemplateContext} from "@actions/workflow-parser/templates/template-context";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {File} from "@actions/workflow-parser/workflows/file";
 
-import {nullTrace} from "../nulltrace";
 import {CompletionConfig} from "../complete";
+import {nullTrace} from "../nulltrace";
 
 const parsedWorkflowCache = new Map<string, ParseWorkflowResult>();
 const workflowTemplateCache = new Map<string, WorkflowTemplate>();

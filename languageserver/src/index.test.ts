@@ -1,4 +1,4 @@
-import {validate} from "@github/actions-languageservice";
+import {validate} from "@actions/languageservice";
 import {TextDocument} from "vscode-languageserver-textdocument";
 
 describe("simple test", () => {

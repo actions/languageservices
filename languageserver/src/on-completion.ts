@@ -1,4 +1,4 @@
-import {complete} from "@github/actions-languageservice/complete";
+import {complete} from "@actions/languageservice/complete";
 import {Octokit} from "@octokit/rest";
 import {CompletionItem, Connection, Position} from "vscode-languageserver";
 import {TextDocument} from "vscode-languageserver-textdocument";

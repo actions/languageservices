@@ -1,5 +1,5 @@
-import {isMapping, isString} from "@github/actions-workflow-parser";
-import {DESCRIPTION} from "@github/actions-workflow-parser/templates/template-constants";
+import {isMapping, isString} from "@actions/workflow-parser";
+import {DESCRIPTION} from "@actions/workflow-parser/templates/template-constants";
 import {WorkflowContext} from "../context/workflow-context";
 import {TokenResult} from "../utils/find-token";
 

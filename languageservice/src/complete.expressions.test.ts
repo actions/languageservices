@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {data, DescriptionDictionary} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@actions/expressions";
 import {CompletionItem, CompletionItemKind} from "vscode-languageserver-types";
 import {complete, getExpressionInput} from "./complete";
 import {ContextProviderConfig} from "./context-providers/config";

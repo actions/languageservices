@@ -1,4 +1,4 @@
-import {isString} from "@github/actions-workflow-parser";
+import {isString} from "@actions/workflow-parser";
 import {DescriptionProvider, hover, HoverConfig} from "./hover";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {testFileProvider} from "./test-utils/test-file-provider";

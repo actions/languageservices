@@ -1,4 +1,4 @@
-import {Lexer, Parser} from "@github/actions-expressions";
+import {Lexer, Parser} from "@actions/expressions";
 import {splitAllowedContext} from "../allowed-context";
 import {DefinitionInfo} from "../schema/definition-info";
 import {ScalarToken} from "./scalar-token";

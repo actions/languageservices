@@ -1,8 +1,8 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {isBasicExpression, isMapping, isSequence, isString} from "@github/actions-workflow-parser";
-import {KeyValuePair} from "@github/actions-workflow-parser/templates/tokens/key-value-pair";
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {isBasicExpression, isMapping, isSequence, isString} from "@actions/workflow-parser";
+import {KeyValuePair} from "@actions/workflow-parser/templates/tokens/key-value-pair";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
+import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextValue, Mode} from "./default";
 

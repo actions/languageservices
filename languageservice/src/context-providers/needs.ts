@@ -1,8 +1,8 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {isMapping, isScalar, isString} from "@github/actions-workflow-parser";
-import {isJob} from "@github/actions-workflow-parser/model/type-guards";
-import {WorkflowJob} from "@github/actions-workflow-parser/model/workflow-template";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {isMapping, isScalar, isString} from "@actions/workflow-parser";
+import {isJob} from "@actions/workflow-parser/model/type-guards";
+import {WorkflowJob} from "@actions/workflow-parser/model/workflow-template";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {WorkflowContext} from "../context/workflow-context";
 
 export function getNeedsContext(workflowContext: WorkflowContext): DescriptionDictionary {

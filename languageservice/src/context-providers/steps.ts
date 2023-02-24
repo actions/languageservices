@@ -1,5 +1,5 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {Step} from "@github/actions-workflow-parser/model/workflow-template";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 import {getDescription} from "./descriptions";
 

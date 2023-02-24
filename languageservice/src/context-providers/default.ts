@@ -1,5 +1,5 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {Kind} from "@github/actions-expressions/data/expressiondata";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {Kind} from "@actions/expressions/data/expressiondata";
 import {WorkflowContext} from "../context/workflow-context";
 import {ContextProviderConfig} from "./config";
 import {getDescription, RootContext} from "./descriptions";

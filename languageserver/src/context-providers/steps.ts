@@ -1,7 +1,7 @@
-import {data, DescriptionDictionary, isDescriptionDictionary} from "@github/actions-expressions";
-import {parseActionReference} from "@github/actions-languageservice/action";
-import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
-import {isActionStep} from "@github/actions-workflow-parser/model/type-guards";
+import {data, DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions";
+import {parseActionReference} from "@actions/languageservice/action";
+import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
+import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {Octokit} from "@octokit/rest";
 import {TTLCache} from "../utils/cache";
 import {getActionOutputs} from "./action-outputs";

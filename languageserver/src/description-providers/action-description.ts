@@ -1,6 +1,6 @@
-import {actionUrl, parseActionReference} from "@github/actions-languageservice/action";
-import {isActionStep} from "@github/actions-workflow-parser/model/type-guards";
-import {Step} from "@github/actions-workflow-parser/model/workflow-template";
+import {actionUrl, parseActionReference} from "@actions/languageservice/action";
+import {isActionStep} from "@actions/workflow-parser/model/type-guards";
+import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {Octokit} from "@octokit/rest";
 import {fetchActionMetadata} from "../utils/action-metadata";
 import {TTLCache} from "../utils/cache";

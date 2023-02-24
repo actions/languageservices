@@ -1,4 +1,4 @@
-import {FunctionInfo} from "@github/actions-expressions/funcs/info";
+import {FunctionInfo} from "@actions/expressions/funcs/info";
 
 import {TemplateSchema} from "./schema/template-schema";
 import {TemplateValidationError} from "./template-validation-error";

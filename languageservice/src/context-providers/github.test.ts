@@ -1,4 +1,4 @@
-import {DescriptionDictionary, isDescriptionDictionary} from "@github/actions-expressions/.";
+import {DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions/.";
 import {testGetWorkflowContext} from "../test-utils/test-workflow-context";
 import {Mode} from "./default";
 import {getGithubContext} from "./github";

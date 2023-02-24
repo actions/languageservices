@@ -1,11 +1,11 @@
-import {DescriptionDictionary} from "@github/actions-expressions/.";
+import {DescriptionDictionary} from "@actions/expressions/.";
 import {DiagnosticSeverity} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {registerLogger} from "./log";
 import {createDocument} from "./test-utils/document";
 import {TestLogger} from "./test-utils/logger";
-import {validate, ValidationConfig} from "./validate";
 import {clearCache} from "./utils/workflow-cache";
+import {validate, ValidationConfig} from "./validate";
 
 registerLogger(new TestLogger());
 
@@ -582,7 +582,7 @@ jobs:
     it("reference strategy in reusable workflow", async () => {
       const input = `
   on: push
-  
+
   jobs:
     test:
       strategy:
@@ -602,7 +602,7 @@ jobs:
     it("reference matrix in reusable workflow", async () => {
       const input = `
   on: push
-  
+
   jobs:
     test:
       strategy:

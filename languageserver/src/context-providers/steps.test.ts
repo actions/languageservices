@@ -1,5 +1,5 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {getStepsContext as getDefaultStepsContext} from "@github/actions-languageservice/context-providers/steps";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {getStepsContext as getDefaultStepsContext} from "@actions/languageservice/context-providers/steps";
 import {Octokit} from "@octokit/rest";
 import fetchMock from "fetch-mock";
 

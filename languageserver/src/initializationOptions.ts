@@ -1,5 +1,5 @@
-import {LogLevel} from "@github/actions-languageservice/log";
-export {LogLevel} from "@github/actions-languageservice/log";
+import {LogLevel} from "@actions/languageservice/log";
+export {LogLevel} from "@actions/languageservice/log";
 
 export interface InitializationOptions {
   /**

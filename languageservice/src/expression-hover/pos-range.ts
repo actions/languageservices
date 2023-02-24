@@ -1,4 +1,4 @@
-import {Pos, Range} from "@github/actions-expressions/lexer";
+import {Pos, Range} from "@actions/expressions/lexer";
 
 export function posWithinRange(pos: Pos, range: Range): boolean {
   return (

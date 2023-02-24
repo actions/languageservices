@@ -1,8 +1,8 @@
-import {isString} from "@github/actions-workflow-parser";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
-import {TokenType} from "@github/actions-workflow-parser/templates/tokens/types";
+import {isString} from "@actions/workflow-parser";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/index";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
+import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
+import {TokenType} from "@actions/workflow-parser/templates/tokens/types";
 import {Position} from "vscode-languageserver-textdocument";
 
 export function findInnerToken(pos: Position, root?: TemplateToken) {

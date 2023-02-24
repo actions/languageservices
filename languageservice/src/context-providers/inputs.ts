@@ -1,5 +1,5 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {InputConfig} from "@github/actions-workflow-parser/model/workflow-template";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {InputConfig} from "@actions/workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 
 export function getInputsContext(workflowContext: WorkflowContext): DescriptionDictionary {

@@ -1,9 +1,4 @@
-import {
-  DescriptionDictionary,
-  Evaluator,
-  isDescriptionDictionary,
-  wellKnownFunctions
-} from "@github/actions-expressions";
+import {DescriptionDictionary, Evaluator, isDescriptionDictionary, wellKnownFunctions} from "@actions/expressions";
 import {
   Binary,
   ContextAccess,
@@ -15,9 +10,9 @@ import {
   Literal,
   Logical,
   Unary
-} from "@github/actions-expressions/ast";
-import {FunctionDefinition} from "@github/actions-expressions/funcs/info";
-import {Pos, Range} from "@github/actions-expressions/lexer";
+} from "@actions/expressions/ast";
+import {FunctionDefinition} from "@actions/expressions/funcs/info";
+import {Pos, Range} from "@actions/expressions/lexer";
 import {posWithinRange} from "./pos-range";
 
 export type HoverResult =

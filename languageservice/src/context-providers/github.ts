@@ -1,6 +1,6 @@
-import {data, DescriptionDictionary, isDescriptionDictionary} from "@github/actions-expressions";
-import {ExpressionData} from "@github/actions-expressions/data/expressiondata";
-import {TypesFilterConfig} from "@github/actions-workflow-parser/model/workflow-template";
+import {data, DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions";
+import {ExpressionData} from "@actions/expressions/data/expressiondata";
+import {TypesFilterConfig} from "@actions/workflow-parser/model/workflow-template";
 import {WorkflowContext} from "../context/workflow-context";
 import {Mode} from "./default";
 import {getDescription} from "./descriptions";

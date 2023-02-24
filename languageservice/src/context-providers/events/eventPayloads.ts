@@ -1,4 +1,4 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
+import {data, DescriptionDictionary} from "@actions/expressions";
 
 import webhookObjects from "./objects.json";
 import webhooks from "./webhooks.json";

@@ -1,9 +1,9 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {Pair} from "@github/actions-expressions/data/expressiondata";
-import {StringData} from "@github/actions-expressions/data/index";
-import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
-import {warn} from "@github/actions-languageservice/log";
-import {isMapping, isString} from "@github/actions-workflow-parser";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {Pair} from "@actions/expressions/data/expressiondata";
+import {StringData} from "@actions/expressions/data/index";
+import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
+import {warn} from "@actions/languageservice/log";
+import {isMapping, isString} from "@actions/workflow-parser";
 import {Octokit} from "@octokit/rest";
 
 import {RepositoryContext} from "../initializationOptions";

@@ -1,5 +1,5 @@
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
-import {isMapping, isString} from "@github/actions-workflow-parser/templates/tokens/type-guards";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {isMapping, isString} from "@actions/workflow-parser/templates/tokens/type-guards";
 import {WorkflowContext} from "../context/workflow-context";
 import {Value} from "./config";
 

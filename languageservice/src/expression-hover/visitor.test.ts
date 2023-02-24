@@ -1,7 +1,7 @@
-import {data, DescriptionDictionary, Lexer, Parser} from "@github/actions-expressions";
-import {convertWorkflowTemplate, parseWorkflow} from "@github/actions-workflow-parser";
-import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
-import {File} from "@github/actions-workflow-parser/workflows/file";
+import {data, DescriptionDictionary, Lexer, Parser} from "@actions/expressions";
+import {convertWorkflowTemplate, parseWorkflow} from "@actions/workflow-parser";
+import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {File} from "@actions/workflow-parser/workflows/file";
 import {ContextProviderConfig} from "../context-providers/config";
 import {getContext, Mode} from "../context-providers/default";
 import {getWorkflowContext} from "../context/workflow-context";

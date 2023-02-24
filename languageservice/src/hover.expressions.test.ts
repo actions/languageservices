@@ -1,5 +1,5 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {format} from "@github/actions-expressions/funcs/format";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {format} from "@actions/expressions/funcs/format";
 import {Hover} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {hover} from "./hover";

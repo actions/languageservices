@@ -1,5 +1,5 @@
-import {ActionReference, ActionMetadata, actionIdentifier} from "@github/actions-languageservice/action";
-import {error} from "@github/actions-languageservice/log";
+import {actionIdentifier, ActionMetadata, ActionReference} from "@actions/languageservice/action";
+import {error} from "@actions/languageservice/log";
 import {Octokit, RestEndpointMethodTypes} from "@octokit/rest";
 import {parse} from "yaml";
 import {TTLCache} from "./cache";

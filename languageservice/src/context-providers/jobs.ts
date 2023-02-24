@@ -1,6 +1,6 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {StringData} from "@github/actions-expressions/data/string";
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {StringData} from "@actions/expressions/data/string";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {WorkflowContext} from "../context/workflow-context";
 import {getDescription} from "./descriptions";
 

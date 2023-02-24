@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {Job} from "@github/actions-workflow-parser/model/workflow-template";
-import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
-import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {Job} from "@actions/workflow-parser/model/workflow-template";
+import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
+import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
+import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {WorkflowContext} from "../context/workflow-context";
 import {Mode} from "./default";
 import {getMatrixContext} from "./matrix";

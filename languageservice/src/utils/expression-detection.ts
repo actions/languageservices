@@ -1,8 +1,8 @@
-import {isString} from "@github/actions-workflow-parser";
-import {DefinitionType} from "@github/actions-workflow-parser/templates/schema/definition-type";
-import {StringDefinition} from "@github/actions-workflow-parser/templates/schema/string-definition";
-import {OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
+import {isString} from "@actions/workflow-parser";
+import {DefinitionType} from "@actions/workflow-parser/templates/schema/definition-type";
+import {StringDefinition} from "@actions/workflow-parser/templates/schema/string-definition";
+import {OPEN_EXPRESSION} from "@actions/workflow-parser/templates/template-constants";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/index";
 
 export function isPotentiallyExpression(token: TemplateToken): boolean {
   const isAlwaysExpression =

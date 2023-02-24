@@ -1,4 +1,4 @@
-import {Value} from "@github/actions-languageservice/value-providers/config";
+import {Value} from "@actions/languageservice/value-providers/config";
 import {Octokit} from "@octokit/rest";
 import {TTLCache} from "../utils/cache";
 

@@ -1,5 +1,5 @@
-import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provider";
-import {fileIdentifier} from "@github/actions-workflow-parser/workflows/file-reference";
+import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
+import {fileIdentifier} from "@actions/workflow-parser/workflows/file-reference";
 
 export const testFileProvider: FileProvider = {
   // eslint-disable-next-line @typescript-eslint/require-await

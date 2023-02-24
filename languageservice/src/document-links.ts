@@ -1,7 +1,7 @@
-import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
-import {isJob, isReusableWorkflowJob} from "@github/actions-workflow-parser/model/type-guards";
-import {File} from "@github/actions-workflow-parser/workflows/file";
-import {parseFileReference} from "@github/actions-workflow-parser/workflows/file-reference";
+import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {isJob, isReusableWorkflowJob} from "@actions/workflow-parser/model/type-guards";
+import {File} from "@actions/workflow-parser/workflows/file";
+import {parseFileReference} from "@actions/workflow-parser/workflows/file-reference";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {DocumentLink} from "vscode-languageserver-types";
 import vscodeURI from "vscode-uri/lib/umd"; // work around issues with the vscode-uri package

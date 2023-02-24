@@ -1,6 +1,6 @@
-import {isString} from "@github/actions-workflow-parser";
-import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
+import {isString} from "@actions/workflow-parser";
+import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Range} from "vscode-languageserver-types";
 

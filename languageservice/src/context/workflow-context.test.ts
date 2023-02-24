@@ -1,4 +1,4 @@
-import {ActionStep, RunStep} from "@github/actions-workflow-parser/model/workflow-template";
+import {ActionStep, RunStep} from "@actions/workflow-parser/model/workflow-template";
 import {testGetWorkflowContext} from "../test-utils/test-workflow-context";
 
 describe("getWorkflowContext", () => {

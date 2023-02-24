@@ -1,6 +1,6 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {isScalar, isString} from "@github/actions-workflow-parser";
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {isScalar, isString} from "@actions/workflow-parser";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {WorkflowContext} from "../context/workflow-context";
 
 export function getEnvContext(workflowContext: WorkflowContext): DescriptionDictionary {

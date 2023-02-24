@@ -1,5 +1,5 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions";
-import {isMapping, isScalar, isString} from "@github/actions-workflow-parser";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {isMapping, isScalar, isString} from "@actions/workflow-parser";
 import {WorkflowContext} from "../context/workflow-context";
 import {scalarToData} from "../utils/scalar-to-data";
 

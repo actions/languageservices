@@ -1,10 +1,10 @@
-import {isMapping, isSequence, WorkflowTemplate} from "@github/actions-workflow-parser";
-import {isJob, isReusableWorkflowJob} from "@github/actions-workflow-parser/model/type-guards";
-import {Step, Job, ReusableWorkflowJob} from "@github/actions-workflow-parser/model/workflow-template";
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
-import {SequenceToken} from "@github/actions-workflow-parser/templates/tokens/sequence-token";
-import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
+import {isMapping, isSequence, WorkflowTemplate} from "@actions/workflow-parser";
+import {isJob, isReusableWorkflowJob} from "@actions/workflow-parser/model/type-guards";
+import {Job, ReusableWorkflowJob, Step} from "@actions/workflow-parser/model/workflow-template";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
+import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
+import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 
 export interface WorkflowContext {
   uri: string;

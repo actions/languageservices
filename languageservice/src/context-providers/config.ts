@@ -1,4 +1,4 @@
-import {DescriptionDictionary} from "@github/actions-expressions";
+import {DescriptionDictionary} from "@actions/expressions";
 import {WorkflowContext} from "../context/workflow-context";
 import {Mode} from "./default";
 

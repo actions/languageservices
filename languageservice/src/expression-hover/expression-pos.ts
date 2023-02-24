@@ -1,6 +1,6 @@
-import {Pos} from "@github/actions-expressions/lexer";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
-import {isBasicExpression} from "@github/actions-workflow-parser/templates/tokens/type-guards";
+import {Pos} from "@actions/expressions/lexer";
+import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {isBasicExpression} from "@actions/workflow-parser/templates/tokens/type-guards";
 import {Position, Range as LSPRange} from "vscode-languageserver-textdocument";
 import {mapRange} from "../utils/range";
 import {posWithinRange} from "./pos-range";

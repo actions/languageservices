@@ -1,6 +1,6 @@
-import {documentLinks, hover, validate, ValidationConfig} from "@github/actions-languageservice";
-import {registerLogger, setLogLevel} from "@github/actions-languageservice/log";
-import {clearCache, clearCacheEntry} from "@github/actions-languageservice/utils/workflow-cache";
+import {documentLinks, hover, validate, ValidationConfig} from "@actions/languageservice";
+import {registerLogger, setLogLevel} from "@actions/languageservice/log";
+import {clearCache, clearCacheEntry} from "@actions/languageservice/utils/workflow-cache";
 import {Octokit} from "@octokit/rest";
 import {
   CompletionItem,

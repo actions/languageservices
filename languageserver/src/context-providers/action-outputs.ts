@@ -1,4 +1,4 @@
-import {ActionReference, ActionOutputs} from "@github/actions-languageservice/action";
+import {ActionOutputs, ActionReference} from "@actions/languageservice/action";
 import {Octokit} from "@octokit/rest";
 import {fetchActionMetadata} from "../utils/action-metadata";
 import {TTLCache} from "../utils/cache";
