@@ -44,6 +44,14 @@ const workflowTemplate = await convertWorkflowTemplate(result.context, result.va
 // workflowTemplate.jobs[0].steps[0].run === "echo 'hello'"
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md) at the root of the repository for general guidelines and recommendations.
+
+Similar to [`actions/expressions](../expressions/), this project is just one of multiple implementations of the GitHub Actions workflow parser. We therefore cannot accept contributions that significantly modify the schema or the overall behavior of the parser. If you would like to propose changes to Actions itself, please use our [Community Forum](https://github.com/community/community/discussions/categories/actions-and-packages).
+
+If you do want to contribute, please run [prettier](https://prettier.io/) to format your code and add unit tests as appropriate before submitting your PR. [./testdata](./testdata) contains test cases that all implementations should pass, please also make sure those tests are still passing.
+
 ### Build
 
 ```bash
