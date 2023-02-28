@@ -1,4 +1,4 @@
-# actions-languageservice
+# actions/languageservice
 
 This package contains the logic for the GitHub Actions workflows language server.
 
@@ -21,14 +21,6 @@ The language service features use three sources of information:
 * a built-in static schema for the workflow YAML file
 * _value providers_ which can dynamically add values to the schema, for example, the list of available labels for a repository when validating `runs-on`.
 * _context providers_ which can dynamically provide available contexts used in [expressions](https://docs.github.com/actions/reference/context-and-expression-syntax-for-github-actions#about-contexts-and-expressions). For example, the contents of the `github.event` context for a given workflow file.
-
-##### Value Providers
-
-TODO
-
-##### Context Providers
-
-TODO
 
 #### Validation
 
@@ -60,7 +52,38 @@ const hover = await hover(document, {line: 0, character: 1}); // { contents: { k
 
 #### Auto-completion
 
-TODO
+```typescript
+import {complete} from "@actions/languageservice";
+
+const document = {
+  uri: "file:///path/to/file",
+  getText: () => "on: \n  jobs:\n    build:\n      runs-on: ubuntu-latest\n      steps:\n        - run: echo hello"
+};
+
+// Trigger completion for `on: |`
+const suggestions = await complete(document, {line: 0, character: 4});
+```
+
+will return
+
+```jsonc
+[{
+  "documentation": {
+    "kind": "markdown",
+    "value": "Runs your workflow when branch protection rules in the workflow repository are changed.",
+  },
+  "label": "branch_protection_rule",
+  "textEdit": {
+    "newText": "branch_protection_rule",
+    "range": {
+      "end": {"character": 4, "line": 0,},
+      "start": {"character": 4, "line": 0},
+    },
+  },
+},
+//... other events
+]
+```
 
 ## Contributing
 
