@@ -320,6 +320,19 @@ on:
     expect(result).toHaveLength(0);
   });
 
+  it("null strings still give suggestions", async () => {
+    const input = `
+on: push
+jobs:
+  one:
+    runs-on: ubuntu-latest
+    |:
+    - uses: actions/checkout@v2
+`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).toHaveLength(16);
+  });
+
   it("well known mapping keys have descriptions", async () => {
     const input = `
 o|

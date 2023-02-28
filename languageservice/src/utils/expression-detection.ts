@@ -7,6 +7,6 @@ import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/in
 export function isPotentiallyExpression(token: TemplateToken): boolean {
   const isAlwaysExpression =
     token.definition?.definitionType === DefinitionType.String && (token.definition as StringDefinition).isExpression;
-  const containsExpression = isString(token) && token.value.indexOf(OPEN_EXPRESSION) >= 0;
+  const containsExpression = isString(token) && token.value != null && token.value.indexOf(OPEN_EXPRESSION) >= 0;
   return isAlwaysExpression || containsExpression;
 }

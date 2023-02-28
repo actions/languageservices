@@ -203,14 +203,15 @@ class TemplateReader {
             );
 
       // Duplicate
-      const upperKey = nextKey.value.toUpperCase();
-      if (upperKeys[upperKey]) {
-        this._context.error(nextKey, `'${nextKey.value}' is already defined`);
-        this.skipValue();
-        continue;
+      if (nextKey.value) {
+        const upperKey = nextKey.value.toUpperCase();
+        if (upperKeys[upperKey]) {
+          this._context.error(nextKey, `'${nextKey.value}' is already defined`);
+          this.skipValue();
+          continue;
+        }
+        upperKeys[upperKey] = true;
       }
-      upperKeys[upperKey] = true;
-
       // Well known
       const nextPropertyDef = this._schema.matchPropertyAndFilter(mappingDefinitions, nextKey.value);
       if (nextPropertyDef) {
@@ -339,13 +340,15 @@ class TemplateReader {
             );
 
       // Duplicate
-      const upperKey = nextKey.value.toUpperCase();
-      if (upperKeys[upperKey]) {
-        this._context.error(nextKey, `'${nextKey.value}' is already defined`);
-        this.skipValue();
-        continue;
+      if (nextKey.value) {
+        const upperKey = nextKey.value.toUpperCase();
+        if (upperKeys[upperKey]) {
+          this._context.error(nextKey, `'${nextKey.value}' is already defined`);
+          this.skipValue();
+          continue;
+        }
+        upperKeys[upperKey] = true;
       }
-      upperKeys[upperKey] = true;
 
       // Validate
       this.validate(nextKey, keyDefinition);
@@ -443,7 +446,7 @@ class TemplateReader {
 
   private parseScalar(token: LiteralToken, definitionInfo: DefinitionInfo): ScalarToken {
     // Not a string
-    if (!isString(token)) {
+    if (!isString(token) || !token.value) {
       return token;
     }
 
