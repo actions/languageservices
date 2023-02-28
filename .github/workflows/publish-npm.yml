@@ -1,8 +1,8 @@
 name: Publish npm packages
 
 on:
-  # Auto-publish every change to the default branch
-  push:  
+  # For now auto-publish every change to the default branch
+  push:
     branches: [main]
   workflow_dispatch:
     inputs:
@@ -14,6 +14,10 @@ on:
         - patch
         - minor
         - major
+      version:
+        description: The version to publish
+        type: string
+        default: ''
 
 jobs:
   publish:
@@ -25,7 +29,7 @@ jobs:
         with:
           node-version: 16
           registry-url: 'https://npm.pkg.github.com'
-          scope: '@github'
+          scope: '@actions'
 
       - run: npm ci
         env:
@@ -36,6 +40,6 @@ jobs:
           git config user.email github-actions@github.com
 
       - name: Publish packages
-        run: npx lerna publish ${{ github.event.inputs.bump || 'patch' }} --yes
+        run: npx lerna publish ${{ inputs.version || inputs.bump || 'patch' }} --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
