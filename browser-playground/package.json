@@ -1,12 +1,12 @@
 {
   "name": "browser-playground",
-  "version": "0.1.153",
+  "version": "0.1.154",
   "description": "",
   "private": true,
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "@github/actions-languageserver": "^0.1.153",
+    "@github/actions-languageserver": "^0.1.154",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "monaco-editor-workers": "^0.34.2",
     "monaco-languageclient": "^4.0.3",
