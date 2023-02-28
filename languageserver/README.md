@@ -1,4 +1,4 @@
-# actions-languageserver
+# actions/languageserver
 
 `actions-languageserver` hosts the `actions-languageservice` and makes it available via the [language server protocol](https://microsoft.github.io/language-server-protocol/) (LSP) as a standalone language server.
 
