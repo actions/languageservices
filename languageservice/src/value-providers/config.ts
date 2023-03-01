@@ -21,7 +21,7 @@ export enum ValueProviderKind {
 
 export type ValueProvider = {
   kind: ValueProviderKind;
-  get: (context: WorkflowContext) => Promise<Value[]>;
+  get: (context: WorkflowContext, existingValues?: Set<string>) => Promise<Value[]>;
 };
 
 export interface ValueProviderConfig {

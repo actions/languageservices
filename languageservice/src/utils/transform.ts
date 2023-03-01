@@ -1,3 +1,6 @@
+import {isString} from "@github/actions-workflow-parser";
+import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
+import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Range} from "vscode-languageserver-types";
 
@@ -71,4 +74,13 @@ export function transform(doc: TextDocument, pos: Position): [TextDocument, Posi
   );
 
   return [newDoc, newDoc.positionAt(offset)];
+}
+
+// Detect placeholder key and value added by transform
+export function isPlaceholder(key: StringToken, value: TemplateToken) {
+  if (key.value === PLACEHOLDER_KEY && isString(value) && value.value == "") {
+    return true;
+  }
+
+  return false;
 }
