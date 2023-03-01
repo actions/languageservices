@@ -57,7 +57,12 @@ import {complete} from "@actions/languageservice";
 
 const document = {
   uri: "file:///path/to/file",
-  getText: () => "on: \n  jobs:\n    build:\n      runs-on: ubuntu-latest\n      steps:\n        - run: echo hello"
+  getText: () => `on: 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello`
 };
 
 // Trigger completion for `on: |`
