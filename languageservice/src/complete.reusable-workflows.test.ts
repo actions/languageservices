@@ -103,7 +103,6 @@ jobs:
     const result = await complete(...getPositionFromCursor(input), {fileProvider: testFileProvider});
 
     expect(result).not.toBeUndefined();
-    //TODO contains instead of equals
     expect(mapResult(result)).toContainEqual({label: "inherit"});
   });
 
