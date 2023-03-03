@@ -108,7 +108,19 @@ export async function complete(
 
     // Get the length of the current word
     const val = line.match(/[\w_-]*$/)?.[0].length || 0;
-    replaceRange = Range.create({line: position.line, character: position.character - val}, position);
+    // Check if we need to remove a trailing colon
+    const charAfterPos = textDocument.getText({
+      start: {line: position.line, character: position.character},
+      end: {line: position.line, character: position.character + 1}
+    });
+    if (charAfterPos === ":") {
+      replaceRange = Range.create(
+        {line: position.line, character: position.character - val},
+        {line: position.line, character: position.character + 1}
+      );
+    } else {
+      replaceRange = Range.create({line: position.line, character: position.character - val}, position);
+    }
   }
 
   return values.map(value => {

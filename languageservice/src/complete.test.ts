@@ -333,6 +333,24 @@ jobs:
     expect(result).toHaveLength(16);
   });
 
+  it("complete from behind a colon will replace it", async () => {
+    const input = `
+on: push
+jobs:
+  one:
+    runs-on: ubuntu-latest
+    |:
+    - uses: actions/checkout@v2
+`;
+    const result = await complete(...getPositionFromCursor(input));
+    expect(result).toHaveLength(16);
+    let textEdit = result[0].textEdit as TextEdit;
+    expect(textEdit.range).toEqual({
+      start: {line: 5, character: 4},
+      end: {line: 5, character: 5}
+    });
+  });
+
   it("well known mapping keys have descriptions", async () => {
     const input = `
 o|
