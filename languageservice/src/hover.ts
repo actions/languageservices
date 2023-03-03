@@ -52,7 +52,7 @@ export async function hover(document: TextDocument, position: Position, config?:
   const {token, keyToken, parent} = tokenResult;
 
   const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
-  const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
+  const template = await convertWorkflowTemplate(file.name, result.context, result.value, config?.fileProvider, {
     errorPolicy: ErrorPolicy.TryConversion,
     fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
   });

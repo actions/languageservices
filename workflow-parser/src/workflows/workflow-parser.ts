@@ -6,6 +6,9 @@ import {File} from "./file";
 import {WORKFLOW_ROOT} from "./workflow-constants";
 import {getWorkflowSchema} from "./workflow-schema";
 import {YamlObjectReader} from "./yaml-object-reader";
+
+const parsedWorkflowCache = new Map<string, ParseWorkflowResult>();
+
 export interface ParseWorkflowResult {
   context: TemplateContext;
   value: TemplateToken | undefined;
@@ -14,6 +17,11 @@ export interface ParseWorkflowResult {
 export function parseWorkflow(entryFile: File, trace: TraceWriter): ParseWorkflowResult;
 export function parseWorkflow(entryFile: File, context: TemplateContext): ParseWorkflowResult;
 export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | TemplateContext): ParseWorkflowResult {
+  const cachedResult = parsedWorkflowCache.get(entryFile.name)
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   const context =
     contextOrTrace instanceof TemplateContext
       ? contextOrTrace
@@ -26,15 +34,23 @@ export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | Tem
     for (const err of reader.errors) {
       context.error(fileId, err.message, err.range);
     }
-    return {
+    const result = {
       context,
       value: undefined
     };
+    parsedWorkflowCache.set(entryFile.name, result);
+    return result
   }
-  const result = templateReader.readTemplate(context, WORKFLOW_ROOT, reader, fileId);
+  const templateToken = templateReader.readTemplate(context, WORKFLOW_ROOT, reader, fileId);
 
-  return <ParseWorkflowResult>{
+  const result = {
     context,
-    value: result
-  };
+    value: templateToken
+  } satisfies ParseWorkflowResult;
+  parsedWorkflowCache.set(entryFile.name, result);
+  return result;
+}
+
+export function clearParsedCacheEntry(path: string) {
+  parsedWorkflowCache.delete(path);
 }

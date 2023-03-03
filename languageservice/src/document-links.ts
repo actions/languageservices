@@ -19,7 +19,7 @@ export async function documentLinks(document: TextDocument): Promise<DocumentLin
     return [];
   }
 
-  const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+  const template = await convertWorkflowTemplate(file.name, result.context, result.value!, undefined, {
     errorPolicy: ErrorPolicy.TryConversion
   });
 

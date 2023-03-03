@@ -91,9 +91,20 @@ export function initConnection(connection: Connection) {
     return result;
   });
 
+  connection.onInitialized(() => {
+    if (hasWorkspaceFolderCapability) {
+      connection.workspace.onDidChangeWorkspaceFolders(_event => {
+        // Invalidate caches? Not sure what to do here, but we should track
+        connection.console.log('Workspace folder change event received.');
+      });
+    }
+  })
+
   // The content of a text document has changed. This event is emitted
   // when the text document first opened or when its content has changed.
   documents.onDidChangeContent(change => {
+    clearParsedCacheEntry(change.document.uri);
+    clearWorkflowTemplateCacheEntry(change.document.uri);
     return timeOperation("validation", async () => await validateTextDocument(change.document));
   });
 
@@ -118,6 +129,11 @@ export function initConnection(connection: Connection) {
     const result = await validate(textDocument, config);
     await connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
   }
+
+  // connection.onDidChangeWatchedFiles(async change => {
+  //   // Monitored files have change in VSCode
+  //   connection.console.log('We received an file change event');
+  // });
 
   connection.onCompletion(async ({position, textDocument}: TextDocumentPositionParams): Promise<CompletionItem[]> => {
     return timeOperation(

@@ -11,6 +11,8 @@ import {convertReferencedWorkflow} from "./converter/referencedWorkflow";
 import {isReusableWorkflowJob} from "./type-guards";
 import {WorkflowTemplate} from "./workflow-template";
 
+const workflowTemplateCache = new Map<string, WorkflowTemplate>();
+
 export enum ErrorPolicy {
   ReturnErrorsOnly,
   TryConversion
@@ -46,11 +48,17 @@ const defaultOptions: Required<WorkflowTemplateConverterOptions> = {
 };
 
 export async function convertWorkflowTemplate(
+  fileName: string,
   context: TemplateContext,
   root: TemplateToken,
   fileProvider?: FileProvider,
   options: WorkflowTemplateConverterOptions = defaultOptions
 ): Promise<WorkflowTemplate> {
+  const cachedResult = workflowTemplateCache.get(fileName)
+  if (cachedResult) {
+    return cachedResult;
+  }
+
   const result = {} as WorkflowTemplate;
   const opts = getOptionsWithDefaults(options);
 
@@ -58,6 +66,7 @@ export async function convertWorkflowTemplate(
     result.errors = context.errors.getErrors().map(x => ({
       Message: x.message
     }));
+    workflowTemplateCache.set(fileName, result);
     return result;
   }
 
@@ -129,6 +138,7 @@ export async function convertWorkflowTemplate(
     }
   }
 
+  workflowTemplateCache.set(fileName, result);
   return result;
 }
 
@@ -144,4 +154,8 @@ function getOptionsWithDefaults(options: WorkflowTemplateConverterOptions): Requ
         : defaultOptions.fetchReusableWorkflowDepth,
     errorPolicy: options.errorPolicy !== undefined ? options.errorPolicy : defaultOptions.errorPolicy
   };
+}
+
+export function clearWorkflowTemplateCacheEntry(uri: string) {
+  workflowTemplateCache.delete(uri);
 }

@@ -77,7 +77,7 @@ export async function complete(
   }
 
   const {token, keyToken, parent, path} = findToken(newPos, result.value);
-  const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
+  const template = await convertWorkflowTemplate(file.name, result.context, result.value, config?.fileProvider, {
     fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
     errorPolicy: ErrorPolicy.TryConversion
   });

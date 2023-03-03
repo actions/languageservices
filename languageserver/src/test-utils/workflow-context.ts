@@ -17,7 +17,7 @@ export async function createWorkflowContext(
   if (!parsed.value) {
     throw new Error("Failed to parse workflow");
   }
-  const template = await convertWorkflowTemplate(parsed.context, parsed.value);
+  const template = await convertWorkflowTemplate("test.yaml", parsed.context, parsed.value);
   const context: WorkflowContext = {uri: "test.yaml", template};
 
   if (job) {
