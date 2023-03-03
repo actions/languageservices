@@ -1,10 +1,6 @@
 import {Evaluator, ExpressionEvaluationError, Lexer, Parser} from "@github/actions-expressions";
 import {Expr} from "@github/actions-expressions/ast";
-import {
-  isBasicExpression,
-  isString,
-  WorkflowTemplate
-} from "@github/actions-workflow-parser";
+import {isBasicExpression, isString, WorkflowTemplate} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";

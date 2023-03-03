@@ -4,7 +4,7 @@ import {File} from "@github/actions-workflow-parser/workflows/file";
 import {ParseWorkflowResult} from "@github/actions-workflow-parser";
 import {WorkflowTemplate} from "@github/actions-workflow-parser";
 import {nullTrace} from "../nulltrace";
-import { CompletionConfig } from "../complete";
+import {CompletionConfig} from "../complete";
 
 const parsedWorkflowCache = new Map<string, ParseWorkflowResult>();
 const workflowTemplateCache = new Map<string, WorkflowTemplate>();
@@ -37,10 +37,21 @@ export function fetchOrParseWorkflow(file: File, uri: string): ParseWorkflowResu
   return result;
 }
 
-export async function fetchOrConvertWorkflowTemplate(file: File, parsedWorkflow: ParseWorkflowResult, uri: string, config?: CompletionConfig, options?: WorkflowTemplateConverterOptions): Promise<WorkflowTemplate> {
+export async function fetchOrConvertWorkflowTemplate(
+  file: File,
+  parsedWorkflow: ParseWorkflowResult,
+  uri: string,
+  config?: CompletionConfig,
+  options?: WorkflowTemplateConverterOptions
+): Promise<WorkflowTemplate> {
   let template = workflowTemplateCache.get(uri);
   if (!template) {
-    template = await convertWorkflowTemplate(file.name, parsedWorkflow.context, parsedWorkflow.value!, config?.fileProvider, options);
+    template = await convertWorkflowTemplate(
+      parsedWorkflow.context,
+      parsedWorkflow.value!,
+      config?.fileProvider,
+      options
+    );
     workflowTemplateCache.set(uri, template);
   }
   return template;

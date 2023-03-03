@@ -1,10 +1,6 @@
 import {complete as completeExpression, DescriptionDictionary} from "@github/actions-expressions";
 import {CompletionItem as ExpressionCompletionItem} from "@github/actions-expressions/completion";
-import {
-  isBasicExpression,
-  isSequence,
-  isString
-} from "@github/actions-workflow-parser";
+import {isBasicExpression, isSequence, isString} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";

@@ -31,7 +31,7 @@ export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | Tem
       context,
       value: undefined
     };
-    return result
+    return result;
   }
   const templateToken = templateReader.readTemplate(context, WORKFLOW_ROOT, reader, fileId);
 
