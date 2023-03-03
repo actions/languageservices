@@ -132,11 +132,6 @@ export function initConnection(connection: Connection) {
     await connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
   }
 
-  // connection.onDidChangeWatchedFiles(async change => {
-  //   // Monitored files have change in VSCode
-  //   connection.console.log('We received an file change event');
-  // });
-
   connection.onCompletion(async ({position, textDocument}: TextDocumentPositionParams): Promise<CompletionItem[]> => {
     return timeOperation(
       "completion",
