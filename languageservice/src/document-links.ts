@@ -5,7 +5,7 @@ import {TextDocument} from "vscode-languageserver-textdocument";
 import {DocumentLink} from "vscode-languageserver-types";
 import {parseActionReference} from "./action";
 import {mapRange} from "./utils/range";
-import {getParsedWorkflow, getWorkflowTemplate} from "./utils/workflow-cache";
+import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
 export async function documentLinks(document: TextDocument): Promise<DocumentLink[]> {
   const file: File = {
@@ -13,12 +13,12 @@ export async function documentLinks(document: TextDocument): Promise<DocumentLin
     content: document.getText()
   };
 
-  const parsedWorkflow = getParsedWorkflow(file, document.uri);
+  const parsedWorkflow = fetchOrParseWorkflow(file, document.uri);
   if (!parsedWorkflow) {
     return [];
   }
 
-  const template = await getWorkflowTemplate(file, parsedWorkflow, document.uri, undefined, {
+  const template = await fetchOrConvertWorkflowTemplate(file, parsedWorkflow, document.uri, undefined, {
     errorPolicy: ErrorPolicy.TryConversion
   });
 

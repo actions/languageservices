@@ -28,7 +28,7 @@ import {transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {definitionValues} from "./value-providers/definition";
-import {getParsedWorkflow, getWorkflowTemplate} from "./utils/workflow-cache";
+import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
@@ -69,12 +69,12 @@ export async function complete(
     content: newDoc.getText()
   };
 
-  const parsedWorkflow = getParsedWorkflow(file, textDocument.uri);
+  const parsedWorkflow = fetchOrParseWorkflow(file, textDocument.uri);
   if (!parsedWorkflow) {
     return [];
   }
 
-  const template = await getWorkflowTemplate(file, parsedWorkflow, textDocument.uri, config, {
+  const template = await fetchOrConvertWorkflowTemplate(file, parsedWorkflow, textDocument.uri, config, {
     fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
     errorPolicy: ErrorPolicy.TryConversion
   });

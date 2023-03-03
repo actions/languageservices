@@ -9,28 +9,12 @@ import { CompletionConfig } from "../complete";
 const parsedWorkflowCache = new Map<string, ParseWorkflowResult>();
 const workflowTemplateCache = new Map<string, WorkflowTemplate>();
 
-export function cacheParsedWorkflow(uri: string, parsedWorkflowResult: ParseWorkflowResult) {
-  parsedWorkflowCache.set(uri, parsedWorkflowResult);
-}
-
-export function getParsedWorkflowCacheEntry(uri: string): ParseWorkflowResult | undefined {
-  return parsedWorkflowCache.get(uri);
-}
-
 export function clearParsedCacheEntry(uri: string) {
   parsedWorkflowCache.delete(uri);
 }
 
 export function clearParsedCache() {
   parsedWorkflowCache.clear();
-}
-
-export function cacheWorkflowTemplate(uri: string, workflowTemplate: WorkflowTemplate) {
-  workflowTemplateCache.set(uri, workflowTemplate);
-}
-
-export function getWorkflowTemplateCacheEntry(uri: string): WorkflowTemplate | undefined {
-  return workflowTemplateCache.get(uri);
 }
 
 export function clearWorkflowTemplateCacheEntry(uri: string) {
@@ -41,23 +25,23 @@ export function clearWorkflowTemplateCache() {
   workflowTemplateCache.clear();
 }
 
-export function getParsedWorkflow(file: File, uri: string): ParseWorkflowResult | undefined {
-  let result = getParsedWorkflowCacheEntry(uri);
+export function fetchOrParseWorkflow(file: File, uri: string): ParseWorkflowResult | undefined {
+  let result = parsedWorkflowCache.get(uri);
   if (!result || !result.value) {
     result = parseWorkflow(file, nullTrace);
     if (!result.value) {
       return undefined;
     }
-    cacheParsedWorkflow(uri, result)
+    parsedWorkflowCache.set(uri, result);
   }
   return result;
 }
 
-export async function getWorkflowTemplate(file: File, parsedWorkflow: ParseWorkflowResult, uri: string, config?: CompletionConfig, options?: WorkflowTemplateConverterOptions): Promise<WorkflowTemplate> {
-  let template = getWorkflowTemplateCacheEntry(uri);
+export async function fetchOrConvertWorkflowTemplate(file: File, parsedWorkflow: ParseWorkflowResult, uri: string, config?: CompletionConfig, options?: WorkflowTemplateConverterOptions): Promise<WorkflowTemplate> {
+  let template = workflowTemplateCache.get(uri);
   if (!template) {
     template = await convertWorkflowTemplate(file.name, parsedWorkflow.context, parsedWorkflow.value!, config?.fileProvider, options);
-    cacheWorkflowTemplate(uri, template);
+    workflowTemplateCache.set(uri, template);
   }
   return template;
 }

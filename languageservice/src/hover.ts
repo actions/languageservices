@@ -25,7 +25,7 @@ import {info} from "./log";
 import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken, TokenResult} from "./utils/find-token";
 import {mapRange} from "./utils/range";
-import {getParsedWorkflow, getWorkflowTemplate} from "./utils/workflow-cache";
+import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
@@ -43,12 +43,12 @@ export async function hover(document: TextDocument, position: Position, config?:
     content: document.getText()
   };
 
-  const parsedWorkflow = getParsedWorkflow(file, document.uri);
+  const parsedWorkflow = fetchOrParseWorkflow(file, document.uri);
   if (!parsedWorkflow) {
     return null;
   }
 
-  const template = await getWorkflowTemplate(file, parsedWorkflow, document.uri, config, {
+  const template = await fetchOrConvertWorkflowTemplate(file, parsedWorkflow, document.uri, config, {
     errorPolicy: ErrorPolicy.TryConversion,
     fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
   });
