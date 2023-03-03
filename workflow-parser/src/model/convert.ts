@@ -48,13 +48,13 @@ const defaultOptions: Required<WorkflowTemplateConverterOptions> = {
 };
 
 export async function convertWorkflowTemplate(
-  fileName: string,
+  uri: string,
   context: TemplateContext,
   root: TemplateToken,
   fileProvider?: FileProvider,
   options: WorkflowTemplateConverterOptions = defaultOptions
 ): Promise<WorkflowTemplate> {
-  const cachedResult = workflowTemplateCache.get(fileName)
+  const cachedResult = workflowTemplateCache.get(uri)
   if (cachedResult) {
     return cachedResult;
   }
@@ -66,7 +66,7 @@ export async function convertWorkflowTemplate(
     result.errors = context.errors.getErrors().map(x => ({
       Message: x.message
     }));
-    workflowTemplateCache.set(fileName, result);
+    workflowTemplateCache.set(uri, result);
     return result;
   }
 
@@ -138,7 +138,7 @@ export async function convertWorkflowTemplate(
     }
   }
 
-  workflowTemplateCache.set(fileName, result);
+  workflowTemplateCache.set(uri, result);
   return result;
 }
 
@@ -158,4 +158,8 @@ function getOptionsWithDefaults(options: WorkflowTemplateConverterOptions): Requ
 
 export function clearWorkflowTemplateCacheEntry(uri: string) {
   workflowTemplateCache.delete(uri);
+}
+
+export function clearWorkflowTemplateCache() {
+  workflowTemplateCache.clear();
 }

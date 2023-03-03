@@ -28,8 +28,8 @@ import {fetchActionMetadata} from "./utils/action-metadata";
 import {TTLCache} from "./utils/cache";
 import {timeOperation} from "./utils/timer";
 import {valueProviders} from "./value-providers";
-import {clearParsedCacheEntry} from "@github/actions-workflow-parser/workflows/workflow-parser";
-import {clearWorkflowTemplateCacheEntry} from "@github/actions-workflow-parser/model/convert";
+import {clearParsedCache, clearParsedCacheEntry} from "@github/actions-workflow-parser/workflows/workflow-parser";
+import {clearWorkflowTemplateCache, clearWorkflowTemplateCacheEntry} from "@github/actions-workflow-parser/model/convert";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -96,8 +96,8 @@ export function initConnection(connection: Connection) {
   connection.onInitialized(() => {
     if (hasWorkspaceFolderCapability) {
       connection.workspace.onDidChangeWorkspaceFolders(_event => {
-        // Invalidate caches? Not sure what to do here, but we should track
-        connection.console.log('Workspace folder change event received.');
+        clearParsedCache();
+        clearWorkflowTemplateCache();
       });
     }
   })

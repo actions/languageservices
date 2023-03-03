@@ -54,3 +54,7 @@ export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | Tem
 export function clearParsedCacheEntry(path: string) {
   parsedWorkflowCache.delete(path);
 }
+
+export function clearParsedCache() {
+  parsedWorkflowCache.clear();
+}
