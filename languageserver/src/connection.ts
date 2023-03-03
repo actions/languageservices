@@ -28,6 +28,8 @@ import {fetchActionMetadata} from "./utils/action-metadata";
 import {TTLCache} from "./utils/cache";
 import {timeOperation} from "./utils/timer";
 import {valueProviders} from "./value-providers";
+import {clearParsedCacheEntry} from "@github/actions-workflow-parser/workflows/workflow-parser";
+import {clearWorkflowTemplateCacheEntry} from "@github/actions-workflow-parser/model/convert";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
