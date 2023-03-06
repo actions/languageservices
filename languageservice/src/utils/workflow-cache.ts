@@ -9,19 +9,13 @@ import {CompletionConfig} from "../complete";
 const parsedWorkflowCache = new Map<string, ParseWorkflowResult>();
 const workflowTemplateCache = new Map<string, WorkflowTemplate>();
 
-export function clearParsedCacheEntry(uri: string) {
+export function clearCacheEntry(uri: string) {
   parsedWorkflowCache.delete(uri);
-}
-
-export function clearParsedCache() {
-  parsedWorkflowCache.clear();
-}
-
-export function clearWorkflowTemplateCacheEntry(uri: string) {
   workflowTemplateCache.delete(uri);
 }
 
-export function clearWorkflowTemplateCache() {
+export function clearCache() {
+  parsedWorkflowCache.clear();
   workflowTemplateCache.clear();
 }
 

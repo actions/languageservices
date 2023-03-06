@@ -3,7 +3,7 @@ import {StringToken} from "@github/actions-workflow-parser/templates/tokens/stri
 import {DescriptionProvider, hover, HoverConfig} from "./hover";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cache";
+import {clearCache} from "./utils/workflow-cache";
 
 export function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
   return {
@@ -24,8 +24,7 @@ export function testHoverConfig(tokenValue: string, tokenKey: string, descriptio
 }
 
 beforeEach(() => {
-  clearWorkflowTemplateCache();
-  clearParsedCache();
+  clearCache();
 });
 
 describe("hover", () => {

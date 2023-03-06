@@ -5,13 +5,12 @@ import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {TestLogger} from "./test-utils/logger";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
-import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cache";
+import {clearCache} from "./utils/workflow-cache";
 
 registerLogger(new TestLogger());
 
 beforeEach(() => {
-  clearWorkflowTemplateCache();
-  clearParsedCache();
+  clearCache();
 });
 
 describe("completion", () => {

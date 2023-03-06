@@ -1,6 +1,6 @@
 import {Evaluator, ExpressionEvaluationError, Lexer, Parser} from "@github/actions-expressions";
 import {Expr} from "@github/actions-expressions/ast";
-import {isBasicExpression, isString, WorkflowTemplate} from "@github/actions-workflow-parser";
+import {isBasicExpression, isString, ParseWorkflowResult, WorkflowTemplate} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
@@ -46,24 +46,24 @@ export async function validate(textDocument: TextDocument, config?: ValidationCo
   const diagnostics: Diagnostic[] = [];
 
   try {
-    const parsedWorkflow = fetchOrParseWorkflow(file, textDocument.uri);
-    if (!parsedWorkflow) {
+    const result: ParseWorkflowResult | undefined = fetchOrParseWorkflow(file, textDocument.uri);
+    if (!result) {
       return [];
     }
 
-    if (parsedWorkflow.value) {
+    if (result.value) {
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
-      const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, textDocument.uri, config, {
+      const template = await fetchOrConvertWorkflowTemplate(result, textDocument.uri, config, {
         fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
         errorPolicy: ErrorPolicy.TryConversion
       });
 
       // Validate expressions and value providers
-      await additionalValidations(diagnostics, textDocument.uri, template, parsedWorkflow.value, config);
+      await additionalValidations(diagnostics, textDocument.uri, template, result.value, config);
     }
 
     // For now map parser errors directly to diagnostics
-    for (const error of parsedWorkflow.context.errors.getErrors()) {
+    for (const error of result.context.errors.getErrors()) {
       let range = mapRange(error.range);
 
       diagnostics.push({

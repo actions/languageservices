@@ -1,11 +1,10 @@
 import {createDocument} from "./test-utils/document";
 import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cache";
+import {clearCache} from "./utils/workflow-cache";
 import {validate} from "./validate";
 
 beforeEach(() => {
-  clearWorkflowTemplateCache();
-  clearParsedCache();
+  clearCache();
 });
 
 describe("workflow references validation", () => {

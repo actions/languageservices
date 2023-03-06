@@ -5,13 +5,12 @@ import {registerLogger} from "./log";
 import {createDocument} from "./test-utils/document";
 import {TestLogger} from "./test-utils/logger";
 import {validate, ValidationConfig} from "./validate";
-import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cache";
+import {clearCache} from "./utils/workflow-cache";
 
 registerLogger(new TestLogger());
 
 beforeEach(() => {
-  clearWorkflowTemplateCache();
-  clearParsedCache();
+  clearCache();
 });
 
 describe("expression validation", () => {

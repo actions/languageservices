@@ -6,7 +6,7 @@ import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {TestLogger} from "./test-utils/logger";
 import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cache";
+import {clearCache} from "./utils/workflow-cache";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: async (context: string) => {
@@ -26,8 +26,7 @@ const contextProviderConfig: ContextProviderConfig = {
 registerLogger(new TestLogger());
 
 beforeEach(() => {
-  clearWorkflowTemplateCache();
-  clearParsedCache();
+  clearCache();
 });
 
 describe("expressions", () => {

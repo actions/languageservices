@@ -6,7 +6,6 @@ import {File} from "./file";
 import {WORKFLOW_ROOT} from "./workflow-constants";
 import {getWorkflowSchema} from "./workflow-schema";
 import {YamlObjectReader} from "./yaml-object-reader";
-
 export interface ParseWorkflowResult {
   context: TemplateContext;
   value: TemplateToken | undefined;
@@ -27,17 +26,15 @@ export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | Tem
     for (const err of reader.errors) {
       context.error(fileId, err.message, err.range);
     }
-    const result = {
+    return {
       context,
       value: undefined
     };
-    return result;
   }
-  const templateToken = templateReader.readTemplate(context, WORKFLOW_ROOT, reader, fileId);
+  const result = templateReader.readTemplate(context, WORKFLOW_ROOT, reader, fileId);
 
-  const result = {
+  return <ParseWorkflowResult>{
     context,
-    value: templateToken
-  } satisfies ParseWorkflowResult;
-  return result;
+    value: result
+  };
 }

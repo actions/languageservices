@@ -1,9 +1,8 @@
-import {clearParsedCache, clearWorkflowTemplateCache} from "../utils/workflow-cache";
+import {clearCache} from "../utils/workflow-cache";
 import {getPositionFromCursor} from "./cursor-position";
 
 beforeEach(() => {
-  clearWorkflowTemplateCache();
-  clearParsedCache();
+  clearCache();
 });
 
 describe("getPositionFromCursor", () => {

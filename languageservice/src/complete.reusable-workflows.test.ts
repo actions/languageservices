@@ -2,7 +2,7 @@ import {CompletionItem, MarkupContent} from "vscode-languageserver-types";
 import {complete} from "./complete";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cache";
+import {clearCache} from "./utils/workflow-cache";
 
 function mapResult(result: CompletionItem[]) {
   return result.map(x => {
@@ -11,8 +11,7 @@ function mapResult(result: CompletionItem[]) {
 }
 
 beforeEach(() => {
-  clearWorkflowTemplateCache();
-  clearParsedCache();
+  clearCache();
 });
 
 describe("completion with reusable workflows", () => {

@@ -1,11 +1,10 @@
 import {hover} from "./hover";
 import {testHoverConfig} from "./hover.test";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cache";
+import {clearCache} from "./utils/workflow-cache";
 
 beforeEach(() => {
-  clearWorkflowTemplateCache();
-  clearParsedCache();
+  clearCache();
 });
 
 describe("hover.reusable-workflow", () => {
