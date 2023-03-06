@@ -19,6 +19,8 @@ const validationConfig: ValidationConfig = {
     switch (ref.owner + "/" + ref.name + "@" + ref.ref) {
       case "actions/checkout@v3":
         metadata = {
+          name: "Checkout",
+          description: "Checkout a Git repository at a particular version",
           inputs: {
             repository: {
               description: "Repository name with owner",
@@ -29,6 +31,9 @@ const validationConfig: ValidationConfig = {
         break;
       case "actions/setup-node@v1":
         metadata = {
+          name: "Setup Node.js environment",
+          description:
+            "Setup a Node.js environment by adding problem matchers and optionally downloading and adding it to the PATH.",
           inputs: {
             version: {
               description: "Deprecated. Use node-version instead. Will not be supported after October 1, 2019",
@@ -40,6 +45,8 @@ const validationConfig: ValidationConfig = {
         break;
       case "actions/deploy-pages@main":
         metadata = {
+          name: "Deploy GitHub Pages site",
+          description: "A GitHub Action to deploy an artifact as a GitHub Pages site",
           inputs: {
             token: {
               required: true,
@@ -51,6 +58,8 @@ const validationConfig: ValidationConfig = {
         break;
       case "actions/cache@v1":
         metadata = {
+          name: "Cache",
+          description: "Cache artifacts like dependencies and build outputs to improve workflow execution time",
           inputs: {
             path: {
               description: "A directory to store and save the cache",
@@ -68,7 +77,10 @@ const validationConfig: ValidationConfig = {
         };
         break;
       case "actions/action-no-input@v1":
-        metadata = {};
+        metadata = {
+          name: "Action with no inputs",
+          description: "An action with no inputs"
+        };
     }
     return metadata;
   }

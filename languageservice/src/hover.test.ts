@@ -194,7 +194,7 @@ jobs:
       - uses|: actions/checkout@v2
 `;
 
-    const result = await hover(...getPositionFromCursor(input), testHoverConfig("uses", "non-empty-string", undefined));
+    const result = await hover(...getPositionFromCursor(input), testHoverConfig("uses", "step-uses", undefined));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
       "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image."

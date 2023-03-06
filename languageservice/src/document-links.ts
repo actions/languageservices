@@ -3,7 +3,7 @@ import {isJob} from "@github/actions-workflow-parser/model/type-guards";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {DocumentLink} from "vscode-languageserver-types";
-import {parseActionReference} from "./action";
+import {actionUrl, parseActionReference} from "./action";
 import {mapRange} from "./utils/range";
 import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
@@ -25,9 +25,6 @@ export async function documentLinks(document: TextDocument): Promise<DocumentLin
   // Add links to referenced actions
   const actionLinks: DocumentLink[] = [];
 
-  // TODO: Support base uri for GHES
-  const gitHubBaseUri = "https://www.github.com/";
-
   for (const job of template?.jobs || []) {
     if (!job || !isJob(job)) {
       continue;
@@ -39,9 +36,7 @@ export async function documentLinks(document: TextDocument): Promise<DocumentLin
           continue;
         }
 
-        const url = `${gitHubBaseUri}${actionRef.owner}/${actionRef.name}/tree/${actionRef.ref}/${
-          actionRef.path || ""
-        }`;
+        const url = actionUrl(actionRef);
 
         actionLinks.push({
           range: mapRange(step.uses.range),
