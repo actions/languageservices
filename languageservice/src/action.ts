@@ -1,5 +1,7 @@
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 export type ActionMetadata = {
+  name: string;
+  description: string;
   inputs?: ActionInputs;
   outputs?: ActionOutputs;
 };
