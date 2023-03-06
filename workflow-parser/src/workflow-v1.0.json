@@ -2044,13 +2044,18 @@
           "continue-on-error": "step-continue-on-error",
           "timeout-minutes": "step-timeout-minutes",
           "uses": {
-            "description": "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image.",
-            "type": "non-empty-string",
+            "type": "step-uses",
             "required": true
           },
           "with": "step-with",
           "env": "step-env"
         }
+      }
+    },
+    "step-uses": {
+      "description": "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image.",
+      "string": {
+        "require-non-empty": true
       }
     },
     "step-continue-on-error": {
