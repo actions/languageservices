@@ -1,4 +1,4 @@
-import {parseActionReference} from "@github/actions-languageservice/action";
+import {actionUrl, parseActionReference} from "@github/actions-languageservice/action";
 import {isActionStep} from "@github/actions-workflow-parser/model/type-guards";
 import {Step} from "@github/actions-workflow-parser/model/workflow-template";
 import {Octokit} from "@octokit/rest";
@@ -19,5 +19,5 @@ export async function getActionDescription(client: Octokit, cache: TTLCache, ste
     return undefined;
   }
 
-  return `**${metadata.name}**\n\n${metadata.description}`;
+  return `[**${metadata.name}**](${actionUrl(action)})\n\n${metadata.description}`;
 }
