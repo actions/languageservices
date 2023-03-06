@@ -2,8 +2,6 @@ import {DescriptionProvider} from "@github/actions-languageservice/hover";
 import {Octokit} from "@octokit/rest";
 import {getActionInputDescription} from "./description-providers/action-input";
 import {TTLCache} from "./utils/cache";
-import {isString} from "@github/actions-workflow-parser/templates/tokens/type-guards";
-import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {getActionDescription} from "./description-providers/action-description";
 
 export function descriptionProvider(client: Octokit | undefined, cache: TTLCache): DescriptionProvider {
@@ -12,11 +10,12 @@ export function descriptionProvider(client: Octokit | undefined, cache: TTLCache
       return undefined;
     }
 
-    if (isStepInput(path)) {
+    const parent = path[path.length - 1];
+    if (parent.definition?.key === "step-with") {
       return await getActionInputDescription(client, cache, context.step, token);
     }
 
-    if (isStepUses(path)) {
+    if (parent.definition?.key === "step-uses") {
       return await getActionDescription(client, cache, context.step);
     }
   };
@@ -24,18 +23,4 @@ export function descriptionProvider(client: Octokit | undefined, cache: TTLCache
   return {
     getDescription
   };
-}
-
-function isStepInput(path: TemplateToken[]): boolean {
-  const parent = path[path.length - 1];
-  return parent.definition?.key === "step-with";
-}
-
-function isStepUses(path: TemplateToken[]): boolean {
-  if (path.length < 2) {
-    return false;
-  }
-  const parent = path[path.length - 1];
-  const grandparent = path[path.length - 2];
-  return isString(parent) && parent.value === "uses" && grandparent.definition?.key === "regular-step";
 }
