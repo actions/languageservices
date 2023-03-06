@@ -5,8 +5,14 @@ import {createDocument} from "./test-utils/document";
 import {TestLogger} from "./test-utils/logger";
 import {validate, ValidationConfig} from "./validate";
 import {ValueProviderKind} from "./value-providers/config";
+import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cache";
 
 registerLogger(new TestLogger());
+
+beforeEach(() => {
+  clearWorkflowTemplateCache();
+  clearParsedCache();
+});
 
 const validationConfig: ValidationConfig = {
   fetchActionMetadata: async (ref: ActionReference) => {

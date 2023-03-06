@@ -18,7 +18,7 @@ export async function testGetWorkflowContext(input: string): Promise<WorkflowCon
   let template: WorkflowTemplate | undefined;
 
   if (result.value) {
-    template = await convertWorkflowTemplate("wf.yaml", result.context, result.value, testFileProvider, {
+    template = await convertWorkflowTemplate(result.context, result.value, testFileProvider, {
       fetchReusableWorkflowDepth: 1
     });
   }
