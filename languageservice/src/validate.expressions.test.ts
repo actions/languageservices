@@ -9,7 +9,6 @@ import {clearParsedCache, clearWorkflowTemplateCache} from "./utils/workflow-cac
 
 registerLogger(new TestLogger());
 
-
 beforeEach(() => {
   clearWorkflowTemplateCache();
   clearParsedCache();
