@@ -2,12 +2,18 @@ import {CompletionItem, MarkupContent} from "vscode-languageserver-types";
 import {complete} from "./complete";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {testFileProvider} from "./test-utils/test-file-provider";
+import { clearParsedCache, clearWorkflowTemplateCache } from "./utils/workflow-cache";
 
 function mapResult(result: CompletionItem[]) {
   return result.map(x => {
     return {label: x.label, description: (x.documentation as MarkupContent).value};
   });
 }
+
+beforeEach(() => {
+  clearWorkflowTemplateCache();
+  clearParsedCache();
+});
 
 describe("completion with reusable workflows", () => {
   it("completes job inputs", async () => {
