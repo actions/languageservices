@@ -70,7 +70,7 @@ export async function complete(
     return [];
   }
 
-  const template = await fetchOrConvertWorkflowTemplate(file, parsedWorkflow, textDocument.uri, config, {
+  const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, textDocument.uri, config, {
     fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
     errorPolicy: ErrorPolicy.TryConversion
   });

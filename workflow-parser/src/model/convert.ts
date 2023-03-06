@@ -11,8 +11,6 @@ import {convertReferencedWorkflow} from "./converter/referencedWorkflow";
 import {isReusableWorkflowJob} from "./type-guards";
 import {WorkflowTemplate} from "./workflow-template";
 
-const workflowTemplateCache = new Map<string, WorkflowTemplate>();
-
 export enum ErrorPolicy {
   ReturnErrorsOnly,
   TryConversion

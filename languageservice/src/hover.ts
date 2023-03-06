@@ -48,7 +48,7 @@ export async function hover(document: TextDocument, position: Position, config?:
     return null;
   }
 
-  const template = await fetchOrConvertWorkflowTemplate(file, parsedWorkflow, document.uri, config, {
+  const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, document.uri, config, {
     errorPolicy: ErrorPolicy.TryConversion,
     fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
   });

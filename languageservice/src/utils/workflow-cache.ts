@@ -27,7 +27,7 @@ export function clearWorkflowTemplateCache() {
 
 export function fetchOrParseWorkflow(file: File, uri: string): ParseWorkflowResult | undefined {
   let result = parsedWorkflowCache.get(uri);
-  if (!result || !result.value) {
+  if (!result?.value) {
     result = parseWorkflow(file, nullTrace);
     if (!result.value) {
       return undefined;
@@ -38,7 +38,6 @@ export function fetchOrParseWorkflow(file: File, uri: string): ParseWorkflowResu
 }
 
 export async function fetchOrConvertWorkflowTemplate(
-  file: File,
   parsedWorkflow: ParseWorkflowResult,
   uri: string,
   config?: CompletionConfig,
