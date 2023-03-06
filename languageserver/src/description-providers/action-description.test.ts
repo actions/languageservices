@@ -35,7 +35,9 @@ describe("action descriptions", () => {
       .sandbox()
       .getOnce("https://api.github.com/repos/actions/checkout/contents/action.yml?ref=v3", actionsCheckoutMetadata);
 
-    expect(await getDescription(mock)).toEqual("**Checkout**\n\nCheckout a Git repository at a particular version");
+    expect(await getDescription(mock)).toEqual(
+      "[**Checkout**](https://www.github.com/actions/checkout/tree/v3/)\n\nCheckout a Git repository at a particular version"
+    );
   });
 
   it("action does not exist", async () => {
