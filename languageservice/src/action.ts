@@ -1,5 +1,7 @@
 // https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions
 export type ActionMetadata = {
+  name: string;
+  description: string;
   inputs?: ActionInputs;
   outputs?: ActionOutputs;
 };
@@ -62,4 +64,11 @@ export function actionIdentifier(ref: ActionReference): string {
     return `${ref.owner}/${ref.name}/${ref.ref}/${ref.path}`;
   }
   return `${ref.owner}/${ref.name}/${ref.ref}`;
+}
+
+export function actionUrl(actionRef: ActionReference): string {
+  // TODO: Support base uri for GHES
+  const gitHubBaseUri = "https://www.github.com/";
+
+  return `${gitHubBaseUri}${actionRef.owner}/${actionRef.name}/tree/${actionRef.ref}/${actionRef.path || ""}`;
 }

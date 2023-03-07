@@ -1,6 +1,6 @@
-# actions-expressions
+# actions/expressions
 
-`actions-expressions` is a library to parse and evaluate GitHub Actions [expressions](https://docs.github.com/actions/learn-github-actions/expressions).
+`@actions/expressions` is a library to parse and evaluate GitHub Actions [expressions](https://docs.github.com/actions/learn-github-actions/expressions).
 
 ## Installation
 
