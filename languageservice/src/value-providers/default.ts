@@ -2,6 +2,7 @@ import {WorkflowContext} from "../context/workflow-context";
 import {ValueProviderConfig, ValueProviderKind} from "./config";
 import {needs} from "./needs";
 import {reusableJobInputs} from "./reusable-job-inputs";
+import {reusableJobSecrets} from "./reusable-job-secrets";
 import {stringsToValues} from "./strings-to-values";
 
 export const DEFAULT_RUNNER_LABELS = [
@@ -27,6 +28,10 @@ export const defaultValueProviders: ValueProviderConfig = {
   "workflow-job-with": {
     kind: ValueProviderKind.AllowedValues,
     get: async context => reusableJobInputs(context)
+  },
+  "workflow-job-secrets": {
+    kind: ValueProviderKind.SuggestedValues,
+    get: async (context, existingValues) => reusableJobSecrets(context, existingValues)
   },
   "runs-on": {
     kind: ValueProviderKind.SuggestedValues,

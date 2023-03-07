@@ -59,6 +59,13 @@ on:
         description: 'An optional name'
         required: false
         type: string
+      key:
+        type: string
+    secrets:
+      envPAT:
+        required: true
+        description: 'A secret for the environment'
+      serverPAT:
 
 jobs:
   build:

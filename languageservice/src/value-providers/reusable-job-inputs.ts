@@ -19,7 +19,8 @@ export function reusableJobInputs(context: WorkflowContext): Value[] {
 
     values.push({
       label: key.value,
-      description: inputDescription(value)
+      description: inputDescription(value),
+      insertText: `${key.value}: `
     });
   }
 

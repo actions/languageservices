@@ -98,6 +98,8 @@ on: push
 jobs:
   build:
     uses: ./reusable-workflow-with-inputs.yaml
+    secrets:
+      envPAT: pat
 `;
     const result = await validate(createDocument("wf.yaml", input), {
       fileProvider: testFileProvider
@@ -129,6 +131,8 @@ jobs:
     uses: ./reusable-workflow-with-inputs.yaml
     with:
       username: monalisa
+    secrets:
+        envPAT: pat
 `;
     const result = await validate(createDocument("wf.yaml", input), {
       fileProvider: testFileProvider
