@@ -314,4 +314,71 @@ jobs:
       jobs: []
     });
   });
+
+  // Extra coverage since workflow_call components are not all covered by x-lang parsers
+  it("converts workflow_call on", async () => {
+    const result = parseWorkflow(
+      {
+        name: "wf.yaml",
+        content: `on:
+  workflow_call:
+    inputs:
+      test:
+        type: string
+        description: 'a test'
+        required: true
+        default: 'testing 123'
+    secrets:
+      secret1:
+        description: 'first secret'
+        required: true
+      secret2:
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      },
+      nullTrace
+    );
+
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion
+    });
+
+    expect(serializeTemplate(template)).toEqual({
+      events: {
+        workflow_call: {
+          inputs: {
+            test: {
+              description: "a test",
+              required: true,
+              type: "string",
+              default: "testing 123"
+            }
+          },
+          secrets: {
+            secret1: {
+              description: "first secret",
+              required: true
+            },
+            secret2: {}
+          }
+        }
+      },
+      jobs: [
+        {
+          id: "build",
+          if: {
+            expr: "success()",
+            type: 3
+          },
+          name: "build",
+          needs: undefined,
+          outputs: undefined,
+          "runs-on": "ubuntu-latest",
+          steps: [],
+          type: "job"
+        }
+      ]
+    });
+  });
 });

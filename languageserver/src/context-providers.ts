@@ -1,5 +1,6 @@
 import {DescriptionDictionary} from "@github/actions-expressions";
 import {ContextProviderConfig} from "@github/actions-languageservice";
+import {Mode} from "@github/actions-languageservice/context-providers/default";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
 import {Octokit} from "@octokit/rest";
 import {getSecrets} from "./context-providers/secrets";
@@ -20,11 +21,12 @@ export function contextProviders(
   const getContext = async (
     name: string,
     defaultContext: DescriptionDictionary | undefined,
-    workflowContext: WorkflowContext
+    workflowContext: WorkflowContext,
+    mode: Mode
   ) => {
     switch (name) {
       case "secrets":
-        return await getSecrets(workflowContext, client, cache, repo, defaultContext);
+        return await getSecrets(workflowContext, client, cache, repo, defaultContext, mode);
       case "vars":
         return await getVariables(workflowContext, client, cache, repo, defaultContext);
       case "steps":

@@ -204,6 +204,10 @@ on:
         description: 'Foo'
         required: true
         default: 'bar'
+    secrets:
+      password:
+        description: 'Password'
+        required: true
   workflow_run:
     workflows: ci
     types:
@@ -499,6 +503,12 @@ jobs:
           "description": "Foo",
           "required": true,
           "default": "bar"
+        }
+      },
+      "secrets": {
+        "password": {
+          "description": "Password",
+          "required": true
         }
       }
     },

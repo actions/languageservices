@@ -10,6 +10,7 @@ import {getJobContext} from "./job";
 import {getJobsContext} from "./jobs";
 import {getMatrixContext} from "./matrix";
 import {getNeedsContext} from "./needs";
+import {getSecretsContext} from "./secrets";
 import {getStepsContext} from "./steps";
 import {getStrategyContext} from "./strategy";
 
@@ -39,7 +40,7 @@ export async function getContext(
       continue;
     }
 
-    value = (await config?.getContext(contextName, value, workflowContext)) || value;
+    value = (await config?.getContext(contextName, value, workflowContext, mode)) || value;
 
     context.add(contextName, value, getDescription(RootContext, contextName));
   }
@@ -81,11 +82,7 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
       });
 
     case "secrets":
-      return new DescriptionDictionary({
-        key: "GITHUB_TOKEN",
-        value: new data.StringData("***"),
-        description: getDescription("secrets", "GITHUB_TOKEN")
-      });
+      return getSecretsContext(workflowContext, mode);
 
     case "steps":
       return getStepsContext(workflowContext);
