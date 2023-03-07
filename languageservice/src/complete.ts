@@ -160,7 +160,7 @@ async function getValues(
   const customValueProvider =
     valueProviderToken?.definition?.key && valueProviderConfig?.[valueProviderToken.definition.key];
   if (customValueProvider) {
-    const customValues = await customValueProvider.get(workflowContext);
+    const customValues = await customValueProvider.get(workflowContext, existingValues);
     if (customValues) {
       return filterAndSortCompletionOptions(customValues, existingValues);
     }
