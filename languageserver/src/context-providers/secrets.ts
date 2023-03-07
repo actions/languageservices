@@ -51,7 +51,6 @@ export async function getSecrets(
 
   const secrets = await getRemoteSecrets(octokit, cache, repo, environmentName);
 
-
   // Build combined map of secrets
   const secretsMap = new Map<
     string,
