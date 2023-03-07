@@ -6,6 +6,7 @@ import {Pair} from "@github/actions-expressions/data/expressiondata";
 import {RepositoryContext} from "../initializationOptions";
 import {StringData} from "@github/actions-expressions/data/index";
 import {TTLCache} from "../utils/cache";
+import {getRepoPermission} from "../utils/repo-permission";
 
 export async function getVariables(
   workflowContext: WorkflowContext,
@@ -14,6 +15,13 @@ export async function getVariables(
   repo: RepositoryContext,
   defaultContext: DescriptionDictionary | undefined
 ): Promise<DescriptionDictionary | undefined> {
+  const permission = await getRepoPermission(octokit, cache, repo);
+  if (permission === "none") {
+    const secretsContext = defaultContext || new DescriptionDictionary();
+    secretsContext.complete = false;
+    return secretsContext;
+  }
+
   let environmentName: string | undefined;
   if (workflowContext?.job?.environment) {
     if (isString(workflowContext.job.environment)) {
@@ -31,54 +39,49 @@ export async function getVariables(
   }
 
   const variablesContext = defaultContext || new DescriptionDictionary();
-  try {
-    const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
+  const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
 
-    // Build combined map of variables
-    const variablesMap = new Map<
-      string,
-      {
-        key: string;
-        value: data.StringData;
-        description?: string;
-      }
-    >();
-
-    variables.organizationVariables.forEach(variable =>
-      variablesMap.set(variable.key.toLowerCase(), {
-        key: variable.key,
-        value: new data.StringData(variable.value.coerceString()),
-        description: `${variable.value.coerceString()} - Organization variable`
-      })
-    );
-
-    // Override org variables with repo variables
-    variables.repoVariables.forEach(variable =>
-      variablesMap.set(variable.key.toLowerCase(), {
-        key: variable.key,
-        value: new data.StringData(variable.value.coerceString()),
-        description: `${variable.value.coerceString()} - Repository variable`
-      })
-    );
-
-    // Override repo variables with environment veriables (if defined)
-    variables.environmentVariables.forEach(variable =>
-      variablesMap.set(variable.key.toLowerCase(), {
-        key: variable.key,
-        value: new data.StringData(variable.value.coerceString()),
-        description: `${variable.value.coerceString()} - Variable for environment \`${environmentName}\``
-      })
-    );
-
-    // Sort variables by key and add to context
-    Array.from(variablesMap.values())
-      .sort((a, b) => a.key.localeCompare(b.key))
-      .forEach(variable => variablesContext?.add(variable.key, variable.value, variable.description));
-  } catch (e: any) {
-    if (e.status === 403 || e.status === 404) {
-      variablesContext.complete = false;
+  // Build combined map of variables
+  const variablesMap = new Map<
+    string,
+    {
+      key: string;
+      value: data.StringData;
+      description?: string;
     }
-  }
+  >();
+
+  variables.organizationVariables.forEach(variable =>
+    variablesMap.set(variable.key.toLowerCase(), {
+      key: variable.key,
+      value: new data.StringData(variable.value.coerceString()),
+      description: `${variable.value.coerceString()} - Organization variable`
+    })
+  );
+
+  // Override org variables with repo variables
+  variables.repoVariables.forEach(variable =>
+    variablesMap.set(variable.key.toLowerCase(), {
+      key: variable.key,
+      value: new data.StringData(variable.value.coerceString()),
+      description: `${variable.value.coerceString()} - Repository variable`
+    })
+  );
+
+  // Override repo variables with environment veriables (if defined)
+  variables.environmentVariables.forEach(variable =>
+    variablesMap.set(variable.key.toLowerCase(), {
+      key: variable.key,
+      value: new data.StringData(variable.value.coerceString()),
+      description: `${variable.value.coerceString()} - Variable for environment \`${environmentName}\``
+    })
+  );
+
+  // Sort variables by key and add to context
+  Array.from(variablesMap.values())
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .forEach(variable => variablesContext?.add(variable.key, variable.value, variable.description));
+
   return variablesContext;
 }
 

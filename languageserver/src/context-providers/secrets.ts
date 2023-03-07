@@ -6,6 +6,7 @@ import {isMapping, isString} from "@github/actions-workflow-parser";
 import {Octokit} from "@octokit/rest";
 import {RepositoryContext} from "../initializationOptions";
 import {TTLCache} from "../utils/cache";
+import {getRepoPermission} from "../utils/repo-permission";
 
 export async function getSecrets(
   workflowContext: WorkflowContext,
@@ -15,6 +16,13 @@ export async function getSecrets(
   defaultContext: DescriptionDictionary | undefined,
   mode: Mode
 ): Promise<DescriptionDictionary> {
+  const permission = await getRepoPermission(octokit, cache, repo);
+  if (permission === "none") {
+    const secretsContext = defaultContext || new DescriptionDictionary();
+    secretsContext.complete = false;
+    return secretsContext;
+  }
+
   let environmentName: string | undefined;
   if (workflowContext?.job?.environment) {
     if (isString(workflowContext.job.environment)) {
@@ -41,54 +49,50 @@ export async function getSecrets(
     }
   }
 
-  try {
-    const secrets = await getRemoteSecrets(octokit, cache, repo, environmentName);
+  const secrets = await getRemoteSecrets(octokit, cache, repo, environmentName);
 
-    // Build combined map of secrets
-    const secretsMap = new Map<
-      string,
-      {
-        key: string;
-        value: data.StringData;
-        description?: string;
-      }
-    >();
 
-    secrets.orgSecrets.forEach(secret =>
-      secretsMap.set(secret.value.toLowerCase(), {
-        key: secret.value,
-        value: new data.StringData("***"),
-        description: "Organization secret"
-      })
-    );
-
-    // Override org secrets with repo secrets
-    secrets.repoSecrets.forEach(secret =>
-      secretsMap.set(secret.value.toLowerCase(), {
-        key: secret.value,
-        value: new data.StringData("***"),
-        description: "Repository secret"
-      })
-    );
-
-    // Override repo secrets with environment secrets (if defined)
-    secrets.environmentSecrets.forEach(secret =>
-      secretsMap.set(secret.value.toLowerCase(), {
-        key: secret.value,
-        value: new data.StringData("***"),
-        description: `Secret for environment \`${environmentName}\``
-      })
-    );
-
-    // Sort secrets by key and add to context
-    Array.from(secretsMap.values())
-      .sort((a, b) => a.key.localeCompare(b.key))
-      .forEach(secret => secretsContext?.add(secret.key, secret.value, secret.description));
-  } catch (e: any) {
-    if (e.status === 403 || e.status === 404) {
-      secretsContext.complete = false;
+  // Build combined map of secrets
+  const secretsMap = new Map<
+    string,
+    {
+      key: string;
+      value: data.StringData;
+      description?: string;
     }
-  }
+  >();
+
+  secrets.orgSecrets.forEach(secret =>
+    secretsMap.set(secret.value.toLowerCase(), {
+      key: secret.value,
+      value: new data.StringData("***"),
+      description: "Organization secret"
+    })
+  );
+
+  // Override org secrets with repo secrets
+  secrets.repoSecrets.forEach(secret =>
+    secretsMap.set(secret.value.toLowerCase(), {
+      key: secret.value,
+      value: new data.StringData("***"),
+      description: "Repository secret"
+    })
+  );
+
+  // Override repo secrets with environment secrets (if defined)
+  secrets.environmentSecrets.forEach(secret =>
+    secretsMap.set(secret.value.toLowerCase(), {
+      key: secret.value,
+      value: new data.StringData("***"),
+      description: `Secret for environment \`${environmentName}\``
+    })
+  );
+
+  // Sort secrets by key and add to context
+  Array.from(secretsMap.values())
+    .sort((a, b) => a.key.localeCompare(b.key))
+    .forEach(secret => secretsContext?.add(secret.key, secret.value, secret.description));
+
   return secretsContext;
 }
 

@@ -1,6 +1,6 @@
 import {TemplateContext} from "../../templates/template-context";
 import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
-import {isSequence, isString} from "../../templates/tokens/type-guards";
+import {isMapping, isSequence, isString} from "../../templates/tokens/type-guards";
 import {Step, WorkflowJob} from "../workflow-template";
 import {convertConcurrency} from "./concurrency";
 import {convertToJobContainer, convertToJobServices} from "./container";
@@ -38,7 +38,9 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
         break;
 
       case "env":
-        env = item.value.assertMapping("job env");
+        handleTemplateTokenErrors(item.value, context, undefined, () => {
+          env = item.value.assertMapping("job env");
+        });
         break;
 
       case "environment":
@@ -69,7 +71,9 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       }
 
       case "outputs":
-        outputs = item.value.assertMapping("job outputs");
+        handleTemplateTokenErrors(item.value, context, undefined, () => {
+          outputs = item.value.assertMapping("job outputs");
+        });
         break;
 
       case "runs-on":
@@ -95,14 +99,19 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
         break;
 
       case "with":
-        workflowJobInputs = item.value.assertMapping("uses-with value");
+        handleTemplateTokenErrors(item.value, context, undefined, () => {
+          workflowJobInputs = item.value.assertMapping("uses-with value");
+        });
         break;
       case "secrets":
         if (isString(item.value) && item.value.value === "inherit") {
           inheritSecrets = true;
         } else {
-          workflowJobSecrets = item.value.assertMapping("uses-secrets value");
+          handleTemplateTokenErrors(item.value, context, undefined, () => {
+            workflowJobSecrets = item.value.assertMapping("uses-secrets value");
+          });
         }
+        break;
     }
   }
 

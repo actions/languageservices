@@ -27,7 +27,7 @@ import {findToken} from "./utils/find-token";
 import {guessIndentation} from "./utils/indentation-guesser";
 import {mapRange} from "./utils/range";
 import {getRelCharOffset} from "./utils/rel-char-pos";
-import {transform} from "./utils/transform";
+import {isPlaceholder, transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {definitionValues} from "./value-providers/definition";
@@ -160,7 +160,7 @@ async function getValues(
   const customValueProvider =
     valueProviderToken?.definition?.key && valueProviderConfig?.[valueProviderToken.definition.key];
   if (customValueProvider) {
-    const customValues = await customValueProvider.get(workflowContext);
+    const customValues = await customValueProvider.get(workflowContext, existingValues);
     if (customValues) {
       return filterAndSortCompletionOptions(customValues, existingValues);
     }
@@ -169,7 +169,7 @@ async function getValues(
   const defaultValueProvider =
     valueProviderToken?.definition?.key && defaultValueProviders[valueProviderToken.definition.key];
   if (defaultValueProvider) {
-    const values = await defaultValueProvider.get(workflowContext);
+    const values = await defaultValueProvider.get(workflowContext, existingValues);
     return filterAndSortCompletionOptions(values, existingValues);
   }
 
@@ -209,8 +209,8 @@ export function getExistingValues(token: TemplateToken | null, parent: TemplateT
     const mapKeys = new Set<string>();
     const mapToken = parent as MappingToken;
 
-    for (const {key} of mapToken) {
-      if (isString(key)) {
+    for (const {key, value} of mapToken) {
+      if (isString(key) && !isPlaceholder(key, value)) {
         mapKeys.add(key.value);
       }
     }
