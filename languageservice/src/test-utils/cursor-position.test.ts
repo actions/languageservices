@@ -1,4 +1,9 @@
+import {clearCache} from "../utils/workflow-cache";
 import {getPositionFromCursor} from "./cursor-position";
+
+beforeEach(() => {
+  clearCache();
+});
 
 describe("getPositionFromCursor", () => {
   it("returns the position of the cursor and the document without that cursor", () => {

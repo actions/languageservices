@@ -1,13 +1,6 @@
 import {Evaluator, ExpressionEvaluationError, Lexer, Parser} from "@github/actions-expressions";
 import {Expr} from "@github/actions-expressions/ast";
-import {
-  convertWorkflowTemplate,
-  isBasicExpression,
-  isString,
-  parseWorkflow,
-  ParseWorkflowResult,
-  WorkflowTemplate
-} from "@github/actions-workflow-parser";
+import {isBasicExpression, isString, ParseWorkflowResult, WorkflowTemplate} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";
@@ -18,19 +11,18 @@ import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provi
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 import {ActionMetadata, ActionReference} from "./action";
-
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
 import {validatorFunctions} from "./expression-validation/functions";
 import {error} from "./log";
-import {nullTrace} from "./nulltrace";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
 import {validateAction} from "./validate-action";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
+import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
 export type ValidationConfig = {
   valueProviderConfig?: ValueProviderConfig;
@@ -54,10 +46,14 @@ export async function validate(textDocument: TextDocument, config?: ValidationCo
   const diagnostics: Diagnostic[] = [];
 
   try {
-    const result: ParseWorkflowResult = parseWorkflow(file, nullTrace);
+    const result: ParseWorkflowResult | undefined = fetchOrParseWorkflow(file, textDocument.uri);
+    if (!result) {
+      return [];
+    }
+
     if (result.value) {
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
-      const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
+      const template = await fetchOrConvertWorkflowTemplate(result, textDocument.uri, config, {
         fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
         errorPolicy: ErrorPolicy.TryConversion
       });

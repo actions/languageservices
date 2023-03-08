@@ -5,8 +5,13 @@ import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {TestLogger} from "./test-utils/logger";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
+import {clearCache} from "./utils/workflow-cache";
 
 registerLogger(new TestLogger());
+
+beforeEach(() => {
+  clearCache();
+});
 
 describe("completion", () => {
   it("runs-on", async () => {

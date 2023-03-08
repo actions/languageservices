@@ -1,7 +1,6 @@
 import {DescriptionDictionary, Parser} from "@github/actions-expressions";
 import {FunctionInfo} from "@github/actions-expressions/funcs/info";
 import {Lexer} from "@github/actions-expressions/lexer";
-import {convertWorkflowTemplate, parseWorkflow} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {getCronDescription} from "@github/actions-workflow-parser/model/converter/cron";
 import {splitAllowedContext} from "@github/actions-workflow-parser/templates/allowed-context";
@@ -23,10 +22,10 @@ import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-p
 import {HoverVisitor} from "./expression-hover/visitor";
 import {validatorFunctions} from "./expression-validation/functions";
 import {info} from "./log";
-import {nullTrace} from "./nulltrace";
 import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken, TokenResult} from "./utils/find-token";
 import {mapRange} from "./utils/range";
+import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
@@ -43,19 +42,21 @@ export async function hover(document: TextDocument, position: Position, config?:
     name: document.uri,
     content: document.getText()
   };
-  const result = parseWorkflow(file, nullTrace);
-  if (!result.value) {
+
+  const parsedWorkflow = fetchOrParseWorkflow(file, document.uri);
+  if (!parsedWorkflow) {
     return null;
   }
 
-  const tokenResult = findToken(position, result.value);
-  const {token, keyToken, parent} = tokenResult;
-
-  const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
-  const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
+  const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, document.uri, config, {
     errorPolicy: ErrorPolicy.TryConversion,
     fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
   });
+
+  const tokenResult = findToken(position, parsedWorkflow.value);
+  const {token, keyToken, parent} = tokenResult;
+  const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
+
   const workflowContext = getWorkflowContext(document.uri, template, tokenResult.path);
   if (token && tokenDefinitionInfo) {
     if (isBasicExpression(token) || isPotentiallyExpression(token)) {

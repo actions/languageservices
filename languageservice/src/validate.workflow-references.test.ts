@@ -1,6 +1,11 @@
 import {createDocument} from "./test-utils/document";
 import {testFileProvider} from "./test-utils/test-file-provider";
+import {clearCache} from "./utils/workflow-cache";
 import {validate} from "./validate";
+
+beforeEach(() => {
+  clearCache();
+});
 
 describe("workflow references validation", () => {
   it("invalid workflow reference", async () => {

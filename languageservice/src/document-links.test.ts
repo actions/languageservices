@@ -1,5 +1,10 @@
 import {documentLinks} from "./document-links";
 import {createDocument} from "./test-utils/document";
+import {clearCache} from "./utils/workflow-cache";
+
+beforeEach(() => {
+  clearCache();
+});
 
 describe("documentLinks", () => {
   it("no links without actions", async () => {

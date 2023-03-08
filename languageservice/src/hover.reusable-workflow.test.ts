@@ -1,6 +1,11 @@
 import {hover} from "./hover";
 import {testHoverConfig} from "./hover.test";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
+import {clearCache} from "./utils/workflow-cache";
+
+beforeEach(() => {
+  clearCache();
+});
 
 describe("hover.reusable-workflow", () => {
   it("hover on job input with description", async () => {

@@ -1,12 +1,11 @@
-import {convertWorkflowTemplate, parseWorkflow} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {isJob} from "@github/actions-workflow-parser/model/type-guards";
 import {File} from "@github/actions-workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {DocumentLink} from "vscode-languageserver-types";
 import {actionUrl, parseActionReference} from "./action";
-import {nullTrace} from "./nulltrace";
 import {mapRange} from "./utils/range";
+import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
 export async function documentLinks(document: TextDocument): Promise<DocumentLink[]> {
   const file: File = {
@@ -14,12 +13,12 @@ export async function documentLinks(document: TextDocument): Promise<DocumentLin
     content: document.getText()
   };
 
-  const result = parseWorkflow(file, nullTrace);
-  if (!result.value) {
+  const parsedWorkflow = fetchOrParseWorkflow(file, document.uri);
+  if (!parsedWorkflow) {
     return [];
   }
 
-  const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+  const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, document.uri, undefined, {
     errorPolicy: ErrorPolicy.TryConversion
   });
 

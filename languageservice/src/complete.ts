@@ -1,12 +1,6 @@
 import {complete as completeExpression, DescriptionDictionary} from "@github/actions-expressions";
 import {CompletionItem as ExpressionCompletionItem} from "@github/actions-expressions/completion";
-import {
-  convertWorkflowTemplate,
-  isBasicExpression,
-  isSequence,
-  isString,
-  parseWorkflow
-} from "@github/actions-workflow-parser";
+import {isBasicExpression, isSequence, isString} from "@github/actions-workflow-parser";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {OPEN_EXPRESSION} from "@github/actions-workflow-parser/templates/template-constants";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/index";
@@ -21,7 +15,6 @@ import {getContext, Mode} from "./context-providers/default";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {validatorFunctions} from "./expression-validation/functions";
 import {error} from "./log";
-import {nullTrace} from "./nulltrace";
 import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken} from "./utils/find-token";
 import {guessIndentation} from "./utils/indentation-guesser";
@@ -31,6 +24,7 @@ import {isPlaceholder, transform} from "./utils/transform";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {definitionValues} from "./value-providers/definition";
+import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
@@ -66,21 +60,22 @@ export async function complete(
 
   // Fix the input to work around YAML parsing issues
   const [newDoc, newPos] = transform(textDocument, position);
-
   const file: File = {
     name: textDocument.uri,
     content: newDoc.getText()
   };
-  const result = parseWorkflow(file, nullTrace);
-  if (!result.value) {
+
+  const parsedWorkflow = fetchOrParseWorkflow(file, textDocument.uri);
+  if (!parsedWorkflow) {
     return [];
   }
 
-  const {token, keyToken, parent, path} = findToken(newPos, result.value);
-  const template = await convertWorkflowTemplate(result.context, result.value, config?.fileProvider, {
+  const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, textDocument.uri, config, {
     fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
     errorPolicy: ErrorPolicy.TryConversion
   });
+
+  const {token, keyToken, parent, path} = findToken(newPos, parsedWorkflow.value);
   const workflowContext = getWorkflowContext(textDocument.uri, template, path);
 
   // If we are inside an expression, take a different code-path. The workflow parser does not correctly create

@@ -28,6 +28,7 @@ import {fetchActionMetadata} from "./utils/action-metadata";
 import {TTLCache} from "./utils/cache";
 import {timeOperation} from "./utils/timer";
 import {valueProviders} from "./value-providers";
+import {clearCacheEntry, clearCache} from "@github/actions-languageservice/utils/workflow-cache";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -91,9 +92,18 @@ export function initConnection(connection: Connection) {
     return result;
   });
 
+  connection.onInitialized(() => {
+    if (hasWorkspaceFolderCapability) {
+      connection.workspace.onDidChangeWorkspaceFolders(_event => {
+        clearCache();
+      });
+    }
+  });
+
   // The content of a text document has changed. This event is emitted
   // when the text document first opened or when its content has changed.
   documents.onDidChangeContent(change => {
+    clearCacheEntry(change.document.uri);
     return timeOperation("validation", async () => await validateTextDocument(change.document));
   });
 

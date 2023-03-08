@@ -2,6 +2,11 @@ import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
 import {createDocument} from "./test-utils/document";
 import {validate} from "./validate";
 import {defaultValueProviders} from "./value-providers/default";
+import {clearCache} from "./utils/workflow-cache";
+
+beforeEach(() => {
+  clearCache();
+});
 
 describe("validation", () => {
   it("valid workflow", async () => {
