@@ -20,10 +20,5 @@ export function getSecretsContext(workflowContext: WorkflowContext, mode: Mode):
     }
   }
 
-  const events = workflowContext?.template?.events;
-  if (!events) {
-    return d;
-  }
-
   return d;
 }
