@@ -540,6 +540,28 @@ jobs:
     expect(result).toEqual([]);
   });
 
+  it("secrets", async () => {
+    const input = `
+on:
+  workflow_call:
+    secrets:
+      secret1:
+        required: true
+        description: "first secret"
+      secret2:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/deploy@v100
+      with:
+        deploy-key: \${{ secrets.|
+`;
+
+    const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+    expect(result.map(x => x.label)).toEqual(["GITHUB_TOKEN", "secret1", "secret2"]);
+  });
+
   describe("github context", () => {
     it("includes expected keys", async () => {
       const input = `

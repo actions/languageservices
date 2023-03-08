@@ -15,6 +15,7 @@ import {
 } from "../workflow-template";
 import {isValidCron} from "./cron";
 import {convertStringList} from "./string-list";
+import {convertEventWorkflowCall} from "./workflow-call";
 import {convertEventWorkflowDispatchInputs} from "./workflow-dispatch";
 
 export function convertOn(context: TemplateContext, token: TemplateToken): EventsConfig {
@@ -66,8 +67,9 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
         ...convertPatternFilter("paths", eventToken),
         ...convertFilter("types", eventToken),
         ...convertFilter("workflows", eventToken),
-        // TODO - share input parsing for now, but workflow_call also needs outputs and secrets
-        ...convertEventWorkflowDispatchInputs(context, eventToken)
+        // workflow_call and workflow_dispatch share input parsing
+        ...convertEventWorkflowDispatchInputs(context, eventToken),
+        ...convertEventWorkflowCall(context, eventToken)
       };
     }
 

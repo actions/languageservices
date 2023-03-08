@@ -158,10 +158,10 @@ export type WorkflowDispatchConfig = {
 };
 
 export type WorkflowCallConfig = {
-  inputs: {[inputName: string]: InputConfig};
+  inputs?: {[inputName: string]: InputConfig};
+  secrets?: {[secretName: string]: SecretConfig};
   // TODO - these are supported in C# and Go but not in TS yet
   // outputs: { [outputName: string]: OutputConfig }
-  // secrets: { [secretName: string]: SecretConfig }
 };
 
 export enum InputType {
@@ -177,6 +177,11 @@ export type InputConfig = {
   required?: boolean;
   default?: string | boolean | number;
   options?: string[];
+};
+
+export type SecretConfig = {
+  description?: string;
+  required?: boolean;
 };
 
 export type ScheduleConfig = {

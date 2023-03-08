@@ -1,5 +1,6 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {StringData} from "@github/actions-expressions/data/string";
+import {Mode} from "@github/actions-languageservice/context-providers/default";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
 import {isMapping, isString} from "@github/actions-workflow-parser";
 import {Octokit} from "@octokit/rest";
@@ -12,7 +13,8 @@ export async function getSecrets(
   octokit: Octokit,
   cache: TTLCache,
   repo: RepositoryContext,
-  defaultContext: DescriptionDictionary | undefined
+  defaultContext: DescriptionDictionary | undefined,
+  mode: Mode
 ): Promise<DescriptionDictionary> {
   const permission = await getRepoPermission(octokit, cache, repo);
   if (permission === "none") {
@@ -38,6 +40,15 @@ export async function getSecrets(
   }
 
   const secretsContext = defaultContext || new DescriptionDictionary();
+
+  // Exit early if workflow_call is the only trigger
+  if (mode === Mode.Completion) {
+    const eventsConfig = workflowContext?.template?.events;
+    if (eventsConfig?.workflow_call && Object.keys(eventsConfig).length == 1) {
+      return secretsContext;
+    }
+  }
+
   const secrets = await getRemoteSecrets(octokit, cache, repo, environmentName);
 
   // Build combined map of secrets
