@@ -20,10 +20,12 @@ export function valueProviders(
   return {
     "job-environment": {
       kind: ValueProviderKind.AllowedValues,
+      caseInsensitive: true,
       get: (_: WorkflowContext) => getEnvironments(client, cache, repo.owner, repo.name)
     },
     "job-environment-name": {
       kind: ValueProviderKind.AllowedValues,
+      caseInsensitive: true,
       get: (_: WorkflowContext) => getEnvironments(client, cache, repo.owner, repo.name)
     },
     "runs-on": {

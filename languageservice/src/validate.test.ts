@@ -3,6 +3,7 @@ import {createDocument} from "./test-utils/document";
 import {validate} from "./validate";
 import {defaultValueProviders} from "./value-providers/default";
 import {clearCache} from "./utils/workflow-cache";
+import {ValueProvider, ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 
 beforeEach(() => {
   clearCache();
@@ -192,5 +193,66 @@ jobs:
         }
       }
     } as Diagnostic);
+  });
+
+  describe("value provider case sensitivity", () => {
+    it("value with a different case and case sensitive provider", async () => {
+      const workflow = `
+  on: push
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      environment: TEST
+      steps:
+      - run: echo
+  `;
+      const valueProviderConfig: ValueProviderConfig = {
+        "job-environment": {
+          kind: ValueProviderKind.AllowedValues,
+          get: async () => [{label: "test"}],
+          caseInsensitive: false
+        }
+      };
+
+      const result = await validate(createDocument("wf.yaml", workflow), {valueProviderConfig});
+      expect(result).toEqual([
+        {
+          message: "Value 'TEST' is not valid",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {
+              line: 5,
+              character: 19
+            },
+            end: {
+              line: 5,
+              character: 23
+            }
+          }
+        }
+      ]);
+    });
+
+    it("value with a different case and case insensitive provider", async () => {
+      const workflow = `
+  on: push
+  jobs:
+    build:
+      runs-on: ubuntu-latest
+      environment: TEST
+      steps:
+      - run: echo
+  `;
+      const valueProviderConfig: ValueProviderConfig = {
+        "job-environment": {
+          kind: ValueProviderKind.AllowedValues,
+          get: async () => [{label: "test"}],
+          caseInsensitive: true
+        }
+      };
+
+      const result = await validate(createDocument("wf.yaml", workflow), {valueProviderConfig});
+      expect(result).toEqual([]);
+    });
   });
 });

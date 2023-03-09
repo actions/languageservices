@@ -130,10 +130,11 @@ async function additionalValidations(
 
       if (valueProvider) {
         const customValues = await valueProvider.get(getProviderContext(documentUri, template, root, token));
-        const customValuesMap = new Set(customValues.map(x => x.label));
+        const caseInsensitive = valueProvider.caseInsensitive ?? false;
+        const customValuesMap = new Set(customValues.map(x => (caseInsensitive ? x.label.toLowerCase() : x.label)));
 
         if (isString(token)) {
-          if (!customValuesMap.has(token.value)) {
+          if (!customValuesMap.has(caseInsensitive ? token.value.toLowerCase() : token.value)) {
             invalidValue(diagnostics, token, valueProvider.kind);
           }
         }

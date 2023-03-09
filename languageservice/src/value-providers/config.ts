@@ -21,6 +21,7 @@ export enum ValueProviderKind {
 
 export type ValueProvider = {
   kind: ValueProviderKind;
+  caseInsensitive?: boolean;
   get: (context: WorkflowContext, existingValues?: Set<string>) => Promise<Value[]>;
 };
 
