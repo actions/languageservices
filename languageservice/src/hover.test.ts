@@ -154,7 +154,8 @@ jobs:
 
     // The `ref` is a `string` definition and inherits the context from `step-with`
     const expected =
-      "Available expression contexts: `github`, `inputs`, `vars`, `needs`, `strategy`, `matrix`, `secrets`, `steps`, `job`, `runner`, `env`, `hashFiles(1,255)`";
+      "Available expression contexts: `github`, `inputs`, `vars`, `needs`, `strategy`, `matrix`, `secrets`, `steps`, `job`, `runner`, `env`\n\n" +
+      "Available expression functions: `hashFiles`";
     expect(result?.contents).toEqual(expected);
   });
 });
@@ -180,7 +181,8 @@ jobs:
 
     const expected =
       "The branch, tag or SHA to checkout.\n\n" +
-      "Available expression contexts: `github`, `inputs`, `vars`, `needs`, `strategy`, `matrix`, `secrets`, `steps`, `job`, `runner`, `env`, `hashFiles(1,255)`";
+      "Available expression contexts: `github`, `inputs`, `vars`, `needs`, `strategy`, `matrix`, `secrets`, `steps`, `job`, `runner`, `env`\n\n" +
+      "Available expression functions: `hashFiles`";
     expect(result?.contents).toEqual(expected);
   });
 
