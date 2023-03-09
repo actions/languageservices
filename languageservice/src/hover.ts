@@ -109,11 +109,16 @@ export async function hover(document: TextDocument, position: Position, config?:
 }
 
 function appendContext(description: string, allowedContext?: string[]) {
-  if (allowedContext && allowedContext?.length > 0) {
-    // Only add padding if there is a description
-    description += `${description.length > 0 ? `\n\n` : ""}**Context:** ${allowedContext.join(", ")}`;
+  if (!allowedContext || allowedContext.length == 0) {
+    return description;
   }
-  return description;
+
+  const contextDescription = `**Available expression contexts:** ${allowedContext.map(c => `\`${c}\``).join(", ")}`;
+  if (description.length == 0) {
+    return contextDescription;
+  }
+
+  return `${description}\n\n${contextDescription}`;
 }
 
 async function getDescription(
