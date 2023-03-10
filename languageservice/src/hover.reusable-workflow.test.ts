@@ -21,7 +21,7 @@ jobs:
     const result = await hover(...getPositionFromCursor(input), testHoverConfig("username", "scalar-needs-context"));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
-      "A username passed from the caller workflow\n\n**Context:** github, inputs, vars, needs, strategy, matrix"
+      "A username passed from the caller workflow\n\nAvailable expression contexts: `github`, `inputs`, `vars`, `needs`, `strategy`, `matrix`"
     );
   });
 
@@ -37,7 +37,9 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual("**Context:** github, inputs, vars, needs, strategy, matrix");
+    expect(result?.contents).toEqual(
+      "Available expression contexts: `github`, `inputs`, `vars`, `needs`, `strategy`, `matrix`"
+    );
   });
 
   it("hover on job output with description", async () => {
