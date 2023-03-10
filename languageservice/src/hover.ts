@@ -113,7 +113,7 @@ function appendContext(description: string, allowedContext?: string[]) {
     return description;
   }
 
-  const contextDescription = `**Available expression contexts:** ${allowedContext.map(c => `\`${c}\``).join(", ")}`;
+  const contextDescription = `Available expression contexts: ${allowedContext.map(c => `\`${c}\``).join(", ")}`;
   if (description.length == 0) {
     return contextDescription;
   }
