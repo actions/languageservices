@@ -112,13 +112,23 @@ function appendContext(description: string, allowedContext?: string[]) {
   if (!allowedContext || allowedContext.length == 0) {
     return description;
   }
+  let {namedContexts, functions} = splitAllowedContext(allowedContext);
+  let namedContextsString = "";
+  let functionsString = "";
 
-  const contextDescription = `Available expression contexts: ${allowedContext.map(c => `\`${c}\``).join(", ")}`;
-  if (description.length == 0) {
-    return contextDescription;
+  if (namedContexts.length > 0) {
+    namedContextsString = `${description.length > 0 ? `\n\n` : ""}Available expression contexts: ${namedContexts
+      .map(x => `\`${x}\``)
+      .join(", ")}`;
+  }
+  if (functions.length > 0) {
+    functionsString = `${namedContexts.length > 0 ? `\n\n` : ""}Available expression functions: ${functions
+      .map(x => x.name)
+      .map(x => `\`${x}\``)
+      .join(", ")}`;
   }
 
-  return `${description}\n\n${contextDescription}`;
+  return `${description}${namedContextsString}${functionsString}`;
 }
 
 async function getDescription(
