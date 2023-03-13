@@ -98,6 +98,25 @@ jobs:
     ]);
   });
 
+  it("no secret validation with workflow_call", async () => {
+    const input = `
+on:
+  workflow_call:
+    secrets:
+      my_secret:
+env:
+  my_secret: \${{ secrets.my_secret }}
+  secret: \${{ secrets.secret-not-exist }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo`;
+
+    const result = await validate(createDocument("wf.yaml", input));
+    expect(result).toEqual([]);
+  });
+
   it("access invalid nested context field", async () => {
     const result = await validate(
       createDocument(
