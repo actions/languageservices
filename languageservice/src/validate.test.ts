@@ -195,6 +195,46 @@ jobs:
     } as Diagnostic);
   });
 
+  it("invalid YAML", async () => {
+    // This YAML has some mismatched single-quotes, which causes the string to be terminated early
+    // within the fromJSON() expression.
+    // Using double-quotes would make it valid:
+    // "Run a \${{ inputs.test }} one-line script \${{ fromJSON('test') == inputs.name }}"
+    const workflow = `
+    on: push
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        environment: TEST
+        steps:
+        - name: 'Run a \${{ inputs.test }} one-line script \${{ fromJSON('test') == inputs.name }}'
+          run: echo
+    `;
+    const result = await validate(createDocument("wf.yaml", workflow), {valueProviderConfig: defaultValueProviders});
+
+    expect(result).toEqual([
+      {
+        message:
+          "Unexpected scalar at node end at line 8, column 73:\n\n…un a ${{ inputs.test }} one-line script ${{ fromJSON('test') == inputs.name }}'\n                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+        range: {
+          start: {
+            line: 7,
+            character: 72
+          },
+          end: {
+            line: 7,
+            character: 97
+          }
+        }
+      }
+    ]);
+
+    const cachedResult = await validate(createDocument("wf.yaml", workflow), {
+      valueProviderConfig: defaultValueProviders
+    });
+    expect(cachedResult).toEqual(result);
+  });
+
   describe("value provider case sensitivity", () => {
     it("value with a different case and case sensitive provider", async () => {
       const workflow = `

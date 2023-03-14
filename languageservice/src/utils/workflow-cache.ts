@@ -20,14 +20,12 @@ export function clearCache() {
 }
 
 export function fetchOrParseWorkflow(file: File, uri: string): ParseWorkflowResult | undefined {
-  let result = parsedWorkflowCache.get(uri);
-  if (!result?.value) {
-    result = parseWorkflow(file, nullTrace);
-    if (!result.value) {
-      return undefined;
-    }
-    parsedWorkflowCache.set(uri, result);
+  const cachedResult = parsedWorkflowCache.get(uri);
+  if (cachedResult) {
+    return cachedResult;
   }
+  const result = parseWorkflow(file, nullTrace);
+  parsedWorkflowCache.set(uri, result);
   return result;
 }
 
