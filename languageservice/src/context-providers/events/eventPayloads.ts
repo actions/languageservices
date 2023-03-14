@@ -1,6 +1,7 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 
 import webhooks from "./webhooks.json";
+import webhookObjects from "./objects.json";
 
 import schedule from "./schedule.json" assert {type: "json"};
 import workflow_call from "./workflow_call.json" assert {type: "json"};
@@ -47,17 +48,38 @@ type Param = {
   enum?: string[];
 };
 
+/**
+ * A full {@link Param} or an index into the objects array for deduplicated parameters
+ */
+type DeduplicatedParam = Param | number;
+
+type WebhookPayload = {
+  descriptionHtml: string;
+  summaryHtml: string;
+  bodyParameters: Param[];
+};
+
 type Webhooks = {
   [name: string]: {
-    [action: string]: {
-      descriptionHtml: string;
-      summaryHtml: string;
-      bodyParameters: Param[];
+    [action: string]: WebhookPayload;
+  };
+};
+
+type DeduplicatedWebhooks = {
+  [name: string]: {
+    [action: string]: WebhookPayload & {
+      bodyParameters: DeduplicatedParam[];
     };
   };
 };
 
-const webhookPayloads: Webhooks = webhooks as any;
+const dedupedWebhookPayloads: DeduplicatedWebhooks = webhooks as any;
+const objects: Param[] = webhookObjects as any;
+
+const webhookPayloads: Webhooks = {};
+
+// Hydrate the workflow dispatch payload if it exists
+getWebhookPayload("workflow_dispatch", "default");
 
 //
 // Manual work-arounds for webhook issues
@@ -68,7 +90,7 @@ if (inputs) {
 }
 
 export function getEventPayload(event: string, action: string = "default"): DescriptionDictionary | undefined {
-  const payload = webhookPayloads?.[event]?.[action];
+  const payload = getWebhookPayload(event, action);
   if (!payload) {
     // Not all events are real webhooks. Check if there is a custom payload for this event
     const customPayload = customEventPayloads[event];
@@ -119,4 +141,37 @@ function mergeObject(d: DescriptionDictionary, toAdd: Object): DescriptionDictio
   }
 
   return d;
+}
+
+function getWebhookPayload(event: string, action: string): WebhookPayload | undefined {
+  const deduplicatedPayload = dedupedWebhookPayloads?.[event]?.[action];
+  if (!deduplicatedPayload) {
+    return undefined;
+  }
+
+  const existingPayload = webhookPayloads?.[event]?.[action];
+  if (existingPayload) {
+    return existingPayload;
+  }
+
+  // Recreate the full payload and store it for reuse
+  const params = deduplicatedPayload.bodyParameters.map(p => fullParam(p));
+  const payload = {
+    ...deduplicatedPayload,
+    bodyParameters: params
+  };
+  webhookPayloads[event] ||= {};
+  webhookPayloads[event][action] = payload;
+  return payload;
+}
+
+function fullParam(dedupedParam: DeduplicatedParam): Param {
+  if (typeof dedupedParam === "number") {
+    if (dedupedParam >= objects.length) {
+      throw new Error(`Unknown object ${dedupedParam}`);
+    }
+    return objects[dedupedParam];
+  }
+
+  return dedupedParam;
 }
