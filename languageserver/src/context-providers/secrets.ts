@@ -16,11 +16,22 @@ export async function getSecrets(
   defaultContext: DescriptionDictionary | undefined,
   mode: Mode
 ): Promise<DescriptionDictionary> {
+  const secretsContext = defaultContext || new DescriptionDictionary();
+
   const permission = await getRepoPermission(octokit, cache, repo);
   if (permission === "none") {
-    const secretsContext = defaultContext || new DescriptionDictionary();
     secretsContext.complete = false;
     return secretsContext;
+  }
+
+  const eventsConfig = workflowContext?.template?.events;
+  if (eventsConfig?.workflow_call) {
+    // Unpredictable secrets may be passed in via a workflow_call trigger
+    secretsContext.complete = false;
+    // Exit early for validation mode or if workflow_call is the only trigger
+    if (mode === Mode.Validation || Object.keys(eventsConfig).length == 1) {
+      return secretsContext;
+    }
   }
 
   let environmentName: string | undefined;
@@ -36,16 +47,6 @@ export async function getSecrets(
           break;
         }
       }
-    }
-  }
-
-  const secretsContext = defaultContext || new DescriptionDictionary();
-
-  // Exit early if workflow_call is the only trigger
-  if (mode === Mode.Completion) {
-    const eventsConfig = workflowContext?.template?.events;
-    if (eventsConfig?.workflow_call && Object.keys(eventsConfig).length == 1) {
-      return secretsContext;
     }
   }
 
