@@ -26,7 +26,7 @@ export async function getSecrets(
 
   const eventsConfig = workflowContext?.template?.events;
   if (eventsConfig?.workflow_call) {
-    // Unpredictible secrets may be pased in via a workflow_call trigger
+    // Unpredictable secrets may be passed in via a workflow_call trigger
     secretsContext.complete = false;
     // Exit early for validation mode or if workflow_call is the only trigger
     if (mode === Mode.Validation || Object.keys(eventsConfig).length == 1) {
