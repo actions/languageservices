@@ -228,6 +228,11 @@ jobs:
         }
       }
     ]);
+
+    const cachedResult = await validate(createDocument("wf.yaml", workflow), {
+      valueProviderConfig: defaultValueProviders
+    });
+    expect(cachedResult).toEqual(result);
   });
 
   describe("value provider case sensitivity", () => {
