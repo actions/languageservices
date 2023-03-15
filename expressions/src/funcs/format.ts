@@ -15,7 +15,7 @@ export const format: FunctionDefinition = {
 
     while (index < fs.length) {
       const lbrace = fs.indexOf("{", index);
-      let rbrace = fs.indexOf("}", index);
+      const rbrace = fs.indexOf("}", index);
 
       // Left brace
       if (lbrace >= 0 && (rbrace < 0 || rbrace > lbrace)) {
@@ -81,7 +81,7 @@ function safeCharAt(string: string, index: number): string {
 function readArgIndex(string: string, startIndex: number): ArgIndex {
   // Count the number of digits
   let length = 0;
-  while (true) {
+  for (;;) {
     const nextChar = safeCharAt(string, startIndex + length);
     if (nextChar >= "0" && nextChar <= "9") {
       length++;
@@ -111,10 +111,4 @@ interface ArgIndex {
   success: boolean;
   result: number;
   endIndex: number;
-}
-
-interface FormatSpecifiers {
-  success: boolean;
-  result: string;
-  rbrace: number;
 }

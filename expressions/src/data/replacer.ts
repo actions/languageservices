@@ -10,7 +10,7 @@ import {StringData} from "./string";
  *
  * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#replacer
  */
-export function replacer(key: string, value: any): any {
+export function replacer(_key: string, value: unknown): unknown {
   if (value instanceof Null) {
     return null;
   }
@@ -34,7 +34,7 @@ export function replacer(key: string, value: any): any {
   if (value instanceof Dictionary) {
     const pairs = value.pairs();
 
-    const r: any = {};
+    const r: Record<string, unknown> = {};
     for (const p of pairs) {
       r[p.key] = p.value;
     }
