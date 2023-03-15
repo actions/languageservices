@@ -52,7 +52,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
   ];
 
   while (s.length > 0) {
-    const result = s.shift()!;
+    const result = s.shift()!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
     const {parent, token, keyToken, path} = result;
     if (!token) {
       break;
@@ -67,7 +67,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
 
     // Position is in token, enqueue children if there are any
     switch (token.templateTokenType) {
-      case TokenType.Mapping:
+      case TokenType.Mapping: {
         const mappingToken = token as MappingToken;
         for (const {key, value} of mappingToken) {
           // If the position is within the key, immediately return it as the token.
@@ -99,8 +99,8 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
           });
         }
         continue;
-
-      case TokenType.Sequence:
+      }
+      case TokenType.Sequence: {
         const sequenceToken = token as SequenceToken;
         for (const token of sequenceToken) {
           s.push({
@@ -111,6 +111,7 @@ export function findToken(pos: Position, root?: TemplateToken): TokenResult {
           });
         }
         continue;
+      }
     }
 
     return {

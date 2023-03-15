@@ -29,7 +29,7 @@ export function mapToExpressionPos(token: TemplateToken, position: Position): Ex
   if (token.originalExpressions?.length) {
     for (const originalExp of token.originalExpressions) {
       // Find the original expression that contains the position
-      if (posWithinRange(pos, originalExp.expressionRange!)) {
+      if (originalExp.expressionRange && posWithinRange(pos, originalExp.expressionRange)) {
         const exprRange = mapRange(originalExp.expressionRange);
 
         return {
@@ -47,7 +47,7 @@ export function mapToExpressionPos(token: TemplateToken, position: Position): Ex
     return undefined;
   }
 
-  const exprRange = mapRange(token.expressionRange!);
+  const exprRange = mapRange(token.expressionRange);
   return {
     expression: token.expression,
     // Adjust the position to point into the expression

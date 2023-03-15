@@ -4,7 +4,11 @@ import {WorkflowContext} from "../context/workflow-context";
 import {TokenResult} from "../utils/find-token";
 
 export function isReusableWorkflowJobInput(tokenResult: TokenResult): boolean {
-  return tokenResult.parent?.definition?.key === "workflow-job-with" && isString(tokenResult.token!);
+  return (
+    tokenResult.parent?.definition?.key === "workflow-job-with" &&
+    tokenResult.token !== null &&
+    isString(tokenResult.token)
+  );
 }
 
 export function getReusableWorkflowInputDescription(

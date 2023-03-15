@@ -39,7 +39,8 @@ export async function fetchOrConvertWorkflowTemplate(
   if (!template) {
     template = await convertWorkflowTemplate(
       parsedWorkflow.context,
-      parsedWorkflow.value!,
+      // TODO: @joshmgross We can't assume that the value is non-null here
+      parsedWorkflow.value!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
       config?.fileProvider,
       options
     );

@@ -11,28 +11,30 @@ import {getPositionFromCursor} from "../test-utils/cursor-position";
 import {HoverVisitor} from "./visitor";
 
 const contextProviderConfig: ContextProviderConfig = {
-  getContext: async (context: string) => {
+  getContext: (context: string) => {
     switch (context) {
       case "github":
-        return new DescriptionDictionary(
-          {
-            key: "event",
-            value: new data.StringData("push"),
-            description: "The event that triggered the workflow"
-          },
-          {
-            key: "test",
-            value: new DescriptionDictionary({
-              key: "name",
+        return Promise.resolve(
+          new DescriptionDictionary(
+            {
+              key: "event",
               value: new data.StringData("push"),
-              description: "Name for the test"
-            }),
-            description: "Test dictionary"
-          }
+              description: "The event that triggered the workflow"
+            },
+            {
+              key: "test",
+              value: new DescriptionDictionary({
+                key: "name",
+                value: new data.StringData("push"),
+                description: "Name for the test"
+              }),
+              description: "Test dictionary"
+            }
+          )
         );
     }
 
-    return undefined;
+    return Promise.resolve(undefined);
   }
 };
 

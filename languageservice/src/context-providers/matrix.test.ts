@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {Job} from "@github/actions-workflow-parser/model/workflow-template";
 import {BasicExpressionToken} from "@github/actions-workflow-parser/templates/tokens/basic-expression-token";

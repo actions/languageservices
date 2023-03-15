@@ -2,6 +2,7 @@ import {FileProvider} from "@github/actions-workflow-parser/workflows/file-provi
 import {fileIdentifier} from "@github/actions-workflow-parser/workflows/file-reference";
 
 export const testFileProvider: FileProvider = {
+  // eslint-disable-next-line @typescript-eslint/require-await
   getFileContent: async ref => {
     switch (fileIdentifier(ref)) {
       case "monalisa/octocat/workflow.yaml@main":

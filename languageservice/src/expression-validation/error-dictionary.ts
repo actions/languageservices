@@ -12,7 +12,7 @@ export class ErrorDictionary extends data.Dictionary {
   constructor(...pairs: Pair[]) {
     super(...pairs);
   }
-  public complete: boolean = true;
+  public complete = true;
 
   get(key: string): ExpressionData | undefined {
     const value = super.get(key);

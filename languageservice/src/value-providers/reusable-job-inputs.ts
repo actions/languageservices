@@ -1,9 +1,7 @@
-import {MappingToken} from "@github/actions-workflow-parser/templates/tokens/mapping-token";
 import {TemplateToken} from "@github/actions-workflow-parser/templates/tokens/template-token";
 import {isMapping, isString} from "@github/actions-workflow-parser/templates/tokens/type-guards";
 import {WorkflowContext} from "../context/workflow-context";
 import {Value} from "./config";
-import {stringsToValues} from "./strings-to-values";
 
 export function reusableJobInputs(context: WorkflowContext): Value[] {
   if (!context.reusableWorkflowJob?.["input-definitions"]) {

@@ -1,4 +1,3 @@
-import {WorkflowContext} from "../context/workflow-context";
 import {ValueProviderConfig, ValueProviderKind} from "./config";
 import {needs} from "./needs";
 import {reusableJobInputs} from "./reusable-job-inputs";
@@ -20,6 +19,7 @@ export const DEFAULT_RUNNER_LABELS = [
   "self-hosted"
 ];
 
+/* eslint-disable @typescript-eslint/require-await */
 export const defaultValueProviders: ValueProviderConfig = {
   needs: {
     kind: ValueProviderKind.AllowedValues,
@@ -35,6 +35,7 @@ export const defaultValueProviders: ValueProviderConfig = {
   },
   "runs-on": {
     kind: ValueProviderKind.SuggestedValues,
-    get: async (_: WorkflowContext) => stringsToValues(DEFAULT_RUNNER_LABELS)
+    get: async () => stringsToValues(DEFAULT_RUNNER_LABELS)
   }
 };
+/* eslint-enable @typescript-eslint/require-await */

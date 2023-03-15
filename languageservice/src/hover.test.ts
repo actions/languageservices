@@ -13,7 +13,7 @@ export function testHoverConfig(tokenValue: string, tokenKey: string, descriptio
           throw new Error("Test provider only supports string tokens");
         }
 
-        expect((token as StringToken).value).toEqual(tokenValue);
+        expect((token ).value).toEqual(tokenValue);
         expect(token.definition!.key).toEqual(tokenKey);
 
         return description;

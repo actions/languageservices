@@ -1,13 +1,15 @@
 import {WorkflowContext} from "../context/workflow-context";
 import {Value} from "./config";
 
-export async function needs(context: WorkflowContext): Promise<Value[]> {
+export function needs(context: WorkflowContext): Promise<Value[]> {
   if (!context.template) {
-    return [];
+    return Promise.resolve([]);
   }
 
   const uniquejobIDs = new Set(context.template.jobs.map(j => j.id)).values();
-  return Array.from(uniquejobIDs)
-    .filter(x => x.value !== context.job?.id.value)
-    .map(x => ({label: x.value}));
+  return Promise.resolve(
+    Array.from(uniquejobIDs)
+      .filter(x => x.value !== context.job?.id.value)
+      .map(x => ({label: x.value}))
+  );
 }

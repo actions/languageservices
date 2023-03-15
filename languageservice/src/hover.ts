@@ -112,7 +112,7 @@ function appendContext(description: string, allowedContext?: string[]) {
   if (!allowedContext || allowedContext.length == 0) {
     return description;
   }
-  let {namedContexts, functions} = splitAllowedContext(allowedContext);
+  const {namedContexts, functions} = splitAllowedContext(allowedContext);
   let namedContextsString = "";
   let functionsString = "";
 
