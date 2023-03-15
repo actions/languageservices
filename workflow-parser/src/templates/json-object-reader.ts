@@ -9,7 +9,7 @@ export class JSONObjectReader implements ObjectReader {
 
   public constructor(fileId: number | undefined, input: string) {
     this._fileId = fileId;
-    const value = JSON.parse(input);
+    const value: unknown = JSON.parse(input);
     this._generator = this.getParseEvents(value, true);
     this._current = this._generator.next();
   }
@@ -76,7 +76,7 @@ export class JSONObjectReader implements ObjectReader {
 
   public validateEnd(): void {
     if (!this._current.done) {
-      const parseEvent = this._current.value as ParseEvent;
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.DocumentEnd) {
         this._current = this._generator.next();
         return;
@@ -88,7 +88,7 @@ export class JSONObjectReader implements ObjectReader {
 
   public validateStart(): void {
     if (!this._current.done) {
-      const parseEvent = this._current.value as ParseEvent;
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.DocumentStart) {
         this._current = this._generator.next();
         return;
@@ -101,7 +101,7 @@ export class JSONObjectReader implements ObjectReader {
   /**
    * Returns all tokens (depth first)
    */
-  private *getParseEvents(value: any, root?: boolean): Generator<ParseEvent, void> {
+  private *getParseEvents(value: unknown, root?: boolean): Generator<ParseEvent, void> {
     if (root) {
       yield new ParseEvent(EventType.DocumentStart, undefined);
     }
@@ -124,9 +124,9 @@ export class JSONObjectReader implements ObjectReader {
           yield new ParseEvent(EventType.Literal, new NullToken(this._fileId, undefined, undefined));
         }
         // array
-        else if (Object.prototype.hasOwnProperty.call(value, "length")) {
+        else if (Array.isArray(value)) {
           yield new ParseEvent(EventType.SequenceStart, new SequenceToken(this._fileId, undefined, undefined));
-          for (const item of value as []) {
+          for (const item of value) {
             for (const e of this.getParseEvents(item)) {
               yield e;
             }
@@ -138,7 +138,7 @@ export class JSONObjectReader implements ObjectReader {
           yield new ParseEvent(EventType.MappingStart, new MappingToken(this._fileId, undefined, undefined));
           for (const key of Object.keys(value)) {
             yield new ParseEvent(EventType.Literal, new StringToken(this._fileId, undefined, key, undefined));
-            for (const e of this.getParseEvents(value[key])) {
+            for (const e of this.getParseEvents(value[key as keyof typeof value])) {
               yield e;
             }
           }

@@ -1,7 +1,3 @@
-import {TraceWriter} from "../templates/trace-writer";
+import {NoOperationTraceWriter} from "../templates/trace-writer";
 
-export const nullTrace: TraceWriter = {
-  info: x => {},
-  verbose: x => {},
-  error: x => {}
-};
+export const nullTrace = new NoOperationTraceWriter();

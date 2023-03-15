@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {nullTrace} from "../test-utils/null-trace";
 import {parseWorkflow} from "../workflows/workflow-parser";
 import {convertWorkflowTemplate, ErrorPolicy} from "./convert";

@@ -1,4 +1,5 @@
 // template-reader *just* does schema validation
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import {ObjectReader} from "./object-reader";
 import {TemplateSchema} from "./schema";

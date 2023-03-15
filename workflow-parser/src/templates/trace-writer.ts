@@ -7,9 +7,15 @@ export interface TraceWriter {
 }
 
 export class NoOperationTraceWriter implements TraceWriter {
-  public error(message: string): void {}
+  public error(): void {
+    // do nothing
+  }
 
-  public info(message: string): void {}
+  public info(): void {
+    // do nothing
+  }
 
-  public verbose(message: string): void {}
+  public verbose(): void {
+    // do nothing
+  }
 }
