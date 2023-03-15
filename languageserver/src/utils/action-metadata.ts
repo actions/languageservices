@@ -3,6 +3,7 @@ import {error} from "@github/actions-languageservice/log";
 import {Octokit, RestEndpointMethodTypes} from "@octokit/rest";
 import {parse} from "yaml";
 import {TTLCache} from "./cache";
+import {errorMessage, errorStatus} from "./error";
 
 export async function fetchActionMetadata(
   client: Octokit,
@@ -17,15 +18,15 @@ export async function fetchActionMetadata(
   }
 
   // https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions
-  return parse(metadata);
+  return parse(metadata) as ActionMetadata;
 }
 
 async function getActionMetadata(client: Octokit, action: ActionReference): Promise<string | undefined> {
   let resp: RestEndpointMethodTypes["repos"]["getContent"]["response"];
   try {
     resp = await fetchAction(client, action);
-  } catch (e: any) {
-    error(`Failed to fetch action metadata for ${actionIdentifier(action)}: '${e?.message || "<no details>"}'`);
+  } catch (e) {
+    error(`Failed to fetch action metadata for ${actionIdentifier(action)}: '${errorMessage(e)}'`);
     return;
   }
 
@@ -50,9 +51,9 @@ async function fetchAction(client: Octokit, action: ActionReference) {
       ref: action.ref,
       path: action.path ? `${action.path}/action.yml` : "action.yml"
     });
-  } catch (e: any) {
+  } catch (e) {
     // If action.yml doesn't exist, try action.yaml
-    if (e.status === 404) {
+    if (errorStatus(e) === 404) {
       return await client.repos.getContent({
         owner: action.owner,
         repo: action.name,

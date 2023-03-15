@@ -51,7 +51,7 @@ export async function getStepsContext(
     const stepContext = new DescriptionDictionary();
     for (const {key, value, description} of defaultStepContext.pairs()) {
       switch (key) {
-        case "outputs":
+        case "outputs": {
           const outputs = await getActionOutputs(octokit, cache, action);
           if (!outputs) {
             stepContext.add(key, value, description);
@@ -63,6 +63,7 @@ export async function getStepsContext(
           }
           stepContext.add("outputs", outputsDict);
           break;
+        }
         default:
           stepContext.add(key, value, description);
       }

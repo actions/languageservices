@@ -3,6 +3,7 @@ import {Octokit} from "@octokit/rest";
 import {RepositoryContext} from "../initializationOptions";
 import {TTLCache} from "./cache";
 import {getUsername} from "./username";
+import {errorStatus} from "./error";
 
 export type RepoPermission = "admin" | "write" | "read" | "none";
 
@@ -37,8 +38,9 @@ async function fetchRepoPermission(octokit: Octokit, repo: RepositoryContext, us
     });
     const permission = res.data?.permission;
     return permission;
-  } catch (e: any) {
-    if (e.status === 404 || e.status === 403) {
+  } catch (e) {
+    const status = errorStatus(e);
+    if (status === 404 || status === 403) {
       return "none";
     }
     throw e;

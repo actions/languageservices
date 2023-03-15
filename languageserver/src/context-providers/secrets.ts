@@ -84,7 +84,7 @@ export async function getSecrets(
     secretsMap.set(secret.value.toLowerCase(), {
       key: secret.value,
       value: new data.StringData("***"),
-      description: `Secret for environment \`${environmentName}\``
+      description: `Secret for environment \`${environmentName || ""}\``
     })
   );
 

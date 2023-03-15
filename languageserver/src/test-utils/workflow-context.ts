@@ -1,19 +1,13 @@
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
-import {convertWorkflowTemplate, parseWorkflow, TraceWriter} from "@github/actions-workflow-parser";
+import {convertWorkflowTemplate, NoOperationTraceWriter, parseWorkflow} from "@github/actions-workflow-parser";
 import {isJob} from "@github/actions-workflow-parser/model/type-guards";
-
-const nullTrace: TraceWriter = {
-  info: x => {},
-  verbose: x => {},
-  error: x => {}
-};
 
 export async function createWorkflowContext(
   workflow: string,
   job?: string,
   stepIndex?: number
 ): Promise<WorkflowContext> {
-  const parsed = parseWorkflow({name: "test.yaml", content: workflow}, nullTrace);
+  const parsed = parseWorkflow({name: "test.yaml", content: workflow}, new NoOperationTraceWriter());
   if (!parsed.value) {
     throw new Error("Failed to parse workflow");
   }

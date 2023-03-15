@@ -73,7 +73,7 @@ export async function getVariables(
     variablesMap.set(variable.key.toLowerCase(), {
       key: variable.key,
       value: new data.StringData(variable.value.coerceString()),
-      description: `${variable.value.coerceString()} - Variable for environment \`${environmentName}\``
+      description: `${variable.value.coerceString()} - Variable for environment \`${environmentName || ""}\``
     })
   );
 
