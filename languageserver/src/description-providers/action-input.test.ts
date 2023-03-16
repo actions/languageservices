@@ -27,7 +27,7 @@ async function getDescription(input: string, mock: fetchMock.FetchMockSandbox) {
       }
     }),
     new TTLCache(),
-    workflowContext.step!,
+    workflowContext.step!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
     new StringToken(undefined, undefined, input, undefined)
   );
 }

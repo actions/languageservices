@@ -3,6 +3,7 @@ import {Value} from "@github/actions-languageservice/value-providers/config";
 import {DEFAULT_RUNNER_LABELS} from "@github/actions-languageservice/value-providers/default";
 import {Octokit} from "@octokit/rest";
 import {TTLCache} from "../utils/cache";
+import {errorMessage} from "../utils/error";
 
 // Limitation: getRunnerLabels returns default hosted labels and labels for repository self-hosted runners.
 // It doesn't return labels for organization runners visible to the repository.
@@ -35,7 +36,7 @@ async function fetchRunnerLabels(client: Octokit, owner: string, name: string): 
       }
     }
   } catch (e) {
-    log(`Failure to retrieve runner labels: ${e}`);
+    log(`Failure to retrieve runner labels: ${errorMessage(e)}`);
   }
 
   return labels;
