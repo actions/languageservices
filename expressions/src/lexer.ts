@@ -57,6 +57,7 @@ export function tokenString(tok: Token): string {
     case TokenType.NUMBER:
       return tok.lexeme;
     case TokenType.STRING:
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return tok.value!.toString();
     default:
       return tok.lexeme;

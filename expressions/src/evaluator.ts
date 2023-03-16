@@ -93,6 +93,7 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
     }
 
     // result is always assigned before we return here
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return result!;
   }
 
@@ -101,6 +102,7 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
   }
 
   visitContextAccess(contextAccess: ContextAccess): data.ExpressionData {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const r = this.context.get(contextAccess.name.lexeme)!;
     return r;
   }
@@ -114,7 +116,7 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
       try {
         idxResult = this.eval(ia.index);
       } catch (e) {
-        throw new Error(`could not evaluate index for index access: ${e}`, {cause: e});
+        throw new Error(`could not evaluate index for index access: ${(e as Error).message}`, {cause: e});
       }
       idx = new idxHelper(false, idxResult);
     }
@@ -124,9 +126,9 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
     let result: data.ExpressionData;
     switch (objResult.kind) {
       case data.Kind.Array: {
-        const tobjResult = objResult as data.Array;
+        const tobjResult = objResult;
         if (tobjResult instanceof FilteredArray) {
-          result = filteredArrayAccess(tobjResult as FilteredArray, idx);
+          result = filteredArrayAccess(tobjResult, idx);
         } else {
           result = arrayAccess(tobjResult, idx);
         }
@@ -135,7 +137,7 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
       }
 
       case data.Kind.Dictionary: {
-        const tobjResult = objResult as data.Dictionary;
+        const tobjResult = objResult;
         result = objectAccess(tobjResult, idx);
         break;
       }
@@ -170,7 +172,7 @@ function filteredArrayAccess(fa: FilteredArray, idx: idxHelper): data.Expression
     // Check the type of the nested item
     switch (item.kind) {
       case data.Kind.Dictionary: {
-        const ti = item as data.Dictionary;
+        const ti = item;
         if (idx.star) {
           for (const v of ti.values()) {
             result.add(v);
@@ -186,7 +188,7 @@ function filteredArrayAccess(fa: FilteredArray, idx: idxHelper): data.Expression
       }
 
       case data.Kind.Array: {
-        const ti = item as data.Array;
+        const ti = item;
         if (idx.star) {
           for (const v of ti.values()) {
             result.add(v);

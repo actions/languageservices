@@ -97,7 +97,7 @@ export class IndexAccess extends Expr {
 }
 
 export class Star extends Expr {
-  accept<R>(v: ExprVisitor<R>): R {
+  accept<R>(): R {
     throw new Error("Method not implemented.");
   }
 }

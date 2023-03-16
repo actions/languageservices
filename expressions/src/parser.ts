@@ -9,8 +9,8 @@ export class Parser {
   private extContexts: Map<string, boolean>;
   private extFuncs: Map<string, FunctionInfo>;
 
-  private offset: number = 0;
-  private depth: number = 0;
+  private offset = 0;
+  private depth = 0;
 
   private context: ParseContext;
 
@@ -43,15 +43,13 @@ export class Parser {
     };
   }
 
-  public parse(): Expr {
-    let result!: Expr;
-
+  public parse(): Expr | undefined {
     // No tokens
     if (this.atEnd()) {
-      return result;
+      return;
     }
 
-    result = this.expression();
+    const result = this.expression();
 
     if (!this.atEnd()) {
       throw this.buildError(ErrorType.ErrorUnexpectedSymbol, this.peek());
@@ -173,7 +171,7 @@ export class Parser {
       let cont = true;
       while (cont) {
         switch (true) {
-          case this.match(TokenType.LEFT_BRACKET):
+          case this.match(TokenType.LEFT_BRACKET): {
             let indexExpr: Expr;
             if (this.match(TokenType.STAR)) {
               indexExpr = new Star();
@@ -188,6 +186,7 @@ export class Parser {
             depthIncreased++;
             expr = new IndexAccess(expr, indexExpr);
             break;
+          }
 
           case this.match(TokenType.DOT):
             // Track depth
@@ -195,7 +194,7 @@ export class Parser {
             depthIncreased++;
 
             if (this.match(TokenType.IDENTIFIER)) {
-              let property = this.previous();
+              const property = this.previous();
               expr = new IndexAccess(expr, new Literal(new data.StringData(property.lexeme), property));
             } else if (this.match(TokenType.STAR)) {
               expr = new IndexAccess(expr, new Star());
@@ -268,7 +267,7 @@ export class Parser {
       case this.match(TokenType.STRING):
         return new Literal(new data.StringData(this.previous().value as string), this.previous());
 
-      case this.match(TokenType.LEFT_PAREN):
+      case this.match(TokenType.LEFT_PAREN): {
         const expr = this.expression();
 
         if (this.atEnd()) {
@@ -277,7 +276,7 @@ export class Parser {
 
         this.consume(TokenType.RIGHT_PAREN, ErrorType.ErrorUnexpectedSymbol);
         return new Grouping(expr);
-
+      }
       case this.atEnd():
         throw this.buildError(ErrorType.ErrorUnexpectedEndOfExpression, this.previous()); // Back up to get the last token before the EOF
     }
