@@ -1,7 +1,7 @@
 import {Array as dArray} from "./array";
 import {BooleanData} from "./boolean";
 import {Dictionary} from "./dictionary";
-import {ExpressionData, Pair} from "./expressiondata";
+import {ExpressionData} from "./expressiondata";
 import {Null} from "./null";
 import {NumberData} from "./number";
 import {StringData} from "./string";
@@ -11,7 +11,7 @@ import {StringData} from "./string";
  *
  * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse#reviver
  */
-export function reviver(key: string, val: any): ExpressionData {
+export function reviver(_key: string, val: unknown): ExpressionData {
   if (val === null) {
     return new Null();
   }
@@ -25,25 +25,22 @@ export function reviver(key: string, val: any): ExpressionData {
   }
 
   if (typeof val === "boolean") {
-    return new BooleanData(val as boolean);
+    return new BooleanData(val);
   }
 
   if (Array.isArray(val)) {
-    return new dArray(...val);
+    return new dArray(...(val as ExpressionData[]));
   }
 
   if (typeof val === "object") {
     return new Dictionary(
-      ...Object.keys(val).map(
-        k =>
-          ({
-            key: k,
-            value: val[k]
-          } as Pair)
-      )
+      ...Object.keys(val).map(k => ({
+        key: k,
+        value: val[k as keyof typeof val]
+      }))
     );
   }
 
   // Pass through value
-  return val;
+  return val as ExpressionData;
 }

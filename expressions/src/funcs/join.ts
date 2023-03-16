@@ -1,4 +1,4 @@
-import {Array, ExpressionData, Kind, StringData} from "../data";
+import {ExpressionData, Kind, StringData} from "../data";
 import {FunctionDefinition} from "./info";
 
 export const join: FunctionDefinition = {
@@ -23,7 +23,7 @@ export const join: FunctionDefinition = {
 
       // Convert items to strings
       return new StringData(
-        (args[0] as Array)
+        args[0]
           .values()
           .map(item => item.coerceString())
           .join(separator)

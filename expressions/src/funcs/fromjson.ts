@@ -18,7 +18,7 @@ export const fromjson: FunctionDefinition = {
     }
 
     try {
-      return JSON.parse(is, reviver);
+      return JSON.parse(is, reviver) as ExpressionData;
     } catch (e) {
       throw new ExpressionEvaluationError("Error parsing JSON when evaluating fromJson", {cause: e});
     }

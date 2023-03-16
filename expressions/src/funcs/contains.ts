@@ -1,4 +1,4 @@
-import {Array, BooleanData, ExpressionData, Kind} from "../data";
+import {BooleanData, ExpressionData, Kind} from "../data";
 import {equals} from "../result";
 import {FunctionDefinition} from "./info";
 
@@ -19,7 +19,7 @@ export const contains: FunctionDefinition = {
         return new BooleanData(ls.toLowerCase().includes(rs.toLowerCase()));
       }
     } else if (left.kind === Kind.Array) {
-      const la = left as Array;
+      const la = left;
       if (la.values().length === 0) {
         return new BooleanData(false);
       }

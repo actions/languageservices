@@ -9,7 +9,7 @@ export function isDescriptionDictionary(x: ExpressionData): x is DescriptionDict
 
 export class DescriptionDictionary extends Dictionary {
   private readonly descriptions = new Map<string, string>();
-  public complete: boolean = true;
+  public complete = true;
 
   constructor(...pairs: DescriptionPair[]) {
     super();

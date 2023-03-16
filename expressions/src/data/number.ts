@@ -8,7 +8,7 @@ export class NumberData implements ExpressionDataInterface {
   public primitive = true;
 
   coerceString(): string {
-    if (this.value === -0) {
+    if (this.value === 0) {
       return "0";
     }
 
