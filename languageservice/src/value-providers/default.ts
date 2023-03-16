@@ -19,23 +19,21 @@ export const DEFAULT_RUNNER_LABELS = [
   "self-hosted"
 ];
 
-/* eslint-disable @typescript-eslint/require-await */
 export const defaultValueProviders: ValueProviderConfig = {
   needs: {
     kind: ValueProviderKind.AllowedValues,
-    get: needs
+    get: context => Promise.resolve(needs(context))
   },
   "workflow-job-with": {
     kind: ValueProviderKind.AllowedValues,
-    get: async context => reusableJobInputs(context)
+    get: context => Promise.resolve(reusableJobInputs(context))
   },
   "workflow-job-secrets": {
     kind: ValueProviderKind.SuggestedValues,
-    get: async (context, existingValues) => reusableJobSecrets(context, existingValues)
+    get: (context, existingValues) => Promise.resolve(reusableJobSecrets(context, existingValues))
   },
   "runs-on": {
     kind: ValueProviderKind.SuggestedValues,
-    get: async () => stringsToValues(DEFAULT_RUNNER_LABELS)
+    get: () => Promise.resolve(stringsToValues(DEFAULT_RUNNER_LABELS))
   }
 };
-/* eslint-enable @typescript-eslint/require-await */
