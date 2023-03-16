@@ -9,7 +9,7 @@
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "prettier"
   ],
-  "ignorePatterns": ["**/.eslintrc.cjs"],
+  "ignorePatterns": ["**/.eslintrc.cjs", "**/node_modules/**", "**/dist/**", "**/jest.config.js"],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "prettier"],
   "reportUnusedDisableDirectives": true,
