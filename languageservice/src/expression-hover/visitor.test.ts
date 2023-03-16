@@ -130,7 +130,6 @@ async function hoverExpression(input: string) {
       column: pos.character
     },
     context,
-    [],
     validatorFunctions
   );
   return hv.hover(expr);

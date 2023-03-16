@@ -169,7 +169,7 @@ function expressionHover(
     const p = new Parser(lr.tokens, namedContexts, functions);
     const expr = p.parse();
 
-    const hv = new HoverVisitor(position, context, [], validatorFunctions);
+    const hv = new HoverVisitor(position, context, validatorFunctions);
     const hoverResult = hv.hover(expr);
     if (!hoverResult) {
       return null;
