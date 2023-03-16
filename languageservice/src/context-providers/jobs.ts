@@ -18,7 +18,7 @@ export function getJobsContext(workflowContext: WorkflowContext): DescriptionDic
 
     const outputs = job.outputs || new data.Null();
     if (outputs instanceof MappingToken) {
-      jobContext.add("outputs", createOutputsContext(outputs as MappingToken), getDescription("jobs", "outputs"));
+      jobContext.add("outputs", createOutputsContext(outputs), getDescription("jobs", "outputs"));
     }
 
     jobsContext.add(job.id.toString(), jobContext);

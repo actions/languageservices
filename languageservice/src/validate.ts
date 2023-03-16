@@ -64,7 +64,7 @@ export async function validate(textDocument: TextDocument, config?: ValidationCo
 
     // For now map parser errors directly to diagnostics
     for (const error of result.context.errors.getErrors()) {
-      let range = mapRange(error.range);
+      const range = mapRange(error.range);
 
       diagnostics.push({
         message: error.rawMessage,

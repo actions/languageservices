@@ -40,7 +40,7 @@ function testFindToken(input: string): {
     parent: getTokenInfo(r.parent),
     key: getTokenInfo(r.keyToken),
     token: getTokenInfo(r.token),
-    path: r.path.map(x => getTokenInfo(x)!)
+    path: r.path.map(x => getTokenInfo(x)!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
   };
 }
 

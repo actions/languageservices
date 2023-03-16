@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {MarkupContent, TextEdit} from "vscode-languageserver-types";
 import {complete} from "./complete";
-import {WorkflowContext} from "./context/workflow-context";
 import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {TestLogger} from "./test-utils/logger";
@@ -182,8 +182,8 @@ jobs:
     const config: ValueProviderConfig = {
       "runs-on": {
         kind: ValueProviderKind.SuggestedValues,
-        get: async (_: WorkflowContext) => {
-          return [{label: "my-custom-label"}];
+        get: () => {
+          return Promise.resolve([{label: "my-custom-label"}]);
         }
       }
     };
@@ -200,8 +200,8 @@ jobs:
     const config: ValueProviderConfig = {
       "runs-on": {
         kind: ValueProviderKind.SuggestedValues,
-        get: async (_: WorkflowContext) => {
-          return [{label: "my-custom-label"}];
+        get: () => {
+          return Promise.resolve([{label: "my-custom-label"}]);
         }
       }
     };
@@ -349,7 +349,7 @@ jobs:
 `;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).toHaveLength(16);
-    let textEdit = result[0].textEdit as TextEdit;
+    const textEdit = result[0].textEdit as TextEdit;
     expect(textEdit.range).toEqual({
       start: {line: 5, character: 4},
       end: {line: 5, character: 5}
@@ -390,7 +390,7 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(1);
 
-    let textEdit = result[0].textEdit as TextEdit;
+    const textEdit = result[0].textEdit as TextEdit;
     expect(textEdit.newText).toEqual("pre-build");
     expect(textEdit.range).toEqual({
       start: {line: 6, character: 11},
@@ -405,7 +405,7 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result.map(e => e.label)).toContain("runs-on");
 
-    let textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
+    const textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
     expect(textEdit.newText).toEqual("runs-on");
     expect(textEdit.range).toEqual({
       start: {line: 3, character: 4},
@@ -420,7 +420,7 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result.map(e => e.label)).toContain("runs-on");
 
-    let textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
+    const textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
     expect(textEdit.newText).toEqual("runs-on");
     expect(textEdit.range).toEqual({
       start: {line: 3, character: 4},

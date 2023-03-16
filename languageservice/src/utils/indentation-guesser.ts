@@ -43,8 +43,8 @@ function getLineCharCode(doc: TextDocument, lineNumber: number, index: number): 
  *--------------------------------------------------------------------------------------------*/
 
 class SpacesDiffResult {
-  public spacesDiff: number = 0;
-  public looksLikeAlignment: boolean = false;
+  public spacesDiff = 0;
+  public looksLikeAlignment = false;
 }
 
 /**

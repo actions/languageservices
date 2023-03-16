@@ -112,7 +112,7 @@ function appendContext(description: string, allowedContext?: string[]) {
   if (!allowedContext || allowedContext.length == 0) {
     return description;
   }
-  let {namedContexts, functions} = splitAllowedContext(allowedContext);
+  const {namedContexts, functions} = splitAllowedContext(allowedContext);
   let namedContextsString = "";
   let functionsString = "";
 
@@ -169,7 +169,7 @@ function expressionHover(
     const p = new Parser(lr.tokens, namedContexts, functions);
     const expr = p.parse();
 
-    const hv = new HoverVisitor(position, context, [], validatorFunctions);
+    const hv = new HoverVisitor(position, context, validatorFunctions);
     const hoverResult = hv.hover(expr);
     if (!hoverResult) {
       return null;

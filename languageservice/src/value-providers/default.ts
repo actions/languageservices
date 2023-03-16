@@ -1,4 +1,3 @@
-import {WorkflowContext} from "../context/workflow-context";
 import {ValueProviderConfig, ValueProviderKind} from "./config";
 import {needs} from "./needs";
 import {reusableJobInputs} from "./reusable-job-inputs";
@@ -23,18 +22,18 @@ export const DEFAULT_RUNNER_LABELS = [
 export const defaultValueProviders: ValueProviderConfig = {
   needs: {
     kind: ValueProviderKind.AllowedValues,
-    get: needs
+    get: context => Promise.resolve(needs(context))
   },
   "workflow-job-with": {
     kind: ValueProviderKind.AllowedValues,
-    get: async context => reusableJobInputs(context)
+    get: context => Promise.resolve(reusableJobInputs(context))
   },
   "workflow-job-secrets": {
     kind: ValueProviderKind.SuggestedValues,
-    get: async (context, existingValues) => reusableJobSecrets(context, existingValues)
+    get: (context, existingValues) => Promise.resolve(reusableJobSecrets(context, existingValues))
   },
   "runs-on": {
     kind: ValueProviderKind.SuggestedValues,
-    get: async (_: WorkflowContext) => stringsToValues(DEFAULT_RUNNER_LABELS)
+    get: () => Promise.resolve(stringsToValues(DEFAULT_RUNNER_LABELS))
   }
 };

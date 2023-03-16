@@ -16,7 +16,7 @@ import {
   Logical,
   Unary
 } from "@github/actions-expressions/ast";
-import {FunctionDefinition, FunctionInfo} from "@github/actions-expressions/funcs/info";
+import {FunctionDefinition} from "@github/actions-expressions/funcs/info";
 import {Pos, Range} from "@github/actions-expressions/lexer";
 import {posWithinRange} from "./pos-range";
 
@@ -35,7 +35,6 @@ export class HoverVisitor implements ExprVisitor<HoverResult> {
   constructor(
     private pos: Pos,
     private context: DescriptionDictionary,
-    private extensionFunctions: FunctionInfo[],
     private functions: Map<string, FunctionDefinition>
   ) {}
 
@@ -43,7 +42,7 @@ export class HoverVisitor implements ExprVisitor<HoverResult> {
     return n.accept(this);
   }
 
-  visitLiteral(literal: Literal): HoverResult {
+  visitLiteral(): HoverResult {
     return undefined;
   }
 

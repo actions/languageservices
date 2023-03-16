@@ -121,7 +121,7 @@ function matrixProperties(matrix: MappingToken, mode: Mode): Map<string, Set<str
 
       case "exclude":
         break;
-      default:
+      default: {
         if (!isSequence(pair.value)) {
           properties.set(key, undefined);
           continue;
@@ -137,6 +137,7 @@ function matrixProperties(matrix: MappingToken, mode: Mode): Map<string, Set<str
 
         properties.set(key, values);
         break;
+      }
     }
   }
 

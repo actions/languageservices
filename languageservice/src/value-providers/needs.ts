@@ -1,7 +1,7 @@
 import {WorkflowContext} from "../context/workflow-context";
 import {Value} from "./config";
 
-export async function needs(context: WorkflowContext): Promise<Value[]> {
+export function needs(context: WorkflowContext): Value[] {
   if (!context.template) {
     return [];
   }
