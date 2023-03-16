@@ -25,7 +25,7 @@ export class TemplateContext {
   public readonly errors: TemplateValidationErrors;
   public readonly schema: TemplateSchema;
   public readonly trace: TraceWriter;
-  public readonly state: {[key: string]: any} = {};
+  public readonly state: {[key: string]: unknown} = {};
 
   public constructor(errors: TemplateValidationErrors, schema: TemplateSchema, trace: TraceWriter) {
     this.errors = errors;
@@ -47,7 +47,7 @@ export class TemplateContext {
     const token = tokenOrFileId as TemplateToken | undefined;
     const range = tokenRange || token?.range;
     const prefix = this.getErrorPrefix(token?.file ?? (tokenOrFileId as number | undefined), token?.line, token?.col);
-    const message = (err as Error | undefined)?.message ?? `${err}`;
+    const message = (err as Error | undefined)?.message ?? String(err);
 
     const e = new TemplateValidationError(message, prefix, undefined, range);
     this.errors.add(e);
@@ -84,7 +84,7 @@ export class TemplateContext {
   }
 
   private getErrorPrefix(fileId?: number, line?: number, column?: number): string {
-    const fileName = fileId !== undefined ? this.getFileName(fileId as number) : undefined;
+    const fileName = fileId !== undefined ? this.getFileName(fileId) : undefined;
     if (fileName) {
       if (line !== undefined && column !== undefined) {
         return `${fileName} (Line: ${line}, Col: ${column})`;

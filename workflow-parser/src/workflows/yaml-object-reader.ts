@@ -3,7 +3,6 @@ import type {LinePos} from "yaml/dist/errors";
 import type {NodeBase} from "yaml/dist/nodes/Node";
 import {ObjectReader} from "../templates/object-reader";
 import {EventType, ParseEvent} from "../templates/parse-event";
-import {TemplateContext} from "../templates/template-context";
 import {
   BooleanToken,
   LiteralToken,
@@ -72,7 +71,7 @@ export class YamlObjectReader implements ObjectReader {
     }
 
     if (isScalar(node)) {
-      yield new ParseEvent(EventType.Literal, YamlObjectReader.getLiteralToken(this.fileId, range, node as Scalar));
+      yield new ParseEvent(EventType.Literal, YamlObjectReader.getLiteralToken(this.fileId, range, node));
     }
 
     if (isPair(node)) {
@@ -191,7 +190,7 @@ export class YamlObjectReader implements ObjectReader {
 
   public validateEnd(): void {
     if (!this._current.done) {
-      const parseEvent = this._current.value as ParseEvent;
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.DocumentEnd) {
         this._current = this._generator.next();
         return;
@@ -207,7 +206,7 @@ export class YamlObjectReader implements ObjectReader {
     }
 
     if (!this._current.done) {
-      const parseEvent = this._current.value as ParseEvent;
+      const parseEvent = this._current.value;
       if (parseEvent.type === EventType.DocumentStart) {
         this._current = this._generator.next();
         return;
