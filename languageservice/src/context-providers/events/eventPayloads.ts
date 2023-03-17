@@ -1,7 +1,7 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 
-import webhooks from "./webhooks.json";
 import webhookObjects from "./objects.json";
+import webhooks from "./webhooks.json";
 
 import schedule from "./schedule.json" assert {type: "json"};
 import workflow_call from "./workflow_call.json" assert {type: "json"};
@@ -73,9 +73,12 @@ type DeduplicatedWebhooks = {
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const dedupedWebhookPayloads: DeduplicatedWebhooks = webhooks as any;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const objects: Param[] = webhookObjects as any;
 
+// Hydrated webhook payloads
 const webhookPayloads: Webhooks = {};
 
 // Hydrate the workflow dispatch payload if it exists
@@ -89,7 +92,18 @@ if (inputs) {
   delete inputs.childParamsGroups;
 }
 
-export function getEventPayload(event: string, action: string = "default"): DescriptionDictionary | undefined {
+export function getSupportedEventTypes(event: string): string[] {
+  const payloads = dedupedWebhookPayloads?.[event];
+  if (!payloads) {
+    if (customEventPayloads[event]) {
+      return ["default"];
+    }
+  }
+
+  return Object.keys(payloads || {});
+}
+
+export function getEventPayload(event: string, action: string): DescriptionDictionary | undefined {
   const payload = getWebhookPayload(event, action);
   if (!payload) {
     // Not all events are real webhooks. Check if there is a custom payload for this event
@@ -117,7 +131,7 @@ function mergeParam(target: DescriptionDictionary, param: Param) {
     // auto-completion. Possible existence and the description are enough.
     //
     // As a special case, if the param is already set, do not overwrite it.
-    if (!!target.get(param.name)) {
+    if (target.get(param.name)) {
       return;
     }
 
@@ -125,16 +139,16 @@ function mergeParam(target: DescriptionDictionary, param: Param) {
   }
 }
 
-function mergeObject(d: DescriptionDictionary, toAdd: Object): DescriptionDictionary {
+function mergeObject(d: DescriptionDictionary, toAdd: object): DescriptionDictionary {
   for (const [key, value] of Object.entries(toAdd)) {
     if (value && typeof value === "object" && !d.get(key)) {
-      if (!Array.isArray(value) && Object.entries(value).length === 0) {
+      if (!Array.isArray(value) && Object.entries(value as object).length === 0) {
         // Allow an empty object to be any value
         d.add(key, new data.Null());
         continue;
       }
 
-      d.add(key, mergeObject(new DescriptionDictionary(), value));
+      d.add(key, mergeObject(new DescriptionDictionary(), value as object));
     } else {
       d.add(key, new data.Null());
     }
@@ -144,14 +158,15 @@ function mergeObject(d: DescriptionDictionary, toAdd: Object): DescriptionDictio
 }
 
 function getWebhookPayload(event: string, action: string): WebhookPayload | undefined {
-  const deduplicatedPayload = dedupedWebhookPayloads?.[event]?.[action];
-  if (!deduplicatedPayload) {
-    return undefined;
-  }
-
+  // Is the payload already hydrated?
   const existingPayload = webhookPayloads?.[event]?.[action];
   if (existingPayload) {
     return existingPayload;
+  }
+
+  const deduplicatedPayload = dedupedWebhookPayloads?.[event]?.[action];
+  if (!deduplicatedPayload) {
+    return undefined;
   }
 
   // Recreate the full payload and store it for reuse

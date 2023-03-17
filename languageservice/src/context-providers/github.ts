@@ -4,7 +4,7 @@ import {TypesFilterConfig} from "@github/actions-workflow-parser/model/workflow-
 import {WorkflowContext} from "../context/workflow-context";
 import {Mode} from "./default";
 import {getDescription} from "./descriptions";
-import {getEventPayload} from "./events/eventPayloads";
+import {getEventPayload, getSupportedEventTypes} from "./events/eventPayloads";
 import {getInputsContext} from "./inputs";
 
 export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): DescriptionDictionary {
@@ -98,10 +98,14 @@ function getEventContext(workflowContext: WorkflowContext, mode: Mode): Expressi
   for (const eventName of events) {
     const event = eventsConfig[eventName] as TypesFilterConfig;
 
-    const types = getTypes(eventName, event.types);
+    let types = getTypes(eventName, event.types);
+    const payloadEventName = getPayloadEventName(eventName);
+
+    if (types.length === 1 && types[0] === "default") {
+      types = getSupportedEventTypes(eventName);
+    }
 
     for (const type of types) {
-      const payloadEventName = getPayloadEventName(eventName);
       const eventPayload = getEventPayload(payloadEventName, type);
 
       if (!eventPayload) {

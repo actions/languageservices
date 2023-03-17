@@ -74,6 +74,59 @@ jobs:
     ]);
   });
 
+  it("single event - no default types", async () => {
+    const workflowContext = await testGetWorkflowContext(`
+on:
+  issues:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: ec|ho`);
+
+    const g = getGithubContext(workflowContext, Mode.Completion);
+    if (!isDescriptionDictionary(g)) {
+      fail();
+    }
+
+    const e = g.get("event") as DescriptionDictionary;
+    const i = e.get("issue") as DescriptionDictionary;
+
+    expect(i.pairs().map(p => p.key)).toEqual([
+      "active_lock_reason",
+      "assignee",
+      "assignees",
+      "author_association",
+      "body",
+      "closed_at",
+      "comments",
+      "comments_url",
+      "created_at",
+      "draft",
+      "events_url",
+      "html_url",
+      "id",
+      "labels",
+      "labels_url",
+      "locked",
+      "milestone",
+      "node_id",
+      "number",
+      "performed_via_github_app",
+      "pull_request",
+      "reactions",
+      "repository_url",
+      "state",
+      "state_reason",
+      "timeline_url",
+      "title",
+      "updated_at",
+      "url",
+      "user"
+    ]);
+  });
+
   it("multiple events - multiple types", async () => {
     const workflowContext = await testGetWorkflowContext(`
 on:
