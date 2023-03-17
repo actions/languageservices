@@ -1,11 +1,14 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
+import {Pair} from "@github/actions-expressions/data/expressiondata";
+import {StringData} from "@github/actions-expressions/data/index";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
+import {warn} from "@github/actions-languageservice/log";
 import {isMapping, isString} from "@github/actions-workflow-parser";
 import {Octokit} from "@octokit/rest";
-import {Pair} from "@github/actions-expressions/data/expressiondata";
+
 import {RepositoryContext} from "../initializationOptions";
-import {StringData} from "@github/actions-expressions/data/index";
 import {TTLCache} from "../utils/cache";
+import {errorStatus} from "../utils/error";
 import {getRepoPermission} from "../utils/repo-permission";
 
 export async function getVariables(
@@ -151,6 +154,10 @@ async function fetchEnvironmentVariables(
         })
     );
   } catch (e) {
+    if (errorStatus(e) === 404) {
+      warn(`Environment ${environmentName} not found`);
+      return [];
+    }
     console.log("Failure to retrieve environment variables: ", e);
     throw e;
   }
