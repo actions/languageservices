@@ -324,6 +324,7 @@ export class TemplateSchema {
     const template = readTemplate(context, TEMPLATE_SCHEMA, objectReader, undefined);
     context.errors.check();
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const mapping = template!.assertMapping(TEMPLATE_SCHEMA);
     const schema = new TemplateSchema(mapping);
     schema.validate();

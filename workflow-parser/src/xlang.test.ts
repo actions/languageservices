@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as YAML from "yaml";
 import {convertWorkflowTemplate} from "./model/convert";
-import {TraceWriter} from "./templates/trace-writer";
+import {NoOperationTraceWriter} from "./templates/trace-writer";
 import {File} from "./workflows/file";
 import {FileProvider} from "./workflows/file-provider";
 import {fileIdentifier, FileReference} from "./workflows/file-reference";
@@ -13,12 +13,7 @@ interface TestOptions {
   skip?: string[];
 }
 
-const nullTrace: TraceWriter = {
-  info: x => {},
-  verbose: x => {},
-  error: x => {}
-};
-
+const nullTrace = new NoOperationTraceWriter();
 const testFiles = "./testdata/reader";
 const skippedTestsFile = "./testdata/skipped-tests.txt";
 
@@ -44,7 +39,7 @@ describe("x-lang tests", () => {
     const testDocs: string[] = inputFile.split(/\r?\n---\r?\n/);
     expect(testDocs.length).toBeGreaterThanOrEqual(3);
 
-    const testOptions: TestOptions = YAML.parse(testDocs[0]);
+    const testOptions = YAML.parse(testDocs[0]) as TestOptions;
     const unsupportedTest = skippedTests.has(file);
 
     const test = async () => {
@@ -65,10 +60,10 @@ describe("x-lang tests", () => {
       }
 
       const testFileProvider: FileProvider = {
-        getFileContent: async (ref: FileReference) => {
+        getFileContent: (ref: FileReference) => {
           const file = reusableWorkflows[fileIdentifier(ref)];
           if (file) {
-            return file;
+            return Promise.resolve(file);
           }
 
           throw new Error("File not found: " + fileName);
@@ -87,7 +82,7 @@ describe("x-lang tests", () => {
 
       const workflowTemplate = await convertWorkflowTemplate(
         parseResult.context,
-        parseResult.value!,
+        parseResult.value!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
         testFileProvider,
         {
           fetchReusableWorkflowDepth: 1
@@ -99,11 +94,13 @@ describe("x-lang tests", () => {
       const includeEvents =
         testOptions.skip !== undefined && contains(testOptions.skip, "Go") && contains(testOptions.skip, "C#");
       if (!includeEvents) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         delete (workflowTemplate as any).events;
       }
 
       // Other parsers don't have a partial template when there are errors
       if (workflowTemplate.errors) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
         delete (workflowTemplate as any).jobs;
       }
 

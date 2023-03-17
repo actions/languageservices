@@ -47,7 +47,7 @@ export class IdBuilder {
       if (attempt === 1) {
         suffix = "";
       } else {
-        suffix = "_" + attempt;
+        suffix = `_${attempt}`;
       }
 
       const candidate = original.substring(0, Math.min(original.length, MAX_LENGTH - suffix.length)) + suffix;

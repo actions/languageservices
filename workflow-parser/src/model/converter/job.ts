@@ -1,6 +1,6 @@
 import {TemplateContext} from "../../templates/template-context";
 import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
-import {isMapping, isSequence, isString} from "../../templates/tokens/type-guards";
+import {isSequence, isString} from "../../templates/tokens/type-guards";
 import {Step, WorkflowJob} from "../workflow-template";
 import {convertConcurrency} from "./concurrency";
 import {convertToJobContainer, convertToJobServices} from "./container";

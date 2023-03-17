@@ -13,10 +13,10 @@ export function convertWorkflowJobInputs(context: TemplateContext, job: Reusable
   const inputValues = createTokenMap(job["input-values"]?.assertMapping("workflow job input values"), "with");
 
   if (inputDefinitions !== undefined) {
-    for (const [_, [name, value]] of inputDefinitions) {
-      const inputSpec = createTokenMap(value.assertMapping(`input ${name}`), `input ${name} key`)!;
+    for (const [, [name, value]] of inputDefinitions) {
+      const inputSpec = createTokenMap(value.assertMapping(`input ${name}`), `input ${name} key`);
 
-      const inputTypeToken = inputSpec.get("type")?.[1];
+      const inputTypeToken = inputSpec?.get("type")?.[1];
       if (!inputTypeToken) {
         // This should be validated by the template reader per the schema
         continue;
@@ -31,7 +31,7 @@ export function convertWorkflowJobInputs(context: TemplateContext, job: Reusable
   }
 
   if (inputValues !== undefined) {
-    for (const [_, [name, value]] of inputValues) {
+    for (const [, [name, value]] of inputValues) {
       if (!inputDefinitions?.has(name.toLowerCase())) {
         context.error(value, `Invalid input, ${name} is not defined in the referenced workflow.`);
       }

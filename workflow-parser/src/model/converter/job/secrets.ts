@@ -5,7 +5,7 @@ import {createTokenMap} from "./inputs";
 
 export function convertWorkflowJobSecrets(context: TemplateContext, job: ReusableWorkflowJob) {
   // No validation if job passes all secrets
-  if (!!job["inherit-secrets"]) {
+  if (job["inherit-secrets"]) {
     return;
   }
 
@@ -17,14 +17,14 @@ export function convertWorkflowJobSecrets(context: TemplateContext, job: Reusabl
   const secretValues = createTokenMap(job["secret-values"]?.assertMapping("workflow job secret values"), "secrets");
 
   if (secretDefinitions !== undefined) {
-    for (const [_, [name, value]] of secretDefinitions) {
+    for (const [, [name, value]] of secretDefinitions) {
       if (value instanceof NullToken) {
         continue;
       }
 
-      const secretSpec = createTokenMap(value.assertMapping(`secret ${name}`), `secret ${name} key`)!;
+      const secretSpec = createTokenMap(value.assertMapping(`secret ${name}`), `secret ${name} key`);
 
-      const required = secretSpec.get("required")?.[1].assertBoolean(`secret ${name} required`).value;
+      const required = secretSpec?.get("required")?.[1].assertBoolean(`secret ${name} required`).value;
       if (required) {
         if (secretValues == undefined || !secretValues.has(name.toLowerCase())) {
           context.error(job.ref, `Secret ${name} is required, but not provided while calling.`);
@@ -34,7 +34,7 @@ export function convertWorkflowJobSecrets(context: TemplateContext, job: Reusabl
   }
 
   if (secretValues !== undefined) {
-    for (const [_, [name, value]] of secretValues) {
+    for (const [, [name, value]] of secretValues) {
       if (!secretDefinitions?.has(name.toLowerCase())) {
         context.error(value, `Invalid secret, ${name} is not defined in the referenced workflow.`);
       }

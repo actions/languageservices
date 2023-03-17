@@ -12,7 +12,7 @@ export function convertToJobContainer(context: TemplateContext, container: Templ
 
   // Skip validation for expressions for now to match
   // behavior of the other parsers
-  for (const [_, token, __] of TemplateToken.traverse(container)) {
+  for (const [, token] of TemplateToken.traverse(container)) {
     if (token.isExpression) {
       return;
     }
