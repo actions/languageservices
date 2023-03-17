@@ -1,4 +1,3 @@
-import {TemplateSchema} from ".";
 import {DEFINITION, BOOLEAN} from "../template-constants";
 import {MappingToken, LiteralToken} from "../tokens";
 import {TokenType} from "../tokens/types";
@@ -40,5 +39,7 @@ export class BooleanDefinition extends ScalarDefinition {
     return literal.templateTokenType === TokenType.Boolean;
   }
 
-  public override validate(schema: TemplateSchema, name: string): void {}
+  public override validate(): void {
+    // no-op
+  }
 }

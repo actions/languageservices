@@ -72,7 +72,7 @@ jobs:
 
     expect(result.context.errors.getErrors()).toHaveLength(0);
     expect(result.value).not.toBeUndefined();
-    const root = result.value!.assertMapping("root");
+    const root = result.value!.assertMapping("root"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     expect(root.description).toBe("Workflow file with strict validation");
     for (const pair of root) {
       const key = pair.key.assertString("key").value;

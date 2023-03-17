@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {StringToken} from "./templates/tokens";
 import {isBasicExpression, isString} from "./templates/tokens/type-guards";
 import {nullTrace} from "./test-utils/null-trace";
@@ -25,7 +26,7 @@ jobs:
     const runNameMapping = run.get(1)!;
     expect(runNameMapping?.key?.assertString("run-name key").value).toBe("run-name");
 
-    const v = runNameMapping.value!;
+    const v = runNameMapping.value;
     expect(v).not.toBeUndefined();
 
     if (!isBasicExpression(v)) {
@@ -61,14 +62,14 @@ jobs:
     const jobsMapping = run.get(1)!;
     expect(jobsMapping?.key?.assertString("jobs").value).toBe("jobs");
 
-    const job = jobsMapping.value!.assertMapping("jobs")!.get(0)!.value!.assertMapping("job");
+    const job = jobsMapping.value.assertMapping("jobs").get(0).value.assertMapping("job");
     const stepRun = job
       .get(1)
-      .value!.assertSequence("steps")
+      .value.assertSequence("steps")
       .get(0)
       .assertMapping("step")
       .get(0)
-      .value!.assertScalar("step-run");
+      .value.assertScalar("step-run");
 
     if (!isBasicExpression(stepRun)) {
       throw new Error("expected run-name to be a basic expression");
@@ -123,14 +124,14 @@ jobs:
     const jobsMapping = run.get(1)!;
     expect(jobsMapping?.key?.assertString("jobs").value).toBe("jobs");
 
-    const job = jobsMapping.value!.assertMapping("jobs")!.get(0)!.value!.assertMapping("job");
+    const job = jobsMapping.value.assertMapping("jobs").get(0).value.assertMapping("job");
     const stepRun = job
       .get(1)
-      .value!.assertSequence("steps")
+      .value.assertSequence("steps")
       .get(0)
       .assertMapping("step")
       .get(0)
-      .value!.assertScalar("step-run");
+      .value.assertScalar("step-run");
 
     expect(isString(stepRun)).toBe(true);
     expect((stepRun as StringToken).value).toContain("${{");

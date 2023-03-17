@@ -3,7 +3,6 @@ import {LiteralToken, MappingToken, StringToken} from "../tokens";
 import {TokenType} from "../tokens/types";
 import {DefinitionType} from "./definition-type";
 import {ScalarDefinition} from "./scalar-definition";
-import {TemplateSchema} from "./template-schema";
 
 export class StringDefinition extends ScalarDefinition {
   public constant = "";
@@ -80,7 +79,7 @@ export class StringDefinition extends ScalarDefinition {
     return false;
   }
 
-  public override validate(schema: TemplateSchema, name: string): void {
+  public override validate(): void {
     if (this.constant && this.requireNonEmpty) {
       throw new Error(`Properties '${CONSTANT}' and '${REQUIRE_NON_EMPTY}' cannot both be set`);
     }

@@ -1,4 +1,3 @@
-import {TemplateSchema} from "./template-schema";
 import {DEFINITION, NUMBER} from "../template-constants";
 import {MappingToken, LiteralToken} from "../tokens";
 import {DefinitionType} from "./definition-type";
@@ -40,5 +39,7 @@ export class NumberDefinition extends ScalarDefinition {
     return literal.templateTokenType === TokenType.Number;
   }
 
-  public override validate(schema: TemplateSchema, name: string): void {}
+  public override validate(): void {
+    // no-op
+  }
 }
