@@ -16,13 +16,19 @@ export async function documentLinks(document: TextDocument, workspace: string | 
   };
 
   const parsedWorkflow = fetchOrParseWorkflow(file, document.uri);
-  if (!parsedWorkflow) {
+  if (!parsedWorkflow?.value) {
     return [];
   }
 
-  const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, document.uri, undefined, {
-    errorPolicy: ErrorPolicy.TryConversion
-  });
+  const template = await fetchOrConvertWorkflowTemplate(
+    parsedWorkflow.context,
+    parsedWorkflow.value,
+    document.uri,
+    undefined,
+    {
+      errorPolicy: ErrorPolicy.TryConversion
+    }
+  );
 
   const links: DocumentLink[] = [];
 
