@@ -14,7 +14,7 @@ jobs:
     runs-on: [self-hosted]
     steps:
     - run: echo "Hello World"`;
-    const result = await documentLinks(createDocument("test.yaml", input));
+    const result = await documentLinks(createDocument("test.yaml", input), undefined);
     expect(result).toHaveLength(0);
   });
 
@@ -23,7 +23,7 @@ jobs:
 jobs:
   build:
     runs-on: [self-hosted]`;
-    const result = await documentLinks(createDocument("test.yaml", input));
+    const result = await documentLinks(createDocument("test.yaml", input), undefined);
     expect(result).toHaveLength(0);
   });
 
@@ -36,7 +36,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/checkout@v3
     - uses: github/codeql-action/init@v2`;
-    const result = await documentLinks(createDocument("test.yaml", input));
+    const result = await documentLinks(createDocument("test.yaml", input), undefined);
     expect(result).toEqual([
       {
         range: {
@@ -79,6 +79,53 @@ jobs:
         },
         target: "https://www.github.com/github/codeql-action/tree/v2/init",
         tooltip: "Open action on GitHub"
+      }
+    ]);
+  });
+
+  it("links for reusable local workflow", async () => {
+    const input = `on: push
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-workflow.yml`;
+    const result = await documentLinks(createDocument("test.yaml", input), "file:///workspace/");
+    expect(result).toEqual([
+      {
+        range: {
+          end: {
+            character: 51,
+            line: 3
+          },
+          start: {
+            character: 10,
+            line: 3
+          }
+        },
+        target: "file:///workspace/.github/workflows/reusable-workflow.yml"
+      }
+    ]);
+  });
+
+  it("links for reusable remote workflow", async () => {
+    const input = `on: push
+jobs:
+  build:
+    uses: seismis-rainier/workflows/reusable-workflow.yml@main`;
+    const result = await documentLinks(createDocument("test.yaml", input), "file:///workspace/");
+    expect(result).toEqual([
+      {
+        range: {
+          end: {
+            character: 62,
+            line: 3
+          },
+          start: {
+            character: 10,
+            line: 3
+          }
+        },
+        target: "https://www.github.com/seismis-rainier/workflows/tree/main/reusable-workflow.yml",
+        tooltip: "Open reusable workflow on GitHub"
       }
     ]);
   });
