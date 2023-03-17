@@ -1,5 +1,6 @@
 import {documentLinks, hover, validate, ValidationConfig} from "@github/actions-languageservice";
 import {registerLogger, setLogLevel} from "@github/actions-languageservice/log";
+import {clearCache, clearCacheEntry} from "@github/actions-languageservice/utils/workflow-cache";
 import {Octokit} from "@octokit/rest";
 import {
   CompletionItem,
@@ -28,7 +29,6 @@ import {fetchActionMetadata} from "./utils/action-metadata";
 import {TTLCache} from "./utils/cache";
 import {timeOperation} from "./utils/timer";
 import {valueProviders} from "./value-providers";
-import {clearCacheEntry, clearCache} from "@github/actions-languageservice/utils/workflow-cache";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -165,7 +165,8 @@ export function initConnection(connection: Connection) {
   });
 
   connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
-    return documentLinks(documents.get(textDocument.uri)!);
+    const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
+    return documentLinks(documents.get(textDocument.uri)!, repoContext?.workspaceUri);
   });
 
   // Make the text document manager listen on the connection
