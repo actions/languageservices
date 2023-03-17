@@ -53,7 +53,7 @@ export async function validate(textDocument: TextDocument, config?: ValidationCo
 
     if (result.value) {
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
-      const template = await fetchOrConvertWorkflowTemplate(result, textDocument.uri, config, {
+      const template = await fetchOrConvertWorkflowTemplate(result.context, result.value, textDocument.uri, config, {
         fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
         errorPolicy: ErrorPolicy.TryConversion
       });

@@ -66,14 +66,20 @@ export async function complete(
   };
 
   const parsedWorkflow = fetchOrParseWorkflow(file, textDocument.uri);
-  if (!parsedWorkflow) {
+  if (!parsedWorkflow?.value) {
     return [];
   }
 
-  const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, textDocument.uri, config, {
-    fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
-    errorPolicy: ErrorPolicy.TryConversion
-  });
+  const template = await fetchOrConvertWorkflowTemplate(
+    parsedWorkflow.context,
+    parsedWorkflow.value,
+    textDocument.uri,
+    config,
+    {
+      fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
+      errorPolicy: ErrorPolicy.TryConversion
+    }
+  );
 
   const {token, keyToken, parent, path} = findToken(newPos, parsedWorkflow.value);
   const workflowContext = getWorkflowContext(textDocument.uri, template, path);

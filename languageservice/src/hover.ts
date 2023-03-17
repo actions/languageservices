@@ -44,14 +44,20 @@ export async function hover(document: TextDocument, position: Position, config?:
   };
 
   const parsedWorkflow = fetchOrParseWorkflow(file, document.uri);
-  if (!parsedWorkflow) {
+  if (!parsedWorkflow?.value) {
     return null;
   }
 
-  const template = await fetchOrConvertWorkflowTemplate(parsedWorkflow, document.uri, config, {
-    errorPolicy: ErrorPolicy.TryConversion,
-    fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
-  });
+  const template = await fetchOrConvertWorkflowTemplate(
+    parsedWorkflow.context,
+    parsedWorkflow.value,
+    document.uri,
+    config,
+    {
+      errorPolicy: ErrorPolicy.TryConversion,
+      fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
+    }
+  );
 
   const tokenResult = findToken(position, parsedWorkflow.value);
   const {token, keyToken, parent} = tokenResult;
