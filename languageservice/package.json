@@ -45,6 +45,7 @@
     "@github/actions-workflow-parser": "^0.1.173",
     "vscode-languageserver-textdocument": "^1.0.7",
     "vscode-languageserver-types": "^3.17.2",
+    "vscode-uri": "^3.0.7",
     "yaml": "^2.1.1"
   },
   "engines": {
