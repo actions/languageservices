@@ -81,9 +81,6 @@ export function complete(
     extensionFunctions
   );
   const expr = p.parse();
-  if (!expr) {
-    return [];
-  }
 
   const ev = new Evaluator(expr, context, functions);
   const result = ev.evaluate();

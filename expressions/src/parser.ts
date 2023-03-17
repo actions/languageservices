@@ -43,13 +43,16 @@ export class Parser {
     };
   }
 
-  public parse(): Expr | undefined {
+  public parse(): Expr {
+    // eslint-disable-next-line prefer-const
+    let result!: Expr;
+
     // No tokens
     if (this.atEnd()) {
-      return;
+      return result;
     }
 
-    const result = this.expression();
+    result = this.expression();
 
     if (!this.atEnd()) {
       throw this.buildError(ErrorType.ErrorUnexpectedSymbol, this.peek());

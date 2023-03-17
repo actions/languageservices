@@ -1,13 +1,8 @@
-import {Expr} from "./ast";
 import * as data from "./data";
 import {ExpressionEvaluationError} from "./errors";
 import {Evaluator} from "./evaluator";
 import {Lexer} from "./lexer";
 import {Parser} from "./parser";
-
-function assertDefined(x: Expr | undefined): asserts x is Expr {
-  expect(x).toBeDefined();
-}
 
 describe("evaluator", () => {
   const lexAndParse = (input: string) => {
@@ -17,7 +12,6 @@ describe("evaluator", () => {
     // Parse
     const parser = new Parser(result.tokens, ["foo"], []);
     const expr = parser.parse();
-    assertDefined(expr);
     return expr;
   };
 

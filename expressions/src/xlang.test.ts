@@ -119,7 +119,7 @@ describe("x-lang tests", () => {
           // Parse
           const contextNames = testCase.contexts.pairs().map(x => x.key);
           const parser = new Parser(result.tokens, contextNames, []);
-          let expr: Expr | undefined;
+          let expr: Expr;
           try {
             expr = parser.parse();
 
