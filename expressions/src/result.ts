@@ -8,10 +8,10 @@ export function falsy(d: data.ExpressionData): boolean {
     case data.Kind.Boolean:
       return !d.value;
 
-    case data.Kind.Number:
+    case data.Kind.Number: {
       const dv = d.value;
       return dv === 0 || isNaN(dv);
-
+    }
     case data.Kind.String:
       return d.value.length === 0;
   }
@@ -77,7 +77,7 @@ export function coerceTypes(
 // Similar to the Javascript abstract equality comparison algorithm http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.3.
 // Except string comparison is OrdinalIgnoreCase, and objects are not coerced to primitives.
 export function equals(lhs: data.ExpressionData, rhs: data.ExpressionData): boolean {
-  let [lv, rv] = coerceTypes(lhs, rhs);
+  const [lv, rv] = coerceTypes(lhs, rhs);
 
   if (lv.kind != rv.kind) {
     return false;
@@ -89,7 +89,7 @@ export function equals(lhs: data.ExpressionData, rhs: data.ExpressionData): bool
       return true;
 
     // Number, Number
-    case data.Kind.Number:
+    case data.Kind.Number: {
       const ld = lv.value;
       const rd = (rv as data.NumberData).value;
       if (isNaN(ld) || isNaN(rd)) {
@@ -97,18 +97,21 @@ export function equals(lhs: data.ExpressionData, rhs: data.ExpressionData): bool
       }
 
       return ld == rd;
+    }
 
     // String, String
-    case data.Kind.String:
+    case data.Kind.String: {
       const ls = lv.value;
       const rs = (rv as data.StringData).value;
       return toUpperSpecial(ls) === toUpperSpecial(rs);
+    }
 
     // Boolean, Boolean
-    case data.Kind.Boolean:
+    case data.Kind.Boolean: {
       const lb = lv.value;
       const rb = (rv as data.BooleanData).value;
       return lb == rb;
+    }
 
     // Object, Object
     case data.Kind.Dictionary:
@@ -131,7 +134,7 @@ export function greaterThan(lhs: data.ExpressionData, rhs: data.ExpressionData):
 
   switch (lv.kind) {
     // Number, Number
-    case data.Kind.Number:
+    case data.Kind.Number: {
       const lf = lv.value;
       const rf = (rv as data.NumberData).value;
       if (isNaN(lf) || isNaN(rf)) {
@@ -139,20 +142,23 @@ export function greaterThan(lhs: data.ExpressionData, rhs: data.ExpressionData):
       }
 
       return lf > rf;
+    }
 
     // String, String
-    case data.Kind.String:
+    case data.Kind.String: {
       let ls = lv.value;
       let rs = (rv as data.StringData).value;
       ls = toUpperSpecial(ls);
       rs = toUpperSpecial(rs);
       return ls > rs;
+    }
 
     // Boolean, Boolean
-    case data.Kind.Boolean:
-      const lb = (lv as data.BooleanData).value;
+    case data.Kind.Boolean: {
+      const lb = lv.value;
       const rb = (rv as data.BooleanData).value;
       return lb && !rb;
+    }
   }
 
   return false;
@@ -169,7 +175,7 @@ export function lessThan(lhs: data.ExpressionData, rhs: data.ExpressionData): bo
 
   switch (lv.kind) {
     // Number, Number
-    case data.Kind.Number:
+    case data.Kind.Number: {
       const lf = lv.value;
       const rf = (rv as data.NumberData).value;
       if (isNaN(lf) || isNaN(rf)) {
@@ -177,20 +183,23 @@ export function lessThan(lhs: data.ExpressionData, rhs: data.ExpressionData): bo
       }
 
       return lf < rf;
+    }
 
     // String, String
-    case data.Kind.String:
+    case data.Kind.String: {
       let ls = lv.value;
       let rs = (rv as data.StringData).value;
       ls = toUpperSpecial(ls);
       rs = toUpperSpecial(rs);
       return ls < rs;
+    }
 
     // Boolean, Boolean
-    case data.Kind.Boolean:
+    case data.Kind.Boolean: {
       const lb = lv.value;
       const rb = (rv as data.BooleanData).value;
       return !lb && rb;
+    }
   }
 
   return false;
@@ -200,7 +209,7 @@ export function lessThan(lhs: data.ExpressionData, rhs: data.ExpressionData): bo
 export function toUpperSpecial(s: string): string {
   const sb: string[] = [];
   let i = 0;
-  let len = s.length;
+  const len = s.length;
   let found = s.indexOf("ı");
   while (i < len) {
     if (i < found) {

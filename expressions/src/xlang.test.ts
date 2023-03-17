@@ -42,7 +42,7 @@ interface TestCase {
   options: TestOptions;
 }
 
-function testCaseReviver(key: string, val: any): any {
+function testCaseReviver(key: string, val: unknown): unknown {
   if (key === "contexts") {
     const tmp = JSON.stringify(val);
     return JSON.parse(tmp, reviver);
@@ -105,14 +105,15 @@ describe("x-lang tests", () => {
             if (testCase.err && testCase.err.kind === TestErrorKind.Lexing) {
               throw new Error("expected error lexing expression, but got none");
             }
-          } catch (e: any) {
+          } catch (e) {
+            const err = e as Error;
             // Did test expect lexing error? If so, compare error message.
             if (testCase.err && testCase.err.kind === TestErrorKind.Lexing) {
-              expect(e.message).toContain(testCase.err.value);
+              expect(err.message).toContain(testCase.err.value);
               return;
             }
 
-            throw new Error(`unexpected error lexing expression: ${e.message} ${e.stack}`);
+            throw new Error(`unexpected error lexing expression: ${err.message} ${err.stack || ""}`);
           }
 
           // Parse
@@ -125,7 +126,7 @@ describe("x-lang tests", () => {
             if (testCase.err?.kind === TestErrorKind.Parsing) {
               throw new Error("expected error parsing expression, but got none");
             }
-          } catch (e: any) {
+          } catch (e) {
             // Did test expect parsing error?
             if (testCase.err?.kind === TestErrorKind.Parsing) {
               // Test expects parsing error
@@ -133,8 +134,8 @@ describe("x-lang tests", () => {
               expect(errorWithExpression(pe, testCase.expr)).toContain(testCase.err.value);
               return;
             }
-
-            throw new Error(`unexpected error parsing expression: ${e.message} ${e.stack}`);
+            const err = e as Error;
+            throw new Error(`unexpected error parsing expression: ${err.message} ${err.stack || ""}`);
           }
 
           // Evaluate expression
@@ -154,14 +155,15 @@ describe("x-lang tests", () => {
             expect(kindStr(result.kind)).toBe(testCase.result.kind);
 
             expect(JSON.stringify(result, replacer)).toEqual(JSON.stringify(testCase.result.value, replacer));
-          } catch (e: any) {
+          } catch (e) {
             if (testCase.err?.kind === TestErrorKind.Evaluation) {
               const pe = e as ExpressionError;
               expect(errorWithExpression(pe, testCase.expr)).toContain(testCase.err.value);
               return;
             }
 
-            throw new Error(`unexpected error evaluating expression: ${e.message} ${e.stack}`);
+            const err = e as Error;
+            throw new Error(`unexpected error evaluating expression:  ${err.message} ${err.stack || ""}`);
           }
         });
       });
