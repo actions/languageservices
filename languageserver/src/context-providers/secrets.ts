@@ -2,10 +2,13 @@ import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {StringData} from "@github/actions-expressions/data/string";
 import {Mode} from "@github/actions-languageservice/context-providers/default";
 import {WorkflowContext} from "@github/actions-languageservice/context/workflow-context";
+import {warn} from "@github/actions-languageservice/log";
 import {isMapping, isString} from "@github/actions-workflow-parser";
 import {Octokit} from "@octokit/rest";
+
 import {RepositoryContext} from "../initializationOptions";
 import {TTLCache} from "../utils/cache";
+import {errorStatus} from "../utils/error";
 import {getRepoPermission} from "../utils/repo-permission";
 
 export async function getSecrets(
@@ -153,6 +156,10 @@ async function fetchEnvironmentSecrets(
       response => response.data.map(secret => new StringData(secret.name))
     );
   } catch (e) {
+    if (errorStatus(e) === 404) {
+      warn(`Environment ${environmentName} not found`);
+      return [];
+    }
     console.log("Failure to retrieve environment secrets: ", e);
     throw e;
   }
