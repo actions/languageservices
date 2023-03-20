@@ -1,4 +1,3 @@
-
 {
   "$schema": "./descriptionsSchema.json",
   "root": {
@@ -37,6 +36,20 @@
     },
     "inputs": {
       "description": "Contains the inputs of a reusable or manually triggered workflow. For more information, see [`inputs` context](https://docs.github.com/actions/learn-github-actions/contexts#inputs-context)."
+    }
+  },
+  "functions": {
+    "always": {
+      "description": "Causes the step to always execute, and returns `true`, even when canceled. The `always` expression is best used at the step level or on tasks that you expect to run even when a job is canceled. For example, you can use `always` to send logs even when a job is canceled."
+    },
+    "cancelled": {
+      "description": "Returns `true` if the workflow was canceled."
+    },
+    "failure": {
+      "description": "Returns `true` when any previous step of a job fails. If you have a chain of dependent jobs, `failure()` returns `true` if any ancestor job fails."
+    },
+    "hashFiles": {
+      "description": "Returns a single hash for the set of files that matches the `path` pattern. You can provide a single `path` pattern or multiple `path` patterns separated by commas. The `path` is relative to the `GITHUB_WORKSPACE` directory and can only include files inside of the `GITHUB_WORKSPACE`."
     }
   },
   "github": {
