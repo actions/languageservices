@@ -160,7 +160,8 @@ async function getDescription(
 function isCronMappingValue(tokenResult: TokenResult): boolean {
   return (
     tokenResult.parent?.definition?.key === "cron-mapping" &&
-    isString(tokenResult.token!) &&
+    !!tokenResult.token &&
+    isString(tokenResult.token) &&
     tokenResult.token.value !== "cron"
   );
 }
@@ -211,7 +212,7 @@ function expressionHover(
     };
   } catch (e) {
     // Hovering over an invalid expression should not cause an error here
-    info(`Encountered error trying to calculate expression hover: ${e}`);
+    info(`Encountered error trying to calculate expression hover: ${(e as Error).message}`);
     return null;
   }
 }

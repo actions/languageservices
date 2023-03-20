@@ -3,7 +3,7 @@ import {createDocument} from "./test-utils/document";
 import {validate} from "./validate";
 import {defaultValueProviders} from "./value-providers/default";
 import {clearCache} from "./utils/workflow-cache";
-import {ValueProvider, ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 
 beforeEach(() => {
   clearCache();
@@ -249,7 +249,7 @@ jobs:
       const valueProviderConfig: ValueProviderConfig = {
         "job-environment": {
           kind: ValueProviderKind.AllowedValues,
-          get: async () => [{label: "test"}],
+          get: () => Promise.resolve([{label: "test"}]),
           caseInsensitive: false
         }
       };
@@ -286,7 +286,7 @@ jobs:
       const valueProviderConfig: ValueProviderConfig = {
         "job-environment": {
           kind: ValueProviderKind.AllowedValues,
-          get: async () => [{label: "test"}],
+          get: () => Promise.resolve([{label: "test"}]),
           caseInsensitive: true
         }
       };

@@ -1,4 +1,4 @@
-import {data, DescriptionDictionary} from "@github/actions-expressions/.";
+import {DescriptionDictionary} from "@github/actions-expressions/.";
 import {DiagnosticSeverity} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {registerLogger} from "./log";
@@ -48,15 +48,16 @@ jobs:
 
   it("partial skip access invalid context on incomplete", async () => {
     const contextProviderConfig: ContextProviderConfig = {
-      getContext: async (context: string) => {
+      getContext: (context: string) => {
         switch (context) {
-          case "secrets":
+          case "secrets": {
             const dict = new DescriptionDictionary();
             dict.complete = false;
-            return dict;
+            return Promise.resolve(dict);
+          }
         }
 
-        return undefined;
+        return Promise.resolve(undefined);
       }
     };
 
