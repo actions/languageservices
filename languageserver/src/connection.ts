@@ -12,6 +12,7 @@ import {
   HoverParams,
   InitializeParams,
   InitializeResult,
+  TextDocumentIdentifier,
   TextDocumentPositionParams,
   TextDocuments,
   TextDocumentSyncKind
@@ -38,7 +39,6 @@ export function initConnection(connection: Connection) {
   const cache = new TTLCache();
 
   let hasWorkspaceFolderCapability = false;
-  let hasDiagnosticRelatedInformationCapability = false;
 
   // Register remote console logger with language service
   registerLogger(connection.console);
@@ -47,13 +47,8 @@ export function initConnection(connection: Connection) {
     const capabilities = params.capabilities;
 
     hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
-    hasDiagnosticRelatedInformationCapability = !!(
-      capabilities.textDocument &&
-      capabilities.textDocument.publishDiagnostics &&
-      capabilities.textDocument.publishDiagnostics.relatedInformation
-    );
 
-    const options: InitializationOptions = params.initializationOptions;
+    const options = params.initializationOptions as InitializationOptions;
 
     if (options.sessionToken) {
       client = getClient(options.sessionToken, options.userAgent);
@@ -94,7 +89,7 @@ export function initConnection(connection: Connection) {
 
   connection.onInitialized(() => {
     if (hasWorkspaceFolderCapability) {
-      connection.workspace.onDidChangeWorkspaceFolders(_event => {
+      connection.workspace.onDidChangeWorkspaceFolders(() => {
         clearCache();
       });
     }
@@ -136,7 +131,7 @@ export function initConnection(connection: Connection) {
         await onCompletion(
           connection,
           position,
-          documents.get(textDocument.uri)!,
+          getDocument(documents, textDocument),
           client,
           repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri)),
           cache
@@ -147,7 +142,7 @@ export function initConnection(connection: Connection) {
   connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
     return timeOperation("hover", async () => {
       const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
-      return await hover(documents.get(textDocument.uri)!, position, {
+      return await hover(getDocument(documents, textDocument), position, {
         descriptionProvider: descriptionProvider(client, cache),
         contextProviderConfig: repoContext && contextProviders(client, repoContext, cache),
         fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
@@ -157,16 +152,16 @@ export function initConnection(connection: Connection) {
     });
   });
 
-  connection.onRequest("workspace/executeCommand", (params: ExecuteCommandParams) => {
+  connection.onRequest("workspace/executeCommand", async (params: ExecuteCommandParams) => {
     if (params.command === Commands.ClearCache) {
       cache.clear();
-      documents.all().forEach(validateTextDocument);
+      await Promise.all(documents.all().map(doc => validateTextDocument(doc)));
     }
   });
 
   connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
-    return documentLinks(documents.get(textDocument.uri)!, repoContext?.workspaceUri);
+    return documentLinks(getDocument(documents, textDocument), repoContext?.workspaceUri);
   });
 
   // Make the text document manager listen on the connection
@@ -175,4 +170,10 @@ export function initConnection(connection: Connection) {
 
   // Listen on the connection
   connection.listen();
+}
+
+function getDocument(documents: TextDocuments<TextDocument>, id: TextDocumentIdentifier): TextDocument {
+  // The text document manager should ensure all documents exist
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return documents.get(id.uri)!;
 }
