@@ -73,10 +73,10 @@ type DeduplicatedWebhooks = {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
 const dedupedWebhookPayloads: DeduplicatedWebhooks = webhooks as any;
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const objects: Param[] = webhookObjects as any;
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
 
 // Hydrated webhook payloads
 const webhookPayloads: Webhooks = {};

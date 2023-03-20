@@ -14,7 +14,7 @@ beforeEach(() => {
 });
 
 const validationConfig: ValidationConfig = {
-  fetchActionMetadata: async (ref: ActionReference) => {
+  fetchActionMetadata: (ref: ActionReference) => {
     let metadata: ActionMetadata | undefined = undefined;
     switch (ref.owner + "/" + ref.name + "@" + ref.ref) {
       case "actions/checkout@v3":
@@ -82,7 +82,7 @@ const validationConfig: ValidationConfig = {
           description: "An action with no inputs"
         };
     }
-    return metadata;
+    return Promise.resolve(metadata);
   }
 };
 
@@ -326,8 +326,8 @@ jobs:
     config.valueProviderConfig = {
       "step-with": {
         kind: ValueProviderKind.AllowedValues,
-        get: async () => {
-          return [{label: "repository", description: "Repository name with owner."}];
+        get: () => {
+          return Promise.resolve([{label: "repository", description: "Repository name with owner."}]);
         }
       }
     };

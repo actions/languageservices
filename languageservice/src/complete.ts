@@ -225,6 +225,10 @@ function getExpressionCompletionItems(
   context: DescriptionDictionary,
   pos: Position
 ): CompletionItem[] {
+  if (!token.range) {
+    return [];
+  }
+
   let currentInput = "";
 
   if (isBasicExpression(token)) {
@@ -234,15 +238,15 @@ function getExpressionCompletionItems(
     currentInput = stringToken.source || stringToken.value;
   }
 
-  const relCharOffset = getRelCharOffset(token.range!, currentInput, pos);
+  const relCharOffset = getRelCharOffset(token.range, currentInput, pos);
   const expressionInput = (getExpressionInput(currentInput, relCharOffset) || "").trim();
 
   try {
     return completeExpression(expressionInput, context, [], validatorFunctions).map(item =>
       mapExpressionCompletionItem(item, currentInput[relCharOffset])
     );
-  } catch (e: any) {
-    error(`Error while completing expression: '${e?.message || "<no details>"}'`);
+  } catch (e) {
+    error(`Error while completing expression: '${(e as Error)?.message || "<no details>"}'`);
     return [];
   }
 }

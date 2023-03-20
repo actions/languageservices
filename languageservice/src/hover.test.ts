@@ -1,5 +1,4 @@
 import {isString} from "@github/actions-workflow-parser";
-import {StringToken} from "@github/actions-workflow-parser/templates/tokens/string-token";
 import {DescriptionProvider, hover, HoverConfig} from "./hover";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {testFileProvider} from "./test-utils/test-file-provider";
@@ -8,15 +7,16 @@ import {clearCache} from "./utils/workflow-cache";
 export function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
   return {
     descriptionProvider: {
-      getDescription: async (_, token, __) => {
+      getDescription: (_, token) => {
         if (!isString(token)) {
           throw new Error("Test provider only supports string tokens");
         }
 
         expect(token.value).toEqual(tokenValue);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         expect(token.definition!.key).toEqual(tokenKey);
 
-        return description;
+        return Promise.resolve(description);
       }
     } satisfies DescriptionProvider,
     fileProvider: testFileProvider

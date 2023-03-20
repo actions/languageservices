@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {data, DescriptionDictionary} from "@github/actions-expressions";
 import {CompletionItem, CompletionItemKind} from "vscode-languageserver-types";
 import {complete, getExpressionInput} from "./complete";
@@ -9,17 +10,19 @@ import {testFileProvider} from "./test-utils/test-file-provider";
 import {clearCache} from "./utils/workflow-cache";
 
 const contextProviderConfig: ContextProviderConfig = {
-  getContext: async (context: string) => {
+  getContext: (context: string) => {
     switch (context) {
       case "github":
-        return new DescriptionDictionary({
-          key: "event",
-          value: new data.StringData("push"),
-          description: "The event that triggered the workflow"
-        });
+        return Promise.resolve(
+          new DescriptionDictionary({
+            key: "event",
+            value: new data.StringData("push"),
+            description: "The event that triggered the workflow"
+          })
+        );
     }
 
-    return undefined;
+    return Promise.resolve(undefined);
   }
 };
 

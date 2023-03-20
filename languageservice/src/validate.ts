@@ -23,6 +23,7 @@ import {validateAction} from "./validate-action";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
 import {fetchOrParseWorkflow, fetchOrConvertWorkflowTemplate} from "./utils/workflow-cache";
+import {TokenRange} from "@github/actions-workflow-parser/templates/tokens/token-range";
 
 export type ValidationConfig = {
   valueProviderConfig?: ValueProviderConfig;
@@ -72,7 +73,7 @@ export async function validate(textDocument: TextDocument, config?: ValidationCo
       });
     }
   } catch (e) {
-    error(`Unhandled error while validating: ${e}`);
+    error(`Unhandled error while validating: ${(e as Error).message}`);
   }
 
   return diagnostics;
@@ -92,18 +93,18 @@ async function additionalValidations(
     const validationDefinition = validationToken.definition;
 
     // If this is an expression, validate it
-    if (isBasicExpression(token)) {
+    if (isBasicExpression(token) && token.range) {
       await validateExpression(
         diagnostics,
         token,
         validationToken.definitionInfo?.allowedContext || [],
         config?.contextProviderConfig,
-        getProviderContext(documentUri, template, root, token)
+        getProviderContext(documentUri, template, root, token.range)
       );
     }
 
-    if (token.definition?.key === "regular-step") {
-      const context = getProviderContext(documentUri, template, root, token);
+    if (token.definition?.key === "regular-step" && token.range) {
+      const context = getProviderContext(documentUri, template, root, token.range);
       await validateAction(diagnostics, token, context.step, config);
     }
 
@@ -129,7 +130,7 @@ async function additionalValidations(
       }
 
       if (valueProvider) {
-        const customValues = await valueProvider.get(getProviderContext(documentUri, template, root, token));
+        const customValues = await valueProvider.get(getProviderContext(documentUri, template, root, token.range));
         const caseInsensitive = valueProvider.caseInsensitive ?? false;
         const customValuesMap = new Set(customValues.map(x => (caseInsensitive ? x.label.toLowerCase() : x.label)));
 
@@ -161,12 +162,12 @@ function getProviderContext(
   documentUri: URI,
   template: WorkflowTemplate,
   root: TemplateToken,
-  token: TemplateToken
+  tokenRange: TokenRange
 ): WorkflowContext {
-  const {parent, path} = findToken(
+  const {path} = findToken(
     {
-      line: token.range!.start.line - 1,
-      character: token.range!.start.column - 1
+      line: tokenRange.start.line - 1,
+      character: tokenRange.start.column - 1
     },
     root
   );
