@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as monaco from "monaco-editor";
 
 import {CloseAction, ErrorAction, MessageTransports, MonacoLanguageClient, MonacoServices} from "monaco-languageclient";
