@@ -21,16 +21,16 @@ export function valueProviders(
     "job-environment": {
       kind: ValueProviderKind.AllowedValues,
       caseInsensitive: true,
-      get: (_: WorkflowContext) => getEnvironments(client, cache, repo.owner, repo.name)
+      get: () => getEnvironments(client, cache, repo.owner, repo.name)
     },
     "job-environment-name": {
       kind: ValueProviderKind.AllowedValues,
       caseInsensitive: true,
-      get: (_: WorkflowContext) => getEnvironments(client, cache, repo.owner, repo.name)
+      get: () => getEnvironments(client, cache, repo.owner, repo.name)
     },
     "runs-on": {
       kind: ValueProviderKind.SuggestedValues,
-      get: (_: WorkflowContext) => getRunnerLabels(client, cache, repo.owner, repo.name)
+      get: () => getRunnerLabels(client, cache, repo.owner, repo.name)
     },
     "step-with": {
       kind: ValueProviderKind.AllowedValues,

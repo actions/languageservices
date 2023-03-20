@@ -15,7 +15,7 @@ export function contextProviders(
   cache: TTLCache
 ): ContextProviderConfig {
   if (!repo || !client) {
-    return {getContext: (_: string) => Promise.resolve(undefined)};
+    return {getContext: () => Promise.resolve(undefined)};
   }
 
   const getContext = async (
