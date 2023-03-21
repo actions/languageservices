@@ -65,8 +65,8 @@ export async function complete(
     content: newDoc.getText()
   };
 
-  const parsedWorkflow = fetchOrParseWorkflow(file, textDocument.uri);
-  if (!parsedWorkflow?.value) {
+  const parsedWorkflow = fetchOrParseWorkflow(file, textDocument.uri, true);
+  if (!parsedWorkflow.value) {
     return [];
   }
 
