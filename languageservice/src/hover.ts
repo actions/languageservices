@@ -1,5 +1,5 @@
-import {DescriptionDictionary, Parser} from "@github/actions-expressions";
-import {FunctionInfo} from "@github/actions-expressions/funcs/info";
+import {data, DescriptionDictionary, Parser} from "@github/actions-expressions";
+import {FunctionDefinition, FunctionInfo} from "@github/actions-expressions/funcs/info";
 import {Lexer} from "@github/actions-expressions/lexer";
 import {ErrorPolicy} from "@github/actions-workflow-parser/model/convert";
 import {getCronDescription} from "@github/actions-workflow-parser/model/converter/cron";
@@ -13,6 +13,7 @@ import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Hover} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {getContext, Mode} from "./context-providers/default";
+import {getFunctionDescription} from "./context-providers/descriptions";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
 import {
   isReusableWorkflowJobInput,
@@ -71,6 +72,10 @@ export async function hover(document: TextDocument, position: Position, config?:
       const allowedContext = tokenDefinitionInfo.allowedContext || [];
       const {namedContexts, functions} = splitAllowedContext(allowedContext);
       const context = await getContext(namedContexts, config?.contextProviderConfig, workflowContext, Mode.Completion);
+
+      for (const func of functions) {
+        func.description = getFunctionDescription(func.name);
+      }
 
       const exprPos = mapToExpressionPos(token, position);
       if (exprPos) {
@@ -176,7 +181,14 @@ function expressionHover(
     const p = new Parser(lr.tokens, namedContexts, functions);
     const expr = p.parse();
 
-    const hv = new HoverVisitor(position, context, validatorFunctions);
+    const functionMap = new Map<string, FunctionDefinition>();
+    for (const func of functions) {
+      functionMap.set(func.name.toLowerCase(), {
+        ...func,
+        call: () => new data.Null()
+      });
+    }
+    const hv = new HoverVisitor(position, context, functionMap);
     const hoverResult = hv.hover(expr);
     if (!hoverResult) {
       return null;

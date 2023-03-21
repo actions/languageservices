@@ -1,4 +1,5 @@
 import {data, DescriptionDictionary} from "@github/actions-expressions";
+import {format} from "@github/actions-expressions/funcs/format";
 import {Hover} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config";
 import {hover} from "./hover";
@@ -117,6 +118,66 @@ jobs:
       range: {
         start: {line: 7, character: 18},
         end: {line: 7, character: 34}
+      }
+    });
+  });
+
+  it("built-in function", async () => {
+    const input = `on: push
+run-name: \${{ form|at('Run {0}', github.run_id) }}
+jobs:
+  build:
+    runs-on: [self-hosted]`;
+    const result = await hover(...getPositionFromCursor(input), {
+      contextProviderConfig
+    });
+
+    expect(result).toEqual<Hover>({
+      contents: format.description || "",
+      range: {
+        start: {line: 1, character: 14},
+        end: {line: 1, character: 20}
+      }
+    });
+  });
+
+  it("schema-defined function", async () => {
+    const input = `on: push
+jobs:
+  build:
+    if: alwa|ys()
+    runs-on: [self-hosted]`;
+    const result = await hover(...getPositionFromCursor(input), {
+      contextProviderConfig
+    });
+
+    expect(result).toEqual<Hover>({
+      contents:
+        "Causes the step to always execute, and returns `true`, even when canceled. The `always` expression is best used at the step level or on tasks that you expect to run even when a job is canceled. For example, you can use `always` to send logs even when a job is canceled.",
+      range: {
+        start: {line: 3, character: 11},
+        end: {line: 3, character: 17}
+      }
+    });
+  });
+
+  it("schema-defined function with different casing", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - run: echo \${{ hash|Files('test.txt') }}`;
+    const result = await hover(...getPositionFromCursor(input), {
+      contextProviderConfig
+    });
+
+    expect(result).toEqual<Hover>({
+      contents:
+        "Returns a single hash for the set of files that matches the `path` pattern. You can provide a single `path` pattern or multiple `path` patterns separated by commas. The `path` is relative to the `GITHUB_WORKSPACE` directory and can only include files inside of the `GITHUB_WORKSPACE`.",
+      range: {
+        start: {line: 5, character: 22},
+        end: {line: 5, character: 31}
       }
     });
   });
