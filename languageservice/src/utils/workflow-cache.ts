@@ -17,7 +17,9 @@ const workflowTemplateCache = new Map<string, WorkflowTemplate>();
 
 export function clearCacheEntry(uri: string) {
   parsedWorkflowCache.delete(uri);
+  parsedWorkflowCache.delete(workflowKey(uri, true));
   workflowTemplateCache.delete(uri);
+  workflowTemplateCache.delete(workflowKey(uri, true));
 }
 
 export function clearCache() {
@@ -25,28 +27,49 @@ export function clearCache() {
   workflowTemplateCache.clear();
 }
 
-export function fetchOrParseWorkflow(file: File, uri: string): ParseWorkflowResult | undefined {
-  const cachedResult = parsedWorkflowCache.get(uri);
+/**
+ * Parses a workflow file and caches the result
+ * @param transformed Indicates whether the workflow has been transformed before parsing
+ * @returns the {@link ParseWorkflowResult}
+ */
+export function fetchOrParseWorkflow(file: File, uri: string, transformed = false): ParseWorkflowResult {
+  const key = workflowKey(uri, transformed);
+  const cachedResult = parsedWorkflowCache.get(key);
   if (cachedResult) {
     return cachedResult;
   }
   const result = parseWorkflow(file, nullTrace);
-  parsedWorkflowCache.set(uri, result);
+  parsedWorkflowCache.set(key, result);
   return result;
 }
 
+/**
+ * Converts a workflow template and caches the result
+ * @param transformed Indicates whether the workflow has been transformed before parsing
+ * @returns the converted {@link WorkflowTemplate}
+ */
 export async function fetchOrConvertWorkflowTemplate(
   context: TemplateContext,
   template: TemplateToken,
   uri: string,
   config?: CompletionConfig,
-  options?: WorkflowTemplateConverterOptions
+  options?: WorkflowTemplateConverterOptions,
+  transformed = false
 ): Promise<WorkflowTemplate> {
-  const cachedTemplate = workflowTemplateCache.get(uri);
+  const key = workflowKey(uri, transformed);
+  const cachedTemplate = workflowTemplateCache.get(key);
   if (cachedTemplate) {
     return cachedTemplate;
   }
   const workflowTemplate = await convertWorkflowTemplate(context, template, config?.fileProvider, options);
-  workflowTemplateCache.set(uri, workflowTemplate);
+  workflowTemplateCache.set(key, workflowTemplate);
   return workflowTemplate;
+}
+
+// Use a separate cache key for transformed workflows
+function workflowKey(uri: string, transformed: boolean): string {
+  if (transformed) {
+    return `transformed-${uri}`;
+  }
+  return uri;
 }
