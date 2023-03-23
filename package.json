@@ -5,8 +5,7 @@
     "./expressions",
     "./workflow-parser",
     "./languageservice",
-    "./languageserver",
-    "./browser-playground"
+    "./languageserver"
   ],
   "devDependencies": {
     "lerna": "^6.0.3"
