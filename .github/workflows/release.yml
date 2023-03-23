@@ -63,9 +63,6 @@ jobs:
     env:
       PKG_VERSION: "" # will be set in the workflow
 
-    outputs:
-      version: ${{ env.PKG_VERSION }}
-
     steps:
       - uses: actions/checkout@v3
 
@@ -75,7 +72,7 @@ jobs:
           cache: "npm"
           registry-url: "https://npm.pkg.github.com"
 
-      - name: Parse version from package.json
+      - name: Parse version from lerna.json
         run: |
           echo "PKG_VERSION=$(node -p -e "require('./lerna.json').version")" >> $GITHUB_ENV
 
@@ -103,4 +100,4 @@ jobs:
 
       - name: Publish packages
         run: |
-          lerna publish from-git
+          lerna publish ${{ env.PKG_VERSION }}
