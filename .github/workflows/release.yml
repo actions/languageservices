@@ -71,7 +71,6 @@ jobs:
         with:
           node-version: 16.x
           cache: "npm"
-          registry-url: "https://npm.pkg.github.com"
           scope: '@actions'
 
       - name: Parse version from lerna.json
@@ -79,8 +78,6 @@ jobs:
           echo "PKG_VERSION=$(node -p -e "require('./lerna.json').version")" >> $GITHUB_ENV
 
       - run: npm ci
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release
         uses: actions/github-script@v6
@@ -100,8 +97,13 @@ jobs:
             core.summary.addLink(`Release v${{ env.PKG_VERSION }}`, release.data.html_url);
             await core.summary.write();
 
+      - name: setup authentication
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish packages
         run: |
           lerna publish ${{ env.PKG_VERSION }} --yes --no-git-reset --no-git-tag-version
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
