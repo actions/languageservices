@@ -71,6 +71,7 @@ jobs:
           node-version: 16.x
           cache: "npm"
           registry-url: "https://npm.pkg.github.com"
+          scope: '@actions'
 
       - name: Parse version from lerna.json
         run: |
