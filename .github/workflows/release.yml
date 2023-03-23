@@ -59,6 +59,7 @@ jobs:
 
     permissions:
       contents: write
+      packages: write
 
     env:
       PKG_VERSION: "" # will be set in the workflow
