@@ -1,11 +1,5 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "useWorkspaces": true,
-  "version": "0.1.2",
-  "packages": [
-    "workflow-parser/*",
-    "expressions/*",
-    "languageservice/*",
-    "languageserver/*"
-  ]
+  "version": "0.1.2"
 }
