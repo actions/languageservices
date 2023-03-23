@@ -100,4 +100,4 @@ jobs:
 
       - name: Publish packages
         run: |
-          lerna publish ${{ env.PKG_VERSION }}
+          lerna publish ${{ env.PKG_VERSION }} --yes
