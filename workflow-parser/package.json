@@ -4,6 +4,9 @@
   "license": "MIT",
   "type": "module",
   "source": "./src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js"
