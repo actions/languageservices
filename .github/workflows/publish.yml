@@ -33,9 +33,9 @@ jobs:
 
           git checkout -b release/${{ inputs.version }}
 
-          npx lerna version ${{ inputs.version }} --yes --no-push --no-git-tag-version
+          npx lerna version ${{ inputs.version }} --yes --no-push --no-git-tag-version --force-publish
 
-          git add package.json package-lock.json
+          git add **/package.json package-lock.json lerna.json
           git commit -m "Release extension version ${{ inputs.version }}"
 
           git push --set-upstream origin release/${{ inputs.version }}
