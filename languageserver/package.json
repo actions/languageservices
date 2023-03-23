@@ -1,6 +1,6 @@
 {
   "name": "@actions/languageserver",
-  "version": "0.0.0-development",
+  "version": "0.1.182",
   "description": "Language server for GitHub Actions",
   "license": "MIT",
   "type": "module",
