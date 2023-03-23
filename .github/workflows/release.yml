@@ -1,4 +1,4 @@
-name: Release and publish extension
+name: Release and publish packages
 
 on:
   push:
