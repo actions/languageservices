@@ -1,0 +1,51 @@
+name: Create release PR
+
+run-name: Create release PR for v${{ github.event.inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        required: true
+        description: "Version to bump `package.json` to (format: x.y.z)"
+
+jobs:
+  create-release-pr:
+    name: Create release PR
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - name: Bump version and push
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          git checkout -b release/${{ inputs.version }}
+
+          npx lerna version ${{ inputs.version }} --yes --no-push --no-git-tag-version
+
+          git add package.json package-lock.json
+          git commit -m "Release extension version ${{ inputs.version }}"
+
+          git push --set-upstream origin release/${{ inputs.version }}
+
+      - name: Create PR
+        run: |
+          gh pr create \
+            --title "Release version ${{ inputs.version }}" \
+            --body "Release version ${{ inputs.version }}" \
+            --base main \
+            --head release/${{ inputs.version }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
