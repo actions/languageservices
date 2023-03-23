@@ -1,1 +1,1 @@
-import "@github/actions-languageserver";
+import "@actions/languageserver";
