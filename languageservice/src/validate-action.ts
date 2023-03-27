@@ -14,7 +14,7 @@ export async function validateAction(
   step: Step | undefined,
   config: ValidationConfig | undefined
 ): Promise<void> {
-  if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.fetchActionMetadata) {
+  if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.actionsMetadataProvider) {
     return;
   }
 
@@ -23,7 +23,7 @@ export async function validateAction(
     return;
   }
 
-  const actionMetadata = await config.fetchActionMetadata(action);
+  const actionMetadata = await config.actionsMetadataProvider.fetchActionMetadata(action);
   if (actionMetadata === undefined) {
     diagnostics.push({
       severity: DiagnosticSeverity.Error,

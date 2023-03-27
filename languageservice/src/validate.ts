@@ -28,8 +28,12 @@ import {defaultValueProviders} from "./value-providers/default";
 export type ValidationConfig = {
   valueProviderConfig?: ValueProviderConfig;
   contextProviderConfig?: ContextProviderConfig;
-  fetchActionMetadata?(action: ActionReference): Promise<ActionMetadata | undefined>;
+  actionsMetadataProvider?: ActionsMetadataProvider;
   fileProvider?: FileProvider;
+};
+
+export type ActionsMetadataProvider = {
+  fetchActionMetadata(action: ActionReference): Promise<ActionMetadata | undefined>;
 };
 
 /**
