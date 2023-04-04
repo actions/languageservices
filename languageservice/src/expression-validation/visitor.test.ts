@@ -56,6 +56,25 @@ describe("validation visitor", () => {
     ]);
   });
 
+  it("invalid context access as index", () => {
+    expect(useVisitor("github[github.foo]", ["github"])).toEqual([
+      {
+        message: "Context access might be invalid: foo",
+        range: {
+          end: {
+            column: 17,
+            line: 0
+          },
+          start: {
+            column: 7,
+            line: 0
+          }
+        },
+        severity: "warning"
+      }
+    ]);
+  });
+
   it("invalid nested context access", () => {
     expect(useVisitor("github.repo.name", ["github"])).toEqual([
       {

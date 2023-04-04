@@ -1,4 +1,4 @@
-import {DescriptionDictionary} from "@actions/expressions/.";
+import {DescriptionDictionary} from "@actions/expressions";
 import {
   Binary,
   ContextAccess,
@@ -76,7 +76,8 @@ export class ValidationVisitor implements ExprVisitor<void> {
     while (i) {
       if (i instanceof IndexAccess) {
         if (!(i.index instanceof Literal)) {
-          // Cannot validate
+          // Not a literal, validate independently
+          this._validate(i.index);
           return;
         }
         s.push(i.index.literal);
