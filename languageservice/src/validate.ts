@@ -1,6 +1,6 @@
-import {Evaluator, ExpressionEvaluationError, Lexer, Parser} from "@actions/expressions";
+import {Lexer, Parser} from "@actions/expressions";
 import {Expr} from "@actions/expressions/ast";
-import {isBasicExpression, isString, ParseWorkflowResult, WorkflowTemplate} from "@actions/workflow-parser";
+import {ParseWorkflowResult, WorkflowTemplate, isBasicExpression, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
 import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
@@ -13,10 +13,9 @@ import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 import {ActionMetadata, ActionReference} from "./action";
 import {ContextProviderConfig} from "./context-providers/config";
-import {getContext, Mode} from "./context-providers/default";
-import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
-import {AccessError, wrapDictionary} from "./expression-validation/error-dictionary";
-import {validatorFunctions} from "./expression-validation/functions";
+import {Mode, getContext} from "./context-providers/default";
+import {WorkflowContext, getWorkflowContext} from "./context/workflow-context";
+import {ValidationVisitor} from "./expression-validation/visitor";
 import {error} from "./log";
 import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
@@ -202,28 +201,17 @@ async function validateExpression(
       continue;
     }
 
-    try {
-      const context = await getContext(namedContexts, contextProviderConfig, workflowContext, Mode.Validation);
+    const context = await getContext(namedContexts, contextProviderConfig, workflowContext, Mode.Validation);
 
-      const e = new Evaluator(expr, wrapDictionary(context), validatorFunctions);
-      e.evaluate();
+    const e = new ValidationVisitor(expr, context);
+    e.validate();
 
-      // Any invalid context access would've thrown an error via the `ErrorDictionary`, for now we don't have to check the actual
-      // result of the evaluation.
-    } catch (e) {
-      if (e instanceof AccessError) {
-        diagnostics.push({
-          message: `Context access might be invalid: ${e.keyName}`,
-          severity: DiagnosticSeverity.Warning,
-          range: mapRange(expression.range)
-        });
-      } else if (e instanceof ExpressionEvaluationError) {
-        diagnostics.push({
-          message: `Expression might be invalid: ${e.message}`,
-          severity: DiagnosticSeverity.Error,
-          range: mapRange(expression.range)
-        });
-      }
-    }
+    diagnostics.push(
+      ...e.errors.map(e => ({
+        message: e.message,
+        range: mapRange(expression.range),
+        severity: e.severity === "error" ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
+      }))
+    );
   }
 }
