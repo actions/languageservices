@@ -6,6 +6,7 @@ import {
   StringToken,
   TemplateToken
 } from "../templates/tokens";
+import {TokenRange} from "../templates/tokens/token-range";
 
 export type WorkflowTemplate = {
   events: EventsConfig;
@@ -99,6 +100,8 @@ export type ActionStep = BaseStep & {
 };
 
 export type EventsConfig = {
+  range: TokenRange;
+
   schedule?: ScheduleConfig[];
   workflow_dispatch?: WorkflowDispatchConfig;
   workflow_call?: WorkflowCallConfig;

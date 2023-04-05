@@ -9,7 +9,7 @@ import {handleTemplateTokenErrors} from "./converter/handle-errors";
 import {convertJobs} from "./converter/jobs";
 import {convertReferencedWorkflow} from "./converter/referencedWorkflow";
 import {isReusableWorkflowJob} from "./type-guards";
-import {WorkflowTemplate} from "./workflow-template";
+import {EventsConfig, WorkflowTemplate} from "./workflow-template";
 
 export enum ErrorPolicy {
   ReturnErrorsOnly,
@@ -73,7 +73,9 @@ export async function convertWorkflowTemplate(
 
       switch (key.value) {
         case "on":
-          result.events = handleTemplateTokenErrors(root, context, {}, () => convertOn(context, item.value));
+          result.events = handleTemplateTokenErrors(root, context, {range: item.key.range} as EventsConfig, () =>
+            convertOn(context, item.value)
+          );
           break;
 
         case "jobs":

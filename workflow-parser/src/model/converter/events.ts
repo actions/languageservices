@@ -23,12 +23,15 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
     const event = token.assertString("on");
 
     return {
+      range: token.range,
       [event.value]: {}
     } as EventsConfig;
   }
 
   if (isSequence(token)) {
-    const result = {} as EventsConfig;
+    const result = {
+      range: token.range
+    } as EventsConfig;
 
     for (const item of token) {
       const event = item.assertString("on");
@@ -39,7 +42,9 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
   }
 
   if (isMapping(token)) {
-    const result = {} as EventsConfig;
+    const result = {
+      range: token.range
+    } as EventsConfig;
 
     for (const item of token) {
       const eventKey = item.key.assertString("event name");
@@ -77,7 +82,9 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
   }
 
   context.error(token, "Invalid format for 'on'");
-  return {};
+  return {
+    range: token.range
+  } as EventsConfig;
 }
 
 function convertPatternFilter<T extends BranchFilterConfig & TagFilterConfig & PathFilterConfig>(

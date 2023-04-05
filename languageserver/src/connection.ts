@@ -1,4 +1,4 @@
-import {documentLinks, hover, validate, ValidationConfig} from "@actions/languageservice";
+import {documentLinks, documentSymbols, hover, validate, ValidationConfig} from "@actions/languageservice";
 import {registerLogger, setLogLevel} from "@actions/languageservice/log";
 import {clearCache, clearCacheEntry} from "@actions/languageservice/utils/workflow-cache";
 import {Octokit} from "@octokit/rest";
@@ -7,6 +7,8 @@ import {
   Connection,
   DocumentLink,
   DocumentLinkParams,
+  DocumentSymbol,
+  DocumentSymbolParams,
   ExecuteCommandParams,
   Hover,
   HoverParams,
@@ -72,6 +74,10 @@ export function initConnection(connection: Connection) {
         hoverProvider: true,
         documentLinkProvider: {
           resolveProvider: false
+        },
+        documentSymbolProvider: {
+          label: "GitHub Actions",
+          workDoneProgress: false
         }
       }
     };
@@ -156,6 +162,11 @@ export function initConnection(connection: Connection) {
   connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
     return documentLinks(getDocument(documents, textDocument), repoContext?.workspaceUri);
+  });
+
+  connection.onDocumentSymbol(async ({textDocument}: DocumentSymbolParams): Promise<DocumentSymbol[] | null> => {
+    const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
+    return documentSymbols(getDocument(documents, textDocument), repoContext?.workspaceUri);
   });
 
   // Make the text document manager listen on the connection
