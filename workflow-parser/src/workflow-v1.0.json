@@ -576,7 +576,8 @@
     "merge-group-mapping": {
       "mapping": {
         "properties": {
-          "types": "merge-group-activity"
+          "types": "merge-group-activity",
+          "branches": "event-branches"
         }
       }
     },

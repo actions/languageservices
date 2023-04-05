@@ -72,7 +72,11 @@ on:
       - edited
       - deleted
   merge_group:
-    types: checks_requested
+    branches: 
+        - master 
+        - main
+    types: 
+      - checks_requested
   milestone:
     types:
       - created
@@ -313,6 +317,10 @@ jobs:
       ]
     },
     "merge_group": {
+      "branches": [
+        "master",
+        "main"
+      ],
       "types": [
         "checks_requested"
       ]
