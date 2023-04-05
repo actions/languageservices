@@ -1,7 +1,7 @@
 import {TemplateContext} from "../../templates/template-context";
 import {MappingToken, TemplateToken} from "../../templates/tokens";
 import {isMapping} from "../../templates/tokens/type-guards";
-import {SecretConfig, WorkflowCallConfig, InputConfig,InputType} from "../workflow-template";
+import {SecretConfig, WorkflowCallConfig, InputConfig, InputType} from "../workflow-template";
 import {convertStringList} from "./string-list";
 import {ScalarToken} from "../../templates/tokens/scalar-token";
 
@@ -28,7 +28,6 @@ export function convertEventWorkflowCall(context: TemplateContext, token: Mappin
 
   return result;
 }
-
 
 export function convertWorkflowInputs(
   context: TemplateContext,
@@ -85,7 +84,7 @@ export function convertWorkflowInput(context: TemplateContext, token: MappingTok
   }
 
   // Validate default value
-  if (defaultValue !== undefined) {
+  if (defaultValue !== undefined && !defaultValue.isExpression) {
     try {
       switch (result.type) {
         case InputType.boolean:
