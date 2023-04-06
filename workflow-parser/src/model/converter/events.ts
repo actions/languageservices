@@ -59,17 +59,24 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
 
       // All other events are defined as mappings. During schema validation we already ensure that events
       // receive only known keys, so here we can focus on the values and whether they are valid.
+
       const eventToken = item.value.assertMapping(`event ${eventName}`);
+      if (eventName === "workflow_call") {
+        result.workflow_call = convertEventWorkflowCall(context, eventToken);
+        continue;
+      }
+
+      if (eventName === "workflow_dispatch") {
+        result.workflow_dispatch = convertEventWorkflowDispatchInputs(context, eventToken);
+        continue;
+      }
 
       result[eventName] = {
         ...convertPatternFilter("branches", eventToken),
         ...convertPatternFilter("tags", eventToken),
         ...convertPatternFilter("paths", eventToken),
         ...convertFilter("types", eventToken),
-        ...convertFilter("workflows", eventToken),
-        // workflow_call and workflow_dispatch share input parsing
-        ...convertEventWorkflowDispatchInputs(context, eventToken),
-        ...convertEventWorkflowCall(context, eventToken)
+        ...convertFilter("workflows", eventToken)
       };
     }
 
