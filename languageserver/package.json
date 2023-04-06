@@ -1,10 +1,13 @@
 {
   "name": "@actions/languageserver",
-  "version": "0.1.182",
+  "version": "0.3.1",
   "description": "Language server for GitHub Actions",
   "license": "MIT",
   "type": "module",
   "source": "./src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js"
@@ -40,8 +43,8 @@
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@actions/languageservice": "*",
-    "@actions/workflow-parser": "*",
+    "@actions/languageservice": "^0.3.1",
+    "@actions/workflow-parser": "^0.3.1",
     "@octokit/rest": "^19.0.7",
     "@octokit/types": "^9.0.0",
     "vscode-languageserver": "^8.0.2",

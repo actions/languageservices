@@ -32,7 +32,7 @@ export class Evaluator implements ExprVisitor<data.ExpressionData> {
     return this.eval(this.n);
   }
 
-  private eval(n: Expr): data.ExpressionData {
+  protected eval(n: Expr): data.ExpressionData {
     return n.accept(this);
   }
 

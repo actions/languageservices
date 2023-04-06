@@ -1,0 +1,109 @@
+name: Release and publish packages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - lerna.json
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release"
+        required: true
+
+jobs:
+  check-version-change:
+    outputs:
+      changed: ${{ steps.check-version.outputs.result }}
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check if version has changed
+        id: check-version
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const version = '${{ inputs.version }}' || require('./lerna.json').version;
+            // Find a release for that version
+            const release = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: `release-v${version}`,
+            }).catch(() => null);
+
+            // If the release exists, the version has not changed
+            if (release) {
+              console.log(`Version ${version} has an existing release`);
+              console.log(release.data.html_url);
+              core.summary.addLink(`Release v${version}`, release.data.html_url);
+              await core.summary.write();
+              return "false";
+            }
+            console.log(`Version ${version} does not have a release`);
+            return true;
+
+  release:
+    environment: publish
+
+    needs: check-version-change
+    if: ${{ needs.check-version-change.outputs.changed == 'true' }}
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    env:
+      PKG_VERSION: "" # will be set in the workflow
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: "npm"
+          scope: '@actions'
+
+      - name: Parse version from lerna.json
+        run: |
+          echo "PKG_VERSION=$(node -p -e "require('./lerna.json').version")" >> $GITHUB_ENV
+
+      - run: npm ci
+
+      - name: Create release
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require("fs");
+
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: "release-v${{ env.PKG_VERSION }}",
+              name: "v${{ env.PKG_VERSION }}",
+              draft: false,
+              prerelease: false
+            });
+
+            core.summary.addLink(`Release v${{ env.PKG_VERSION }}`, release.data.html_url);
+            await core.summary.write();
+
+      - name: setup authentication
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish packages
+        run: |
+          lerna publish ${{ env.PKG_VERSION }} --yes --no-git-reset --no-git-tag-version
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

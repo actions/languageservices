@@ -1,9 +1,23 @@
 import {actionIdentifier, ActionMetadata, ActionReference} from "@actions/languageservice/action";
+import {ActionsMetadataProvider} from "@actions/languageservice";
 import {error} from "@actions/languageservice/log";
 import {Octokit, RestEndpointMethodTypes} from "@octokit/rest";
 import {parse} from "yaml";
 import {TTLCache} from "./cache";
 import {errorMessage, errorStatus} from "./error";
+
+export function getActionsMetadataProvider(
+  client: Octokit | undefined,
+  cache: TTLCache
+): ActionsMetadataProvider | undefined {
+  if (!client) {
+    return undefined;
+  }
+
+  return {
+    fetchActionMetadata: async action => fetchActionMetadata(client, cache, action)
+  };
+}
 
 export async function fetchActionMetadata(
   client: Octokit,

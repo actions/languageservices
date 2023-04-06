@@ -26,7 +26,7 @@ import {getFileProvider} from "./file-provider";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions";
 import {onCompletion} from "./on-completion";
 import {ReadFileRequest, Requests} from "./request";
-import {fetchActionMetadata} from "./utils/action-metadata";
+import {getActionsMetadataProvider} from "./utils/action-metadata";
 import {TTLCache} from "./utils/cache";
 import {timeOperation} from "./utils/timer";
 import {valueProviders} from "./value-providers";
@@ -108,13 +108,7 @@ export function initConnection(connection: Connection) {
     const config: ValidationConfig = {
       valueProviderConfig: valueProviders(client, repoContext, cache),
       contextProviderConfig: contextProviders(client, repoContext, cache),
-      fetchActionMetadata: async action => {
-        if (client) {
-          return await fetchActionMetadata(client, cache, action);
-        }
-
-        return undefined;
-      },
+      actionsMetadataProvider: getActionsMetadataProvider(client, cache),
       fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
         return await connection.sendRequest(Requests.ReadFile, {path} satisfies ReadFileRequest);
       })

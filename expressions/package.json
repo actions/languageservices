@@ -1,9 +1,12 @@
 {
   "name": "@actions/expressions",
-  "version": "0.1.182",
+  "version": "0.3.1",
   "license": "MIT",
   "type": "module",
   "source": "./src/index.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js"

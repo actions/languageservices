@@ -46,6 +46,52 @@ jobs:
     ]);
   });
 
+  it("access invalid context field in short-circuited expression", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+run-name: name-\${{ github.does-not-exist || github.does-not-exist2 }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo`
+      )
+    );
+
+    expect(result).toEqual([
+      {
+        message: "Context access might be invalid: does-not-exist",
+        range: {
+          end: {
+            character: 69,
+            line: 1
+          },
+          start: {
+            character: 15,
+            line: 1
+          }
+        },
+        severity: DiagnosticSeverity.Warning
+      },
+      {
+        message: "Context access might be invalid: does-not-exist2",
+        range: {
+          end: {
+            character: 69,
+            line: 1
+          },
+          start: {
+            character: 15,
+            line: 1
+          }
+        },
+        severity: DiagnosticSeverity.Warning
+      }
+    ]);
+  });
+
   it("partial skip access invalid context on incomplete", async () => {
     const contextProviderConfig: ContextProviderConfig = {
       getContext: (context: string) => {
