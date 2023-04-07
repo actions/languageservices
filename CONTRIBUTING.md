@@ -21,7 +21,7 @@ Please avoid:
 
 * Opening pull requests for issues marked `needs-design`, `needs-investigation`, or `blocked`.
 
-Contributions to this project are [released](https://help.github.com/articles/github-terms-of-service/#6-contributions-under-repository-license) to the public under the [project's open source license](LICENSE.md).
+Contributions to this project are [released](https://help.github.com/articles/github-terms-of-service/#6-contributions-under-repository-license) to the public under the [project's open source license](LICENSE).
 
 Please note that this project is released with a [Contributor Code of Conduct][code-of-conduct]. By participating in this project you agree to abide by its terms.
 
@@ -61,3 +61,9 @@ Please also look at the `README.md` files for each package for additional notes 
 - [How to Contribute to Open Source](https://opensource.guide/how-to-contribute/)
 - [Using Pull Requests](https://help.github.com/articles/about-pull-requests/)
 - [GitHub Help](https://help.github.com)
+
+
+[bug issues]: https://github.com/actions/languageservices/labels/bug
+[feature request issues]: https://github.com/actions/languageservices/labels/enhancement
+[hw]: https://github.com/actions/languageservices/labels/help%20wanted
+[gfi]: https://github.com/actions/languageservices/labels/good%20first%20issue
