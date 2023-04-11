@@ -1,10 +1,11 @@
-import {TemplateContext} from "../../templates/template-context";
-import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
-import {isSequence} from "../../templates/tokens/type-guards";
-import {isActionStep} from "../type-guards";
-import {ActionStep, Step} from "../workflow-template";
-import {handleTemplateTokenErrors} from "./handle-errors";
-import {IdBuilder} from "./id-builder";
+import { TemplateContext } from "../../templates/template-context";
+import { BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken } from "../../templates/tokens";
+import { isSequence } from "../../templates/tokens/type-guards";
+import { isActionStep } from "../type-guards";
+import { ActionStep, Step } from "../workflow-template";
+import { handleTemplateTokenErrors } from "./handle-errors";
+import { IdBuilder } from "./id-builder";
+import { TokenType } from "../../templates/tokens/types";
 
 export function convertSteps(context: TemplateContext, steps: TemplateToken): Step[] {
   if (!isSequence(steps)) {
@@ -78,7 +79,12 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
         env = item.value.assertMapping("step env");
         break;
       case "continue-on-error":
-        continueOnError = item.value.assertBoolean("steps item continue-on-error").value;
+        if (!item.value.isExpression) {
+          continueOnError = item.value.assertBoolean("steps item continue-on-error").value;
+        } else {
+          // get the value of the expression
+
+        }
     }
   }
 
