@@ -81,9 +81,6 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
       case "continue-on-error":
         if (!item.value.isExpression) {
           continueOnError = item.value.assertBoolean("steps item continue-on-error").value;
-        } else {
-          // get the value of the expression
-
         }
     }
   }
