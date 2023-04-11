@@ -51,7 +51,7 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
   let id: StringToken | undefined;
   let name: ScalarToken | undefined;
   let uses: StringToken | undefined;
-  let continueOnError: boolean | undefined;
+  let continueOnError: boolean | ScalarToken | undefined;
   let env: MappingToken | undefined;
   const ifCondition = new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined);
   for (const item of mapping) {
@@ -81,6 +81,8 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
       case "continue-on-error":
         if (!item.value.isExpression) {
           continueOnError = item.value.assertBoolean("steps item continue-on-error").value;
+        } else {
+          continueOnError = item.value.assertScalar("steps item continue-on-error");
         }
     }
   }
