@@ -1,10 +1,10 @@
-import { TemplateContext } from "../../templates/template-context";
-import { BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken } from "../../templates/tokens";
-import { isSequence } from "../../templates/tokens/type-guards";
-import { isActionStep } from "../type-guards";
-import { ActionStep, Step } from "../workflow-template";
-import { handleTemplateTokenErrors } from "./handle-errors";
-import { IdBuilder } from "./id-builder";
+import {TemplateContext} from "../../templates/template-context";
+import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
+import {isSequence} from "../../templates/tokens/type-guards";
+import {isActionStep} from "../type-guards";
+import {ActionStep, Step} from "../workflow-template";
+import {handleTemplateTokenErrors} from "./handle-errors";
+import {IdBuilder} from "./id-builder";
 
 export function convertSteps(context: TemplateContext, steps: TemplateToken): Step[] {
   if (!isSequence(steps)) {
