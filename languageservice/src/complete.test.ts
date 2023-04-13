@@ -481,6 +481,6 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result.filter(x => x.label === "cancel-in-progress").map(x => x.textEdit?.newText)).toEqual(["\n  cancel-in-progress: "])
-    expect(result.filter(x => x.label === "group").map(x => x.textEdit?.newText)).toEqual(["\n  : "])
+    expect(result.filter(x => x.label === "group").map(x => x.textEdit?.newText)).toEqual(["\n  group: "])
   })
 });
