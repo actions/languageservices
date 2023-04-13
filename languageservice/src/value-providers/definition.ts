@@ -76,7 +76,7 @@ function mappingValues(
             break;
 
           case DefinitionType.Boolean:
-            insertText = `${indentation}${key}: `;
+            insertText = `\n${indentation}${key}: `;
             break;
 
           default:
