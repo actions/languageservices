@@ -86,7 +86,7 @@ type BaseStep = {
   id: string;
   name?: ScalarToken;
   if: BasicExpressionToken;
-  "continue-on-error"?: boolean;
+  "continue-on-error"?: boolean | ScalarToken;
   env?: MappingToken;
 };
 
