@@ -32,8 +32,8 @@ export function getFileProvider(
       }
 
       const workspaceURI = vscodeURI.URI.parse(workspace);
-      const path = vscodeURI.Utils.joinPath(workspaceURI, ref.path);
-      const file = await readFile(path.toString());
+      const refURI = vscodeURI.Utils.joinPath(workspaceURI, ref.path);
+      const file = await readFile(refURI.toString());
 
       if (!file) {
         throw new Error(`File not found: ${ref.path}`);
