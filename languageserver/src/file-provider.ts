@@ -2,9 +2,8 @@ import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {fileIdentifier} from "@actions/workflow-parser/workflows/file-reference";
 import {Octokit} from "@octokit/rest";
-import path from "path";
 import {TTLCache} from "./utils/cache";
-import vscodeURI from "vscode-uri/lib/umd"; // work around issues with the vscode-uri package
+import vscodeURI from "vscode-uri/lib/umd";
 
 export function getFileProvider(
   client: Octokit | undefined,
