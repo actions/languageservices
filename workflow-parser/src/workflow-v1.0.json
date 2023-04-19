@@ -577,7 +577,8 @@
       "mapping": {
         "properties": {
           "types": "merge-group-activity",
-          "branches": "event-branches"
+          "branches": "event-branches",
+          "branches-ignore": "event-branches-ignore"
         }
       }
     },
