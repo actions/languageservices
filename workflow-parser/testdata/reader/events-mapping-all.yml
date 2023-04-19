@@ -77,6 +77,8 @@ on:
         - main
     types: 
       - checks_requested
+    branches_ignore:
+      - develop
   milestone:
     types:
       - created
@@ -323,6 +325,9 @@ jobs:
       ],
       "types": [
         "checks_requested"
+      ],
+      "branches_ignore": [
+        "develop"
       ]
     },
     "milestone": {
