@@ -75,10 +75,10 @@ on:
     branches: 
       - master 
       - main
-    types: 
-      - checks_requested
     branches-ignore:
       - develop
+    types: 
+      - checks_requested
   milestone:
     types:
       - created
@@ -323,11 +323,11 @@ jobs:
         "master",
         "main"
       ],
-      "types": [
-        "checks_requested"
-      ],
       "branches-ignore": [
         "develop"
+      ],
+      "types": [
+        "checks_requested"
       ]
     },
     "milestone": {
