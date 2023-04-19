@@ -73,8 +73,8 @@ on:
       - deleted
   merge_group:
     branches: 
-        - master 
-        - main
+      - master 
+      - main
     types: 
       - checks_requested
     branches-ignore:
