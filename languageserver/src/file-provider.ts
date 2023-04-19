@@ -2,8 +2,8 @@ import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {fileIdentifier} from "@actions/workflow-parser/workflows/file-reference";
 import {Octokit} from "@octokit/rest";
-import path from "path";
 import {TTLCache} from "./utils/cache";
+import vscodeURI from "vscode-uri/lib/umd";
 
 export function getFileProvider(
   client: Octokit | undefined,
@@ -31,7 +31,10 @@ export function getFileProvider(
         throw new Error("Local file references are not supported with this configuration");
       }
 
-      const file = await readFile(path.join(workspace, ref.path));
+      const workspaceURI = vscodeURI.URI.parse(workspace);
+      const refURI = vscodeURI.Utils.joinPath(workspaceURI, ref.path);
+      const file = await readFile(refURI.toString());
+
       if (!file) {
         throw new Error(`File not found: ${ref.path}`);
       }
