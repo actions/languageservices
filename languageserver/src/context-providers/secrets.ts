@@ -1,15 +1,15 @@
-import {data, DescriptionDictionary} from "@actions/expressions";
-import {StringData} from "@actions/expressions/data/string";
-import {Mode} from "@actions/languageservice/context-providers/default";
-import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
-import {warn} from "@actions/languageservice/log";
-import {isMapping, isString} from "@actions/workflow-parser";
-import {Octokit} from "@octokit/rest";
+import { data, DescriptionDictionary } from "@actions/expressions";
+import { StringData } from "@actions/expressions/data/string";
+import { Mode } from "@actions/languageservice/context-providers/default";
+import { WorkflowContext } from "@actions/languageservice/context/workflow-context";
+import { warn } from "@actions/languageservice/log";
+import { isMapping, isString } from "@actions/workflow-parser";
+import { Octokit } from "@octokit/rest";
 
-import {RepositoryContext} from "../initializationOptions";
-import {TTLCache} from "../utils/cache";
-import {errorStatus} from "../utils/error";
-import {getRepoPermission} from "../utils/repo-permission";
+import { RepositoryContext } from "../initializationOptions";
+import { TTLCache } from "../utils/cache";
+import { errorStatus } from "../utils/error";
+import { getRepoPermission } from "../utils/repo-permission";
 
 export async function getSecrets(
   workflowContext: WorkflowContext,
@@ -28,6 +28,8 @@ export async function getSecrets(
   }
 
   const eventsConfig = workflowContext?.template?.events;
+  const dynamicEnv = workflowContext?.template?.env
+
   if (eventsConfig?.workflow_call) {
     // Unpredictable secrets may be passed in via a workflow_call trigger
     secretsContext.complete = false;
@@ -38,6 +40,7 @@ export async function getSecrets(
   }
 
   let environmentName: string | undefined;
+
   if (workflowContext?.job?.environment) {
     if (isString(workflowContext.job.environment)) {
       environmentName = workflowContext.job.environment.value;
@@ -50,6 +53,25 @@ export async function getSecrets(
           break;
         }
       }
+    }
+  }
+
+
+  let isDynamicEnv = false;
+  if (workflowContext.job?.environment && isMapping(workflowContext.job.environment)) {
+    for (const k of workflowContext.job.environment) {
+      // check if the value starts with ${{ 
+      if (isString(k.value) && k.value.value.startsWith("${{")) {
+        isDynamicEnv = true;
+      }
+    }
+  }
+
+  console.log(`isDynamicEnv: ${isDynamicEnv}`)
+  if (isDynamicEnv) {
+    secretsContext.complete = false;
+    if (mode === Mode.Validation) {
+      return secretsContext;
     }
   }
 
@@ -171,7 +193,7 @@ async function fetchOrganizationSecrets(octokit: Octokit, repo: RepositoryContex
   }
 
   try {
-    const secrets: {name: string}[] = await octokit.paginate("GET /repos/{owner}/{repo}/actions/organization-secrets", {
+    const secrets: { name: string }[] = await octokit.paginate("GET /repos/{owner}/{repo}/actions/organization-secrets", {
       owner: repo.owner,
       repo: repo.name,
       per_page: 100
