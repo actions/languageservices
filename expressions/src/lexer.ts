@@ -179,6 +179,7 @@ export class Lexer {
           break;
 
         case "'":
+        case '"':
           this.consumeString();
           break;
 
@@ -299,8 +300,13 @@ export class Lexer {
   }
 
   private consumeString() {
-    while ((this.peek() !== "'" || this.peekNext() === "'") && !this.atEnd()) {
+    // TODO: Should I make these consume double quotes as well?
+    const isSingleQuote = (this.peek() !== "'" || this.peekNext() === "'");
+    const isDoubleQuote = (this.peek() !== '"' || this.peekNext() === '"');
+
+    while ((isSingleQuote || isDoubleQuote) && !this.atEnd()) {
       if (this.peek() === "\n") this.line++;
+      // TODO: Should I also add this for double quotes?
       if (this.peek() === "'" && this.peekNext() === "'") {
         // Escaped "'", consume
         this.next();
