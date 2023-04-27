@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=$(cat package.json | jq -r '.version')
+VERSION=$(cat lerna.json | jq -r '.version')
 
 echo "Current version: $VERSION"
 echo "Incrementing $1 version"
