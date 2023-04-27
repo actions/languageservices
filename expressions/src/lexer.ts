@@ -301,8 +301,8 @@ export class Lexer {
 
   private consumeString() {
     // TODO: Should I make these consume double quotes as well?
-    const isSingleQuote = (this.peek() !== "'" || this.peekNext() === "'");
-    const isDoubleQuote = (this.peek() !== '"' || this.peekNext() === '"');
+    const isSingleQuote = this.peek() !== "'" || this.peekNext() === "'";
+    const isDoubleQuote = this.peek() !== '"' || this.peekNext() === '"';
 
     while ((isSingleQuote || isDoubleQuote) && !this.atEnd()) {
       if (this.peek() === "\n") this.line++;
