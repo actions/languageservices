@@ -24,10 +24,10 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - name: Check if version has changed
         id: check-version
-        uses: actions/github-script@v6
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410
         with:
           script: |
             const version = '${{ inputs.version }}' || require('./lerna.json').version;
@@ -65,9 +65,9 @@ jobs:
       PKG_VERSION: "" # will be set in the workflow
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c
         with:
           node-version: 16.x
           cache: "npm"
@@ -80,7 +80,7 @@ jobs:
       - run: npm ci
 
       - name: Create release
-        uses: actions/github-script@v6
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410
         with:
           script: |
             const fs = require("fs");
