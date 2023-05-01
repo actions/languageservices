@@ -3,9 +3,8 @@ import { Agent } from "node:https";
 import { readFileSync } from "fs";
 
 export function getClient(token: string, userAgent?: string): Octokit {
-  const selfSignedCertPath = process.env.NODE_EXTRA_CA_CERTS;
+  const selfSignedCertPath = process.env.PATH_TO_SELF_SIGNED_CERT;
 
-  // if NODE_EXTRA_CA_CERTS is set then use the self-signed cert to make the request
   if (selfSignedCertPath) {
     const httpsAgent = new Agent({
       ca: readFileSync(selfSignedCertPath)
