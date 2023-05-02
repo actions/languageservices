@@ -15,17 +15,16 @@ LAST_RELEASE_PR=$1
 NEW_RELEASE=$2
 
 #get when the last release was merged
-LAST_RELEASE_MERGED_AT=$(gh pr view $LAST_RELEASE_PR --repo actions/languageservices --json mergedAt  | jq -r '.mergedAt')
+LAST_RELEASE_MERGED_AT=$(gh pr view $LAST_RELEASE_PR --repo github/vscode-github-actions --json mergedAt  | jq -r '.mergedAt')
 
-CHANGELIST=$(gh pr list --repo actions/languageservices --base main --state merged --json title --search "merged:>$LAST_RELEASE_MERGED_AT -label:no-release")
+CHANGELIST=$(gh pr list --repo github/vscode-github-actions --base main --state merged --json title --search "merged:>$LAST_RELEASE_MERGED_AT -label:no-release")
 
 # store the release notes in a variable so we can use it later
 
-RELEASE_NOTES="Release $NEW_RELEASE"
+echo "Release $NEW_RELEASE" >> releasenotes.md
 
-UPDATED=$(echo $CHANGELIST | jq -r '.[].title' | while read line; do
-  echo " - $line \n";
-done)
+echo $CHANGELIST | jq -r '.[].title' | while read line; do
+  echo " - $line" >> releasenotes.md
+done
 
-RELEASE_NOTES="$RELEASE_NOTES\n$UPDATED"
-echo $RELEASE_NOTES
+echo " "
