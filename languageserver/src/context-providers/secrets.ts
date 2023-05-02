@@ -50,12 +50,15 @@ export async function getSecrets(
           if (isString(x.value)) {
             environmentName = x.value.value;
           } else {
+            // this means we have a dynamic enviornment, in those situations we 
+            // want to make sure we skip doing secret validation
             secretsContext.complete = false;
           }
           break;
         }
       }
     } else {
+      // if the expression is something like environment: ${{ ... }} then we want to skip validation 
       secretsContext.complete = false;
     }
   }
