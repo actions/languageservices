@@ -28,7 +28,6 @@ export async function getSecrets(
   }
 
   const eventsConfig = workflowContext?.template?.events;
-  const dynamicEnv = workflowContext?.template?.env;
 
   if (eventsConfig?.workflow_call) {
     // Unpredictable secrets may be passed in via a workflow_call trigger
