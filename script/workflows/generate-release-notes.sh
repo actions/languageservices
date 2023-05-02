@@ -6,13 +6,15 @@
 # the script then grabs every pull request merged since that pull request
 # and outputs a string of release notes
 
-echo "Generating release notes for $2"
+# get the new release number
+NEW_RELEASE=$2
+
+echo "Generating release notes for $NEW_RELEASE"
 
 # get the last release pull request id
 LAST_RELEASE_PR=$1
 
-# get the new release number
-NEW_RELEASE=$2
+
 
 #get when the last release was merged
 LAST_RELEASE_MERGED_AT=$(gh pr view $LAST_RELEASE_PR --repo github/languageservices --json mergedAt  | jq -r '.mergedAt')
