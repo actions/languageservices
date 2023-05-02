@@ -49,36 +49,17 @@ export async function getSecrets(
         if (isString(x.key) && x.key.value === "name") {
           if (isString(x.value)) {
             environmentName = x.value.value;
-          }
-          break;
-        }
-      }
-    }
-  }
-
-  let isDynamicEnv = true;
-
-  if (workflowContext?.job?.environment) {
-    if (isMapping(workflowContext.job.environment)) {
-      for (const x of workflowContext.job.environment) {
-        if (isString(x.key) && x.key.value === "name") {
-          if (isString(x.value)) {
-            environmentName = x.value.value;
           } else {
-            isDynamicEnv = true;
+            secretsContext.complete = false;
           }
           break;
         }
       }
+    } else {
+      secretsContext.complete = false;
     }
   }
 
-  console.log(`isDynamicEnv: ${isDynamicEnv}`)
-  console.log(`environmentName: ${environmentName}`)
-  // if (isDynamicEnv) {
-  secretsContext.complete = false;
-  return secretsContext;
-  // }
 
   const secrets = await getRemoteSecrets(octokit, cache, repo, environmentName);
 
