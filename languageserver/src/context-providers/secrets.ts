@@ -1,15 +1,15 @@
-import { data, DescriptionDictionary } from "@actions/expressions";
-import { StringData } from "@actions/expressions/data/string";
-import { Mode } from "@actions/languageservice/context-providers/default";
-import { WorkflowContext } from "@actions/languageservice/context/workflow-context";
-import { warn } from "@actions/languageservice/log";
-import { isMapping, isString } from "@actions/workflow-parser";
-import { Octokit } from "@octokit/rest";
+import {data, DescriptionDictionary} from "@actions/expressions";
+import {StringData} from "@actions/expressions/data/string";
+import {Mode} from "@actions/languageservice/context-providers/default";
+import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
+import {warn} from "@actions/languageservice/log";
+import {isMapping, isString} from "@actions/workflow-parser";
+import {Octokit} from "@octokit/rest";
 
-import { RepositoryContext } from "../initializationOptions";
-import { TTLCache } from "../utils/cache";
-import { errorStatus } from "../utils/error";
-import { getRepoPermission } from "../utils/repo-permission";
+import {RepositoryContext} from "../initializationOptions";
+import {TTLCache} from "../utils/cache";
+import {errorStatus} from "../utils/error";
+import {getRepoPermission} from "../utils/repo-permission";
 
 export async function getSecrets(
   workflowContext: WorkflowContext,
@@ -181,7 +181,7 @@ async function fetchOrganizationSecrets(octokit: Octokit, repo: RepositoryContex
   }
 
   try {
-    const secrets: { name: string }[] = await octokit.paginate("GET /repos/{owner}/{repo}/actions/organization-secrets", {
+    const secrets: {name: string}[] = await octokit.paginate("GET /repos/{owner}/{repo}/actions/organization-secrets", {
       owner: repo.owner,
       repo: repo.name,
       per_page: 100
