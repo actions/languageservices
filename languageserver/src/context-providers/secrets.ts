@@ -28,7 +28,7 @@ export async function getSecrets(
   }
 
   const eventsConfig = workflowContext?.template?.events;
-  const dynamicEnv = workflowContext?.template?.env
+  const dynamicEnv = workflowContext?.template?.env;
 
   if (eventsConfig?.workflow_call) {
     // Unpredictable secrets may be passed in via a workflow_call trigger
@@ -50,7 +50,7 @@ export async function getSecrets(
           if (isString(x.value)) {
             environmentName = x.value.value;
           } else {
-            // this means we have a dynamic enviornment, in those situations we 
+            // this means we have a dynamic enviornment, in those situations we
             // want to make sure we skip doing secret validation
             secretsContext.complete = false;
           }
@@ -58,11 +58,10 @@ export async function getSecrets(
         }
       }
     } else {
-      // if the expression is something like environment: ${{ ... }} then we want to skip validation 
+      // if the expression is something like environment: ${{ ... }} then we want to skip validation
       secretsContext.complete = false;
     }
   }
-
 
   const secrets = await getRemoteSecrets(octokit, cache, repo, environmentName);
 
