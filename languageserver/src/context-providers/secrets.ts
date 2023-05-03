@@ -28,6 +28,7 @@ export async function getSecrets(
   }
 
   const eventsConfig = workflowContext?.template?.events;
+
   if (eventsConfig?.workflow_call) {
     // Unpredictable secrets may be passed in via a workflow_call trigger
     secretsContext.complete = false;
@@ -38,6 +39,7 @@ export async function getSecrets(
   }
 
   let environmentName: string | undefined;
+
   if (workflowContext?.job?.environment) {
     if (isString(workflowContext.job.environment)) {
       environmentName = workflowContext.job.environment.value;
@@ -46,10 +48,17 @@ export async function getSecrets(
         if (isString(x.key) && x.key.value === "name") {
           if (isString(x.value)) {
             environmentName = x.value.value;
+          } else {
+            // this means we have a dynamic enviornment, in those situations we
+            // want to make sure we skip doing secret validation
+            secretsContext.complete = false;
           }
           break;
         }
       }
+    } else {
+      // if the expression is something like environment: ${{ ... }} then we want to skip validation
+      secretsContext.complete = false;
     }
   }
 
