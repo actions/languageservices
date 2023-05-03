@@ -35,7 +35,7 @@ jobs:
 );
 ```
 
-`convertWorkflowTemplate` then takes that intermediate representation and converts it to a [`WorkflowTemplate`](./src/workflow-template.ts) object, which is a more convenient representation for working with workflows.
+`convertWorkflowTemplate` then takes that intermediate representation and converts it to a [`WorkflowTemplate`](./src/model/workflow-template.ts) object, which is a more convenient representation for working with workflows.
 
 ```typescript
 const workflowTemplate = await convertWorkflowTemplate(result.context, result.value);
