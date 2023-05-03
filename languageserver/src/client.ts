@@ -1,13 +1,15 @@
 import {Octokit} from "@octokit/rest";
 import {Agent} from "node:https";
-import {readFileSync} from "fs";
+import { CertificateReader } from "./certificate-reader";
 
 export function getClient(token: string, userAgent?: string): Octokit {
-  const selfSignedCertPath = process.env.PATH_TO_SELF_SIGNED_CERT;
 
-  if (selfSignedCertPath) {
+  const certReader = new CertificateReader();
+  const selfSignedCerts = certReader.getAllRootCAs();
+
+  if (selfSignedCerts.length > 0) {
     const httpsAgent = new Agent({
-      ca: readFileSync(selfSignedCertPath)
+      ca: selfSignedCerts,
     });
 
     return new Octokit({
