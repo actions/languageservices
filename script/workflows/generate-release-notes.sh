@@ -17,9 +17,9 @@ LAST_RELEASE_PR=$1
 
 
 #get when the last release was merged
-LAST_RELEASE_MERGED_AT=$(gh pr view $LAST_RELEASE_PR --repo github/languageservices --json mergedAt  | jq -r '.mergedAt')
+LAST_RELEASE_MERGED_AT=$(gh pr view $LAST_RELEASE_PR --repo actions/languageservices --json mergedAt  | jq -r '.mergedAt')
 
-CHANGELIST=$(gh pr list --repo github/languageservices --base main --state merged --json title --search "merged:>$LAST_RELEASE_MERGED_AT -label:no-release")
+CHANGELIST=$(gh pr list --repo actions/languageservices --base main --state merged --json title --search "merged:>$LAST_RELEASE_MERGED_AT -label:no-release")
 
 # store the release notes in a variable so we can use it later
 
