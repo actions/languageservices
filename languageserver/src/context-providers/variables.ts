@@ -5,7 +5,7 @@ import {WorkflowContext} from "@actions/languageservice/context/workflow-context
 import {log, warn} from "@actions/languageservice/log";
 import {isMapping, isString} from "@actions/workflow-parser";
 import {Octokit} from "@octokit/rest";
-import {RequestError} from "@octokit/types";
+import {RequestError} from "@octokit/request-error";
 
 import {RepositoryContext} from "../initializationOptions";
 import {TTLCache} from "../utils/cache";
@@ -88,9 +88,9 @@ export async function getVariables(
       .forEach(variable => variablesContext?.add(variable.key, variable.value, variable.description));
 
     return variablesContext;
-  } catch (e: any) {
-    const requestError: RequestError = e;
-    if (requestError.name == "HttpError" && requestError.status == 404) {
+  } catch (e) {
+    if (!(e instanceof RequestError)) throw e;
+    if (e.name == "HttpError" && e.status == 404) {
       log("Failure to request variables. Ignore if you're using GitHub Enterprise Server below version 3.8");
       return variablesContext;
     } else throw e;
