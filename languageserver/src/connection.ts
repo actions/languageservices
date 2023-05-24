@@ -51,7 +51,7 @@ export function initConnection(connection: Connection) {
     const options = params.initializationOptions as InitializationOptions;
 
     if (options.sessionToken) {
-      client = getClient(options.sessionToken, options.userAgent, options.githubApiUrl);
+      client = getClient(options.sessionToken, options.userAgent, options.gitHubApiUrl);
     }
 
     if (options.repos) {
