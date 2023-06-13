@@ -23,6 +23,11 @@ export interface InitializationOptions {
    * Desired log level
    */
   logLevel?: LogLevel;
+
+  /**
+   * If a GitHub Enterprise Server should be used, the URL of the API endpoint, eg "https://ghe.my-company.com/api/v3"
+   */
+  gitHubApiUrl?: string;
 }
 
 export interface RepositoryContext {

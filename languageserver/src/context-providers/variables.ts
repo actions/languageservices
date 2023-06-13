@@ -2,9 +2,10 @@ import {data, DescriptionDictionary} from "@actions/expressions";
 import {Pair} from "@actions/expressions/data/expressiondata";
 import {StringData} from "@actions/expressions/data/index";
 import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
-import {warn} from "@actions/languageservice/log";
+import {log, warn} from "@actions/languageservice/log";
 import {isMapping, isString} from "@actions/workflow-parser";
 import {Octokit} from "@octokit/rest";
+import {RequestError} from "@octokit/request-error";
 
 import {RepositoryContext} from "../initializationOptions";
 import {TTLCache} from "../utils/cache";
@@ -42,50 +43,58 @@ export async function getVariables(
   }
 
   const variablesContext = defaultContext || new DescriptionDictionary();
-  const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
+  try {
+    const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
 
-  // Build combined map of variables
-  const variablesMap = new Map<
-    string,
-    {
-      key: string;
-      value: data.StringData;
-      description?: string;
-    }
-  >();
+    // Build combined map of variables
+    const variablesMap = new Map<
+      string,
+      {
+        key: string;
+        value: data.StringData;
+        description?: string;
+      }
+    >();
 
-  variables.organizationVariables.forEach(variable =>
-    variablesMap.set(variable.key.toLowerCase(), {
-      key: variable.key,
-      value: new data.StringData(variable.value.coerceString()),
-      description: `${variable.value.coerceString()} - Organization variable`
-    })
-  );
+    variables.organizationVariables.forEach(variable =>
+      variablesMap.set(variable.key.toLowerCase(), {
+        key: variable.key,
+        value: new data.StringData(variable.value.coerceString()),
+        description: `${variable.value.coerceString()} - Organization variable`
+      })
+    );
 
-  // Override org variables with repo variables
-  variables.repoVariables.forEach(variable =>
-    variablesMap.set(variable.key.toLowerCase(), {
-      key: variable.key,
-      value: new data.StringData(variable.value.coerceString()),
-      description: `${variable.value.coerceString()} - Repository variable`
-    })
-  );
+    // Override org variables with repo variables
+    variables.repoVariables.forEach(variable =>
+      variablesMap.set(variable.key.toLowerCase(), {
+        key: variable.key,
+        value: new data.StringData(variable.value.coerceString()),
+        description: `${variable.value.coerceString()} - Repository variable`
+      })
+    );
 
-  // Override repo variables with environment veriables (if defined)
-  variables.environmentVariables.forEach(variable =>
-    variablesMap.set(variable.key.toLowerCase(), {
-      key: variable.key,
-      value: new data.StringData(variable.value.coerceString()),
-      description: `${variable.value.coerceString()} - Variable for environment \`${environmentName || ""}\``
-    })
-  );
+    // Override repo variables with environment veriables (if defined)
+    variables.environmentVariables.forEach(variable =>
+      variablesMap.set(variable.key.toLowerCase(), {
+        key: variable.key,
+        value: new data.StringData(variable.value.coerceString()),
+        description: `${variable.value.coerceString()} - Variable for environment \`${environmentName || ""}\``
+      })
+    );
 
-  // Sort variables by key and add to context
-  Array.from(variablesMap.values())
-    .sort((a, b) => a.key.localeCompare(b.key))
-    .forEach(variable => variablesContext?.add(variable.key, variable.value, variable.description));
+    // Sort variables by key and add to context
+    Array.from(variablesMap.values())
+      .sort((a, b) => a.key.localeCompare(b.key))
+      .forEach(variable => variablesContext?.add(variable.key, variable.value, variable.description));
 
-  return variablesContext;
+    return variablesContext;
+  } catch (e) {
+    if (!(e instanceof RequestError)) throw e;
+    if (e.name == "HttpError" && e.status == 404) {
+      log("Failure to request variables. Ignore if you're using GitHub Enterprise Server below version 3.8");
+      return variablesContext;
+    } else throw e;
+  }
 }
 
 export async function getRemoteVariables(
