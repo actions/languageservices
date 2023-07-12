@@ -1183,7 +1183,7 @@
       ]
     },
     "workflow-run-activity": {
-      "description": "The types of workflow run activity that trigger the workflow. Suupported activity types: `completed`, `requested`, `in_progress`.",
+      "description": "The types of workflow run activity that trigger the workflow. Supported activity types: `completed`, `requested`, `in_progress`.",
       "one-of": [
         "workflow-run-activity-type",
         "workflow-run-activity-types"
@@ -2489,7 +2489,7 @@
       "string": {
         "require-non-empty": true
       },
-      "description": "Use `shell` to override the default shell settings in the runner's operating system. You can use built-in shell keywords, or you can define a custom set of shell options. The shell command that is run internally executes a temporary file that contains the comands specified in `run`."
+      "description": "Use `shell` to override the default shell settings in the runner's operating system. You can use built-in shell keywords, or you can define a custom set of shell options. The shell command that is run internally executes a temporary file that contains the commands specified in `run`."
     },
     "working-directory": {
       "string": {
