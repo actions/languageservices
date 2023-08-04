@@ -4,8 +4,8 @@ import {complete} from "./complete";
 import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {TestLogger} from "./test-utils/logger";
-import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {clearCache} from "./utils/workflow-cache";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 
 registerLogger(new TestLogger());
 
@@ -475,7 +475,7 @@ jobs:
     });
   });
 
-  it("adds a new line and indentation for mapping keys", async () => {
+  it("adds a new line and indentation for mapping keys when the key is given", async () => {
     const input = "concurrency: |";
 
     const result = await complete(...getPositionFromCursor(input));
@@ -484,5 +484,13 @@ jobs:
       "\n  cancel-in-progress: "
     ]);
     expect(result.filter(x => x.label === "group").map(x => x.textEdit?.newText)).toEqual(["\n  group: "]);
+  });
+
+  it("does not add new line if no key in line", async () => {
+    const input = "run-n|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result.filter(x => x.label === "run-name").map(x => x.textEdit?.newText)).toEqual(["run-name: "]);
   });
 });

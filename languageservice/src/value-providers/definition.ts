@@ -9,15 +9,30 @@ import {getWorkflowSchema} from "@actions/workflow-parser/workflows/workflow-sch
 import {Value} from "./config";
 import {stringsToValues} from "./strings-to-values";
 
-export function definitionValues(def: Definition, indentation: string): Value[] {
+export enum DefinitionValueMode {
+  /**
+   * We're getting completion options for a parent token
+   * foo:
+   *   ba|
+   */
+  Parent,
+
+  /**
+   * We're getting completion options for a key token. For example:
+   * foo: |
+   */
+  Key
+}
+
+export function definitionValues(def: Definition, indentation: string, mode: DefinitionValueMode): Value[] {
   const schema = getWorkflowSchema();
 
   if (def instanceof MappingDefinition) {
-    return mappingValues(def, schema.definitions, indentation);
+    return mappingValues(def, schema.definitions, indentation, mode);
   }
 
   if (def instanceof OneOfDefinition) {
-    return oneOfValues(def, schema.definitions, indentation);
+    return oneOfValues(def, schema.definitions, indentation, mode);
   }
 
   if (def instanceof BooleanDefinition) {
@@ -36,7 +51,7 @@ export function definitionValues(def: Definition, indentation: string): Value[] 
   if (def instanceof SequenceDefinition) {
     const itemDef = schema.getDefinition(def.itemType);
     if (itemDef) {
-      return definitionValues(itemDef, indentation);
+      return definitionValues(itemDef, indentation, mode);
     }
   }
 
@@ -46,7 +61,8 @@ export function definitionValues(def: Definition, indentation: string): Value[] 
 function mappingValues(
   mappingDefinition: MappingDefinition,
   definitions: {[key: string]: Definition},
-  indentation: string
+  indentation: string,
+  mode: DefinitionValueMode
 ): Value[] {
   const properties: Value[] = [];
   for (const [key, value] of Object.entries(mappingDefinition.properties)) {
@@ -73,8 +89,13 @@ function mappingValues(
 
           case DefinitionType.String:
           case DefinitionType.Boolean:
-            insertText = `\n${indentation}${key}: `;
+            if (mode == DefinitionValueMode.Key) {
+              insertText = `\n${indentation}${key}: `;
+            } else {
+              insertText = `${key}: `;
+            }
             break;
+
           default:
             insertText = `${key}: `;
         }
@@ -93,11 +114,12 @@ function mappingValues(
 function oneOfValues(
   oneOfDefinition: OneOfDefinition,
   definitions: {[key: string]: Definition},
-  indentation: string
+  indentation: string,
+  mode: DefinitionValueMode
 ): Value[] {
   const values: Value[] = [];
   for (const key of oneOfDefinition.oneOf) {
-    values.push(...definitionValues(definitions[key], indentation));
+    values.push(...definitionValues(definitions[key], indentation, mode));
   }
   return distinctValues(values);
 }

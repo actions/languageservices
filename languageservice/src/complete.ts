@@ -24,7 +24,7 @@ import {isPlaceholder, transform} from "./utils/transform";
 import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
 import {Value, ValueProviderConfig} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
-import {definitionValues} from "./value-providers/definition";
+import {DefinitionValueMode, definitionValues} from "./value-providers/definition";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
@@ -180,7 +180,7 @@ async function getValues(
     return [];
   }
 
-  const values = definitionValues(def, indentation);
+  const values = definitionValues(def, indentation, keyToken ? DefinitionValueMode.Key : DefinitionValueMode.Parent);
   return filterAndSortCompletionOptions(values, existingValues);
 }
 
