@@ -76,15 +76,27 @@ function mappingValues(
       if (typeDef) {
         switch (typeDef.definitionType) {
           case DefinitionType.Sequence:
-            insertText = `${key}:\n${indentation}- `;
+            if (mode == DefinitionValueMode.Key) {
+              insertText = `\n${indentation}${key}:\n${indentation}${indentation}- `;
+            } else {
+              insertText = `${key}:\n${indentation}- `;
+            }
             break;
 
           case DefinitionType.Mapping:
-            insertText = `${key}:\n${indentation}`;
+            if (mode == DefinitionValueMode.Key) {
+              insertText = `\n${indentation}${key}:\n${indentation}${indentation}`;
+            } else {
+              insertText = `${key}:\n${indentation}`;
+            }
             break;
 
           case DefinitionType.OneOf:
-            // No special insertText in this case
+            if (mode == DefinitionValueMode.Parent) {
+              insertText = `${key}: `;
+            } else {
+              // No special insertText in this case
+            }
             break;
 
           case DefinitionType.String:

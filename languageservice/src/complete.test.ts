@@ -493,4 +493,28 @@ jobs:
 
     expect(result.filter(x => x.label === "run-name").map(x => x.textEdit?.newText)).toEqual(["run-name: "]);
   });
+
+  it("adds new line for nested mapping", async () => {
+    const input = "on:\n  workflow_dispatch: in|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result.filter(x => x.label === "inputs").map(x => x.textEdit?.newText)).toEqual(["\n  inputs:\n    "]);
+  });
+
+  it("adds : for one-of", async () => {
+    const input = "on:\n  check_run:\n    ty|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["types: "]);
+  });
+
+  it("does not add : for one-of in key mode", async () => {
+    const input = "on:\n  check_run: ty|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["types"]);
+  });
 });
