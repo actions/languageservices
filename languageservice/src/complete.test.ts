@@ -4,8 +4,8 @@ import {complete} from "./complete";
 import {registerLogger} from "./log";
 import {getPositionFromCursor} from "./test-utils/cursor-position";
 import {TestLogger} from "./test-utils/logger";
-import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {clearCache} from "./utils/workflow-cache";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 
 registerLogger(new TestLogger());
 
@@ -406,7 +406,7 @@ jobs:
     expect(result.map(e => e.label)).toContain("runs-on");
 
     const textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
-    expect(textEdit.newText).toEqual("runs-on");
+    expect(textEdit.newText).toEqual("runs-on: ");
     expect(textEdit.range).toEqual({
       start: {line: 3, character: 4},
       end: {line: 3, character: 10}
@@ -421,7 +421,7 @@ jobs:
     expect(result.map(e => e.label)).toContain("runs-on");
 
     const textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
-    expect(textEdit.newText).toEqual("runs-on");
+    expect(textEdit.newText).toEqual("runs-on: ");
     expect(textEdit.range).toEqual({
       start: {line: 3, character: 4},
       end: {line: 3, character: 4}
@@ -448,7 +448,7 @@ jobs:
       ]);
 
       // One-of
-      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency"]);
+      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency: "]);
     });
 
     it("custom indentation", async () => {
@@ -471,11 +471,11 @@ jobs:
       ]);
 
       // One-of
-      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency"]);
+      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency: "]);
     });
   });
 
-  it("adds a new line and indentation for mapping keys", async () => {
+  it("adds a new line and indentation for mapping keys when the key is given", async () => {
     const input = "concurrency: |";
 
     const result = await complete(...getPositionFromCursor(input));
@@ -484,5 +484,37 @@ jobs:
       "\n  cancel-in-progress: "
     ]);
     expect(result.filter(x => x.label === "group").map(x => x.textEdit?.newText)).toEqual(["\n  group: "]);
+  });
+
+  it("does not add new line if no key in line", async () => {
+    const input = "run-n|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result.filter(x => x.label === "run-name").map(x => x.textEdit?.newText)).toEqual(["run-name: "]);
+  });
+
+  it("adds new line for nested mapping", async () => {
+    const input = "on:\n  workflow_dispatch: in|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result.filter(x => x.label === "inputs").map(x => x.textEdit?.newText)).toEqual(["\n  inputs:\n    "]);
+  });
+
+  it("adds : for one-of", async () => {
+    const input = "on:\n  check_run:\n    ty|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["types: "]);
+  });
+
+  it("does not add : for one-of in key mode", async () => {
+    const input = "on:\n  check_run: ty|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["types"]);
   });
 });
