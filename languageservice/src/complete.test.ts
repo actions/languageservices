@@ -406,7 +406,7 @@ jobs:
     expect(result.map(e => e.label)).toContain("runs-on");
 
     const textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
-    expect(textEdit.newText).toEqual("runs-on");
+    expect(textEdit.newText).toEqual("runs-on: ");
     expect(textEdit.range).toEqual({
       start: {line: 3, character: 4},
       end: {line: 3, character: 10}
@@ -421,7 +421,7 @@ jobs:
     expect(result.map(e => e.label)).toContain("runs-on");
 
     const textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
-    expect(textEdit.newText).toEqual("runs-on");
+    expect(textEdit.newText).toEqual("runs-on: ");
     expect(textEdit.range).toEqual({
       start: {line: 3, character: 4},
       end: {line: 3, character: 4}
@@ -448,7 +448,7 @@ jobs:
       ]);
 
       // One-of
-      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency"]);
+      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency: "]);
     });
 
     it("custom indentation", async () => {
@@ -471,7 +471,7 @@ jobs:
       ]);
 
       // One-of
-      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency"]);
+      expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency: "]);
     });
   });
 
