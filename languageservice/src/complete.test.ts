@@ -474,15 +474,3 @@ jobs:
       expect(result.filter(x => x.label === "concurrency").map(x => x.textEdit?.newText)).toEqual(["concurrency"]);
     });
   });
-
-  it("adds a new line and indentation for mapping keys", async () => {
-    const input = "concurrency: |";
-
-    const result = await complete(...getPositionFromCursor(input));
-
-    expect(result.filter(x => x.label === "cancel-in-progress").map(x => x.textEdit?.newText)).toEqual([
-      "\n  cancel-in-progress: "
-    ]);
-    expect(result.filter(x => x.label === "group").map(x => x.textEdit?.newText)).toEqual(["\n  group: "]);
-  });
-});
