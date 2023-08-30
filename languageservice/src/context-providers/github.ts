@@ -8,7 +8,7 @@ import {getEventPayload, getSupportedEventTypes} from "./events/eventPayloads";
 import {getInputsContext} from "./inputs";
 
 export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): DescriptionDictionary {
-  // https://docs.github.com/en/actions/learn-github-actions/contexts#github-cwontext
+  // https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
   const keys = [
     "action",
     "action_path",
