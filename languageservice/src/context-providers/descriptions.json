@@ -132,6 +132,9 @@
     "repository_owner": {
       "description": "The repository owner's username. For example, `octocat`."
     },
+    "repository_owner_id": {
+      "description": "The repository owner's account ID. For example, `1234567`. Note that this is different from the owner's name."
+    },
     "repositoryUrl": {
       "description": "The Git URL to the repository. For example, `git://github.com/octocat/hello-world.git`."
     },
