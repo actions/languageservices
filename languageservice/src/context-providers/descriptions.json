@@ -99,32 +99,16 @@
       "description": "The [`job_id`](/actions/reference/workflow-syntax-for-github-actions#jobsjob_id) of the current job. <br /> Note: This context property is set by the Actions runner, and is only available within the execution `steps` of a job. Otherwise, the value of this property will be `null`."
     },
     "ref": {
-      "description": "The fully-formed ref of the branch or tag that triggered the workflow run. For workflows triggered by `push`, this is the branch or tag ref that was pushed. For workflows triggered by `pull_request`, this is the pull request merge branch. For workflows triggered by `release`, this is the release tag created. For other triggers, this is the branch or tag ref that triggered the workflow run. This is only set if a branch or tag is available for the event type. The ref given is fully-formed, meaning that for branches the format is `refs/heads/<branch_name>`, for pull requests it is `refs/pull/<pr_number>/merge`, and for tags it is `refs/tags/<tag_name>`. For example, `refs/heads/feature-branch-1`.",
-      "versions": {
-        "ghes": "3.3",
-        "ghae": "3.3"
-      }
+      "description": "The fully-formed ref of the branch or tag that triggered the workflow run. For workflows triggered by `push`, this is the branch or tag ref that was pushed. For workflows triggered by `pull_request`, this is the pull request merge branch. For workflows triggered by `release`, this is the release tag created. For other triggers, this is the branch or tag ref that triggered the workflow run. This is only set if a branch or tag is available for the event type. The ref given is fully-formed, meaning that for branches the format is `refs/heads/<branch_name>`, for pull requests it is `refs/pull/<pr_number>/merge`, and for tags it is `refs/tags/<tag_name>`. For example, `refs/heads/feature-branch-1`."
     },
     "ref_name": {
-      "description": "The short ref name of the branch or tag that triggered the workflow run. This value matches the branch or tag name shown on GitHub. For example, `feature-branch-1`.",
-      "versions": {
-        "ghes": "3.3",
-        "ghae": "3.3"
-      }
+      "description": "The short ref name of the branch or tag that triggered the workflow run. This value matches the branch or tag name shown on GitHub. For example, `feature-branch-1`."
     },
     "ref_protected": {
-      "description": "`true` if branch protections are configured for the ref that triggered the workflow run.",
-      "versions": {
-        "ghes": "3.3",
-        "ghae": "3.3"
-      }
+      "description": "`true` if branch protections are configured for the ref that triggered the workflow run."
     },
     "ref_type": {
-      "description": "The type of ref that triggered the workflow run. Valid values are `branch` or `tag`.",
-      "versions": {
-        "ghes": "3.3",
-        "ghae": "3.3"
-      }
+      "description": "The type of ref that triggered the workflow run. Valid values are `branch` or `tag`."
     },
     "path": {
       "description": "Path on the runner to the file that sets system `PATH` variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see [Workflow commands](https://docs.github.com/actions/learn-github-actions/workflow-commands-for-github-actions#adding-a-system-path)."
@@ -155,11 +139,7 @@
       }
     },
     "secret_source": {
-      "description": "The source of a secret used in a workflow. Possible values are `None`, `Actions`, `Dependabot`, or `Codespaces`.",
-      "versions": {
-        "ghes": "3.3",
-        "ghae": "3.3"
-      }
+      "description": "The source of a secret used in a workflow. Possible values are `None`, `Actions`, `Dependabot`, or `Codespaces`."
     },
     "server_url": {
       "description": "The URL of the GitHub server. For example: `https://github.com`."
