@@ -100,7 +100,7 @@ describe("expressions", () => {
         label: "api_url",
         documentation: {
           kind: "markdown",
-          value: "The URL of the GitHub Actions REST API."
+          value: "The URL of the GitHub REST API."
         },
         kind: CompletionItemKind.Variable
       });
