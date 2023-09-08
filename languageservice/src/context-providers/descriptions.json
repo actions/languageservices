@@ -160,11 +160,7 @@
       "description": "A unique number for each run of a particular workflow in a repository. This number begins at 1 for the workflow's first run, and increments with each new run. This number does not change if you re-run the workflow run."
     },
     "run_attempt": {
-      "description": "A unique number for each attempt of a particular workflow run in a repository. This number begins at 1 for the workflow run's first attempt, and increments with each re-run.",
-      "versions": {
-        "ghes": "3.5",
-        "ghae": "3.4"
-      }
+      "description": "A unique number for each attempt of a particular workflow run in a repository. This number begins at 1 for the workflow run's first attempt, and increments with each re-run."
     },
     "secret_source": {
       "description": "The source of a secret used in a workflow. Possible values are `None`, `Actions`, `Dependabot`, or `Codespaces`."
