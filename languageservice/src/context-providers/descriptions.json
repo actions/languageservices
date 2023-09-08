@@ -74,8 +74,8 @@
     "actor_id": {
       "description": "The account ID of the person or app that triggered the initial workflow run. For example, `1234567`. Note that this is different from the actor username.",
       "versions": {
-        "ghes": "3.9",
-        "ghae": "3.9"
+        "ghes": ">=3.9",
+        "ghae": ">=3.9"
       }
     },
     "api_url": {
@@ -106,7 +106,11 @@
       "description": "The [`job_id`](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_id) of the current job.\nNote: This context property is set by the Actions runner, and is only available within the execution `steps` of a job. Otherwise, the value of this property will be `null`."
     },
     "job_workflow_sha": {
-      "description": "For jobs using a reusable workflow, the commit SHA for the reusable workflow file."
+      "description": "For jobs using a reusable workflow, the commit SHA for the reusable workflow file.",
+      "versions": {
+        "ghes": ">=3.9",
+        "ghae": ">=3.9"
+      }
     },
     "path": {
       "description": "Path on the runner to the file that sets system PATH variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see [Workflow commands for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-system-path)."
@@ -127,13 +131,21 @@
       "description": "The owner and repository name. For example, `octocat/Hello-World`."
     },
     "repository_id": {
-      "description": "The ID of the repository. For example, `123456789`. Note that this is different from the repository name."
+      "description": "The ID of the repository. For example, `123456789`. Note that this is different from the repository name.",
+      "versions": {
+        "ghes": ">=3.9",
+        "ghae": ">=3.9"
+      }
     },
     "repository_owner": {
       "description": "The repository owner's username. For example, `octocat`."
     },
     "repository_owner_id": {
-      "description": "The repository owner's account ID. For example, `1234567`. Note that this is different from the owner's name."
+      "description": "The repository owner's account ID. For example, `1234567`. Note that this is different from the owner's name.",
+      "versions": {
+        "ghes": ">=3.9",
+        "ghae": ">=3.9"
+      }
     },
     "repositoryUrl": {
       "description": "The Git URL to the repository. For example, `git://github.com/octocat/hello-world.git`."
@@ -173,10 +185,18 @@
       "description": "The name of the workflow. If the workflow file doesn't specify a `name`, the value of this property is the full path of the workflow file in the repository."
     },
     "workflow_ref": {
-      "description": "The ref path to the workflow. For example, `octocat/hello-world/.github/workflows/my-workflow.yml@refs/heads/my_branch`."
+      "description": "The ref path to the workflow. For example, `octocat/hello-world/.github/workflows/my-workflow.yml@refs/heads/my_branch`.",
+      "versions": {
+        "ghes": ">=3.9",
+        "ghae": ">=3.9"
+      }
     },
     "workflow_sha": {
-      "description": "The commit SHA for the workflow file."
+      "description": "The commit SHA for the workflow file.",
+      "versions": {
+        "ghes": ">=3.9",
+        "ghae": ">=3.9"
+      }
     },
     "workspace": {
       "description": "The default working directory on the runner for steps, and the default location of your repository when using the [`checkout`](https://github.com/actions/checkout) action."
