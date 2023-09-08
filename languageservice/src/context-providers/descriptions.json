@@ -49,7 +49,7 @@
       "description": "Returns `true` when any previous step of a job fails. If you have a chain of dependent jobs, `failure()` returns `true` if any ancestor job fails."
     },
     "hashFiles": {
-      "description": "Returns a single hash for the set of files that matches the `path` pattern. You can provide a single `path` pattern or multiple `path` patterns separated by commas. The `path` is relative to the `GITHUB_WORKSPACE` directory and can only include files inside of the `GITHUB_WORKSPACE`. This function calculates an individual SHA-256 hash for each matched file, and then uses those hashes to calculate a final SHA-256 hash for the set of files. If the `path` pattern does not match any files, this returns an empty string. For more information about SHA-256, see [SHA-2.](https://wikipedia.org/wiki/SHA-2)\n\nYou can use pattern matching characters to match file names. Pattern matching is case-insensitive on Windows. For more information about supported pattern matching characters, see [Workflow syntax for GitHub Actions.](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet)"
+      "description": "Returns a single hash for the set of files that matches the `path` pattern. You can provide a single `path` pattern or multiple `path` patterns separated by commas. The `path` is relative to the `GITHUB_WORKSPACE` directory and can only include files inside of the `GITHUB_WORKSPACE`. This function calculates an individual SHA-256 hash for each matched file, and then uses those hashes to calculate a final SHA-256 hash for the set of files. If the `path` pattern does not match any files, this returns an empty string. For more information about SHA-256, see \"[SHA-2](https://wikipedia.org/wiki/SHA-2).\"\n\nYou can use pattern matching characters to match file names. Pattern matching is case-insensitive on Windows. For more information about supported pattern matching characters, see \"[Workflow syntax for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet).\""
     }
   },
   "github": {
@@ -85,10 +85,10 @@
       "description": "The `base_ref` or target branch of the pull request in a workflow run. This property is only available when the event that triggers a workflow run is either `pull_request` or `pull_request_target`."
     },
     "env": {
-      "description": "Path on the runner to the file that sets environment variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see [Workflow commands for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable)."
+      "description": "Path on the runner to the file that sets environment variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see \"[Workflow commands for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable).\""
     },
     "event": {
-      "description": "The full event webhook payload. You can access individual properties of the event using this context. This object is identical to the webhook payload of the event that triggered the workflow run, and is different for each event. The webhooks for each GitHub Actions event is linked in [Events that trigger workflows](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows). For example, for a workflow run triggered by the [`push` event](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows#push), this object contains the contents of the [push webhook payload](https://docs.github.com/webhooks-and-events/webhooks/webhook-events-and-payloads#push)."
+      "description": "The full event webhook payload. You can access individual properties of the event using this context. This object is identical to the webhook payload of the event that triggered the workflow run, and is different for each event. The webhooks for each GitHub Actions event is linked in \"[Events that trigger workflows](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows).\" For example, for a workflow run triggered by the [`push` event](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows#push), this object contains the contents of the [push webhook payload](https://docs.github.com/webhooks-and-events/webhooks/webhook-events-and-payloads#push)."
     },
     "event_name": {
       "description": "The name of the event that triggered the workflow run."
@@ -113,7 +113,7 @@
       }
     },
     "path": {
-      "description": "Path on the runner to the file that sets system PATH variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see [Workflow commands for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-system-path)."
+      "description": "Path on the runner to the file that sets system PATH variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see \"[Workflow commands for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-system-path).\""
     },
     "ref": {
       "description": "The fully-formed ref of the branch or tag that triggered the workflow run. For workflows triggered by `push`, this is the branch or tag ref that was pushed. For workflows triggered by `pull_request`, this is the pull request merge branch. For workflows triggered by `release`, this is the release tag created. For other triggers, this is the branch or tag ref that triggered the workflow run. This is only set if a branch or tag is available for the event type. The ref given is fully-formed, meaning that for branches the format is `refs/heads/<branch_name>`, for pull requests it is `refs/pull/<pr_number>/merge`, and for tags it is `refs/tags/<tag_name>`. For example, `refs/heads/feature-branch-1`."
@@ -169,10 +169,10 @@
       "description": "The URL of the GitHub server. For example: `https://github.com`."
     },
     "sha": {
-      "description": "The commit SHA that triggered the workflow. The value of this commit SHA depends on the event that triggered the workflow. For more information, see [Events that trigger workflows.](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows) For example, `ffac537e6cbbf934b08745a378932722df287a53`."
+      "description": "The commit SHA that triggered the workflow. The value of this commit SHA depends on the event that triggered the workflow. For more information, see \"[Events that trigger workflows](https://docs.github.com/actions/using-workflows/events-that-trigger-workflows).\" For example, `ffac537e6cbbf934b08745a378932722df287a53`."
     },
     "token": {
-      "description": "A token to authenticate on behalf of the GitHub App installed on your repository. This is functionally equivalent to the `GITHUB_TOKEN` secret. For more information, see [Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication).\nNote: This context property is set by the Actions runner, and is only available within the execution `steps` of a job. Otherwise, the value of this property will be `null`."
+      "description": "A token to authenticate on behalf of the GitHub App installed on your repository. This is functionally equivalent to the `GITHUB_TOKEN` secret. For more information, see \"[Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication).\"\nNote: This context property is set by the Actions runner, and is only available within the execution `steps` of a job. Otherwise, the value of this property will be `null`."
     },
     "triggering_actor": {
       "description": "The username of the user that initiated the workflow run. If the workflow run is a re-run, this value may differ from `github.actor`. Any workflow re-runs will use the privileges of `github.actor`, even if the actor initiating the re-run (`github.triggering_actor`) has different privileges."
@@ -200,7 +200,7 @@
   },
   "secrets": {
     "GITHUB_TOKEN": {
-      "description": "Automatically created token for each workflow run. For more information, see [Automatic token authentication.](https://docs.github.com/actions/security-guides/automatic-token-authentication)"
+      "description": "Automatically created token for each workflow run. For more information, see \"[Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication).\""
     }
   },
   "jobs": {
@@ -213,7 +213,7 @@
   },
   "steps": {
     "outputs": {
-      "description": "The set of outputs defined for the step. For more information, see [Metadata syntax for GitHub Actions.](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions)"
+      "description": "The set of outputs defined for the step. For more information, see \"[Metadata syntax for GitHub Actions](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions).\""
     },
     "conclusion": {
       "description": "The result of a completed step after [`continue-on-error`](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error) is applied. Possible values are `success`, `failure`, `cancelled`, or `skipped`. When a `continue-on-error` step fails, the `outcome` is `failure`, but the final conclusion is `success`."
@@ -244,7 +244,7 @@
   },
   "strategy": {
     "fail-fast": {
-      "description": "When `true`, all in-progress jobs are canceled if any job in a matrix fails. For more information, see [Workflow syntax for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategyfail-fast)."
+      "description": "When `true`, all in-progress jobs are canceled if any job in a matrix fails. For more information, see \"[Workflow syntax for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategyfail-fast).\""
     },
     "job-index": {
       "description": "The index of the current job in the matrix. **Note:** This number is a zero-based number. The first job's index in the matrix is `0`."
@@ -253,7 +253,7 @@
       "description": "The total number of jobs in the matrix. **Note:** This number **is not** a zero-based number. For example, for a matrix with four jobs, the value of `job-total` is `4`."
     },
     "max-parallel": {
-      "description": "The maximum number of jobs that can run simultaneously when using a matrix job strategy. For more information, see [Workflow syntax for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel)."
+      "description": "The maximum number of jobs that can run simultaneously when using a matrix job strategy. For more information, see \"[Workflow syntax for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel).\""
     }
   }
 }
