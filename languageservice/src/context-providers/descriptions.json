@@ -204,7 +204,7 @@
   },
   "secrets": {
     "GITHUB_TOKEN": {
-      "description": "`GITHUB_TOKEN` is a secret that is automatically created for every workflow run, and is always included in the secrets context. For more information, see [Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication)."
+      "description": "Automatically created token for each workflow run. For more information, see [Automatic token authentication.](https://docs.github.com/actions/security-guides/automatic-token-authentication)"
     }
   },
   "jobs": {
@@ -217,13 +217,13 @@
   },
   "steps": {
     "outputs": {
-      "description": "The set of outputs defined for the step."
+      "description": "The set of outputs defined for the step. For more information, see [Metadata syntax for GitHub Actions.](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#outputs-for-docker-container-and-javascript-actions)"
     },
     "conclusion": {
-      "description": "The result of a completed step after `continue-on-error` is applied. Possible values are `success`, `failure`, `cancelled`, or `skipped`. When a `continue-on-error` step fails, the `outcome` is `failure`, but the final conclusion is `success`."
+      "description": "The result of a completed step after [`continue-on-error`](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error) is applied. Possible values are `success`, `failure`, `cancelled`, or `skipped`. When a `continue-on-error` step fails, the `outcome` is `failure`, but the final conclusion is `success`."
     },
     "outcome": {
-      "description": "The result of a completed step before `continue-on-error` is applied. Possible values are `success`, `failure`, `cancelled`, or `skipped`. When a `continue-on-error` step fails, the `outcome` is `failure`, but the final conclusion is `success`."
+      "description": "The result of a completed step before [`continue-on-error`](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error) is applied. Possible values are `success`, `failure`, `cancelled`, or `skipped`. When a `continue-on-error` step fails, the `outcome` is `failure`, but the final conclusion is `success`."
     }
   },
   "runner": {
@@ -240,24 +240,24 @@
       "description": "The path to a temporary directory on the runner. This directory is emptied at the beginning and end of each job. Note that files will not be removed if the runner's user account does not have permission to delete them."
     },
     "tool_cache": {
-      "description": "The path to the directory containing preinstalled tools for GitHub-hosted runners. For more information, see \"[About GitHub-hosted runners](https://docs.github.com/actions/reference/specifications-for-github-hosted-runners/#supported-software)\"."
+      "description": "The path to the directory containing preinstalled tools for GitHub-hosted runners. For more information, see \"[About GitHub-hosted runners](https://docs.github.com/actions/reference/specifications-for-github-hosted-runners/#supported-software).\""
     },
     "debug": {
-      "description": "This is set only if [debug logging](https://docs.github.com/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled, and always has the value of 1. It can be useful as an indicator to enable additional debugging or verbose logging in your own job steps."
+      "description": "This is set only if [debug logging](https://docs.github.com/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled, and always has the value of `1`. It can be useful as an indicator to enable additional debugging or verbose logging in your own job steps."
     }
   },
   "strategy": {
     "fail-fast": {
-      "description": "The `fail-fast` setting for the job. Possible values are `true` or `false`. For more information, see [Workflow syntax for GitHub Actions: `jobs.<job_id>.strategy.fail-fast`](https://docs.github.com/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategyfail-fast)."
-    },
-    "max-parallel": {
-      "description": "The `max-parallel` setting for the job. For more information, see [Workflow syntax for GitHub Actions: `jobs.<job_id>.strategy.max-parallel`](https://docs.github.com/actions/reference/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel)."
+      "description": "When `true`, all in-progress jobs are canceled if any job in a matrix fails. For more information, see [Workflow syntax for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategyfail-fast)."
     },
     "job-index": {
       "description": "The index of the current job in the matrix. **Note:** This number is a zero-based number. The first job's index in the matrix is `0`."
     },
     "job-total": {
       "description": "The total number of jobs in the matrix. **Note:** This number **is not** a zero-based number. For example, for a matrix with four jobs, the value of `job-total` is `4`."
+    },
+    "max-parallel": {
+      "description": "The maximum number of jobs that can run simultaneously when using a matrix job strategy. For more information, see [Workflow syntax for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymax-parallel)."
     }
   }
 }
