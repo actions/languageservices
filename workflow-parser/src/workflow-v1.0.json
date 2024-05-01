@@ -1515,6 +1515,10 @@
             "type": "permission-level-any",
             "description": "Actions workflows, workflow runs, and artifacts."
           },
+          "attestations": {
+            "type": "permission-level-any",
+            "description": "Artifact attestations."
+          },
           "checks": {
             "type": "permission-level-any",
             "description": "Check runs and check suites."
