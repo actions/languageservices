@@ -299,7 +299,7 @@ jobs:
         "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    environment:\n      url: ${{ runner.| }}\n    steps:\n      - run: echo";
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).toEqual(["arch", "name", "os", "temp", "tool_cache"]);
+      expect(result.map(x => x.label)).toEqual(["arch", "debug", "environment", "name", "os", "temp", "tool_cache"]);
     });
 
     describe("job if", () => {

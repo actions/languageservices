@@ -1505,4 +1505,40 @@ jobs:
       expect(result).toEqual([]);
     });
   });
+
+  describe("runner context", () => {
+    it("includes only expected keys", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ runner.tool_cache }}
+      - run: echo \${{ runner.debug }}
+      - run: echo \${{ runner.environment }}
+      - run: echo \${{ runner.does-not-exist }}
+`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([
+        {
+          message: "Context access might be invalid: does-not-exist",
+          range: {
+            end: {
+              character: 46,
+              line: 10
+            },
+            start: {
+              character: 18,
+              line: 10
+            }
+          },
+          severity: DiagnosticSeverity.Warning
+        }
+      ]);
+    });
+  });
 });

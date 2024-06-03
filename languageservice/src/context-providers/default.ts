@@ -78,7 +78,9 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
         arch: "X64",
         name: "GitHub Actions 2",
         tool_cache: "/opt/hostedtoolcache",
-        temp: "/home/runner/work/_temp"
+        temp: "/home/runner/work/_temp",
+        debug: "1",
+        environment: "github-hosted"
       });
 
     case "secrets":
