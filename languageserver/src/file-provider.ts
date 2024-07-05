@@ -3,7 +3,7 @@ import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {fileIdentifier} from "@actions/workflow-parser/workflows/file-reference";
 import {Octokit} from "@octokit/rest";
 import {TTLCache} from "./utils/cache";
-import vscodeURI from "vscode-uri/lib/umd";
+import * as vscodeURI from "vscode-uri";
 
 export function getFileProvider(
   client: Octokit | undefined,

@@ -4,7 +4,7 @@ import {File} from "@actions/workflow-parser/workflows/file";
 import {parseFileReference} from "@actions/workflow-parser/workflows/file-reference";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {DocumentLink} from "vscode-languageserver-types";
-import vscodeURI from "vscode-uri/lib/umd"; // work around issues with the vscode-uri package
+import * as vscodeURI from "vscode-uri";
 import {actionUrl, parseActionReference} from "./action";
 import {mapRange} from "./utils/range";
 import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
