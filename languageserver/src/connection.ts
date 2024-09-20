@@ -5,6 +5,10 @@ import {Octokit} from "@octokit/rest";
 import {
   CompletionItem,
   Connection,
+  Diagnostic,
+  DocumentDiagnosticParams,
+  DocumentDiagnosticReport,
+  DocumentDiagnosticReportKind,
   DocumentLink,
   DocumentLinkParams,
   ExecuteCommandParams,
@@ -39,6 +43,7 @@ export function initConnection(connection: Connection) {
   const cache = new TTLCache();
 
   let hasWorkspaceFolderCapability = false;
+  let hasPullDiagnosticsCapability = false;
 
   // Register remote console logger with language service
   registerLogger(connection.console);
@@ -47,6 +52,7 @@ export function initConnection(connection: Connection) {
     const capabilities = params.capabilities;
 
     hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
+    hasPullDiagnosticsCapability = !!(capabilities.textDocument && !!capabilities.textDocument.diagnostic);
 
     const options = params.initializationOptions as InitializationOptions;
 
@@ -84,6 +90,13 @@ export function initConnection(connection: Connection) {
       };
     }
 
+    if (hasPullDiagnosticsCapability) {
+      result.capabilities.diagnosticProvider = {
+        interFileDependencies: false,
+        workspaceDiagnostics: false
+      };
+    }
+
     return result;
   });
 
@@ -99,10 +112,15 @@ export function initConnection(connection: Connection) {
   // when the text document first opened or when its content has changed.
   documents.onDidChangeContent(change => {
     clearCacheEntry(change.document.uri);
+
+    if (hasPullDiagnosticsCapability) {
+      return;
+    }
+
     return timeOperation("validation", async () => await validateTextDocument(change.document));
   });
 
-  async function validateTextDocument(textDocument: TextDocument): Promise<void> {
+  async function getDiagnostics(textDocument: TextDocument): Promise<Diagnostic[]> {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
 
     const config: ValidationConfig = {
@@ -114,9 +132,27 @@ export function initConnection(connection: Connection) {
       })
     };
 
-    const result = await validate(textDocument, config);
+    return validate(textDocument, config);
+  }
+
+  async function validateTextDocument(textDocument: TextDocument): Promise<void> {
+    const result = await getDiagnostics(textDocument);
     await connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
   }
+
+  connection.languages.diagnostics.on(async (e: DocumentDiagnosticParams): Promise<DocumentDiagnosticReport> => {
+    // As of VS Code 1.19, when opening a new document, the client will send
+    // `textDocument/diagnostic` before `textDocument/didChange`, so the text
+    // document manager does not have the document's contents yet. The
+    // diagnostic request is sent again _after_ the `didChange`, so diagnostics
+    // are correctly sent.
+    const doc = getDocument(documents, e.textDocument);
+
+    return timeOperation("diagnostics", async () => ({
+      kind: DocumentDiagnosticReportKind.Full,
+      items: doc ? await getDiagnostics(doc) : []
+    }));
+  });
 
   connection.onCompletion(async ({position, textDocument}: TextDocumentPositionParams): Promise<CompletionItem[]> => {
     return timeOperation(
