@@ -21,8 +21,18 @@ describe("end-to-end", () => {
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(8);
+    expect(result.length).toEqual(9);
     const labels = result.map(x => x.label);
-    expect(labels).toEqual(["concurrency", "defaults", "env", "jobs", "name", "on", "permissions", "run-name"]);
+    expect(labels).toEqual([
+      "concurrency",
+      "defaults",
+      "description",
+      "env",
+      "jobs",
+      "name",
+      "on",
+      "permissions",
+      "run-name"
+    ]);
   });
 });

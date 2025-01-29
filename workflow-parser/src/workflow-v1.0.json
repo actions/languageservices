@@ -7,6 +7,7 @@
         "properties": {
           "on": "on",
           "name": "workflow-name",
+          "description": "workflow-description",
           "run-name": "run-name",
           "defaults": "workflow-defaults",
           "env": "workflow-env",
@@ -28,6 +29,7 @@
             "required": true
           },
           "name": "workflow-name",
+          "description": "workflow-description",
           "run-name": "run-name",
           "defaults": "workflow-defaults",
           "env": "workflow-env",
@@ -42,6 +44,10 @@
     },
     "workflow-name": {
       "description": "The name of the workflow that GitHub displays on your repository's 'Actions' tab.\n\n[Documentation](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#name)",
+      "string": {}
+    },
+    "workflow-description": {
+      "description": "A description for your workflow or reusable workflow",
       "string": {}
     },
     "run-name": {
