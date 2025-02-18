@@ -7,7 +7,7 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "lib": ["es6", "webworker"],
     "resolveJsonModule": true
   },
