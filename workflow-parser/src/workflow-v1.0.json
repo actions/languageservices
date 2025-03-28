@@ -1706,7 +1706,10 @@
           "concurrency": "job-concurrency",
           "outputs": "job-outputs",
           "defaults": "job-defaults",
-          "steps": "steps"
+          "steps": {
+            "type": "steps",
+            "required": true
+          }
         }
       }
     },
