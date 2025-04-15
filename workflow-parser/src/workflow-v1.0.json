@@ -1549,6 +1549,10 @@
             "type": "permission-level-any",
             "description": "Issues and related comments, assignees, labels, and milestones."
           },
+          "models": {
+            "type": "permission-level-read-or-no-access",
+            "description": "Call AI models with GitHub Models."
+          },
           "packages": {
             "type": "permission-level-any",
             "description": "Packages published to the GitHub Package Platform."
