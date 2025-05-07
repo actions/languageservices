@@ -115,7 +115,7 @@ export async function getRemoteVariables(
     environmentVariables:
       (environmentName &&
         (await cache.get(`${repo.owner}/${repo.name}/vars/environment/${environmentName}`, undefined, () =>
-          fetchEnvironmentVariables(octokit, repo.id, environmentName)
+          fetchEnvironmentVariables(octokit, repo.owner, repo.name, environmentName)
         ))) ||
       [],
     organizationVariables: await cache.get(`${repo.owner}/vars`, undefined, () =>
@@ -146,14 +146,16 @@ async function fetchVariables(octokit: Octokit, owner: string, name: string): Pr
 
 async function fetchEnvironmentVariables(
   octokit: Octokit,
-  repositoryId: number,
+  owner: string,
+  name: string,
   environmentName: string
 ): Promise<Pair[]> {
   try {
     return await octokit.paginate(
       octokit.actions.listEnvironmentVariables,
       {
-        repository_id: repositoryId,
+        owner: owner,
+        repo: name,
         environment_name: environmentName,
         per_page: 100
       },
