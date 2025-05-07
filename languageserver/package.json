@@ -45,7 +45,7 @@
   "dependencies": {
     "@actions/languageservice": "^0.3.16",
     "@actions/workflow-parser": "^0.3.16",
-    "@octokit/rest": "^19.0.7",
+    "@octokit/rest": "^21.1.1",
     "@octokit/types": "^9.0.0",
     "vscode-languageserver": "^8.0.2",
     "vscode-languageserver-textdocument": "^1.0.7",
