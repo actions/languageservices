@@ -8,6 +8,6 @@
     "./languageserver"
   ],
   "devDependencies": {
-    "lerna": "^8.2.1"
+    "lerna": "^8.2.2"
   }
 }

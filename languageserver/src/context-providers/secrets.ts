@@ -125,7 +125,7 @@ async function getRemoteSecrets(
     environmentSecrets:
       (environmentName &&
         (await cache.get(`${repo.owner}/${repo.name}/secrets/environment/${environmentName}`, undefined, () =>
-          fetchEnvironmentSecrets(octokit, repo.id, environmentName)
+          fetchEnvironmentSecrets(octokit, repo.owner, repo.name, environmentName)
         ))) ||
       [],
     orgSecrets: await cache.get(`${repo.owner}/secrets`, undefined, () => fetchOrganizationSecrets(octokit, repo))
@@ -151,14 +151,16 @@ async function fetchSecrets(octokit: Octokit, owner: string, name: string): Prom
 
 async function fetchEnvironmentSecrets(
   octokit: Octokit,
-  repositoryId: number,
+  owner: string,
+  name: string,
   environmentName: string
 ): Promise<StringData[]> {
   try {
     return await octokit.paginate(
       octokit.actions.listEnvironmentSecrets,
       {
-        repository_id: repositoryId,
+        owner,
+        repo: name,
         environment_name: environmentName,
         per_page: 100
       },
