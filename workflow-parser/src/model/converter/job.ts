@@ -16,7 +16,16 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
     context.error(jobKey, error);
   }
 
-  let concurrency, container, env, environment, name, outputs, runsOn, services, strategy, snapshot: TemplateToken | undefined;
+  let concurrency,
+    container,
+    env,
+    environment,
+    name,
+    outputs,
+    runsOn,
+    services,
+    strategy,
+    snapshot: TemplateToken | undefined;
   let needs: StringToken[] | undefined = undefined;
   let steps: Step[] = [];
   let workflowJobRef: StringToken | undefined;
