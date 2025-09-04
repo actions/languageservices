@@ -1710,7 +1710,8 @@
           "concurrency": "job-concurrency",
           "outputs": "job-outputs",
           "defaults": "job-defaults",
-          "steps": "steps"
+          "steps": "steps",
+          "snapshot": "snapshot"
         }
       }
     },
@@ -1732,7 +1733,8 @@
           "if": "job-if",
           "permissions": "permissions",
           "concurrency": "job-concurrency",
-          "strategy": "strategy"
+          "strategy": "strategy",
+          "snapshot": "snapshot"
         }
       }
     },
@@ -1824,6 +1826,56 @@
           },
           "matrix": "matrix"
         }
+      }
+    },
+    "snapshot": {
+      "description": "Use `snapshot` to generate a custom image from this job",
+      "one-of": [
+        "string",
+        "snapshot-mapping"
+      ]
+    },
+    "snapshot-mapping": {
+      "mapping": {
+        "properties": {
+          "if": "snapshot-if",
+          "image-name": {
+            "type": "non-empty-string",
+            "required": true,
+            "description": "The image name."
+          },
+          "version": {
+            "type": "string",
+            "description": "The major version to publish the snapshot as, use * to auto-increment minor version"
+          },
+          "tags": {
+            "type": "sequence-of-non-empty-string",
+            "description": "An array of tags to apply to the snapshot."
+          }
+        }
+      }
+    },
+    "snapshot-if": {
+      "description": "You can use the `if` conditional to prevent a snapshot from being created unless a condition is met. You can use any supported context and expression to create a conditional.",
+      "context": [
+        "github",
+        "inputs",
+        "vars",
+        "needs",
+        "strategy",
+        "matrix",
+        "steps",
+        "job",
+        "runner",
+        "env",
+        "always(0,0)",
+        "failure(0,0)",
+        "cancelled(0,0)",
+        "success(0,0)",
+        "hashFiles(1,255)"
+      ],
+      "string": {
+        "is-expression": true
       }
     },
     "matrix": {
