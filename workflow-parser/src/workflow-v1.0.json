@@ -1710,7 +1710,11 @@
           "concurrency": "job-concurrency",
           "outputs": "job-outputs",
           "defaults": "job-defaults",
-          "steps": "steps"
+          "steps": "steps",
+          "snapshot": {
+            "type": "snapshot",
+            "description": "snapshot for custom image"
+          }
         }
       }
     },
@@ -2519,6 +2523,12 @@
       }
     },
     "cron-pattern": {
+      "string": {
+        "require-non-empty": true
+      }
+    },
+    "snapshot": {
+      "description": "snapshot for custom image",
       "string": {
         "require-non-empty": true
       }
