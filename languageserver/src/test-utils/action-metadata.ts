@@ -16,7 +16,7 @@ inputs:
     description: 'Repository name with owner. For example, actions/checkout'
     deprecationMessage: 'Use repository instead'
 runs:
-  using: node16
+  using: node24
   main: dist/index.js
   post: dist/index.js
 `;
