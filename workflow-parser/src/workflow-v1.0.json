@@ -1829,7 +1829,7 @@
       }
     },
     "snapshot": {
-      "description": "Use `snapshot` to generate a custom image from this job",
+      "description": "Use `snapshot` to generate a custom image from this job.",
       "one-of": [
         "string",
         "snapshot-mapping"
