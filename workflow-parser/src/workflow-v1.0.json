@@ -1733,8 +1733,7 @@
           "if": "job-if",
           "permissions": "permissions",
           "concurrency": "job-concurrency",
-          "strategy": "strategy",
-          "snapshot": "snapshot"
+          "strategy": "strategy"
         }
       }
     },
@@ -1828,56 +1827,6 @@
         }
       }
     },
-    "snapshot": {
-      "description": "Use `snapshot` to generate a custom image from this job.",
-      "one-of": [
-        "string",
-        "snapshot-mapping"
-      ]
-    },
-    "snapshot-mapping": {
-      "mapping": {
-        "properties": {
-          "if": "snapshot-if",
-          "image-name": {
-            "type": "non-empty-string",
-            "required": true,
-            "description": "The image name."
-          },
-          "version": {
-            "type": "string",
-            "description": "The major version to publish the snapshot as, use * to auto-increment minor version"
-          },
-          "tags": {
-            "type": "sequence-of-non-empty-string",
-            "description": "An array of tags to apply to the snapshot."
-          }
-        }
-      }
-    },
-    "snapshot-if": {
-      "description": "You can use the `if` conditional to prevent a snapshot from being created unless a condition is met. You can use any supported context and expression to create a conditional.",
-      "context": [
-        "github",
-        "inputs",
-        "vars",
-        "needs",
-        "strategy",
-        "matrix",
-        "steps",
-        "job",
-        "runner",
-        "env",
-        "always(0,0)",
-        "failure(0,0)",
-        "cancelled(0,0)",
-        "success(0,0)",
-        "hashFiles(1,255)"
-      ],
-      "string": {
-        "is-expression": true
-      }
-    },
     "matrix": {
       "description": "Use `matrix` to define a matrix of different job configurations. Within your matrix, define one or more variables followed by an array of values.",
       "mapping": {
@@ -1904,6 +1853,43 @@
       "mapping": {
         "loose-key-type": "non-empty-string",
         "loose-value-type": "any"
+      }
+    },
+    "snapshot": {
+      "description": "Use `snapshot` to define a custom image you want to create or update after your job succeeds by taking a snapshot of your runner.",
+      "one-of": [
+        "non-empty-string",
+        "snapshot-mapping"
+      ]
+    },
+    "snapshot-mapping": {
+      "mapping": {
+        "properties": {
+          "image-name": {
+            "description": "The desired name of the custom image you want to create or update.",
+            "type": "non-empty-string",
+            "required": true
+          },
+          "if": "snapshot-if",
+          "version": {
+            "description": "The desired major version updates upon a new custom image version creation.",
+            "type": "non-empty-string"
+          }
+        }
+      }
+    },
+    "snapshot-if": {
+      "context": [
+        "github",
+        "inputs",
+        "vars",
+        "needs",
+        "strategy",
+        "matrix"
+      ],
+      "description": "Use the if conditional to prevent a snapshot from being taken unless a condition is met. Any supported context and expression can be used to create a conditional. Expressions in an `if` conditional do not require the bracketed expression syntax. When you use expressions in an `if` conditional, you may omit the expression syntax because GitHub automatically evaluates the `if` conditional as an expression.",
+      "string": {
+        "is-expression": true
       }
     },
     "runs-on": {
