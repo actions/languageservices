@@ -70,7 +70,7 @@ jobs:
     |`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(20);
+    expect(result.length).toEqual(21);
   });
 
   it("string definition completion in sequence", async () => {
@@ -243,7 +243,7 @@ jobs:
     runs-|`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result).toHaveLength(20);
+    expect(result).toHaveLength(21);
   });
 
   it("job key with comment afterwards", async () => {
@@ -254,7 +254,7 @@ jobs:
   #`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result).toHaveLength(20);
+    expect(result).toHaveLength(21);
   });
 
   it("job key with other values afterwards", async () => {
@@ -266,7 +266,7 @@ jobs:
     concurrency: 'group-name'`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result).toHaveLength(19);
+    expect(result).toHaveLength(20);
   });
 
   it("step key without space after colon", async () => {
@@ -335,7 +335,7 @@ jobs:
     - uses: actions/checkout@v2
 `;
     const result = await complete(...getPositionFromCursor(input));
-    expect(result).toHaveLength(16);
+    expect(result).toHaveLength(17);
   });
 
   it("complete from behind a colon will replace it", async () => {
@@ -348,7 +348,7 @@ jobs:
     - uses: actions/checkout@v2
 `;
     const result = await complete(...getPositionFromCursor(input));
-    expect(result).toHaveLength(16);
+    expect(result).toHaveLength(17);
     const textEdit = result[0].textEdit as TextEdit;
     expect(textEdit.range).toEqual({
       start: {line: 5, character: 4},

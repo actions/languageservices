@@ -1710,7 +1710,8 @@
           "concurrency": "job-concurrency",
           "outputs": "job-outputs",
           "defaults": "job-defaults",
-          "steps": "steps"
+          "steps": "steps",
+          "snapshot": "snapshot"
         }
       }
     },
@@ -1852,6 +1853,43 @@
       "mapping": {
         "loose-key-type": "non-empty-string",
         "loose-value-type": "any"
+      }
+    },
+    "snapshot": {
+      "description": "Use `snapshot` to define a custom image you want to create or update after your job succeeds by taking a snapshot of your runner.",
+      "one-of": [
+        "non-empty-string",
+        "snapshot-mapping"
+      ]
+    },
+    "snapshot-mapping": {
+      "mapping": {
+        "properties": {
+          "image-name": {
+            "description": "The desired name of the custom image you want to create or update.",
+            "type": "non-empty-string",
+            "required": true
+          },
+          "if": "snapshot-if",
+          "version": {
+            "description": "The desired major version updates upon a new custom image version creation.",
+            "type": "non-empty-string"
+          }
+        }
+      }
+    },
+    "snapshot-if": {
+      "context": [
+        "github",
+        "inputs",
+        "vars",
+        "needs",
+        "strategy",
+        "matrix"
+      ],
+      "description": "Use the if conditional to prevent a snapshot from being taken unless a condition is met. Any supported context and expression can be used to create a conditional. Expressions in an `if` conditional do not require the bracketed expression syntax. When you use expressions in an `if` conditional, you may omit the expression syntax because GitHub automatically evaluates the `if` conditional as an expression.",
+      "string": {
+        "is-expression": true
       }
     },
     "runs-on": {
