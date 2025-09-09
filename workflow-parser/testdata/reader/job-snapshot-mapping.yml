@@ -9,7 +9,8 @@ jobs:
     snapshot: 
       image-name: custom-image
       version: 1.*
-      if: ${{ always() }}
+      if: ${{ github.event_name == 'something' }}
+
 ---
 {
   "jobs": [
@@ -47,7 +48,7 @@ jobs:
             "Key": "if",
             "Value": {
               "type": 3,
-              "expr": "always()"
+              "expr": "github.event_name == 'something'"
             }
           }
         ]
