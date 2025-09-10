@@ -9,7 +9,7 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js", 
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./*": {
@@ -45,7 +45,7 @@
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@actions/expressions": "^0.3.17",
+    "@actions/expressions": "^0.3.18",
     "cronstrue": "^2.21.0",
     "yaml": "^2.0.0-8"
   },

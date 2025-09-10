@@ -44,7 +44,7 @@
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@actions/expressions": "^0.3.17",
+    "@actions/expressions": "^0.3.18",
     "@actions/workflow-parser": "^0.3.18",
     "vscode-languageserver-textdocument": "^1.0.7",
     "vscode-languageserver-types": "^3.17.2",
