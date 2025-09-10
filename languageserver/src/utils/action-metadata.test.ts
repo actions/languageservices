@@ -12,7 +12,7 @@ inputs:
     description: Repository name with owner. For example, actions/checkout
     default: \${{ github.repository }}
 runs:
-  using: node16
+  using: node24
   main: dist/index.js
   post: dist/index.js
 `;
@@ -231,7 +231,7 @@ inputs:
     description: 📦 Repository 📦 name with owner. For example, actions/checkout
     default: \${{ github.repository }}
 runs:
-  using: node16
+  using: node24
   main: dist/index.js
   post: dist/index.js
 `;
