@@ -15,7 +15,14 @@ jobs:
 ---
 {
   "events": {
-    "image_version": {}
+    "image_version": {
+      "versions": [
+        "1.*"
+      ],
+      "names": [
+        "testing"
+      ]
+    }
   },
   "jobs": [
     {

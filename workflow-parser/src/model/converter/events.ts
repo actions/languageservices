@@ -7,10 +7,12 @@ import {TokenType} from "../../templates/tokens/types";
 import {
   BranchFilterConfig,
   EventsConfig,
+  NamesFilterConfig,
   PathFilterConfig,
   ScheduleConfig,
   TagFilterConfig,
   TypesFilterConfig,
+  VersionsFilterConfig,
   WorkflowFilterConfig
 } from "../workflow-template";
 import {isValidCron} from "./cron";
@@ -76,10 +78,11 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
         ...convertPatternFilter("tags", eventToken),
         ...convertPatternFilter("paths", eventToken),
         ...convertFilter("types", eventToken),
+        ...convertFilter("versions", eventToken),
+        ...convertFilter("names", eventToken),
         ...convertFilter("workflows", eventToken)
       };
     }
-
     return result;
   }
 
@@ -121,8 +124,8 @@ function convertPatternFilter<T extends BranchFilterConfig & TagFilterConfig & P
   return result;
 }
 
-function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig>(
-  name: "types" | "workflows",
+function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig & VersionsFilterConfig & NamesFilterConfig>(
+  name: "types" | "workflows" | "versions" | "names",
   token: MappingToken
 ): T {
   const result = {} as T;

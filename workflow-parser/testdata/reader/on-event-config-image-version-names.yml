@@ -21,6 +21,10 @@ jobs:
     "image_version": {
       "types": [
         "ready"
+      ],
+      "names": [
+        "one",
+        "two"
       ]
     }
   },
