@@ -41,6 +41,7 @@ export type BaseJob = {
   concurrency?: TemplateToken;
   strategy?: TemplateToken;
   outputs?: MappingToken;
+  snapshot?: TemplateToken;
 };
 
 // `job-factory` in the schema
