@@ -99,6 +99,7 @@
           "discussion_comment": "discussion-comment",
           "fork": "fork",
           "gollum": "gollum",
+          "image_version": "image-version",
           "issue_comment": "issue-comment",
           "issues": "issues",
           "label": "label",
@@ -140,6 +141,7 @@
         "discussion-comment-string",
         "fork-string",
         "gollum-string",
+        "image-version-string",
         "issue-comment-string",
         "issues-string",
         "label-string",
@@ -435,6 +437,47 @@
     "gollum": {
       "description": "Runs your workflow when someone creates or updates a Wiki page.",
       "null": {}
+    },
+    "image-version-string": {
+      "description": "Runs your workflow when an image version is created or changes state.",
+      "string": {
+        "constant": "image_version"
+      }
+    },
+    "image-version": {
+      "description": "Runs your workflow when an image version is created or changes state.",
+      "one-of": [
+        "null",
+        "image-version-mapping"
+      ]
+    },
+    "image-version-mapping": {
+      "mapping": {
+        "properties": {
+          "types": "image-version-activity",
+          "names": "event-names",
+          "versions": "event-versions"
+        }
+      }
+    },
+    "image-version-activity": {
+      "description": "The types of image version activity that trigger the workflow. Supported activity types: `created`, `ready`, `deleted`.",
+      "one-of": [
+        "image-version-activity-type",
+        "image-version-activity-types"
+      ]
+    },
+    "image-version-activity-types": {
+      "sequence": {
+        "item-type": "image-version-activity-type"
+      }
+    },
+    "image-version-activity-type": {
+      "allowed-values": [
+        "created",
+        "ready",
+        "deleted"
+      ]
     },
     "issue-comment-string": {
       "description": "Runs your workflow when an issue or pull request comment is created, edited, or deleted.",
@@ -1221,6 +1264,13 @@
         "sequence-of-non-empty-string"
       ]
     },
+    "event-names": {
+      "description": "Use the `names` filter when you want to include names via patterns or when you want to both include and exclude names using patterns. ",
+      "one-of": [
+        "non-empty-string",
+        "sequence-of-non-empty-string"
+      ]
+    },
     "event-tags": {
       "description": "Use the `tags` filter when you want to include tag name patterns or when you want to both include and exclude tag names patterns. You cannot use both the `tags` and `tags-ignore` filters for the same event in a workflow.",
       "one-of": [
@@ -1244,6 +1294,13 @@
     },
     "event-paths-ignore": {
       "description": "Use the `paths-ignore` filter when you only want to exclude file path patterns. You cannot use both the `paths` and `paths-ignore` filters for the same event in a workflow.",
+      "one-of": [
+        "non-empty-string",
+        "sequence-of-non-empty-string"
+      ]
+    },
+    "event-versions": {
+      "description": "Use the `versions` filter when you want to include versions via patterns or when you want to both include and exclude versions using patterns. ",
       "one-of": [
         "non-empty-string",
         "sequence-of-non-empty-string"
