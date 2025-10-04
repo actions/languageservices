@@ -6,17 +6,28 @@ import {stringsToValues} from "./strings-to-values";
 
 export const DEFAULT_RUNNER_LABELS = [
   "ubuntu-latest",
+  "ubuntu-24.04",
   "ubuntu-22.04",
-  "ubuntu-20.04",
-  "ubuntu-18.04",
+  "ubuntu-24.04-arm",
+  "ubuntu-22.04-arm",
   "windows-latest",
+  "windows-2025",
   "windows-2022",
   "windows-2019",
+  "windows-11-arm",
   "macos-latest",
-  "macos-12",
-  "macos-11",
-  "macos-10.15",
-  "self-hosted"
+  "macos-latest-large",
+  "macos-latest-xlarge",
+  "macos-15",
+  "macos-15-large",
+  "macos-15-xlarge",
+  "macos-14",
+  "macos-14-large",
+  "macos-14-xlarge",
+  "macos-13",
+  "macos-13-large",
+  "macos-13-xlarge",
+  "self-hosted",
 ];
 
 export const defaultValueProviders: ValueProviderConfig = {
