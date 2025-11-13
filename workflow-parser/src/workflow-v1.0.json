@@ -1581,6 +1581,7 @@
           "artifact-metadata": {
             "type": "permission-level-any",
             "description": "Storage and deployment records for build artifacts."
+          },
           "attestations": {
             "type": "permission-level-any",
             "description": "Artifact attestations."
