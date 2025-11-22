@@ -1,3 +1,4 @@
+import {Scalar} from "yaml";
 import {DefinitionInfo} from "../schema/definition-info";
 
 import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "../template-constants";
@@ -24,6 +25,16 @@ export class BasicExpressionToken extends ExpressionToken {
   public readonly expressionRange: TokenRange | undefined;
 
   /**
+   * The YAML scalar type (e.g., BLOCK_LITERAL, BLOCK_FOLDED, PLAIN, etc.) if the expression was parsed from a block scalar.
+   */
+  public readonly scalarType: Scalar.Type | undefined;
+
+  /**
+   * The chomp style of the block scalar: 'clip' (default, keeps one newline), 'strip' (removes all), or 'keep' (keeps all).
+   */
+  public readonly chompStyle: "clip" | "strip" | "keep" | undefined;
+
+  /**
    * @param originalExpressions If the basic expression was transformed from individual expressions, these will be the original ones
    */
   public constructor(
@@ -33,13 +44,17 @@ export class BasicExpressionToken extends ExpressionToken {
     definitionInfo: DefinitionInfo | undefined,
     originalExpressions: BasicExpressionToken[] | undefined,
     source: string | undefined,
-    expressionRange?: TokenRange | undefined
+    expressionRange?: TokenRange | undefined,
+    scalarType?: Scalar.Type | undefined,
+    chompStyle?: "clip" | "strip" | "keep" | undefined
   ) {
     super(TokenType.BasicExpression, file, range, undefined, definitionInfo);
     this.expr = expression;
     this.source = source;
     this.originalExpressions = originalExpressions;
     this.expressionRange = expressionRange;
+    this.scalarType = scalarType;
+    this.chompStyle = chompStyle;
   }
 
   public get expression(): string {
@@ -55,7 +70,9 @@ export class BasicExpressionToken extends ExpressionToken {
           this.definitionInfo,
           this.originalExpressions,
           this.source,
-          this.expressionRange
+          this.expressionRange,
+          this.scalarType,
+          this.chompStyle
         )
       : new BasicExpressionToken(
           this.file,
@@ -64,7 +81,9 @@ export class BasicExpressionToken extends ExpressionToken {
           this.definitionInfo,
           this.originalExpressions,
           this.source,
-          this.expressionRange
+          this.expressionRange,
+          this.scalarType,
+          this.chompStyle
         );
   }
 

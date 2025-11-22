@@ -117,11 +117,28 @@ export class YamlObjectReader implements ObjectReader {
         return new BooleanToken(fileId, range, value, undefined);
       case "string": {
         let source: string | undefined;
+        const scalarType = token.type;
+        let blockScalarHeader: string | undefined;
+
         if (token.srcToken && "source" in token.srcToken) {
           source = token.srcToken.source;
+          // Extract block scalar header. For example |-, |+, >-
+          //
+          // This relies on undocumented internal behavior (srcToken.props).
+          // Feature request for official support: https://github.com/eemeli/yaml/issues/643
+          if (token.srcToken.type === "block-scalar" && "props" in token.srcToken) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const props = token.srcToken.props as any[];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            const headerProp = props.find((p: any) => p.type === "block-scalar-header");
+            if (headerProp && "source" in headerProp) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+              blockScalarHeader = headerProp.source;
+            }
+          }
         }
 
-        return new StringToken(fileId, range, value, undefined, source);
+        return new StringToken(fileId, range, value, undefined, source, scalarType, blockScalarHeader);
       }
       default:
         throw new Error(`Unexpected value type '${typeof value}' when reading object`);

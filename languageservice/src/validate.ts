@@ -3,12 +3,14 @@ import {Expr} from "@actions/expressions/ast";
 import {ParseWorkflowResult, WorkflowTemplate, isBasicExpression, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
+import {Definition} from "@actions/workflow-parser/templates/schema/definition";
 import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
 import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
+import {Scalar} from "yaml";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 import {ActionMetadata, ActionReference} from "./action";
@@ -106,6 +108,8 @@ async function additionalValidations(
         config?.contextProviderConfig,
         getProviderContext(documentUri, template, root, token.range)
       );
+
+      validateChomp(diagnostics, token, parent, key, validationDefinition);
     }
 
     if (token.definition?.key === "regular-step" && token.range) {
@@ -215,5 +219,100 @@ async function validateExpression(
         severity: e.severity === "error" ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning
       }))
     );
+  }
+}
+
+function validateChomp(
+  diagnostics: Diagnostic[],
+  token: BasicExpressionToken,
+  parent: TemplateToken | undefined,
+  key: TemplateToken | undefined,
+  validationDefinition: Definition | undefined
+): void {
+  // Not "clip" or "keep" chomp style?
+  if (token.chompStyle !== "clip" && token.chompStyle !== "keep") {
+    return;
+  }
+
+  // No definition? This can happen when the token is in an invalid position or the workflow has parse errors.
+  if (!validationDefinition) {
+    return;
+  }
+
+  // Step "run"?
+  if (parent?.definition?.key === "run-step" && key?.isScalar && key.toString() === "run") {
+    return;
+  }
+
+  // Block scalar indicator, i.e. | or >
+  const scalarIndicator = token.scalarType === Scalar.BLOCK_LITERAL ? "|" : ">";
+
+  const defKey = validationDefinition.key;
+  const parentDefKey = parent?.definition?.key;
+
+  // Error for boolean fields
+  if (
+    defKey === "job-if" ||
+    defKey === "step-if" ||
+    defKey === "step-continue-on-error" ||
+    (parentDefKey === "job-factory" && key?.isScalar && key.toString() === "continue-on-error")
+  ) {
+    diagnostics.push({
+      message: `Block scalar adds trailing newline which breaks boolean evaluation. Use '${scalarIndicator}-' to strip trailing newlines.`,
+      range: mapRange(token.range),
+      severity: DiagnosticSeverity.Error,
+      code: "expression-block-scalar-chomping",
+      source: "github-actions"
+    });
+  }
+  // Error for number fields
+  else if (
+    defKey === "step-timeout-minutes" ||
+    (parentDefKey === "container-mapping" && key?.isScalar && ["ports", "volumes"].includes(key.toString())) ||
+    (parentDefKey === "job-factory" && key?.isScalar && key.toString() === "timeout-minutes")
+  ) {
+    diagnostics.push({
+      message: `Block scalar adds trailing newline which breaks number parsing. Use '${scalarIndicator}-' to strip trailing newlines.`,
+      range: mapRange(token.range),
+      severity: DiagnosticSeverity.Error,
+      code: "expression-block-scalar-chomping",
+      source: "github-actions"
+    });
+  }
+  // Error for specific string fields
+  else if (
+    defKey === "run-name" ||
+    defKey === "step-name" ||
+    defKey === "container" ||
+    defKey === "services-container" ||
+    defKey === "job-environment" ||
+    defKey === "job-environment-name" ||
+    defKey === "runs-on" ||
+    defKey === "runs-on-labels" ||
+    (parentDefKey === "container-mapping" && key?.isScalar && ["image", "credentials"].includes(key.toString())) ||
+    (parentDefKey === "job-defaults-run" && key?.isScalar && ["shell", "working-directory"].includes(key.toString())) ||
+    (parentDefKey === "job-environment-mapping" && key?.isScalar && key.toString() === "url") ||
+    (parentDefKey === "job-factory" && key?.isScalar && key.toString() === "name") ||
+    (parentDefKey === "workflow-job" && key?.isScalar && key.toString() === "name") ||
+    (parentDefKey === "run-step" && key?.isScalar && key.toString() === "working-directory") ||
+    (parentDefKey === "runs-on-mapping" && key?.isScalar && key.toString() === "group")
+  ) {
+    diagnostics.push({
+      message: `Block scalar adds trailing newline. Use '${scalarIndicator}-' to strip trailing newlines.`,
+      range: mapRange(token.range),
+      severity: DiagnosticSeverity.Error,
+      code: "expression-block-scalar-chomping",
+      source: "github-actions"
+    });
+  }
+  // Warning for everything else, but only on clip (default)
+  else if (token.chompStyle === "clip") {
+    diagnostics.push({
+      message: `Block scalar adds trailing newline to expression result. Use '${scalarIndicator}-' to strip or '${scalarIndicator}+' to keep trailing newlines.`,
+      range: mapRange(token.range),
+      severity: DiagnosticSeverity.Warning,
+      code: "expression-block-scalar-chomping",
+      source: "github-actions"
+    });
   }
 }
