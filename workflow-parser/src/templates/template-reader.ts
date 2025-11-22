@@ -1,6 +1,7 @@
 // template-reader *just* does schema validation
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
+import {Scalar} from "yaml";
 import {ObjectReader} from "./object-reader";
 import {TemplateSchema} from "./schema";
 import {DefinitionInfo} from "./schema/definition-info";
@@ -459,7 +460,20 @@ class TemplateReader {
       // Doesn't contain "${{"
       // Check if value should still be evaluated as an expression
       if (definitionInfo.definition instanceof StringDefinition && definitionInfo.definition.isExpression) {
-        const expression = this.parseIntoExpressionToken(token.range!, raw, allowedContext, token, definitionInfo);
+        // For isExpression fields (e.g., 'if' conditions), parse token.value (not raw).
+        // Example YAML:
+        //   if: |
+        //     github.event_name == 'push'
+        // token.source/raw = "|\n  github.event_name == 'push'\n" (includes block scalar header)
+        // token.value = "github.event_name == 'push'\n" (clean expression content)
+        // We need token.value because the '|' would interfere with expression parsing.
+        const expression = this.parseIntoExpressionToken(
+          token.range!,
+          token.value,
+          allowedContext,
+          token,
+          definitionInfo
+        );
         if (expression) {
           return expression;
         }
@@ -606,13 +620,17 @@ class TemplateReader {
       }
     }
 
+    const blockScalarInfo = parseBlockScalarInfo(token);
     return new BasicExpressionToken(
       this._fileId,
       token.range,
       `format('${format.join("")}'${args.join("")})`,
       definitionInfo,
       expressionTokens,
-      raw
+      raw,
+      undefined,
+      blockScalarInfo.scalarType,
+      blockScalarInfo.chompStyle
     );
   }
 
@@ -686,6 +704,7 @@ class TemplateReader {
     };
 
     // Return the expression
+    const blockScalarInfo = parseBlockScalarInfo(token);
     return <ParseExpressionResult>{
       expression: new BasicExpressionToken(
         this._fileId,
@@ -694,7 +713,9 @@ class TemplateReader {
         definitionInfo,
         undefined,
         token.source,
-        expressionRange
+        expressionRange,
+        blockScalarInfo.scalarType,
+        blockScalarInfo.chompStyle
       ),
       error: undefined
     };
@@ -800,4 +821,54 @@ interface MatchDirectiveResult {
   isMatch: boolean;
   parameters: string[];
   error: Error | undefined;
+}
+
+interface BlockScalarInfo {
+  scalarType: Scalar.Type | undefined;
+  chompStyle: "clip" | "strip" | "keep" | undefined;
+}
+
+/**
+ * Parse the block scalar info from the StringToken
+ * @param token The StringToken that may contain block scalar information
+ * @returns The scalar type and chomp style
+ */
+function parseBlockScalarInfo(token: StringToken): BlockScalarInfo {
+  const scalarType = token.scalarType;
+
+  // Only block scalars have chomp styles
+  if (scalarType !== Scalar.BLOCK_LITERAL && scalarType !== Scalar.BLOCK_FOLDED) {
+    return {scalarType: undefined, chompStyle: undefined};
+  }
+
+  // Parse chomp style from the block scalar header
+  // Look for block scalar indicators at the start: | or >
+  // Followed by optional chomp indicator (-, +) and/or explicit indent (digit)
+  // Examples: |, |-, |+, |2, |-2, |+2, >, >-, >+, >2, >-2, >+2
+  const header = token.blockScalarHeader;
+  if (!header) {
+    // If there's no header, assume clip (default)
+    return {scalarType, chompStyle: "clip"};
+  }
+
+  const blockScalarMatch = header.match(/^(\||>)([-+])?(\d)?/);
+
+  if (!blockScalarMatch) {
+    // Assume clip if we can't parse the indicator
+    return {scalarType, chompStyle: "clip"};
+  }
+
+  const chompIndicator = blockScalarMatch[2];
+
+  let chompStyle: "clip" | "strip" | "keep";
+  if (chompIndicator === "-") {
+    chompStyle = "strip";
+  } else if (chompIndicator === "+") {
+    chompStyle = "keep";
+  } else {
+    // No chomp indicator means clip (default)
+    chompStyle = "clip";
+  }
+
+  return {scalarType, chompStyle};
 }
