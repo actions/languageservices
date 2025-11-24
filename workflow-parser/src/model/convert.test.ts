@@ -74,7 +74,7 @@ jobs:
         {
           id: "build",
           if: {
-            expr: "success()",
+            expr: "success() && (true)",
             type: 3
           },
           name: "build",
@@ -85,7 +85,7 @@ jobs:
         {
           id: "deploy",
           if: {
-            expr: "success()",
+            expr: "success() && (true)",
             type: 3
           },
           name: "deploy",

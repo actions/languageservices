@@ -155,8 +155,8 @@ jobs:
       contents:
         "Causes the step to always execute, and returns `true`, even when canceled. The `always` expression is best used at the step level or on tasks that you expect to run even when a job is canceled. For example, you can use `always` to send logs even when a job is canceled.",
       range: {
-        start: {line: 3, character: 11},
-        end: {line: 3, character: 17}
+        start: {line: 3, character: 8},
+        end: {line: 3, character: 14}
       }
     });
   });

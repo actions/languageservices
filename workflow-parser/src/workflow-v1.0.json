@@ -1842,9 +1842,7 @@
         "cancelled(0,0)",
         "success(0,MAX)"
       ],
-      "string": {
-        "is-expression": true
-      }
+      "string": {}
     },
     "job-if-result": {
       "context": [
@@ -1949,9 +1947,7 @@
         "matrix"
       ],
       "description": "Use the if conditional to prevent a snapshot from being taken unless a condition is met. Any supported context and expression can be used to create a conditional. Expressions in an `if` conditional do not require the bracketed expression syntax. When you use expressions in an `if` conditional, you may omit the expression syntax because GitHub automatically evaluates the `if` conditional as an expression.",
-      "string": {
-        "is-expression": true
-      }
+      "string": {}
     },
     "runs-on": {
       "description": "Use `runs-on` to define the type of machine to run the job on.\n* The destination machine can be either a GitHub-hosted runner, larger runner, or a self-hosted runner.\n* You can target runners based on the labels assigned to them, or their group membership, or a combination of these.\n* You can provide `runs-on` as a single string or as an array of strings.\n* If you specify an array of strings, your workflow will execute on any runner that matches all of the specified `runs-on` values.\n* If you would like to run your workflow on multiple machines, use `jobs.<job_id>.strategy`.",
@@ -2216,9 +2212,7 @@
         "hashFiles(1,255)"
       ],
       "description": "Use the `if` conditional to prevent a step from running unless a condition is met. Any supported context and expression can be used to create a conditional. Expressions in an `if` conditional do not require the bracketed expression syntax. When you use expressions in an `if` conditional, you may omit the expression syntax because GitHub automatically evaluates the `if` conditional as an expression.",
-      "string": {
-        "is-expression": true
-      }
+      "string": {}
     },
     "step-if-result": {
       "context": [

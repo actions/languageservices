@@ -108,6 +108,40 @@ async function additionalValidations(
       );
     }
 
+    // If this is a job-if, step-if, or snapshot-if field (which are strings that should be treated as expressions), validate it
+    const definitionKey = token.definition?.key;
+    if (
+      isString(token) &&
+      token.range &&
+      (definitionKey === "job-if" || definitionKey === "step-if" || definitionKey === "snapshot-if")
+    ) {
+      // Convert the string to an expression token for validation
+      const condition = token.value.trim();
+      if (condition) {
+        // Check if the condition already contains a status function
+        const hasStatusFunction = /\b(success|failure|cancelled|always)\s*\(/.test(condition);
+        const finalCondition = hasStatusFunction ? condition : `success() && (${condition})`;
+
+        // Create a BasicExpressionToken for validation
+        const expressionToken = new BasicExpressionToken(
+          token.file,
+          token.range,
+          finalCondition,
+          token.definitionInfo,
+          undefined,
+          token.source
+        );
+
+        await validateExpression(
+          diagnostics,
+          expressionToken,
+          validationToken.definitionInfo?.allowedContext || [],
+          config?.contextProviderConfig,
+          getProviderContext(documentUri, template, root, token.range)
+        );
+      }
+    }
+
     if (token.definition?.key === "regular-step" && token.range) {
       const context = getProviderContext(documentUri, template, root, token.range);
       await validateAction(diagnostics, token, context.step, config);
