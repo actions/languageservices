@@ -1,5 +1,5 @@
-import {Lexer, Parser} from "@actions/expressions";
-import {Expr} from "@actions/expressions/ast";
+import {Lexer, Parser, data} from "@actions/expressions";
+import {Expr, FunctionCall, Literal, Logical} from "@actions/expressions/ast";
 import {ParseWorkflowResult, WorkflowTemplate, isBasicExpression, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
@@ -105,7 +105,8 @@ async function additionalValidations(
         token,
         validationToken.definitionInfo?.allowedContext || [],
         config?.contextProviderConfig,
-        getProviderContext(documentUri, template, root, token.range)
+        getProviderContext(documentUri, template, root, token.range),
+        key?.definition?.key
       );
     }
 
@@ -213,17 +214,99 @@ function getProviderContext(
   return getWorkflowContext(documentUri, template, path);
 }
 
+/**
+ * Checks if a format function contains literal text in its format string.
+ * This indicates user confusion about how expressions work.
+ *
+ * Example: format('push == {0}', github.event_name)
+ * The literal text "push == " will always evaluate to truthy.
+ *
+ * @param expr The expression to check
+ * @returns true if the expression is a format() call with literal text
+ */
+function hasFormatWithLiteralText(expr: Expr): boolean {
+  // If this is a logical AND expression (from ensureStatusFunction wrapping)
+  // check the right side for the format call
+  if (expr instanceof Logical && expr.operator.lexeme === "&&" && expr.args.length === 2) {
+    return hasFormatWithLiteralText(expr.args[1]);
+  }
+
+  if (!(expr instanceof FunctionCall)) {
+    return false;
+  }
+
+  // Check if this is a format function
+  if (expr.functionName.lexeme.toLowerCase() !== "format") {
+    return false;
+  }
+
+  // Check if the first argument is a string literal
+  if (expr.args.length < 1) {
+    return false;
+  }
+
+  const firstArg = expr.args[0];
+  if (!(firstArg instanceof Literal) || firstArg.literal.kind !== data.Kind.String) {
+    return false;
+  }
+
+  // Get the format string and trim whitespace
+  const formatString = firstArg.literal.coerceString();
+  const trimmed = formatString.trim();
+
+  // Check if there's literal text (non-replacement tokens) after trimming
+  let inToken = false;
+  for (let i = 0; i < trimmed.length; i++) {
+    if (!inToken && trimmed[i] === "{") {
+      inToken = true;
+    } else if (inToken && trimmed[i] === "}") {
+      inToken = false;
+    } else if (inToken && trimmed[i] >= "0" && trimmed[i] <= "9") {
+      // OK - this is a replacement token like {0}, {1}, etc.
+    } else {
+      // Found literal text
+      return true;
+    }
+  }
+
+  return false;
+}
+
 async function validateExpression(
   diagnostics: Diagnostic[],
   token: BasicExpressionToken,
   allowedContext: string[],
   contextProviderConfig: ContextProviderConfig | undefined,
-  workflowContext: WorkflowContext
+  workflowContext: WorkflowContext,
+  keyDefinitionKey?: string
 ) {
+  const {namedContexts, functions} = splitAllowedContext(allowedContext);
+
+  // Check for literal text in if condition
+  const definitionKey = keyDefinitionKey || token.definitionInfo?.definition?.key;
+  if (definitionKey === "job-if" || definitionKey === "step-if" || definitionKey === "snapshot-if") {
+    try {
+      const l = new Lexer(token.expression);
+      const lr = l.lex();
+      const p = new Parser(lr.tokens, namedContexts, functions);
+      const expr = p.parse();
+
+      if (hasFormatWithLiteralText(expr)) {
+        diagnostics.push({
+          message:
+            "Conditional expression contains literal text outside replacement tokens. This will cause the expression to always evaluate to truthy. Did you mean to put the entire expression inside ${{ }}?",
+          range: mapRange(token.range),
+          severity: DiagnosticSeverity.Error,
+          code: "expression-literal-text-in-condition"
+        });
+      }
+    } catch {
+      // Ignore parse errors here
+    }
+  }
+
   // Validate the expression
   for (const expression of token.originalExpressions || [token]) {
-    const {namedContexts, functions} = splitAllowedContext(allowedContext);
-
     let expr: Expr | undefined;
 
     try {
