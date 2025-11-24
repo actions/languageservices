@@ -2,7 +2,7 @@ import {TemplateContext} from "../../templates/template-context";
 import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
 import {isSequence, isString} from "../../templates/tokens/type-guards";
 import {Step, WorkflowJob} from "../workflow-template";
-import {convertToIfCondition, JOB_IF_CONTEXT} from "./if-condition";
+import {convertToIfCondition} from "./if-condition";
 import {convertConcurrency} from "./concurrency";
 import {convertToJobContainer, convertToJobServices} from "./container";
 import {handleTemplateTokenErrors} from "./handle-errors";
@@ -62,7 +62,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
         break;
 
       case "if":
-        ifCondition = convertToIfCondition(context, item.value, JOB_IF_CONTEXT);
+        ifCondition = convertToIfCondition(context, item.value);
         break;
 
       case "name":

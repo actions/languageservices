@@ -83,7 +83,6 @@ reusable-workflow-job-permissions-overrides-default-write.yml
 reusable-workflow-job-permissions-overrides-workflow-level.yml
 root-env-defaults.yml
 round-to-infinity.yml
-step-if.yml
 scientific-notation-number.yml
 skip-reusable-workflows.yml
 workflow-defaults.yml

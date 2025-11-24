@@ -1,4 +1,5 @@
 import {Pos} from "@actions/expressions/lexer";
+import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {isBasicExpression, isString} from "@actions/workflow-parser/templates/tokens/type-guards";
 import {Position, Range as LSPRange} from "vscode-languageserver-textdocument";
@@ -42,14 +43,14 @@ export function mapToExpressionPos(token: TemplateToken, position: Position): Ex
   ) {
     const condition = token.value.trim();
     if (condition) {
-      // Check if the condition already contains a status function
-      const hasStatusFunction = /\b(success|failure|cancelled|always)\s*\(/.test(condition);
-      const finalCondition = hasStatusFunction ? condition : `success() && (${condition})`;
+      // Ensure the condition has a status function, wrapping if needed
+      const finalCondition = ensureStatusFunction(condition, token.definitionInfo);
 
       const exprRange = mapRange(token.range);
 
-      // Calculate offset for wrapping
-      const offset = hasStatusFunction ? 0 : "success() && (".length;
+      // Calculate offset: find where the original condition appears in the final expression
+      // If wrapped, it will be after "success() && (", otherwise it's at position 0
+      const offset = finalCondition.indexOf(condition);
 
       return {
         expression: finalCondition,
