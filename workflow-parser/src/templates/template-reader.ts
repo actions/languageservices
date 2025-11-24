@@ -8,7 +8,6 @@ import {DefinitionType} from "./schema/definition-type";
 import {MappingDefinition} from "./schema/mapping-definition";
 import {ScalarDefinition} from "./schema/scalar-definition";
 import {SequenceDefinition} from "./schema/sequence-definition";
-import {StringDefinition} from "./schema/string-definition";
 import {ANY, CLOSE_EXPRESSION, INSERT_DIRECTIVE, OPEN_EXPRESSION} from "./template-constants";
 import {TemplateContext} from "./template-context";
 import {
@@ -456,14 +455,7 @@ class TemplateReader {
 
     let startExpression: number = raw.indexOf(OPEN_EXPRESSION);
     if (startExpression < 0) {
-      // Doesn't contain "${{"
-      // Check if value should still be evaluated as an expression
-      if (definitionInfo.definition instanceof StringDefinition && definitionInfo.definition.isExpression) {
-        const expression = this.parseIntoExpressionToken(token.range!, raw, allowedContext, token, definitionInfo);
-        if (expression) {
-          return expression;
-        }
-      }
+      // Doesn't contain "{{"
       return token;
     }
 

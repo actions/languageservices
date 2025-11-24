@@ -2,6 +2,7 @@ import {TemplateContext} from "../../templates/template-context";
 import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
 import {isSequence} from "../../templates/tokens/type-guards";
 import {isActionStep} from "../type-guards";
+import {convertToIfCondition, STEP_IF_CONTEXT} from "./if-condition";
 import {ActionStep, Step} from "../workflow-template";
 import {handleTemplateTokenErrors} from "./handle-errors";
 import {IdBuilder} from "./id-builder";
@@ -52,7 +53,7 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
   let uses: StringToken | undefined;
   let continueOnError: boolean | ScalarToken | undefined;
   let env: MappingToken | undefined;
-  const ifCondition = new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined);
+  let ifCondition: BasicExpressionToken | undefined;
   for (const item of mapping) {
     const key = item.key.assertString("steps item key");
     switch (key.value) {
@@ -77,6 +78,9 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
       case "env":
         env = item.value.assertMapping("step env");
         break;
+      case "if":
+        ifCondition = convertToIfCondition(context, item.value, STEP_IF_CONTEXT);
+        break;
       case "continue-on-error":
         if (!item.value.isExpression) {
           continueOnError = item.value.assertBoolean("steps item continue-on-error").value;
@@ -90,7 +94,7 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
     return {
       id: id?.value || "",
       name,
-      if: ifCondition,
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       "continue-on-error": continueOnError,
       env,
       run
@@ -101,7 +105,7 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
     return {
       id: id?.value || "",
       name,
-      if: ifCondition,
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       "continue-on-error": continueOnError,
       env,
       uses
@@ -134,3 +138,10 @@ function createActionStepId(step: ActionStep): string {
 
   return "";
 }
+
+/**
+ * Converts an if condition token to a BasicExpressionToken.
+ * Similar to Go's convertToIfCondition - treats the value as a string and parses it as an expression.
+ * Wraps the condition in success() && (...) if it doesn't already contain a status function.
+ * This allows both 'if: success()' and 'if: ${{ success() }}' to work correctly.
+ */

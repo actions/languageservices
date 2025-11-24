@@ -2,6 +2,7 @@ import {TemplateContext} from "../../templates/template-context";
 import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
 import {isSequence, isString} from "../../templates/tokens/type-guards";
 import {Step, WorkflowJob} from "../workflow-template";
+import {convertToIfCondition, JOB_IF_CONTEXT} from "./if-condition";
 import {convertConcurrency} from "./concurrency";
 import {convertToJobContainer, convertToJobServices} from "./container";
 import {handleTemplateTokenErrors} from "./handle-errors";
@@ -20,6 +21,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
     container,
     env,
     environment,
+    ifCondition,
     name,
     outputs,
     runsOn,
@@ -57,6 +59,10 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
           convertToActionsEnvironmentRef(context, item.value)
         );
         environment = item.value;
+        break;
+
+      case "if":
+        ifCondition = convertToIfCondition(context, item.value, JOB_IF_CONTEXT);
         break;
 
       case "name":
@@ -134,7 +140,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       id: jobKey,
       name: jobName(name, jobKey),
       needs: needs || [],
-      if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       ref: workflowJobRef,
       "input-definitions": undefined,
       "input-values": workflowJobInputs,
@@ -151,7 +157,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       id: jobKey,
       name: jobName(name, jobKey),
       needs,
-      if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       env,
       concurrency,
       environment,
