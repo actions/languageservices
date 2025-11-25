@@ -2,6 +2,7 @@ import {Lexer, Parser} from "@actions/expressions";
 import {Expr} from "@actions/expressions/ast";
 import {ParseWorkflowResult, WorkflowTemplate, isBasicExpression, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
 import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
 import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
@@ -118,9 +119,8 @@ async function additionalValidations(
       // Convert the string to an expression token for validation
       const condition = token.value.trim();
       if (condition) {
-        // Check if the condition already contains a status function
-        const hasStatusFunction = /\b(success|failure|cancelled|always)\s*\(/.test(condition);
-        const finalCondition = hasStatusFunction ? condition : `success() && (${condition})`;
+        // Ensure the condition has a status function, wrapping if needed
+        const finalCondition = ensureStatusFunction(condition, token.definitionInfo);
 
         // Create a BasicExpressionToken for validation
         const expressionToken = new BasicExpressionToken(

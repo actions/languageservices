@@ -1,23 +1,65 @@
+import {Lexer, Parser} from "@actions/expressions";
+import {Binary, Expr, FunctionCall, Grouping, IndexAccess, Logical, Unary} from "@actions/expressions/ast";
+import {DefinitionInfo} from "../../templates/schema/definition-info";
+import {splitAllowedContext} from "../../templates/allowed-context";
 import {TemplateContext} from "../../templates/template-context";
 import {BasicExpressionToken, ExpressionToken, TemplateToken} from "../../templates/tokens";
 
 /**
+ * Ensures a condition expression contains a status function call.
+ * If the condition doesn't contain success(), failure(), cancelled(), or always(),
+ * wraps it in `success() && (condition)`.
+ *
+ * Parses the expression to accurately detect status functions, avoiding false positives
+ * from string literals or property access. If parsing fails (e.g., partially typed expression),
+ * returns the original condition unchanged to allow validation to report the actual error.
+ *
+ * @param condition The condition expression to check
+ * @param definitionInfo Schema definition containing allowed contexts for parsing
+ * @returns The condition with status function guaranteed, or original on parse error
+ */
+export function ensureStatusFunction(condition: string, definitionInfo: DefinitionInfo | undefined): string {
+  const allowedContext = definitionInfo?.allowedContext || [];
+
+  try {
+    const {namedContexts, functions} = splitAllowedContext(allowedContext);
+    const lexer = new Lexer(condition);
+    const result = lexer.lex();
+    const parser = new Parser(result.tokens, namedContexts, functions);
+    const tree = parser.parse();
+
+    // Check if tree contains status function
+    if (walkTreeToFindStatusFunctionCalls(tree)) {
+      return condition; // Already has status function
+    }
+
+    // Wrap it
+    return `success() && (${condition})`;
+  } catch {
+    // Parse error - return original and let validation report the actual error
+    // This is important for hover/autocomplete on partially-typed expressions
+    return condition;
+  }
+}
+
+/**
  * Converts an if condition token to a BasicExpressionToken.
- * Similar to Go's convertToIfCondition - treats the value as a string and parses it as an expression.
+ * Treats the value as a string and parses it as an expression.
  * Wraps the condition in success() && (...) if it doesn't already contain a status function.
  * This allows both 'if: success()' and 'if: ${{ success() }}' to work correctly.
  *
+ * Reads the allowed context directly from the schema definition attached to the token,
+ * ensuring consistency with the schema.
+ *
  * @param context The template context for error reporting
  * @param token The token containing the if condition
- * @param allowedContext The allowed expression contexts (varies by job-if vs step-if vs snapshot-if)
  * @returns A BasicExpressionToken with the processed condition, or undefined on error
  */
-export function convertToIfCondition(
-  context: TemplateContext,
-  token: TemplateToken,
-  allowedContext: string[]
-): BasicExpressionToken | undefined {
+export function convertToIfCondition(context: TemplateContext, token: TemplateToken): BasicExpressionToken | undefined {
   const scalar = token.assertScalar("if condition");
+
+  // Get allowed context from the schema definition attached to the token
+  const allowedContext = token.definitionInfo?.allowedContext || [];
 
   // If it's already an expression, use its value
   let condition: string;
@@ -33,21 +75,13 @@ export function convertToIfCondition(
     source = stringToken.source;
   }
 
+  let finalCondition: string;
   if (!condition) {
     // Empty condition defaults to success()
-    return new BasicExpressionToken(token.file, token.range, "success()", token.definitionInfo, undefined, undefined);
-  }
-
-  // Check if the condition already contains a status function (success, failure, cancelled, always)
-  // This is a simple check - just look for these function names
-  const hasStatusFunction = /\b(success|failure|cancelled|always)\s*\(/.test(condition);
-
-  let finalCondition: string;
-  if (hasStatusFunction) {
-    finalCondition = condition;
+    finalCondition = "success()";
   } else {
-    // Wrap in success() && (condition)
-    finalCondition = `success() && (${condition})`;
+    // Ensure the condition has a status function, wrapping if needed
+    finalCondition = ensureStatusFunction(condition, token.definitionInfo);
   }
 
   // Validate the expression before creating the token
@@ -63,57 +97,42 @@ export function convertToIfCondition(
 }
 
 /**
- * Allowed context for job-level if conditions
+ * Walks an expression AST to find status function calls (success, failure, cancelled, always).
+ * Recursively checks all nodes including function arguments and logical/binary operations.
  */
-export const JOB_IF_CONTEXT = [
-  "github",
-  "inputs",
-  "vars",
-  "needs",
-  "always(0,0)",
-  "failure(0,MAX)",
-  "cancelled(0,0)",
-  "success(0,MAX)"
-];
+function walkTreeToFindStatusFunctionCalls(tree: Expr | undefined): boolean {
+  if (!tree) {
+    return false;
+  }
 
-/**
- * Allowed context for step-level if conditions
- */
-export const STEP_IF_CONTEXT = [
-  "github",
-  "inputs",
-  "vars",
-  "needs",
-  "strategy",
-  "matrix",
-  "steps",
-  "job",
-  "runner",
-  "env",
-  "always(0,0)",
-  "failure(0,0)",
-  "cancelled(0,0)",
-  "success(0,0)",
-  "hashFiles(1,255)"
-];
+  if (tree instanceof FunctionCall) {
+    const funcName = tree.functionName.lexeme.toLowerCase();
+    if (funcName === "success" || funcName === "failure" || funcName === "cancelled" || funcName === "always") {
+      return true;
+    }
+    // Check arguments recursively
+    return tree.args.some(arg => walkTreeToFindStatusFunctionCalls(arg));
+  }
 
-/**
- * Allowed context for snapshot-level if conditions
- */
-export const SNAPSHOT_IF_CONTEXT = [
-  "github",
-  "inputs",
-  "vars",
-  "needs",
-  "strategy",
-  "matrix",
-  "steps",
-  "job",
-  "runner",
-  "env",
-  "always(0,0)",
-  "failure(0,0)",
-  "cancelled(0,0)",
-  "success(0,0)",
-  "hashFiles(1,255)"
-];
+  if (tree instanceof Binary) {
+    return walkTreeToFindStatusFunctionCalls(tree.left) || walkTreeToFindStatusFunctionCalls(tree.right);
+  }
+
+  if (tree instanceof Unary) {
+    return walkTreeToFindStatusFunctionCalls(tree.expr);
+  }
+
+  if (tree instanceof Logical) {
+    return tree.args.some(arg => walkTreeToFindStatusFunctionCalls(arg));
+  }
+
+  if (tree instanceof Grouping) {
+    return walkTreeToFindStatusFunctionCalls(tree.group);
+  }
+
+  if (tree instanceof IndexAccess) {
+    return walkTreeToFindStatusFunctionCalls(tree.expr) || walkTreeToFindStatusFunctionCalls(tree.index);
+  }
+
+  return false;
+}
