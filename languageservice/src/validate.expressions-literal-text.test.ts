@@ -95,6 +95,28 @@ jobs:
         })
       );
     });
+
+    it("errors with escaped left brace followed by replacement token", async () => {
+      const input = `
+on: push
+jobs:
+  build:
+    if: \${{ format('{{{0}', github.event_name) }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toContainEqual(
+        expect.objectContaining({
+          message:
+            "Conditional expression contains literal text outside replacement tokens. This will cause the expression to always evaluate to truthy. Did you mean to put the entire expression inside ${{ }}?",
+          code: "expression-literal-text-in-condition",
+          severity: DiagnosticSeverity.Error
+        })
+      );
+    });
   });
 
   describe("step-if", () => {
