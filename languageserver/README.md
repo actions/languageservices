@@ -10,7 +10,84 @@ The [package](https://www.npmjs.com/package/@actions/languageserver) contains Ty
 npm install @actions/languageserver
 ```
 
+To install the language server as a standalone CLI:
+
+```bash
+npm install -g @actions/languageserver
+```
+
+This makes the `actions-languageserver` command available globally.
+
 ## Usage
+
+### Standalone CLI
+
+After installing globally, you can run the language server directly:
+
+```bash
+actions-languageserver --stdio
+```
+
+This starts the language server using stdio transport, which is the standard way for editors to communicate with language servers.
+
+### In Neovim
+
+Neovim 0.5+ has built-in LSP support. To use the Actions language server:
+
+#### 1. Install the language server
+
+```bash
+npm install -g @actions/languageserver
+```
+
+#### 2. Set up filetype detection
+
+Add this to your `init.lua` to detect GitHub Actions workflow files:
+
+```lua
+vim.filetype.add({
+  pattern = {
+    [".*/%.github/workflows/.*%.ya?ml"] = "yaml.ghactions",
+  },
+})
+```
+
+This sets the filetype to `yaml.ghactions` for YAML files in `.github/workflows/`, allowing you to keep separate YAML LSP configurations if needed.
+
+#### 3. Create the LSP configuration
+
+Create `~/.config/nvim/lsp/actionsls.lua`:
+
+```lua
+return {
+  cmd = { "actions-languageserver", "--stdio" },
+  filetypes = { "yaml.ghactions" },
+  root_markers = { ".git" },
+  init_options = {
+    -- Optional: provide a GitHub token for enhanced functionality
+    -- (e.g., repository-specific completions)
+    sessionToken = vim.fn.system("gh auth token"):gsub("%s+", ""),
+  },
+}
+```
+
+#### 4. Enable the LSP
+
+Add to your `init.lua`:
+
+```lua
+vim.lsp.enable('actionsls')
+```
+
+#### 5. Verify it's working
+
+Open any `.github/workflows/*.yml` file and run:
+
+```vim
+:checkhealth vim.lsp
+```
+
+You should see `actionsls` in the list of attached clients.
 
 ### Basic usage using `vscode-languageserver-node`
 
@@ -108,6 +185,27 @@ or to watch for changes
 
 ```bash
 npm run watch
+```
+
+### Running the language server locally
+
+After running
+
+```bash
+npm run build:cli
+npm link
+```
+
+`actions-languageserver` will be available globally. You can start it with:
+
+```bash
+actions-languageserver --stdio
+```
+
+Once linked you can also watch for changes and rebuild automatically:
+
+```bash
+npm run watch:cli
 ```
 
 ### Test
