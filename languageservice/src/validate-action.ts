@@ -1,12 +1,12 @@
-import {isMapping} from "@actions/workflow-parser";
-import {isActionStep} from "@actions/workflow-parser/model/type-guards";
-import {Step} from "@actions/workflow-parser/model/workflow-template";
-import {ScalarToken} from "@actions/workflow-parser/templates/tokens/scalar-token";
-import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
-import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {ActionReference, parseActionReference} from "./action";
-import {mapRange} from "./utils/range";
-import {ValidationConfig} from "./validate";
+import { isMapping } from "@actions/workflow-parser";
+import { isActionStep } from "@actions/workflow-parser/model/type-guards";
+import { Step } from "@actions/workflow-parser/model/workflow-template";
+import { ScalarToken } from "@actions/workflow-parser/templates/tokens/scalar-token";
+import { TemplateToken } from "@actions/workflow-parser/templates/tokens/template-token";
+import { Diagnostic, DiagnosticSeverity } from "vscode-languageserver-types";
+import { ActionReference, parseActionReference } from "./action";
+import { mapRange } from "./utils/range";
+import { ValidationConfig } from "./validate";
 
 export const DiagnosticCode = {
   MissingRequiredInputs: "missing-required-inputs"
@@ -23,7 +23,7 @@ export interface MissingInputsDiagnosticData {
   withIndent?: number;
   stepIndent: number;
   // Position where new content should be inserted
-  insertPosition: {line: number; character: number};
+  insertPosition: { line: number; character: number };
 }
 
 export async function validateAction(
@@ -53,7 +53,7 @@ export async function validateAction(
 
   let withKey: ScalarToken | undefined;
   let withToken: TemplateToken | undefined;
-  for (const {key, value} of stepToken) {
+  for (const { key, value } of stepToken) {
     if (key.toString() === "with") {
       withKey = key;
       withToken = value;
@@ -63,7 +63,7 @@ export async function validateAction(
 
   const stepInputs = new Map<string, ScalarToken>();
   if (withToken && isMapping(withToken)) {
-    for (const {key} of withToken) {
+    for (const { key } of withToken) {
       stepInputs.set(key.toString(), key);
     }
   }
@@ -105,6 +105,25 @@ export async function validateAction(
     const stepIndent = stepToken.range ? stepToken.range.start.column - 1 : 0; // 0-indexed
     const withIndent = withKey?.range ? withKey.range.start.column - 1 : undefined;
 
+    // Calculate insert position
+    // For withToken, we need to handle empty mappings specially - insert after the with: line
+    let insertPosition: { line: number; character: number };
+    if (withToken?.range) {
+      // Check if with: has any children by comparing start and end lines
+      const hasChildren = stepInputs.size > 0;
+      if (hasChildren) {
+        // Insert after the last child
+        insertPosition = { line: withToken.range.end.line - 1, character: 0 };
+      } else {
+        // Empty with: block - insert on the next line after with:
+        insertPosition = { line: withKey!.range!.end.line, character: 0 };
+      }
+    } else if (stepToken.range) {
+      insertPosition = { line: stepToken.range.end.line - 1, character: 0 };
+    } else {
+      insertPosition = { line: 0, character: 0 };
+    }
+
     const diagnosticData: MissingInputsDiagnosticData = {
       action,
       missingInputs: missingRequiredInputs.map(([name, input]) => ({
@@ -114,11 +133,7 @@ export async function validateAction(
       hasWithKey: withKey !== undefined,
       withIndent,
       stepIndent,
-      insertPosition: withToken?.range
-        ? {line: withToken.range.end.line - 1, character: 0}
-        : stepToken.range
-        ? {line: stepToken.range.end.line - 1, character: 0}
-        : {line: 0, character: 0}
+      insertPosition
     };
 
     diagnostics.push({

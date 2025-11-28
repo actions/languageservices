@@ -1,9 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
-import {TextEdit} from "vscode-languageserver-types";
-import {TextDocument} from "vscode-languageserver-textdocument";
-import {validate, ValidationConfig} from "../../validate";
-import {getCodeActions, CodeActionParams} from "../index";
+import { TextEdit } from "vscode-languageserver-types";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { validate, ValidationConfig } from "../../validate";
+import { getCodeActions, CodeActionParams } from "../index";
 
 // Marker pattern: # want "diagnostic message" fix="code-action-name"
 const MARKER_PATTERN = /#\s*want\s+"([^"]+)"(?:\s+fix="([^"]+)")?/;
@@ -69,7 +69,7 @@ export function loadTestCases(testdataDir: string): TestCase[] {
   const testCases: TestCase[] = [];
 
   function walkDir(dir: string) {
-    const entries = fs.readdirSync(dir, {withFileTypes: true});
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
 
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
@@ -147,6 +147,7 @@ export async function runTestCase(testCase: TestCase, validationConfig: Validati
   const missingDiagnostics: string[] = [];
   for (const marker of testCase.markers) {
     const found = diagnostics.find(d => d.range.start.line === marker.line && d.message.includes(marker.message));
+    console.log(found);
     if (!found) {
       missingDiagnostics.push(`line ${marker.line}: "${marker.message}"`);
     }
@@ -188,9 +189,8 @@ export async function runTestCase(testCase: TestCase, validationConfig: Validati
       return {
         name: testCase.name,
         passed: false,
-        error: `Code action "${marker.fix}" not found for diagnostic on line ${marker.line}.\nAvailable actions: ${
-          actions.map(a => a.title).join(", ") || "(none)"
-        }`
+        error: `Code action "${marker.fix}" not found for diagnostic on line ${marker.line}.\nAvailable actions: ${actions.map(a => a.title).join(", ") || "(none)"
+          }`
       };
     }
 

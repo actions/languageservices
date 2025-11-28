@@ -1,6 +1,6 @@
-import {CodeAction, TextEdit} from "vscode-languageserver-types";
-import {CodeActionContext, CodeActionProvider} from "../types";
-import {DiagnosticCode, MissingInputsDiagnosticData} from "../../validate-action";
+import { CodeAction, TextEdit } from "vscode-languageserver-types";
+import { CodeActionContext, CodeActionProvider } from "../types";
+import { DiagnosticCode, MissingInputsDiagnosticData } from "../../validate-action";
 
 export const addMissingInputsProvider: CodeActionProvider = {
   diagnosticCodes: [DiagnosticCode.MissingRequiredInputs],
@@ -22,11 +22,11 @@ export const addMissingInputsProvider: CodeActionProvider = {
       title: `Add missing input${data.missingInputs.length > 1 ? "s" : ""}: ${inputNames}`,
       edit: {
         changes: {
-          [context.uri]: edits
-        }
-      }
+          [context.uri]: edits,
+        },
+      },
     };
-  }
+  },
 };
 
 function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] | undefined {
@@ -42,13 +42,13 @@ function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] | undef
     });
 
     edits.push({
-      range: {start: data.insertPosition, end: data.insertPosition},
-      newText: inputLines.map(line => line + "\n").join("")
+      range: { start: data.insertPosition, end: data.insertPosition },
+      newText: inputLines.map(line => line + "\n").join(""),
     });
   } else {
-    // No `with:` key - use step indentation for `with:`, +2 for inputs
-    const withIndent = " ".repeat(data.stepIndent + 2);
-    const inputIndent = " ".repeat(data.stepIndent + 4);
+    // No `with:` key - `with:` at step indentation, inputs at step indentation + 2
+    const withIndent = " ".repeat(data.stepIndent);
+    const inputIndent = " ".repeat(data.stepIndent + 2);
 
     const inputLines = data.missingInputs.map(input => {
       const value = input.default !== undefined ? input.default : '""';
@@ -58,8 +58,8 @@ function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] | undef
     const newText = [`${withIndent}with:\n`, ...inputLines.map(line => `${line}\n`)].join("");
 
     edits.push({
-      range: {start: data.insertPosition, end: data.insertPosition},
-      newText
+      range: { start: data.insertPosition, end: data.insertPosition },
+      newText,
     });
   }
 
