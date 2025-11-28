@@ -1,11 +1,11 @@
-import {DiagnosticSeverity} from "vscode-languageserver-types";
-import {ActionMetadata, ActionReference} from "./action";
-import {registerLogger} from "./log";
-import {createDocument} from "./test-utils/document";
-import {TestLogger} from "./test-utils/logger";
-import {validate, ValidationConfig} from "./validate";
-import {ValueProviderKind} from "./value-providers/config";
-import {clearCache} from "./utils/workflow-cache";
+import { DiagnosticSeverity } from "vscode-languageserver-types";
+import { ActionMetadata, ActionReference } from "./action";
+import { registerLogger } from "./log";
+import { createDocument } from "./test-utils/document";
+import { TestLogger } from "./test-utils/logger";
+import { validate, ValidationConfig } from "./validate";
+import { ValueProviderKind } from "./value-providers/config";
+import { clearCache } from "./utils/workflow-cache";
 
 registerLogger(new TestLogger());
 
@@ -249,7 +249,28 @@ jobs:
             line: 7
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          hasWithKey: true,
+          insertPosition: {
+            character: 0,
+            line: 9
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            }
+          ],
+          stepIndent: 6,
+          withIndent: 6
+        }
       }
     ]);
   });
@@ -294,7 +315,32 @@ jobs:
             line: 7
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          hasWithKey: true,
+          insertPosition: {
+            character: 0,
+            line: 9
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            },
+            {
+              default: undefined,
+              name: "key"
+            }
+          ],
+          stepIndent: 6,
+          withIndent: 6
+        }
       }
     ]);
   });
@@ -323,7 +369,32 @@ jobs:
             line: 6
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          hasWithKey: false,
+          insertPosition: {
+            character: 0,
+            line: 7
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            },
+            {
+              default: undefined,
+              name: "key"
+            }
+          ],
+          stepIndent: 6,
+          withIndent: undefined
+        }
       }
     ]);
   });
@@ -344,7 +415,7 @@ jobs:
       "step-with": {
         kind: ValueProviderKind.AllowedValues,
         get: () => {
-          return Promise.resolve([{label: "repository", description: "Repository name with owner."}]);
+          return Promise.resolve([{ label: "repository", description: "Repository name with owner." }]);
         }
       }
     };

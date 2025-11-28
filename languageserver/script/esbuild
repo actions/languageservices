@@ -1,0 +1,10 @@
+#!/bin/bash
+
+npx esbuild src/index.ts \
+  --bundle \
+  --platform=node \
+  --target=node18 \
+  --format=cjs \
+  --outfile=dist/server-bundled.cjs \
+  --external:vscode \
+  --loader:.json=json
