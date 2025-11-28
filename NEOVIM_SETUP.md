@@ -5,7 +5,36 @@
 - Node.js 18+
 - Neovim 0.11+ with the new LSP config format
 
-## Setup
+## Setup Options
+
+### Option 1: Install from npm (Recommended)
+
+Once published, you can install globally:
+
+```bash
+npm install -g @actions/languageserver
+```
+
+Then configure Neovim to use the installed binary:
+
+```lua
+-- ~/.config/nvim/lsp/actionsls.lua
+return {
+  cmd = { "actions-languageserver" },
+  filetypes = { "yaml.ghaction" },  -- GitHub Actions workflow files only
+  root_markers = { ".git" },
+  init_options = {
+    sessionToken = vim.fn.system("gh auth token"):gsub("%s+", ""),
+    logLevel = "info",
+  },
+}
+```
+
+**Note:** This requires the package to be published to npm first.
+
+### Option 2: Local Development Build
+
+For development or if the npm package isn't published yet:
 
 ### 1. Clone and build
 
@@ -43,16 +72,39 @@ return {
   cmd = {
     "/absolute/path/to/languageservices/languageserver/bin/actions-languageserver",
   },
-  filetypes = { "yaml" },
+  filetypes = { "yaml.ghaction" },  -- GitHub Actions workflow files only
   root_markers = { ".git" },
   init_options = {
-    sessionToken = os.getenv("GITHUB_SESSION_TOKEN") or "",
+    sessionToken = vim.fn.system("gh auth token"):gsub("%s+", ""),
     logLevel = "info",
   },
 }
 ```
 
 **Important:** Replace `/absolute/path/to/languageservices` with your actual clone path.
+
+## Filetype Detection for GitHub Actions Workflows
+
+To ensure the LSP only runs on GitHub Actions workflow files (not all YAML files), set up filetype detection:
+
+**Option A:** In `~/.config/nvim/init.lua`:
+
+```lua
+vim.api.nvim_create_autocmd({"BufRead", "BufNewFile"}, {
+  pattern = ".github/workflows/*.{yml,yaml}",
+  callback = function()
+    vim.bo.filetype = "yaml.ghaction"
+  end,
+})
+```
+
+**Option B:** Create `~/.config/nvim/ftdetect/ghaction.vim`:
+
+```vim
+au BufRead,BufNewFile .github/workflows/*.yml,*.yaml setfiletype yaml.ghaction
+```
+
+This sets the filetype to `yaml.ghaction` for files in `.github/workflows/`, matching the `filetypes` setting in your LSP config.
 
 ### 4. Enable the LSP in your init.lua
 
@@ -64,7 +116,7 @@ vim.lsp.enable('actionsls')
 
 ### 5. Restart Neovim
 
-Open any `.github/workflows/*.yml` file and the language server should attach automatically.
+Open any `.github/workflows/*.yml` file. The filetype detection will set it to `yaml.ghaction`, and the language server will attach automatically.
 
 ## Files Created
 
