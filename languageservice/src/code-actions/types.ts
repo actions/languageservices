@@ -1,4 +1,4 @@
-import { CodeAction, Diagnostic } from "vscode-languageserver-types";
+import {CodeAction, Diagnostic} from "vscode-languageserver-types";
 
 export interface CodeActionContext {
   uri: string;

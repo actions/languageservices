@@ -1,7 +1,7 @@
-import { documentLinks, getCodeActions, hover, validate, ValidationConfig } from "@actions/languageservice";
-import { registerLogger, setLogLevel } from "@actions/languageservice/log";
-import { clearCache, clearCacheEntry } from "@actions/languageservice/utils/workflow-cache";
-import { Octokit } from "@octokit/rest";
+import {documentLinks, getCodeActions, hover, validate, ValidationConfig} from "@actions/languageservice";
+import {registerLogger, setLogLevel} from "@actions/languageservice/log";
+import {clearCache, clearCacheEntry} from "@actions/languageservice/utils/workflow-cache";
+import {Octokit} from "@octokit/rest";
 import {
   CodeAction,
   CodeActionKind,
@@ -20,19 +20,19 @@ import {
   TextDocuments,
   TextDocumentSyncKind
 } from "vscode-languageserver";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { getClient } from "./client";
-import { Commands } from "./commands";
-import { contextProviders } from "./context-providers";
-import { descriptionProvider } from "./description-provider";
-import { getFileProvider } from "./file-provider";
-import { InitializationOptions, RepositoryContext } from "./initializationOptions";
-import { onCompletion } from "./on-completion";
-import { ReadFileRequest, Requests } from "./request";
-import { getActionsMetadataProvider } from "./utils/action-metadata";
-import { TTLCache } from "./utils/cache";
-import { timeOperation } from "./utils/timer";
-import { valueProviders } from "./value-providers";
+import {TextDocument} from "vscode-languageserver-textdocument";
+import {getClient} from "./client";
+import {Commands} from "./commands";
+import {contextProviders} from "./context-providers";
+import {descriptionProvider} from "./description-provider";
+import {getFileProvider} from "./file-provider";
+import {InitializationOptions, RepositoryContext} from "./initializationOptions";
+import {onCompletion} from "./on-completion";
+import {ReadFileRequest, Requests} from "./request";
+import {getActionsMetadataProvider} from "./utils/action-metadata";
+import {TTLCache} from "./utils/cache";
+import {timeOperation} from "./utils/timer";
+import {valueProviders} from "./value-providers";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -116,15 +116,15 @@ export function initConnection(connection: Connection) {
       contextProviderConfig: contextProviders(client, repoContext, cache),
       actionsMetadataProvider: getActionsMetadataProvider(client, cache),
       fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
-        return await connection.sendRequest(Requests.ReadFile, { path } satisfies ReadFileRequest);
+        return await connection.sendRequest(Requests.ReadFile, {path} satisfies ReadFileRequest);
       })
     };
 
     const result = await validate(textDocument, config);
-    await connection.sendDiagnostics({ uri: textDocument.uri, diagnostics: result });
+    await connection.sendDiagnostics({uri: textDocument.uri, diagnostics: result});
   }
 
-  connection.onCompletion(async ({ position, textDocument }: TextDocumentPositionParams): Promise<CompletionItem[]> => {
+  connection.onCompletion(async ({position, textDocument}: TextDocumentPositionParams): Promise<CompletionItem[]> => {
     return timeOperation(
       "completion",
       async () =>
@@ -139,14 +139,14 @@ export function initConnection(connection: Connection) {
     );
   });
 
-  connection.onHover(async ({ position, textDocument }: HoverParams): Promise<Hover | null> => {
+  connection.onHover(async ({position, textDocument}: HoverParams): Promise<Hover | null> => {
     return timeOperation("hover", async () => {
       const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
       return await hover(getDocument(documents, textDocument), position, {
         descriptionProvider: descriptionProvider(client, cache),
         contextProviderConfig: repoContext && contextProviders(client, repoContext, cache),
         fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
-          return await connection.sendRequest(Requests.ReadFile, { path });
+          return await connection.sendRequest(Requests.ReadFile, {path});
         })
       });
     });
@@ -159,7 +159,7 @@ export function initConnection(connection: Connection) {
     }
   });
 
-  connection.onDocumentLinks(async ({ textDocument }: DocumentLinkParams): Promise<DocumentLink[] | null> => {
+  connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
     return documentLinks(getDocument(documents, textDocument), repoContext?.workspaceUri);
   });
@@ -169,7 +169,7 @@ export function initConnection(connection: Connection) {
       return getCodeActions({
         uri: params.textDocument.uri,
         diagnostics: params.context.diagnostics,
-        only: params.context.only,
+        only: params.context.only
       });
     });
   });

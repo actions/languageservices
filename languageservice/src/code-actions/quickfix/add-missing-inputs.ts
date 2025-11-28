@@ -1,6 +1,6 @@
-import { CodeAction, TextEdit } from "vscode-languageserver-types";
-import { CodeActionContext, CodeActionProvider } from "../types";
-import { DiagnosticCode, MissingInputsDiagnosticData } from "../../validate-action";
+import {CodeAction, TextEdit} from "vscode-languageserver-types";
+import {CodeActionContext, CodeActionProvider} from "../types";
+import {DiagnosticCode, MissingInputsDiagnosticData} from "../../validate-action";
 
 export const addMissingInputsProvider: CodeActionProvider = {
   diagnosticCodes: [DiagnosticCode.MissingRequiredInputs],
@@ -22,11 +22,11 @@ export const addMissingInputsProvider: CodeActionProvider = {
       title: `Add missing input${data.missingInputs.length > 1 ? "s" : ""}: ${inputNames}`,
       edit: {
         changes: {
-          [context.uri]: edits,
-        },
-      },
+          [context.uri]: edits
+        }
+      }
     };
-  },
+  }
 };
 
 function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] | undefined {
@@ -42,8 +42,8 @@ function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] | undef
     });
 
     edits.push({
-      range: { start: data.insertPosition, end: data.insertPosition },
-      newText: inputLines.map(line => line + "\n").join(""),
+      range: {start: data.insertPosition, end: data.insertPosition},
+      newText: inputLines.map(line => line + "\n").join("")
     });
   } else {
     // No `with:` key - use step indentation for `with:`, +2 for inputs
@@ -58,8 +58,8 @@ function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] | undef
     const newText = [`${withIndent}with:\n`, ...inputLines.map(line => `${line}\n`)].join("");
 
     edits.push({
-      range: { start: data.insertPosition, end: data.insertPosition },
-      newText,
+      range: {start: data.insertPosition, end: data.insertPosition},
+      newText
     });
   }
 

@@ -1,9 +1,9 @@
 import * as fs from "fs";
 import * as path from "path";
-import { TextEdit } from "vscode-languageserver-types";
-import { TextDocument } from "vscode-languageserver-textdocument";
-import { validate, ValidationConfig } from "../../validate";
-import { getCodeActions, CodeActionParams } from "../index";
+import {TextEdit} from "vscode-languageserver-types";
+import {TextDocument} from "vscode-languageserver-textdocument";
+import {validate, ValidationConfig} from "../../validate";
+import {getCodeActions, CodeActionParams} from "../index";
 
 // Marker pattern: # want "diagnostic message" fix="code-action-name"
 const MARKER_PATTERN = /#\s*want\s+"([^"]+)"(?:\s+fix="([^"]+)")?/;
@@ -44,7 +44,7 @@ export function parseMarkers(content: string): Marker[] {
       markers.push({
         line: i,
         message: match[1],
-        fix: match[2],
+        fix: match[2]
       });
     }
   }
@@ -69,7 +69,7 @@ export function loadTestCases(testdataDir: string): TestCase[] {
   const testCases: TestCase[] = [];
 
   function walkDir(dir: string) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const entries = fs.readdirSync(dir, {withFileTypes: true});
 
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
@@ -89,7 +89,7 @@ export function loadTestCases(testdataDir: string): TestCase[] {
             goldenPath,
             input,
             golden,
-            markers: parseMarkers(input),
+            markers: parseMarkers(input)
           });
         }
       }
@@ -136,10 +136,7 @@ export function applyEdits(content: string, edits: TextEdit[]): string {
 /**
  * Run a single test case
  */
-export async function runTestCase(
-  testCase: TestCase,
-  validationConfig: ValidationConfig
-): Promise<TestResult> {
+export async function runTestCase(testCase: TestCase, validationConfig: ValidationConfig): Promise<TestResult> {
   const strippedInput = stripMarkers(testCase.input);
   const document = TextDocument.create("file:///test.yml", "yaml", 1, strippedInput);
 
@@ -149,9 +146,7 @@ export async function runTestCase(
   // 2.  Verify all expected diagnostics are present
   const missingDiagnostics: string[] = [];
   for (const marker of testCase.markers) {
-    const found = diagnostics.find(
-      d => d.range.start.line === marker.line && d.message.includes(marker.message)
-    );
+    const found = diagnostics.find(d => d.range.start.line === marker.line && d.message.includes(marker.message));
     if (!found) {
       missingDiagnostics.push(`line ${marker.line}: "${marker.message}"`);
     }
@@ -161,7 +156,9 @@ export async function runTestCase(
     return {
       name: testCase.name,
       passed: false,
-      error: `Missing expected diagnostics:\n  ${missingDiagnostics.join("\n  ")}\n\nActual diagnostics:\n  ${diagnostics.map(d => `line ${d.range.start.line}: "${d.message}"`).join("\n  ")}`,
+      error: `Missing expected diagnostics:\n  ${missingDiagnostics.join(
+        "\n  "
+      )}\n\nActual diagnostics:\n  ${diagnostics.map(d => `line ${d.range.start.line}: "${d.message}"`).join("\n  ")}`
     };
   }
 
@@ -173,9 +170,7 @@ export async function runTestCase(
       continue;
     }
 
-    const diagnostic = diagnostics.find(
-      d => d.range.start.line === marker.line && d.message.includes(marker.message)
-    );
+    const diagnostic = diagnostics.find(d => d.range.start.line === marker.line && d.message.includes(marker.message));
 
     if (!diagnostic) {
       continue; // Already reported above
@@ -183,19 +178,19 @@ export async function runTestCase(
 
     const params: CodeActionParams = {
       uri: document.uri,
-      diagnostics: [diagnostic],
+      diagnostics: [diagnostic]
     };
 
     const actions = getCodeActions(params);
-    const matchingAction = actions.find(a =>
-      a.title.toLowerCase().includes(marker.fix!.toLowerCase())
-    );
+    const matchingAction = actions.find(a => a.title.toLowerCase().includes(marker.fix!.toLowerCase()));
 
     if (!matchingAction) {
       return {
         name: testCase.name,
         passed: false,
-        error: `Code action "${marker.fix}" not found for diagnostic on line ${marker.line}.\nAvailable actions: ${actions.map(a => a.title).join(", ") || "(none)"}`,
+        error: `Code action "${marker.fix}" not found for diagnostic on line ${marker.line}.\nAvailable actions: ${
+          actions.map(a => a.title).join(", ") || "(none)"
+        }`
       };
     }
 
@@ -203,7 +198,7 @@ export async function runTestCase(
       return {
         name: testCase.name,
         passed: false,
-        error: `Code action "${marker.fix}" has no edits`,
+        error: `Code action "${marker.fix}" has no edits`
       };
     }
 
@@ -221,12 +216,12 @@ export async function runTestCase(
       passed: false,
       error: "Output does not match golden file",
       expected: expectedOutput,
-      actual: actualOutput,
+      actual: actualOutput
     };
   }
 
   return {
     name: testCase.name,
-    passed: true,
+    passed: true
   };
 }

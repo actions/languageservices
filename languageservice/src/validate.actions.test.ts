@@ -1,11 +1,11 @@
-import { DiagnosticSeverity } from "vscode-languageserver-types";
-import { ActionMetadata, ActionReference } from "./action";
-import { registerLogger } from "./log";
-import { createDocument } from "./test-utils/document";
-import { TestLogger } from "./test-utils/logger";
-import { validate, ValidationConfig } from "./validate";
-import { ValueProviderKind } from "./value-providers/config";
-import { clearCache } from "./utils/workflow-cache";
+import {DiagnosticSeverity} from "vscode-languageserver-types";
+import {ActionMetadata, ActionReference} from "./action";
+import {registerLogger} from "./log";
+import {createDocument} from "./test-utils/document";
+import {TestLogger} from "./test-utils/logger";
+import {validate, ValidationConfig} from "./validate";
+import {ValueProviderKind} from "./value-providers/config";
+import {clearCache} from "./utils/workflow-cache";
 
 registerLogger(new TestLogger());
 
@@ -415,7 +415,7 @@ jobs:
       "step-with": {
         kind: ValueProviderKind.AllowedValues,
         get: () => {
-          return Promise.resolve([{ label: "repository", description: "Repository name with owner." }]);
+          return Promise.resolve([{label: "repository", description: "Repository name with owner."}]);
         }
       }
     };

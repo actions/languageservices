@@ -1,9 +1,9 @@
 import * as path from "path";
-import { fileURLToPath } from "url";
-import { loadTestCases, runTestCase } from "./runner";
-import { ValidationConfig } from "../../validate";
-import { ActionMetadata, ActionReference } from "../../action";
-import { clearCache } from "../../utils/workflow-cache";
+import {fileURLToPath} from "url";
+import {loadTestCases, runTestCase} from "./runner";
+import {ValidationConfig} from "../../validate";
+import {ActionMetadata, ActionReference} from "../../action";
+import {clearCache} from "../../utils/workflow-cache";
 
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -22,17 +22,17 @@ const validationConfig: ValidationConfig = {
           inputs: {
             path: {
               description: "A list of files to cache",
-              required: true,
+              required: true
             },
             key: {
               description: "Cache key",
-              required: true,
+              required: true
             },
             "restore-keys": {
               description: "Restore keys",
-              required: false,
-            },
-          },
+              required: false
+            }
+          }
         },
         "actions/setup-node@v3": {
           name: "Setup Node",
@@ -41,15 +41,15 @@ const validationConfig: ValidationConfig = {
             "node-version": {
               description: "Node version",
               required: true,
-              default: "16",
-            },
-          },
-        },
+              default: "16"
+            }
+          }
+        }
       };
 
       return Promise.resolve(metadata[key]);
-    },
-  },
+    }
+  }
 };
 
 // Point to the source testdata directory
