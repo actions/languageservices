@@ -1,6 +1,8 @@
 import {LogLevel} from "@actions/languageservice/log";
 export {LogLevel} from "@actions/languageservice/log";
 
+export type SecretsValidationMode = "auto" | "always" | "never";
+
 export interface InitializationOptions {
   /**
    * GitHub token that will be used to retrieve additional information from github.com
@@ -28,6 +30,14 @@ export interface InitializationOptions {
    * If a GitHub Enterprise Server should be used, the URL of the API endpoint, eg "https://ghe.my-company.com/api/v3"
    */
   gitHubApiUrl?: string;
+
+  /**
+   * Controls validation of secrets and variables context access
+   * - "auto": Validate only when signed in (recommended)
+   * - "always": Always validate - show warnings even when not signed in
+   * - "never": Never validate secrets/variables access
+   */
+  secretsValidation?: SecretsValidationMode;
 }
 
 export interface RepositoryContext {
