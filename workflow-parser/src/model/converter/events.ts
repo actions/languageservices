@@ -158,7 +158,10 @@ function convertSchedule(context: TemplateContext, token: SequenceToken): Schedu
         const cron = schedule.value.assertString(`schedule cron`);
         // Validate the cron string
         if (!isValidCron(cron.value)) {
-          context.error(cron, "Invalid cron string");
+          context.error(
+            cron,
+            "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)"
+          );
         }
         result.push({cron: cron.value});
       } else {

@@ -181,7 +181,7 @@ jobs:
 
     expect(result.length).toBe(1);
     expect(result[0]).toEqual({
-      message: "Invalid cron string",
+      message: "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)",
       range: {
         end: {
           character: 21,
