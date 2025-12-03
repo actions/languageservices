@@ -14,7 +14,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     with:
       us|ername:
 `;
@@ -31,7 +31,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs-no-description.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs-no-description.yaml
     with:
       us|ername:
 `;
@@ -48,7 +48,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-outputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-outputs.yaml
   echo_outputs:
     runs-on: ubuntu-latest
     needs: build
