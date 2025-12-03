@@ -25,7 +25,12 @@ export function contextProviders(
     if (shouldSuppress) {
       // Mark secrets/vars as incomplete to prevent false warnings
       return {
-        getContext: (name: string, defaultContext: DescriptionDictionary | undefined) => {
+        getContext: (
+          name: string,
+          defaultContext: DescriptionDictionary | undefined,
+          workflowContext: WorkflowContext,
+          mode: Mode
+        ) => {
           if (name === "secrets" || name === "vars") {
             const dict = defaultContext || new DescriptionDictionary();
             dict.complete = false;
