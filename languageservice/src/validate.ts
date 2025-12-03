@@ -354,6 +354,12 @@ function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToke
     return;
   }
 
+  // Malformed local workflow reference (starts with ./ but not in .github/workflows)
+  if (uses.startsWith("./")) {
+    addWorkflowUsesFormatError(diagnostics, token, "local workflow references must be rooted in '.github/workflows'");
+    return;
+  }
+
   // Remote workflow reference: must have @ for version
   const atSegments = uses.split("@");
   if (atSegments.length === 1) {

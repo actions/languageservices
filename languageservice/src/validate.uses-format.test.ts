@@ -469,6 +469,27 @@ jobs:
       ]);
     });
 
+    it("malformed local path not in .github/workflows", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: ./foo/bar.yml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message:
+            "Invalid workflow reference './foo/bar.yml': local workflow references must be rooted in '.github/workflows'",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 3, character: 10},
+            end: {line: 3, character: 23}
+          },
+          code: "invalid-workflow-uses-format"
+        }
+      ]);
+    });
+
     it("missing .github/workflows path", async () => {
       const input = `on: push
 jobs:
@@ -562,7 +583,8 @@ jobs:
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toEqual([
         {
-          message: "Invalid workflow reference './workflows/test.yml': no version specified",
+          message:
+            "Invalid workflow reference './workflows/test.yml': local workflow references must be rooted in '.github/workflows'",
           severity: DiagnosticSeverity.Error,
           range: {
             start: {line: 3, character: 10},
