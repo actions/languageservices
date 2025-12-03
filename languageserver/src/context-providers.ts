@@ -41,7 +41,14 @@ export function contextProviders(
       };
     }
     // "always" mode - return undefined to trigger warnings
-    return {getContext: () => Promise.resolve(undefined)};
+    return {
+      getContext: (
+        name: string,
+        defaultContext: DescriptionDictionary | undefined,
+        workflowContext: WorkflowContext,
+        mode: Mode
+      ) => Promise.resolve(undefined)
+    };
   }
 
   const getContext = async (
