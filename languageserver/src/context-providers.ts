@@ -71,6 +71,8 @@ export function contextProviders(
         return await getVariables(workflowContext, client, cache, repo, defaultContext);
       case "steps":
         return await getStepsContext(client, cache, defaultContext, workflowContext);
+      default:
+        return undefined;
     }
   };
 
