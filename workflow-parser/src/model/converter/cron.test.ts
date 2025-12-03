@@ -66,10 +66,7 @@ describe("cron", () => {
 
   describe("getCronDescription", () => {
     it(`Produces a sentence for valid cron`, () => {
-      expect(getCronDescription("0 * * * *")).toEqual(
-        "Runs every hour\n\n" +
-          "Actions schedules run at most every 5 minutes. [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
-      );
+      expect(getCronDescription("0 * * * *")).toEqual("Runs every hour");
     });
 
     it(`Returns nothing for invalid cron`, () => {

@@ -110,11 +110,8 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual(
-      "Runs at 0 and 30 minutes past the hour, at 00:00 and 12:00\n\n" +
-        "Actions schedules run at most every 5 minutes. " +
-        "[Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
-    );
+    // Cron description is now shown via diagnostics, not hover
+    expect(result?.contents).toEqual("");
   });
 
   it("on a cron mapping key", async () => {
