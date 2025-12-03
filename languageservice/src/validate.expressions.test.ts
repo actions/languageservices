@@ -635,7 +635,7 @@ jobs:
         fail-fast: true
         matrix:
           node: [14, 16]
-      uses: ./reusable-workflow-with-inputs.yaml
+      uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
       with:
         username: User-\${{ strategy.fail-fast }}
   `;
@@ -654,7 +654,7 @@ jobs:
       strategy:
         matrix:
           node: [14, 16]
-      uses: ./reusable-workflow-with-inputs.yaml
+      uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
       with:
         username: \${{ matrix.node }}
   `;

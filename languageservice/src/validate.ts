@@ -143,9 +143,27 @@ async function additionalValidations(
       }
     }
 
+    // Validate step uses field format
+    if (isString(token) && token.range && validationDefinition?.key === "step-uses") {
+      validateStepUsesFormat(diagnostics, token);
+    }
+
+    // Validate action metadata (inputs, required fields) for regular steps
     if (token.definition?.key === "regular-step" && token.range) {
       const context = getProviderContext(documentUri, template, root, token.range);
       await validateAction(diagnostics, token, context.step, config);
+    }
+
+    // Validate job-level reusable workflow uses field format
+    if (
+      isString(token) &&
+      token.range &&
+      key &&
+      isString(key) &&
+      key.value === "uses" &&
+      parent?.definition?.key === "workflow-job"
+    ) {
+      validateWorkflowUsesFormat(diagnostics, token);
     }
 
     // Allowed values coming from the schema have already been validated. Only check if
@@ -196,6 +214,313 @@ function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: Value
 
     // no messages for SuggestedValues
   }
+}
+
+/**
+ * Validates the format of a step's `uses` field.
+ *
+ * Valid formats:
+ * - docker://image:tag
+ * - ./local/path
+ * - .\local\path (Windows)
+ * - {owner}/{repo}@{ref}
+ * - {owner}/{repo}/{path}@{ref}
+ */
+function validateStepUsesFormat(diagnostics: Diagnostic[], token: StringToken): void {
+  const uses = token.value;
+
+  // Empty uses value
+  if (!uses) {
+    diagnostics.push({
+      message: "`uses' value in action cannot be blank",
+      severity: DiagnosticSeverity.Error,
+      range: mapRange(token.range),
+      code: "invalid-uses-format"
+    });
+    return;
+  }
+
+  // Docker image reference - always valid format
+  if (uses.startsWith("docker://")) {
+    return;
+  }
+
+  // Local action path - always valid format
+  if (uses.startsWith("./") || uses.startsWith(".\\")) {
+    return;
+  }
+
+  // Remote action: must be {owner}/{repo}[/path]@{ref}
+  const atSegments = uses.split("@");
+
+  // Must have exactly one @
+  if (atSegments.length !== 2) {
+    addStepUsesFormatError(diagnostics, token);
+    return;
+  }
+
+  const [repoPath, gitRef] = atSegments;
+
+  // Ref cannot be empty
+  if (!gitRef) {
+    addStepUsesFormatError(diagnostics, token);
+    return;
+  }
+
+  // Split by / or \ to get path segments
+  const pathSegments = repoPath.split(/[\\/]/);
+
+  // Must have at least owner and repo (both non-empty)
+  if (pathSegments.length < 2 || !pathSegments[0] || !pathSegments[1]) {
+    addStepUsesFormatError(diagnostics, token);
+    return;
+  }
+
+  // Check if this is a reusable workflow reference (should be at job level, not step)
+  // Path would be like: owner/repo/.github/workflows/file.yml
+  if (pathSegments.length >= 4 && pathSegments[2] === ".github" && pathSegments[3] === "workflows") {
+    diagnostics.push({
+      message: "Reusable workflows should be referenced at the top-level `jobs.<job_id>.uses` key, not within steps",
+      severity: DiagnosticSeverity.Error,
+      range: mapRange(token.range),
+      code: "invalid-uses-format"
+    });
+    return;
+  }
+}
+
+function addStepUsesFormatError(diagnostics: Diagnostic[], token: StringToken): void {
+  diagnostics.push({
+    message: `Expected format {owner}/{repo}[/path]@{ref}. Actual '${token.value}'`,
+    severity: DiagnosticSeverity.Error,
+    range: mapRange(token.range),
+    code: "invalid-uses-format"
+  });
+}
+
+/**
+ * Validates the format of a job's `uses` field (reusable workflow reference).
+ *
+ * Valid formats:
+ * - {owner}/{repo}/.github/workflows/{filename}.yml@{ref}
+ * - {owner}/{repo}/.github/workflows/{filename}.yaml@{ref}
+ * - {owner}/{repo}/.github/workflows-lab/{filename}.yml@{ref}
+ * - {owner}/{repo}/.github/workflows-lab/{filename}.yaml@{ref}
+ * - ./.github/workflows/{filename}.yml
+ * - ./.github/workflows/{filename}.yaml
+ * - ./.github/workflows-lab/{filename}.yml
+ * - ./.github/workflows-lab/{filename}.yaml
+ */
+function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToken): void {
+  const uses = token.value;
+
+  // Local workflow reference
+  if (uses.startsWith("./.github/workflows/") || uses.startsWith("./.github/workflows-lab/")) {
+    // Cannot have @ version for local workflows
+    if (uses.includes("@")) {
+      addWorkflowUsesFormatError(diagnostics, token, "cannot specify version when calling local workflows");
+      return;
+    }
+
+    // Must have .yml or .yaml extension
+    if (!uses.endsWith(".yml") && !uses.endsWith(".yaml")) {
+      addWorkflowUsesFormatError(
+        diagnostics,
+        token,
+        "workflow file should have either a '.yml' or '.yaml' file extension"
+      );
+      return;
+    }
+
+    // Must be at top level of .github/workflows/ or .github/workflows-lab/ (no subdirectories)
+    const pathParts = uses.split("/");
+    if (pathParts.length !== 4) {
+      // Expected: ".", ".github", "workflows" or "workflows-lab", "filename.yml"
+      addWorkflowUsesFormatError(
+        diagnostics,
+        token,
+        "workflows must be defined at the top level of the .github/workflows/ directory"
+      );
+      return;
+    }
+
+    // Filename cannot be just the extension
+    const filename = pathParts[3];
+    if (filename === ".yml" || filename === ".yaml") {
+      addWorkflowUsesFormatError(diagnostics, token, "invalid workflow file name");
+      return;
+    }
+
+    return;
+  }
+
+  // Malformed local workflow reference (starts with ./ but not in .github/workflows)
+  if (uses.startsWith("./")) {
+    addWorkflowUsesFormatError(diagnostics, token, "local workflow references must be rooted in '.github/workflows'");
+    return;
+  }
+
+  // Remote workflow reference: must have @ for version
+  const atSegments = uses.split("@");
+  if (atSegments.length === 1) {
+    addWorkflowUsesFormatError(diagnostics, token, "no version specified");
+    return;
+  }
+  if (atSegments.length > 2) {
+    addWorkflowUsesFormatError(diagnostics, token, "too many '@' in workflow reference");
+    return;
+  }
+
+  const [pathPart, version] = atSegments;
+
+  // Version cannot be empty
+  if (!version) {
+    addWorkflowUsesFormatError(diagnostics, token, "no version specified");
+    return;
+  }
+
+  // Must contain .github/workflows or .github/workflows-lab path
+  const workflowsMatch = pathPart.match(/\.github\/workflows(-lab)?\//);
+  if (!workflowsMatch || workflowsMatch.index === undefined) {
+    addWorkflowUsesFormatError(diagnostics, token, "references to workflows must be rooted in '.github/workflows'");
+    return;
+  }
+
+  // Split to get owner/repo and path
+  const pathIdx = workflowsMatch.index;
+  const nwoPart = pathPart.substring(0, pathIdx);
+  const workflowPath = pathPart.substring(pathIdx);
+
+  // Validate NWO part: must be owner/repo/
+  const nwoSegments = nwoPart.split("/").filter(s => s.length > 0);
+  if (nwoSegments.length !== 2) {
+    addWorkflowUsesFormatError(
+      diagnostics,
+      token,
+      "references to workflows must be prefixed with format 'owner/repository/' or './' for local workflows"
+    );
+    return;
+  }
+
+  // Validate owner and repo names
+  const [owner, repo] = nwoSegments;
+  const nwoError = validateNWO(owner, repo);
+  if (nwoError) {
+    addWorkflowUsesFormatError(diagnostics, token, nwoError);
+    return;
+  }
+
+  // Validate ref/version format
+  const refError = validateRefName(version);
+  if (refError) {
+    addWorkflowUsesFormatError(diagnostics, token, refError);
+    return;
+  }
+
+  // Validate workflow path is at top level
+  const workflowPathParts = workflowPath.split("/");
+  if (workflowPathParts.length !== 3) {
+    // Expected: ".github", "workflows" or "workflows-lab", "filename.yml"
+    addWorkflowUsesFormatError(
+      diagnostics,
+      token,
+      "workflows must be defined at the top level of the .github/workflows/ directory"
+    );
+    return;
+  }
+
+  // Must have .yml or .yaml extension
+  const filename = workflowPathParts[2];
+  if (!filename.endsWith(".yml") && !filename.endsWith(".yaml")) {
+    addWorkflowUsesFormatError(
+      diagnostics,
+      token,
+      "workflow file should have either a '.yml' or '.yaml' file extension"
+    );
+    return;
+  }
+
+  // Filename cannot be just the extension
+  if (filename === ".yml" || filename === ".yaml") {
+    addWorkflowUsesFormatError(diagnostics, token, "invalid workflow file name");
+    return;
+  }
+}
+
+function addWorkflowUsesFormatError(diagnostics: Diagnostic[], token: StringToken, reason: string): void {
+  diagnostics.push({
+    message: `Invalid workflow reference '${token.value}': ${reason}`,
+    severity: DiagnosticSeverity.Error,
+    range: mapRange(token.range),
+    code: "invalid-workflow-uses-format"
+  });
+}
+
+/**
+ * Validates the git ref/version format.
+ * Based on Launch's ValidateRefName function.
+ */
+function validateRefName(refname: string): string | undefined {
+  if (refname.length === 0) {
+    return "no version specified";
+  }
+
+  // Cannot be the single character '@'
+  if (refname === "@") {
+    return "version cannot be the single character '@'";
+  }
+
+  // Cannot have certain invalid characters or sequences
+  const invalidSequences = ["?", "*", "[", "]", "\\", "~", "^", ":", "@{", "..", "//"];
+  for (const seq of invalidSequences) {
+    if (refname.includes(seq)) {
+      return `invalid character '${seq}' in version`;
+    }
+  }
+
+  // Cannot begin or end with a slash '/' or a dot '.'
+  if (refname.startsWith("/") || refname.endsWith("/") || refname.startsWith(".") || refname.endsWith(".")) {
+    return "version cannot begin or end with a slash '/' or a dot '.'";
+  }
+
+  // No slash-separated component can begin with a dot '.' or end with the sequence '.lock'
+  const components = refname.split("/");
+  for (const component of components) {
+    if (component.startsWith(".") || component.endsWith(".lock")) {
+      return `invalid version: ${refname}`;
+    }
+  }
+
+  // No ASCII control characters or whitespace
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\x7f]/.test(refname)) {
+    return "version cannot have ASCII control characters";
+  }
+
+  if (/\s/.test(refname)) {
+    return "version cannot have whitespace";
+  }
+
+  return undefined;
+}
+
+/**
+ * Validates owner and repository names.
+ * Based on Launch's ValidateNWO function.
+ */
+function validateNWO(owner: string, repo: string): string | undefined {
+  // Owner name: can have word chars, dots, and hyphens
+  // \w in JS regex is [a-zA-Z0-9_]
+  if (!/^[\w.-]+$/.test(owner)) {
+    return "owner name must be a valid repository owner name";
+  }
+
+  // Repository name: can have word chars, dots, and hyphens
+  if (!/^[\w.-]+$/.test(repo)) {
+    return "repository name is invalid";
+  }
+
+  return undefined;
 }
 
 function getProviderContext(
