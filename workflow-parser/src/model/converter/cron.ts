@@ -53,6 +53,11 @@ function getMinuteInterval(minutePart: string): number {
           minGap = gap;
         }
       }
+      // Check wrap-around gap from last minute to first minute of next hour
+      const wrapGap = values[0] + 60 - values[values.length - 1];
+      if (wrapGap < minGap) {
+        minGap = wrapGap;
+      }
       return minGap;
     }
   }
