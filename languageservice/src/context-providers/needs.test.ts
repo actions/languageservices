@@ -111,7 +111,7 @@ jobs:
 on: push
 jobs:
   a:
-    uses: ./reusable-workflow-with-outputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-outputs.yaml
 
   b:
     needs: [a]
