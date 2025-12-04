@@ -211,7 +211,8 @@ jobs:
 
     expect(result.length).toBe(1);
     expect(result[0]).toEqual({
-      message: "Runs every minute. Note: Actions schedules run at most every 5 minutes.",
+      message:
+        'Actions schedules run at most every 5 minutes. "*/1 * * * *" (runs every minute) will not run as frequently as specified.',
       severity: DiagnosticSeverity.Warning,
       code: "on-schedule",
       codeDescription: {
@@ -281,7 +282,7 @@ jobs:
 
     expect(result.length).toBe(1);
     expect(result[0]?.severity).toBe(DiagnosticSeverity.Warning);
-    expect(result[0]?.message).toContain("Note: Actions schedules run at most every 5 minutes.");
+    expect(result[0]?.message).toContain("Actions schedules run at most every 5 minutes.");
   });
 
   it("invalid YAML", async () => {

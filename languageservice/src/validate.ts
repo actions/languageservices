@@ -247,7 +247,7 @@ function validateCronExpression(diagnostics: Diagnostic[], token: StringToken): 
   // Check if the cron specifies an interval less than 5 minutes
   if (hasCronIntervalLessThan5Minutes(cronValue)) {
     diagnostics.push({
-      message: `${description}. Note: Actions schedules run at most every 5 minutes.`,
+      message: `Actions schedules run at most every 5 minutes. "${cronValue}" (${description.toLowerCase()}) will not run as frequently as specified.`,
       range: mapRange(token.range),
       severity: DiagnosticSeverity.Warning,
       code: "on-schedule",
