@@ -1,4 +1,4 @@
-import {isValidCron, getCronDescription} from "./cron";
+import {isValidCron, getCronDescription, hasCronIntervalLessThan5Minutes} from "./cron";
 
 describe("cron", () => {
   describe("valid cron", () => {
@@ -66,14 +66,54 @@ describe("cron", () => {
 
   describe("getCronDescription", () => {
     it(`Produces a sentence for valid cron`, () => {
-      expect(getCronDescription("0 * * * *")).toEqual(
-        "Runs every hour\n\n" +
-          "Actions schedules run at most every 5 minutes. [Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
-      );
+      expect(getCronDescription("0 * * * *")).toEqual("Runs every hour");
     });
 
     it(`Returns nothing for invalid cron`, () => {
       expect(getCronDescription("* * * * * *")).toBeUndefined();
+    });
+  });
+
+  describe("hasCronIntervalLessThan5Minutes", () => {
+    it("returns true for step expressions with interval < 5 min", () => {
+      expect(hasCronIntervalLessThan5Minutes("*/1 * * * *")).toBe(true);
+      expect(hasCronIntervalLessThan5Minutes("*/4 * * * *")).toBe(true);
+    });
+
+    it("returns false for step expressions with interval >= 5 min", () => {
+      expect(hasCronIntervalLessThan5Minutes("*/5 * * * *")).toBe(false);
+      expect(hasCronIntervalLessThan5Minutes("*/15 * * * *")).toBe(false);
+    });
+
+    it("returns true for comma-separated values with gap < 5 min", () => {
+      expect(hasCronIntervalLessThan5Minutes("0,2,4 * * * *")).toBe(true);
+      expect(hasCronIntervalLessThan5Minutes("0,10,12 * * * *")).toBe(true);
+    });
+
+    it("returns false for comma-separated values with gap >= 5 min", () => {
+      expect(hasCronIntervalLessThan5Minutes("0,10,20 * * * *")).toBe(false);
+      expect(hasCronIntervalLessThan5Minutes("0,30 * * * *")).toBe(false);
+    });
+
+    it("returns true for comma-separated values with wrap-around gap < 5 min", () => {
+      expect(hasCronIntervalLessThan5Minutes("0,58 * * * *")).toBe(true);
+      expect(hasCronIntervalLessThan5Minutes("2,59 * * * *")).toBe(true);
+    });
+
+    it("returns true for * (every minute)", () => {
+      expect(hasCronIntervalLessThan5Minutes("* * * * *")).toBe(true);
+    });
+
+    it("returns true for range expressions (runs every minute in range)", () => {
+      expect(hasCronIntervalLessThan5Minutes("0-4 * * * *")).toBe(true);
+    });
+
+    it("returns false for single value (hourly)", () => {
+      expect(hasCronIntervalLessThan5Minutes("0 * * * *")).toBe(false);
+    });
+
+    it("returns false for invalid cron", () => {
+      expect(hasCronIntervalLessThan5Minutes("invalid")).toBe(false);
     });
   });
 });

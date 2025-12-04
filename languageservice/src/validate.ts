@@ -2,6 +2,7 @@ import {Lexer, Parser, data} from "@actions/expressions";
 import {Expr, FunctionCall, Literal, Logical} from "@actions/expressions/ast";
 import {ParseWorkflowResult, WorkflowTemplate, isBasicExpression, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {getCronDescription, hasCronIntervalLessThan5Minutes} from "@actions/workflow-parser/model/converter/cron";
 import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
 import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
@@ -26,6 +27,9 @@ import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/work
 import {validateAction} from "./validate-action";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
 import {defaultValueProviders} from "./value-providers/default";
+
+const CRON_SCHEDULE_DOCS_URL =
+  "https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule";
 
 export type ValidationConfig = {
   valueProviderConfig?: ValueProviderConfig;
@@ -166,6 +170,11 @@ async function additionalValidations(
       validateWorkflowUsesFormat(diagnostics, token);
     }
 
+    // Validate cron expressions - warn if interval is less than 5 minutes
+    if (isString(token) && token.range && validationDefinition?.key === "cron-pattern") {
+      validateCronExpression(diagnostics, token);
+    }
+
     // Allowed values coming from the schema have already been validated. Only check if
     // a value provider is defined for a token and if it is, validate the values match.
     if (token.range && validationDefinition) {
@@ -213,6 +222,50 @@ function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: Value
       break;
 
     // no messages for SuggestedValues
+  }
+}
+
+/**
+ * Validates cron expressions and provides diagnostics for valid cron schedules.
+ * Shows a warning if the interval is less than 5 minutes (since GitHub Actions
+ * schedules run at most every 5 minutes), otherwise shows an info message.
+ */
+function validateCronExpression(diagnostics: Diagnostic[], token: StringToken): void {
+  const cronValue = token.value;
+
+  // Ensure we have a range for diagnostics
+  if (!token.range) {
+    return;
+  }
+
+  // Only check valid cron expressions - invalid ones are already caught by the parser
+  const description = getCronDescription(cronValue);
+  if (!description) {
+    return;
+  }
+
+  // Check if the cron specifies an interval less than 5 minutes
+  if (hasCronIntervalLessThan5Minutes(cronValue)) {
+    diagnostics.push({
+      message: `${description}. Note: Actions schedules run at most every 5 minutes.`,
+      range: mapRange(token.range),
+      severity: DiagnosticSeverity.Warning,
+      code: "on-schedule",
+      codeDescription: {
+        href: CRON_SCHEDULE_DOCS_URL
+      }
+    });
+  } else {
+    // Show info message for valid cron expressions
+    diagnostics.push({
+      message: description,
+      range: mapRange(token.range),
+      severity: DiagnosticSeverity.Information,
+      code: "on-schedule",
+      codeDescription: {
+        href: CRON_SCHEDULE_DOCS_URL
+      }
+    });
   }
 }
 
