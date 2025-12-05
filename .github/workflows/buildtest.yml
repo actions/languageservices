@@ -45,7 +45,6 @@ jobs:
     - name: Regenerate JSON files
       run: |
         cd languageservice && npm run update-webhooks && cd ..
-        npm run minify-json -ws
     - name: Check for uncommitted changes
       run: |
         if ! git diff --exit-code; then
@@ -57,7 +56,6 @@ jobs:
           echo "Please run the following commands locally and commit the changes:"
           echo ""
           echo "  cd languageservice && npm run update-webhooks && cd .."
-          echo "  npm run minify-json -ws"
           echo "  git add -A && git commit -m 'Regenerate JSON files'"
           echo ""
           exit 1
