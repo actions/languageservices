@@ -105,13 +105,14 @@ import webhooks from "./events/webhooks.min.json"
 
 ## CI Verification
 
-CI verifies that generated files are up-to-date:
+CI verifies that generated source files are up-to-date:
 
-1. Runs `npm run update-webhooks`
-2. Runs `npm run minify-json`  
-3. Checks for uncommitted changes with `git diff --exit-code`
+1. Runs `npm run update-webhooks` to regenerate webhooks.json and objects.json
+2. Checks for uncommitted changes with `git diff --exit-code`
 
-If the build fails, regenerate the files locally and commit the changes.
+The `.min.json` files are generated at build time and are not committed to the repository.
+
+If the build fails, run `cd languageservice && npm run update-webhooks` locally and commit the changes.
 
 ## Dropped Events
 
