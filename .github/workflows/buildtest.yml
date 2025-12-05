@@ -27,3 +27,38 @@ jobs:
     - run: npm run build -ws
     - run: npm run lint -ws
     - run: npm test -ws
+
+  check-generated:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 16.15
+      uses: actions/setup-node@v4
+      with:
+        node-version: 16.15
+        cache: 'npm'
+        registry-url: 'https://npm.pkg.github.com'
+    - run: npm ci
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Regenerate JSON files
+      run: |
+        cd languageservice && npm run update-webhooks && cd ..
+        npm run minify-json -ws
+    - name: Check for uncommitted changes
+      run: |
+        if ! git diff --exit-code; then
+          echo ""
+          echo "=========================================="
+          echo "ERROR: Generated files are out of date!"
+          echo "=========================================="
+          echo ""
+          echo "Please run the following commands locally and commit the changes:"
+          echo ""
+          echo "  cd languageservice && npm run update-webhooks && cd .."
+          echo "  npm run minify-json -ws"
+          echo "  git add -A && git commit -m 'Regenerate JSON files'"
+          echo ""
+          exit 1
+        fi
