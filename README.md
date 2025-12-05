@@ -8,6 +8,10 @@ This repository contains multiple npm packages for working with GitHub Actions w
 - [languageserver](./languageserver) - Language Server for GitHub Actions, hosting the language service for LSP-compatible editors
 - [browser-playground](./browser-playground) - Browser-based playground for the language service
 
+## Documentation
+
+- [JSON Data Files](./docs/json-data-files.md) - How the JSON data files are generated and maintained
+
 ### Note
 
 Thank you for your interest in this GitHub repo, however, right now we are not taking contributions. 
