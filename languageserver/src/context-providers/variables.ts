@@ -26,6 +26,8 @@ export async function getVariables(
     return secretsContext;
   }
 
+  const variablesContext = defaultContext || new DescriptionDictionary();
+
   let environmentName: string | undefined;
   if (workflowContext?.job?.environment) {
     if (isString(workflowContext.job.environment)) {
@@ -35,14 +37,19 @@ export async function getVariables(
         if (isString(x.key) && x.key.value === "name") {
           if (isString(x.value)) {
             environmentName = x.value.value;
+          } else {
+            // this means we have a dynamic environment, in those situations we want to skip validation
+            variablesContext.complete = false;
           }
           break;
         }
       }
+    } else {
+      // if the expression is something like environment: ${{ ... }} then we want to skip validation
+      variablesContext.complete = false;
     }
   }
 
-  const variablesContext = defaultContext || new DescriptionDictionary();
   try {
     const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
 
