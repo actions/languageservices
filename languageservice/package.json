@@ -37,13 +37,13 @@
     "format-check": "prettier --check '**/*.ts'",
     "lint": "eslint 'src/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts'",
-    "minify-json": "node ../script/minify-json.js src/context-providers/descriptions.json src/context-providers/events/webhooks.json src/context-providers/events/objects.json src/context-providers/events/schedule.json src/context-providers/events/workflow_call.json",
+    "minify-json": "node ../script/minify-json.js src/context-providers/descriptions.json src/context-providers/events/webhooks.json src/context-providers/events/webhooks.objects.json src/context-providers/events/webhooks.strings.json src/context-providers/events/schedule.json src/context-providers/events/workflow_call.json",
     "prebuild": "npm run minify-json",
     "prepublishOnly": "npm run build && npm run test",
     "pretest": "npm run minify-json",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test-watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
-    "update-webhooks": "npx tsx script/webhooks/index.ts",
+    "update-webhooks": "npx tsx script/webhooks/update-webhooks.ts",
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {

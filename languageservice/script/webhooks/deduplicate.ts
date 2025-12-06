@@ -1,5 +1,38 @@
 import Webhook from "./webhook";
 
+/**
+ * Get the name from a param.
+ * Formats: "name" (string), or [name, ...] (array)
+ */
+function getParamName(param: any): string {
+  if (typeof param === "string") {
+    return param;
+  }
+  if (Array.isArray(param)) {
+    return param[0];
+  }
+  return param.name;
+}
+
+/**
+ * Get params from a webhook action.
+ * Uses 'p' (short key) if present, falls back to 'bodyParameters'
+ */
+function getParams(webhook: any): any[] {
+  return webhook.p || webhook.bodyParameters || [];
+}
+
+/**
+ * Set params on a webhook action using the short key 'p'
+ */
+function setParams(webhook: any, params: any[]): void {
+  if (webhook.p !== undefined) {
+    webhook.p = params;
+  } else {
+    webhook.bodyParameters = params;
+  }
+}
+
 // Store any repeated body parameters in an array
 // and replace them in the webhook with an index in the array
 export function deduplicateWebhooks(webhooks: Record<string, Record<string, Webhook>>): any[] {
@@ -10,10 +43,11 @@ export function deduplicateWebhooks(webhooks: Record<string, Record<string, Webh
   const objectCount: Record<string, number> = {};
 
   for (const webhook of iterateWebhooks(webhooks)) {
-    for (const param of webhook.bodyParameters) {
-      objectsByName[param.name] ||= [];
-      const index = findOrAdd(param, objectsByName[param.name]);
-      const key = `${param.name}:${index}`;
+    for (const param of getParams(webhook)) {
+      const name = getParamName(param);
+      objectsByName[name] ||= [];
+      const index = findOrAdd(param, objectsByName[name]);
+      const key = `${name}:${index}`;
       objectCount[key] ||= 0;
       objectCount[key]++;
     }
@@ -27,18 +61,19 @@ export function deduplicateWebhooks(webhooks: Record<string, Record<string, Webh
 
   for (const webhook of iterateWebhooks(webhooks)) {
     const newParams: any[] = [];
-    for (const param of webhook.bodyParameters) {
-      const index = find(param, objectsByName[param.name]);
-      const key = `${param.name}:${index}`;
+    for (const param of getParams(webhook)) {
+      const name = getParamName(param);
+      const index = find(param, objectsByName[name]);
+      const key = `${name}:${index}`;
       if (objectCount[key] > 1) {
-        newParams.push(indexForParam(param, index, bodyParamIndexMap, duplicatedBodyParams));
+        newParams.push(indexForParam(param, name, index, bodyParamIndexMap, duplicatedBodyParams));
       } else {
         // If an object is only used once, keep it inline
         newParams.push(param);
       }
     }
 
-    webhook.bodyParameters = newParams;
+    setParams(webhook, newParams);
   }
 
   return duplicatedBodyParams;
@@ -74,11 +109,12 @@ function find(param: any, objects: any[]): number {
 
 function indexForParam(
   param: any,
+  paramName: string,
   paramNameIndex: number,
   objectIndexMap: Record<string, number>,
   duplicatedBodyParams: any[]
 ): number {
-  const key = `${param.name}:${paramNameIndex}`;
+  const key = `${paramName}:${paramNameIndex}`;
 
   const existingIndex = objectIndexMap[key];
   if (existingIndex !== undefined) {
