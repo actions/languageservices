@@ -23,7 +23,7 @@ import {Commands} from "./commands";
 import {contextProviders} from "./context-providers";
 import {descriptionProvider} from "./description-provider";
 import {getFileProvider} from "./file-provider";
-import {InitializationOptions, RepositoryContext} from "./initializationOptions";
+import {InitializationOptions, RepositoryContext, SecretsValidationMode} from "./initializationOptions";
 import {onCompletion} from "./on-completion";
 import {ReadFileRequest, Requests} from "./request";
 import {getActionsMetadataProvider} from "./utils/action-metadata";
@@ -36,6 +36,7 @@ export function initConnection(connection: Connection) {
 
   let client: Octokit | undefined;
   let repos: RepositoryContext[] = [];
+  let secretsValidation: SecretsValidationMode = "auto";
   const cache = new TTLCache();
 
   let hasWorkspaceFolderCapability = false;
@@ -60,6 +61,10 @@ export function initConnection(connection: Connection) {
 
     if (options.logLevel !== undefined) {
       setLogLevel(options.logLevel);
+    }
+
+    if (options.secretsValidation) {
+      secretsValidation = options.secretsValidation;
     }
 
     const result: InitializeResult = {
@@ -107,7 +112,7 @@ export function initConnection(connection: Connection) {
 
     const config: ValidationConfig = {
       valueProviderConfig: valueProviders(client, repoContext, cache),
-      contextProviderConfig: contextProviders(client, repoContext, cache),
+      contextProviderConfig: contextProviders(client, repoContext, cache, secretsValidation),
       actionsMetadataProvider: getActionsMetadataProvider(client, cache),
       fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
         return await connection.sendRequest(Requests.ReadFile, {path} satisfies ReadFileRequest);
@@ -138,7 +143,7 @@ export function initConnection(connection: Connection) {
       const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
       return await hover(getDocument(documents, textDocument), position, {
         descriptionProvider: descriptionProvider(client, cache),
-        contextProviderConfig: repoContext && contextProviders(client, repoContext, cache),
+        contextProviderConfig: repoContext && contextProviders(client, repoContext, cache, secretsValidation),
         fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
           return await connection.sendRequest(Requests.ReadFile, {path});
         })
