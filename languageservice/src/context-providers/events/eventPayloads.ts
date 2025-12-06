@@ -1,7 +1,8 @@
 import {data, DescriptionDictionary} from "@actions/expressions";
 
-import webhookObjects from "./objects.min.json";
-import webhooks from "./webhooks.min.json";
+import webhooksData from "./webhooks.min.json";
+import objectsData from "./webhooks.objects.min.json";
+import stringsData from "./webhooks.strings.min.json";
 
 import schedule from "./schedule.min.json";
 import workflow_call from "./workflow_call.min.json";
@@ -49,9 +50,22 @@ type Param = {
 };
 
 /**
- * A full {@link Param} or an index into the objects array for deduplicated parameters
+ * Compact format for params (written by update-webhooks.ts).
+ *
+ * Names can be interned (number = index into string table) or literal strings.
+ * Type-based dispatch:
+ *   - number                   - interned name only (index into string table)
+ *   - "name"                   - literal name only (singleton, not interned)
+ *   - [name, desc]             - name + description (name is number or string, desc is string)
+ *   - [name, [...children]]    - name + children (arr[1] is array)
+ *   - [name, desc, [...children]] - name + description + children
  */
-type DeduplicatedParam = Param | number;
+type InternedName = number | string;
+type CompactParam =
+  | InternedName
+  | [InternedName, string]
+  | [InternedName, CompactParam[]]
+  | [InternedName, string, CompactParam[]];
 
 type WebhookPayload = {
   descriptionHtml: string;
@@ -65,17 +79,33 @@ type Webhooks = {
   };
 };
 
-type DeduplicatedWebhooks = {
-  [name: string]: {
-    [action: string]: WebhookPayload & {
-      bodyParameters: DeduplicatedParam[];
-    };
-  };
+/**
+ * Webhooks data format after optimization:
+ * {
+ *   [event]: { [action]: { p: CompactParam[] } }
+ * }
+ *
+ * String table and objects are loaded from separate files.
+ */
+type WebhooksData = {
+  [key: string]: {[action: string]: {p: CompactParam[]}};
 };
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
-const dedupedWebhookPayloads: DeduplicatedWebhooks = webhooks as any;
-const objects: Param[] = webhookObjects as any;
+const webhooksJson: WebhooksData = webhooksData as any;
+const objectsJson: CompactParam[] = objectsData as any;
+
+// String table and objects are in separate files
+const stringTable: string[] = stringsData;
+const objects: CompactParam[] = objectsJson;
+
+// Build event payloads map (skip "//" comment key)
+const dedupedWebhookPayloads: {[event: string]: {[action: string]: {p: CompactParam[]}}} = {};
+for (const [key, value] of Object.entries(webhooksJson)) {
+  if (key !== "//" && typeof value === "object" && value !== null) {
+    dedupedWebhookPayloads[key] = value as {[action: string]: {p: CompactParam[]}};
+  }
+}
 /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any */
 
 // Hydrated webhook payloads
@@ -169,10 +199,14 @@ function getWebhookPayload(event: string, action: string): WebhookPayload | unde
     return undefined;
   }
 
+  // Get params from 'p' (compact format)
+  const dedupedParams = deduplicatedPayload.p || [];
+
   // Recreate the full payload and store it for reuse
-  const params = deduplicatedPayload.bodyParameters.map(p => fullParam(p));
+  const params = dedupedParams.map(p => fullParam(p));
   const payload = {
-    ...deduplicatedPayload,
+    descriptionHtml: "",
+    summaryHtml: "",
     bodyParameters: params
   };
   webhookPayloads[event] ||= {};
@@ -180,13 +214,65 @@ function getWebhookPayload(event: string, action: string): WebhookPayload | unde
   return payload;
 }
 
-function fullParam(dedupedParam: DeduplicatedParam): Param {
-  if (typeof dedupedParam === "number") {
-    if (dedupedParam >= objects.length) {
-      throw new Error(`Unknown object ${dedupedParam}`);
+/**
+ * Resolve an interned name (non-negative number -> string table lookup) or return literal string
+ */
+function resolveName(name: InternedName): string {
+  if (typeof name === "number") {
+    if (name < 0 || name >= stringTable.length) {
+      throw new Error(`Unknown interned name index ${name}`);
     }
-    return objects[dedupedParam];
+    return stringTable[name];
+  }
+  return name;
+}
+
+/**
+ * Convert a deduplicated param to a full Param.
+ *
+ * Compact format (type-based dispatch):
+ *   - negative number          - object index: -(n + 1) -> objects[-n - 1]
+ *   - non-negative number      - interned string index -> stringTable[n]
+ *   - "name"                   - literal name only (singleton, not interned)
+ *   - [name, desc]             - name + description (name can be number or string)
+ *   - [name, [...children]]    - name + children (arr[1] is array)
+ *   - [name, desc, [...children]] - name + description + children
+ */
+function fullParam(dedupedParam: CompactParam): Param {
+  // Negative number -> object index
+  if (typeof dedupedParam === "number" && dedupedParam < 0) {
+    const objectIndex = -(dedupedParam + 1);
+    if (objectIndex >= objects.length) {
+      throw new Error(`Unknown object index ${objectIndex} (from ${dedupedParam})`);
+    }
+    return fullParam(objects[objectIndex]);
   }
 
-  return dedupedParam;
+  // Non-negative number or literal string -> name only
+  if (typeof dedupedParam === "number" || typeof dedupedParam === "string") {
+    return {
+      name: resolveName(dedupedParam),
+      description: ""
+    } as Param;
+  }
+
+  // Compact array format -> convert to Param object
+  if (Array.isArray(dedupedParam)) {
+    const arr = dedupedParam;
+    const name = resolveName(arr[0]);
+
+    // Type-based dispatch: if arr[1] is string -> description, if array -> children
+    const description = typeof arr[1] === "string" ? arr[1] : "";
+    // arr[1] is children if it's an array, otherwise arr[2] is children (if it exists and is an array)
+    const childrenArr = Array.isArray(arr[1]) ? arr[1] : Array.isArray(arr[2]) ? arr[2] : undefined;
+    const childParamsGroups = childrenArr ? childrenArr.map(c => fullParam(c)) : undefined;
+
+    return {
+      name,
+      description,
+      childParamsGroups
+    } as Param;
+  }
+
+  throw new Error(`Unexpected param format: ${JSON.stringify(dedupedParam)}`);
 }
