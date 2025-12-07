@@ -856,7 +856,7 @@
       }
     },
     "pull-request-activity": {
-      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `ready_for_review`, `locked`, `unlocked`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
+      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `locked`, `unlocked`, `enqueued`, `dequeued`, `milestoned`, `demilestoned`, `ready_for_review`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
       "one-of": [
         "pull-request-activity-type",
         "pull-request-activity-types"
@@ -879,9 +879,13 @@
         "reopened",
         "synchronize",
         "converted_to_draft",
-        "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
+        "milestoned",
+        "demilestoned",
+        "ready_for_review",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
@@ -1004,7 +1008,7 @@
       }
     },
     "pull-request-target-activity": {
-      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `ready_for_review`, `locked`, `unlocked`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
+      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `locked`, `unlocked`, `enqueued`, `dequeued`, `milestoned`, `demilestoned`, `ready_for_review`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
       "one-of": [
         "pull-request-target-activity-type",
         "pull-request-target-activity-types"
@@ -1027,9 +1031,13 @@
         "reopened",
         "synchronize",
         "converted_to_draft",
-        "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
+        "milestoned",
+        "demilestoned",
+        "ready_for_review",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
