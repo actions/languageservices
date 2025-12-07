@@ -1609,6 +1609,48 @@ jobs:
         expect(result).toEqual([]);
       });
 
+      it("allows runner.environment context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: runner.environment == 'github-hosted'
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows runner.debug context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: runner.debug == '1'
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows runner.workspace context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: runner.workspace != ''
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
       it("allows env context", async () => {
         const input = `
 on: push

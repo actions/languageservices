@@ -74,11 +74,14 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
 
     case "runner":
       return objectToDictionary({
-        os: "Linux",
         arch: "X64",
+        debug: "1",
+        environment: "github-hosted",
         name: "GitHub Actions 2",
+        os: "Linux",
+        temp: "/home/runner/work/_temp",
         tool_cache: "/opt/hostedtoolcache",
-        temp: "/home/runner/work/_temp"
+        workspace: "/home/runner/work/repo"
       });
 
     case "secrets":
