@@ -15,7 +15,18 @@ export function contextProviders(
   cache: TTLCache
 ): ContextProviderConfig {
   if (!repo || !client) {
-    return {getContext: () => Promise.resolve(undefined)};
+    // When GitHub client/repo is unavailable, return an incomplete dictionary
+    // to avoid false "Context access might be invalid" warnings
+    return {
+      getContext: (name: string, defaultContext: DescriptionDictionary | undefined) => {
+        if (name === "secrets" || name === "vars") {
+          const context = defaultContext || new DescriptionDictionary();
+          context.complete = false;
+          return Promise.resolve(context);
+        }
+        return Promise.resolve(undefined);
+      }
+    };
   }
 
   const getContext = async (
