@@ -861,7 +861,7 @@ jobs:
   });
 
   describe("strategy context", () => {
-    it("strategy is not suggested when outside of a matrix job", async () => {
+    it("strategy is suggested even when no strategy defined", async () => {
       const input = `
 on: push
 
@@ -875,7 +875,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).not.toContain("strategy");
+      expect(result.map(x => x.label)).toContain("strategy");
     });
 
     it("strategy is suggested within a matrix job", async () => {
@@ -922,7 +922,7 @@ jobs:
   });
 
   describe("matrix context", () => {
-    it("matrix is not suggested when outside of a matrix job", async () => {
+    it("matrix is suggested even when no strategy defined", async () => {
       const input = `
 on: push
 
@@ -936,7 +936,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).not.toContain("strategy");
+      expect(result.map(x => x.label)).toContain("matrix");
     });
 
     it("matrix is suggested within a matrix job", async () => {
@@ -1123,10 +1123,12 @@ jobs:
         "github",
         "inputs",
         "job",
+        "matrix",
         "needs",
         "runner",
         "secrets",
         "steps",
+        "strategy",
         "vars",
         "contains",
         "endsWith",
