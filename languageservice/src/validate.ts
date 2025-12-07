@@ -1,6 +1,6 @@
 import {Lexer, Parser, data} from "@actions/expressions";
 import {Expr, FunctionCall, Literal, Logical} from "@actions/expressions/ast";
-import {ParseWorkflowResult, WorkflowTemplate, isBasicExpression, isString} from "@actions/workflow-parser";
+import {ParseWorkflowResult, WorkflowTemplate, isBasicExpression, isMapping, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {getCronDescription, hasCronIntervalLessThan5Minutes} from "@actions/workflow-parser/model/converter/cron";
 import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
@@ -209,6 +209,9 @@ async function additionalValidations(
       }
     }
   }
+
+  // Validate concurrency deadlock between workflow and job levels
+  validateConcurrencyDeadlock(diagnostics, template);
 }
 
 function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: ValueProviderKind) {
@@ -711,4 +714,72 @@ async function validateExpression(
       }))
     );
   }
+}
+
+/**
+ * Validates that workflow-level and job-level concurrency groups don't match,
+ * which would cause a deadlock at runtime.
+ */
+function validateConcurrencyDeadlock(diagnostics: Diagnostic[], template: WorkflowTemplate): void {
+  const workflowGroup = getStaticConcurrencyGroup(template.concurrency);
+  if (!workflowGroup) {
+    return; // No workflow-level concurrency or it's an expression
+  }
+
+  for (const job of template.jobs || []) {
+    if (!job.concurrency) {
+      continue;
+    }
+
+    const jobGroup = getStaticConcurrencyGroup(job.concurrency);
+    if (!jobGroup) {
+      continue; // Job concurrency is an expression
+    }
+
+    if (workflowGroup.value === jobGroup.value) {
+      // Error on workflow-level concurrency
+      if (template.concurrency.range) {
+        diagnostics.push({
+          message: `Concurrency group '${workflowGroup.value}' is also used by job '${job.id.value}'. This will cause a deadlock.`,
+          range: mapRange(template.concurrency.range),
+          severity: DiagnosticSeverity.Error
+        });
+      }
+
+      // Error on job-level concurrency
+      if (job.concurrency.range) {
+        diagnostics.push({
+          message: `Concurrency group '${jobGroup.value}' is also defined at the workflow level. This will cause a deadlock.`,
+          range: mapRange(job.concurrency.range),
+          severity: DiagnosticSeverity.Error
+        });
+      }
+    }
+  }
+}
+
+/**
+ * Extracts the static concurrency group name from a concurrency token.
+ * Returns undefined if the token is an expression or doesn't have a static group.
+ */
+function getStaticConcurrencyGroup(token: TemplateToken | undefined): StringToken | undefined {
+  if (!token || token.isExpression) {
+    return undefined;
+  }
+
+  // Simple string form: concurrency: "test"
+  if (isString(token)) {
+    return token;
+  }
+
+  // Mapping form: concurrency: { group: "test", cancel-in-progress: true }
+  if (isMapping(token)) {
+    for (const pair of token) {
+      if (isString(pair.key) && pair.key.value === "group" && isString(pair.value) && !pair.value.isExpression) {
+        return pair.value;
+      }
+    }
+  }
+
+  return undefined;
 }
