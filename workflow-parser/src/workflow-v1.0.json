@@ -1539,7 +1539,7 @@
           },
           "default": "workflow-dispatch-input-default",
           "options": {
-            "type": "sequence-of-non-empty-string",
+            "type": "sequence-of-string",
             "description": "The options of the dropdown list, if the type is a choice."
           }
         }
@@ -2417,6 +2417,11 @@
     "sequence-of-non-empty-string": {
       "sequence": {
         "item-type": "non-empty-string"
+      }
+    },
+    "sequence-of-string": {
+      "sequence": {
+        "item-type": "string"
       }
     },
     "boolean-needs-context": {
