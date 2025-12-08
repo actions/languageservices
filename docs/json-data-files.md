@@ -148,3 +148,50 @@ Only `name`, `description`, and `childParamsGroups` are kept — these are used 
 To compare all fields vs stripped, run `npm run update-webhooks -- --all` and diff the `.all.json` files against the regular ones.
 
 See `EVENT_ACTION_FIELDS` and `BODY_PARAM_FIELDS` in `script/webhooks/index.ts` to modify what gets stripped.
+
+## Schema Synchronization
+
+The `workflow-v1.0.json` schema defines which activity types are valid for each workflow trigger event. A test in `workflow-parser/src/schema-sync.test.ts` verifies these stay in sync with `webhooks.json`.
+
+### When the Test Fails
+
+If the schema-sync test fails, you'll see an error like:
+
+```
+Event "pull_request" is missing activity type "new_activity" in workflow-v1.0.json
+```
+
+**To resolve:**
+
+1. Check [Events that trigger workflows](https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows) to verify the activity type is a valid workflow trigger:
+   - Find the event section (e.g., "pull_request")
+   - Look at the "Activity types" table — it lists which types can be used in `on.<event>.types`
+   - If the type is listed there, it's a valid workflow trigger
+   - If the type only appears in webhook docs but NOT in the workflow trigger docs, it's webhook-only
+
+2. If it IS a valid workflow trigger:
+   - Edit `workflow-parser/src/workflow-v1.0.json`
+   - Find the `<event>-activity-type` definition (e.g., `pull-request-activity-type`)
+   - Add the new activity type to `allowed-values`
+   - Update the `description` in `<event>-activity` to list all types
+   - Run `npm test` to regenerate the minified JSON
+
+3. If it is NOT a valid workflow trigger (webhook-only):
+   - Edit `workflow-parser/src/schema-sync.test.ts`
+   - Add the type to `WEBHOOK_ONLY` for that event
+
+### Known Discrepancies
+
+The test tracks several types of known discrepancies:
+
+| Category | Purpose | Example |
+|----------|---------|---------|
+| `WEBHOOK_ONLY` | Types in webhooks that aren't valid workflow triggers | `check_suite.requested` |
+| `SCHEMA_ONLY` | Types valid for workflows but missing from webhooks | `registry_package.updated` |
+| `NAME_MAPPINGS` | Different names for the same concept | `project_column`: webhook uses `edited`, schema uses `updated` |
+
+### Bidirectional Checking
+
+The test checks both directions:
+- **webhooks → schema**: Ensures all webhook activity types are in the schema (or listed in `WEBHOOK_ONLY`)
+- **schema → webhooks**: Ensures the schema doesn't have types that don't exist in webhooks (or listed in `SCHEMA_ONLY` or `NAME_MAPPINGS`)
