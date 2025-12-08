@@ -5,6 +5,7 @@ import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {OPEN_EXPRESSION} from "@actions/workflow-parser/templates/template-constants";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/index";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
+import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
 import {TokenType} from "@actions/workflow-parser/templates/tokens/types";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
@@ -19,7 +20,6 @@ import {isPotentiallyExpression} from "./utils/expression-detection";
 import {findToken} from "./utils/find-token";
 import {guessIndentation} from "./utils/indentation-guesser";
 import {mapRange} from "./utils/range";
-import {getRelCharOffset} from "./utils/rel-char-pos";
 import {isPlaceholder, transform} from "./utils/transform";
 import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
 import {Value, ValueProviderConfig} from "./value-providers/config";
@@ -238,12 +238,12 @@ function getExpressionCompletionItems(
     currentInput = stringToken.source || stringToken.value;
   }
 
-  const relCharOffset = getRelCharOffset(token.range, currentInput, pos);
-  const expressionInput = (getExpressionInput(currentInput, relCharOffset) || "").trim();
+  const cursorOffset = getOffsetInContent(token.range, currentInput, pos);
+  const expressionInput = (getExpressionInput(currentInput, cursorOffset) || "").trim();
 
   try {
     return completeExpression(expressionInput, context, [], validatorFunctions).map(item =>
-      mapExpressionCompletionItem(item, currentInput[relCharOffset])
+      mapExpressionCompletionItem(item, currentInput[cursorOffset])
     );
   } catch (e) {
     error(`Error while completing expression: '${(e as Error)?.message || "<no details>"}'`);
@@ -273,4 +273,51 @@ function mapExpressionCompletionItem(item: ExpressionCompletionItem, charAfterPo
     insertText: insertText,
     kind: item.function ? CompletionItemKind.Function : CompletionItemKind.Variable
   };
+}
+
+/**
+ * Converts a document position to an offset within the token's content string.
+ */
+function getOffsetInContent(tokenRange: TokenRange, currentInput: string, pos: Position): number {
+  const range = mapRange(tokenRange);
+
+  if (range.start.line === range.end.line) {
+    // Single-line example:
+    //   if: github.ref == 'main'
+    //       ^8      ^15 (cursor)
+    // currentInput = "github.ref == 'main'"
+    // offset = 15 - 8 = 7
+    return pos.character - range.start.character;
+  }
+
+  // Multi-line example:
+  //   if: |                         <- line 3 (range.start.line)
+  //     first line                  <- line 4, content line 0
+  //     second line                 <- line 5, content line 1
+  //     github.                     <- line 6, content line 2, cursor at index 11
+  //            ^11 (cursor)
+  //
+  // currentInput = "    first line\n    second line\n    github."
+  //                 ^0              ^15              ^32        ^43
+
+  // Line index within content.
+  // From the example:
+  // lineIndexWithinContent = pos.line - range.start.line - 1
+  //                        = 6 - 3 - 1 = 2
+  const lineIndexWithinContent = pos.line - range.start.line - 1;
+
+  // Length of content before current line.
+  // From the example:
+  // lengthOfContentBeforeCurrentLine => 14 + 1 = 15 (after first iteration)
+  //                                  => 31 + 1 = 32 (after second iteration)
+  let lengthOfContentBeforeCurrentLine = 0;
+  for (let i = 0; i < lineIndexWithinContent; i++) {
+    lengthOfContentBeforeCurrentLine = currentInput.indexOf("\n", lengthOfContentBeforeCurrentLine) + 1;
+  }
+
+  // Final offset within content.
+  // From the example:
+  // finalOffset = lengthOfContentBeforeCurrentLine + pos.character
+  //             = 32 + 11 = 43
+  return lengthOfContentBeforeCurrentLine + pos.character;
 }
