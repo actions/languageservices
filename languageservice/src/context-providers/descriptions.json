@@ -239,7 +239,13 @@
       "description": "The path to the directory containing preinstalled tools for GitHub-hosted runners. For more information, see \"[About GitHub-hosted runners](https://docs.github.com/actions/reference/specifications-for-github-hosted-runners/#supported-software).\""
     },
     "debug": {
-      "description": "This is set only if [debug logging](https://docs.github.com/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled, and always has the value of `1`. It can be useful as an indicator to enable additional debugging or verbose logging in your own job steps."
+      "description": "This is set only if [`ACTIONS_STEP_DEBUG`](https://docs.github.com/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled, and always has the value of `\"1\"`. It can be useful as an indicator to enable additional debugging or verbose logging in your own job steps."
+    },
+    "environment": {
+      "description": "The environment of the runner executing the job. Possible values are `github-hosted` for GitHub-hosted runners, or `self-hosted` for self-hosted runners."
+    },
+    "workspace": {
+      "description": "The runner-specific working directory path for the job."
     }
   },
   "strategy": {
