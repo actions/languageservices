@@ -385,4 +385,31 @@ jobs:
       expect(result).toEqual([]);
     });
   });
+
+  describe("workflow_dispatch", () => {
+    it("allows empty string in choice options", async () => {
+      const result = await validate(
+        createDocument(
+          "wf.yaml",
+          `on:
+  workflow_dispatch:
+    inputs:
+      plugin-name:
+        description: Specific plugin to build
+        type: choice
+        options:
+          - ''
+          - foo
+          - bar
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`
+        )
+      );
+
+      expect(result).toEqual([]);
+    });
+  });
 });
