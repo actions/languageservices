@@ -64,3 +64,33 @@ jobs:
           echo ""
           exit 1
         fi
+
+  validate-webhooks:
+    runs-on: ubuntu-latest
+    name: Validate webhook optimization
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+        registry-url: 'https://npm.pkg.github.com'
+    - run: npm ci
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build workspaces
+      run: npm run build -ws
+    - name: Generate full webhooks file
+      run: cd languageservice && npm run update-webhooks
+    - name: Run optimization validation tests
+      run: cd languageservice && npm test -- --testPathPattern=eventPayloads
+    - name: Verify validation tests ran
+      run: |
+        if [ ! -f languageservice/src/context-providers/events/webhooks.full.validation-complete ]; then
+          echo "ERROR: Validation tests did not run!"
+          echo "The webhooks.full.validation-complete marker file was not created."
+          exit 1
+        fi
+        echo "Validation tests completed at: $(cat languageservice/src/context-providers/events/webhooks.full.validation-complete)"
