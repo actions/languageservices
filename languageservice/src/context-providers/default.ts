@@ -40,7 +40,15 @@ export async function getContext(
       continue;
     }
 
-    value = (await config?.getContext(contextName, value, workflowContext, mode)) || value;
+    const remoteValue = await config?.getContext(contextName, value, workflowContext, mode);
+    if (remoteValue) {
+      value = remoteValue;
+    } else if (contextName === "secrets" || contextName === "vars") {
+      // Without a context provider to fetch remote secrets/vars, we can't know
+      // what values exist, so mark the context as incomplete to avoid false
+      // "Context access might be invalid" warnings
+      value.complete = false;
+    }
 
     context.add(contextName, value, getDescription(RootContext, contextName));
   }
