@@ -58,6 +58,8 @@ export async function getStepsContext(
             continue;
           }
           const outputsDict = new DescriptionDictionary();
+          // Actions can have dynamic outputs beyond what's declared in action.yml
+          outputsDict.complete = false;
           for (const [key, value] of Object.entries(outputs)) {
             outputsDict.add(key, new data.StringData(value.description), value.description);
           }
