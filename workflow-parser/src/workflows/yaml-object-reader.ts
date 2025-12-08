@@ -1,4 +1,16 @@
-import {isCollection, isDocument, isMap, isPair, isScalar, isSeq, LineCounter, parseDocument, Scalar} from "yaml";
+import {
+  isAlias,
+  isCollection,
+  isDocument,
+  isMap,
+  isPair,
+  isScalar,
+  isSeq,
+  LineCounter,
+  parseDocument,
+  Scalar
+} from "yaml";
+import type {Document} from "yaml";
 import type {LinePos} from "yaml/dist/errors";
 import type {NodeBase} from "yaml/dist/nodes/Node";
 import {ObjectReader} from "../templates/object-reader";
@@ -22,30 +34,31 @@ export type YamlError = {
 export class YamlObjectReader implements ObjectReader {
   private readonly _generator: Generator<ParseEvent>;
   private _current!: IteratorResult<ParseEvent>;
+  private readonly doc: Document;
   private fileId?: number;
   private lineCounter = new LineCounter();
 
   public errors: YamlError[] = [];
 
   constructor(fileId: number | undefined, content: string) {
-    const doc = parseDocument(content, {
+    this.doc = parseDocument(content, {
       lineCounter: this.lineCounter,
       keepSourceTokens: true,
       uniqueKeys: false // Uniqueness is validated by the template reader
     });
-    for (const err of doc.errors) {
+    for (const err of this.doc.errors) {
       this.errors.push({message: err.message, range: rangeFromLinePos(err.linePos)});
     }
-    this._generator = this.getNodes(doc);
+    this._generator = this.getNodes(this.doc, new Set());
     this.fileId = fileId;
   }
 
-  private *getNodes(node: unknown): Generator<ParseEvent, void> {
+  private *getNodes(node: unknown, aliasResolutionStack: Set<unknown>): Generator<ParseEvent, void> {
     let range = this.getRange(node as NodeBase | undefined);
 
     if (isDocument(node)) {
       yield new ParseEvent(EventType.DocumentStart);
-      for (const item of this.getNodes(node.contents)) {
+      for (const item of this.getNodes(node.contents, new Set())) {
         yield item;
       }
       yield new ParseEvent(EventType.DocumentEnd);
@@ -59,7 +72,7 @@ export class YamlObjectReader implements ObjectReader {
       }
 
       for (const item of node.items) {
-        for (const child of this.getNodes(item)) {
+        for (const child of this.getNodes(item, aliasResolutionStack)) {
           yield child;
         }
       }
@@ -74,12 +87,32 @@ export class YamlObjectReader implements ObjectReader {
       yield new ParseEvent(EventType.Literal, YamlObjectReader.getLiteralToken(this.fileId, range, node));
     }
 
+    // Handle YAML aliases - resolve to the anchored value
+    if (isAlias(node)) {
+      const resolved = node.resolve(this.doc);
+      if (resolved) {
+        // Prevent infinite recursion from circular aliases
+        if (aliasResolutionStack.has(resolved)) {
+          // Silently ignore circular reference - the missing content will cause
+          // downstream validation errors which is acceptable for this edge case
+          return;
+        }
+        // Track this node in the alias resolution stack
+        const newStack = new Set(aliasResolutionStack);
+        newStack.add(resolved);
+        // Yield the resolved node's contents
+        yield* this.getNodes(resolved, newStack);
+      }
+      // If unresolved, the yaml library already reports an error
+      return;
+    }
+
     if (isPair(node)) {
       const scalarKey = node.key as Scalar;
       range = this.getRange(scalarKey);
       const key = scalarKey.value as string;
       yield new ParseEvent(EventType.Literal, new StringToken(this.fileId, range, key, undefined));
-      for (const child of this.getNodes(node.value)) {
+      for (const child of this.getNodes(node.value, aliasResolutionStack)) {
         yield child;
       }
     }
