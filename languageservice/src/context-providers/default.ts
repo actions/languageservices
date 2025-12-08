@@ -32,8 +32,9 @@ export async function getContext(
 ): Promise<DescriptionDictionary> {
   const context = new DescriptionDictionary();
 
-  const filteredNames = filterContextNames(names, workflowContext);
-  for (const contextName of filteredNames) {
+  // All context names are valid - strategy and matrix are always available
+  // (with default values when no strategy block is defined)
+  for (const contextName of names) {
     let value = getDefaultContext(contextName, workflowContext, mode) || new DescriptionDictionary();
     if (value.kind === Kind.Null) {
       context.add(contextName, value);
@@ -110,19 +111,4 @@ function objectToDictionary(object: {[key: string]: string}): DescriptionDiction
   }
 
   return dictionary;
-}
-
-function filterContextNames(contextNames: string[], workflowContext: WorkflowContext): string[] {
-  return contextNames.filter(name => {
-    switch (name) {
-      case "matrix":
-      case "strategy":
-        return hasStrategy(workflowContext);
-    }
-    return true;
-  });
-}
-
-function hasStrategy(workflowContext: WorkflowContext): boolean {
-  return workflowContext.job?.strategy !== undefined || workflowContext.reusableWorkflowJob?.strategy !== undefined;
 }

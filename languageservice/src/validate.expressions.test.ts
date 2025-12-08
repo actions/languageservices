@@ -681,7 +681,8 @@ jobs:
 
       const result = await validate(createDocument("wf.yaml", input));
 
-      expect(result).not.toEqual([]);
+      // Strategy context is always available with default values
+      expect(result).toEqual([]);
     });
 
     it("invalid strategy property", async () => {
@@ -996,22 +997,8 @@ jobs:
 
       const result = await validate(createDocument("wf.yaml", input));
 
-      expect(result).toEqual([
-        {
-          message: "Context access might be invalid: matrix",
-          range: {
-            end: {
-              character: 36,
-              line: 8
-            },
-            start: {
-              character: 18,
-              line: 8
-            }
-          },
-          severity: DiagnosticSeverity.Warning
-        }
-      ]);
+      // Matrix is null when no strategy is defined, accessing properties on null is valid
+      expect(result).toEqual([]);
     });
 
     it("basic matrix", async () => {
