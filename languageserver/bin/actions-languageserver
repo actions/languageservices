@@ -1,6 +1,2 @@
-#!/bin/bash
-# Wrapper script to start the Actions language server
-
-DIR="$(cd "$(dirname "$0")" && pwd)"
-
-exec node "$DIR/../dist/server-bundled.cjs" --stdio "$@"
+#!/usr/bin/env node
+import "../dist/cli.bundle.cjs";

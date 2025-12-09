@@ -1,24 +1,26 @@
-import {Connection} from "vscode-languageserver";
+import { Connection } from "vscode-languageserver";
+import {
+  BrowserMessageReader,
+  BrowserMessageWriter,
+  createConnection as createBrowserConnection
+} from "vscode-languageserver/browser";
+import { createConnection as createNodeConnection } from "vscode-languageserver/node";
 
-import {initConnection} from "./connection.js";
+import { initConnection } from "./connection";
 
 /** Helper function determining whether we are executing with node runtime */
 function isNode(): boolean {
   return typeof process !== "undefined" && process.versions?.node != null;
 }
 
-async function getConnection(): Promise<Connection> {
+function getConnection(): Connection {
   if (isNode()) {
-    const {createConnection} = await import("vscode-languageserver/node.js");
-    return createConnection();
+    return createNodeConnection();
   } else {
-    const {BrowserMessageReader, BrowserMessageWriter, createConnection} = await import(
-      "vscode-languageserver/browser.js"
-    );
     const messageReader = new BrowserMessageReader(self);
     const messageWriter = new BrowserMessageWriter(self);
-    return createConnection(messageReader, messageWriter);
+    return createBrowserConnection(messageReader, messageWriter);
   }
 }
 
-getConnection().then(initConnection);
+initConnection(getConnection());
