@@ -1,6 +1,6 @@
 {
   "name": "@actions/languageserver",
-  "version": "0.3.25",
+  "version": "0.4.0",
   "description": "Language server for GitHub Actions",
   "license": "MIT",
   "type": "module",
@@ -32,6 +32,7 @@
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "build:cli": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/cli.bundle.cjs",
     "clean": "rimraf dist",
     "format": "prettier --write '**/*.ts'",
     "format-check": "prettier --check '**/*.ts'",
@@ -41,6 +42,9 @@
     "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test-watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
     "watch": "tsc --build tsconfig.build.json --watch"
+  },
+  "bin": {
+    "actions-languageserver": "./bin/actions-languageserver"
   },
   "dependencies": {
     "@actions/languageservice": "^0.3.25",
@@ -61,6 +65,7 @@
     "@types/jest": "^29.0.3",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
+    "esbuild": "^0.27.1",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^4.2.1",
