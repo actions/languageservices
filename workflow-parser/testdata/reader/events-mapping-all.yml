@@ -120,6 +120,8 @@ on:
       - unassigned
       - labeled
       - unlabeled
+      - milestoned
+      - demilestoned
       - opened
       - edited
       - closed
@@ -129,6 +131,8 @@ on:
       - ready_for_review
       - locked
       - unlocked
+      - enqueued
+      - dequeued
       - review_requested
       - review_request_removed
       - auto_merge_enabled
@@ -160,6 +164,8 @@ on:
       - unassigned
       - labeled
       - unlabeled
+      - milestoned
+      - demilestoned
       - opened
       - edited
       - closed
@@ -169,6 +175,8 @@ on:
       - ready_for_review
       - locked
       - unlocked
+      - enqueued
+      - dequeued
       - review_requested
       - review_request_removed
       - auto_merge_enabled
@@ -386,6 +394,8 @@ jobs:
         "unassigned",
         "labeled",
         "unlabeled",
+        "milestoned",
+        "demilestoned",
         "opened",
         "edited",
         "closed",
@@ -395,6 +405,8 @@ jobs:
         "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
@@ -441,6 +453,8 @@ jobs:
         "unassigned",
         "labeled",
         "unlabeled",
+        "milestoned",
+        "demilestoned",
         "opened",
         "edited",
         "closed",
@@ -450,6 +464,8 @@ jobs:
         "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",

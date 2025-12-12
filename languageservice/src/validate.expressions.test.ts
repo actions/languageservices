@@ -635,7 +635,7 @@ jobs:
         fail-fast: true
         matrix:
           node: [14, 16]
-      uses: ./reusable-workflow-with-inputs.yaml
+      uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
       with:
         username: User-\${{ strategy.fail-fast }}
   `;
@@ -654,7 +654,7 @@ jobs:
       strategy:
         matrix:
           node: [14, 16]
-      uses: ./reusable-workflow-with-inputs.yaml
+      uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
       with:
         username: \${{ matrix.node }}
   `;
@@ -681,7 +681,8 @@ jobs:
 
       const result = await validate(createDocument("wf.yaml", input));
 
-      expect(result).not.toEqual([]);
+      // Strategy context is always available with default values
+      expect(result).toEqual([]);
     });
 
     it("invalid strategy property", async () => {
@@ -996,22 +997,8 @@ jobs:
 
       const result = await validate(createDocument("wf.yaml", input));
 
-      expect(result).toEqual([
-        {
-          message: "Context access might be invalid: matrix",
-          range: {
-            end: {
-              character: 36,
-              line: 8
-            },
-            start: {
-              character: 18,
-              line: 8
-            }
-          },
-          severity: DiagnosticSeverity.Warning
-        }
-      ]);
+      // Matrix is null when no strategy is defined, accessing properties on null is valid
+      expect(result).toEqual([]);
     });
 
     it("basic matrix", async () => {
@@ -1503,6 +1490,218 @@ jobs:
       const result = await validate(createDocument("wf.yaml", input));
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe("if condition context restrictions", () => {
+    describe("job-level if", () => {
+      it("allows github context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows needs context", async () => {
+        const input = `
+on: push
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello
+  b:
+    needs: a
+    if: needs.a.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows inputs context", async () => {
+        const input = `
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: string
+jobs:
+  build:
+    if: inputs.environment == 'prod'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      // Note: vars and matrix contexts are validated at runtime based on their existence
+      // vars context only exists if organization/repository variables are defined
+      // matrix context only exists if a strategy.matrix is defined
+    });
+
+    describe("step-level if", () => {
+      it("allows steps context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: setup
+        run: echo hello
+      - if: steps.setup.outcome == 'success'
+        run: echo world`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows job context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: job.status == 'success'
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows runner context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: runner.os == 'Linux'
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows runner.environment context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: runner.environment == 'github-hosted'
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows runner.debug context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: runner.debug == '1'
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows runner.workspace context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: runner.workspace != ''
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows env context", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MY_VAR: value
+    steps:
+      - if: env.MY_VAR == 'value'
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows matrix context in matrix job", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - if: matrix.os == 'ubuntu'
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows hashFiles function", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: hashFiles('**/*.txt') != ''
+        run: echo hello`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("allows all contexts together", async () => {
+        const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      JOB_VAR: job-value
+    steps:
+      - id: first
+        run: echo hello
+      - if: github.event_name == 'push' && steps.first.outcome == 'success' && job.status == 'success' && runner.os == 'Linux' && env.JOB_VAR == 'job-value'
+        run: echo world`;
+
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
     });
   });
 });

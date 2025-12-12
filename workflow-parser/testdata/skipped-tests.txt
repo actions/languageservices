@@ -50,7 +50,6 @@ errors-step-uses-syntax.yml
 errors-unclosed-tokens.yml
 errors-yaml-invalid-style.yml
 errors-yaml-tags-explicit-unsupported.yml
-escape-html-values.yml
 float-folded-style.yml
 insert.yml
 is-partial-rerun.yml
@@ -59,7 +58,6 @@ job-cancel-timeout-minutes.yml
 job-concurrency.yml
 job-continue-on-error.yml
 job-defaults.yml
-job-if.yml
 job-permissions.yml
 job-timeout-minutes.yml
 matrix-basic.yml
@@ -85,7 +83,6 @@ reusable-workflow-job-permissions-overrides-default-write.yml
 reusable-workflow-job-permissions-overrides-workflow-level.yml
 root-env-defaults.yml
 round-to-infinity.yml
-step-if.yml
 scientific-notation-number.yml
 skip-reusable-workflows.yml
 workflow-defaults.yml

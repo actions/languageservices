@@ -41,6 +41,7 @@ export type BaseJob = {
   concurrency?: TemplateToken;
   strategy?: TemplateToken;
   outputs?: MappingToken;
+  snapshot?: TemplateToken;
 };
 
 // `job-factory` in the schema
@@ -129,6 +130,7 @@ export type EventsConfig = {
   repository_dispatch?: TypesFilterConfig;
   release?: TypesFilterConfig;
   watch?: TypesFilterConfig;
+  image_versions?: TypesFilterConfig & VersionsFilterConfig & NamesFilterConfig;
 
   // Index signature to allow easier lookup
   [eventName: string]: unknown;
@@ -136,6 +138,14 @@ export type EventsConfig = {
 
 export type TypesFilterConfig = {
   types?: string[];
+};
+
+export type VersionsFilterConfig = {
+  versions?: string[];
+};
+
+export type NamesFilterConfig = {
+  names?: string[];
 };
 
 export type BranchFilterConfig = {

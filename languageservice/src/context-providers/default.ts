@@ -32,15 +32,24 @@ export async function getContext(
 ): Promise<DescriptionDictionary> {
   const context = new DescriptionDictionary();
 
-  const filteredNames = filterContextNames(names, workflowContext);
-  for (const contextName of filteredNames) {
+  // All context names are valid - strategy and matrix are always available
+  // (with default values when no strategy block is defined)
+  for (const contextName of names) {
     let value = getDefaultContext(contextName, workflowContext, mode) || new DescriptionDictionary();
     if (value.kind === Kind.Null) {
       context.add(contextName, value);
       continue;
     }
 
-    value = (await config?.getContext(contextName, value, workflowContext, mode)) || value;
+    const remoteValue = await config?.getContext(contextName, value, workflowContext, mode);
+    if (remoteValue) {
+      value = remoteValue;
+    } else if (contextName === "secrets" || contextName === "vars") {
+      // Without a context provider to fetch remote secrets/vars, we can't know
+      // what values exist, so mark the context as incomplete to avoid false
+      // "Context access might be invalid" warnings
+      value.complete = false;
+    }
 
     context.add(contextName, value, getDescription(RootContext, contextName));
   }
@@ -74,11 +83,14 @@ function getDefaultContext(name: string, workflowContext: WorkflowContext, mode:
 
     case "runner":
       return objectToDictionary({
-        os: "Linux",
         arch: "X64",
+        debug: "1",
+        environment: "github-hosted",
         name: "GitHub Actions 2",
+        os: "Linux",
+        temp: "/home/runner/work/_temp",
         tool_cache: "/opt/hostedtoolcache",
-        temp: "/home/runner/work/_temp"
+        workspace: "/home/runner/work/repo"
       });
 
     case "secrets":
@@ -102,19 +114,4 @@ function objectToDictionary(object: {[key: string]: string}): DescriptionDiction
   }
 
   return dictionary;
-}
-
-function filterContextNames(contextNames: string[], workflowContext: WorkflowContext): string[] {
-  return contextNames.filter(name => {
-    switch (name) {
-      case "matrix":
-      case "strategy":
-        return hasStrategy(workflowContext);
-    }
-    return true;
-  });
-}
-
-function hasStrategy(workflowContext: WorkflowContext): boolean {
-  return workflowContext.job?.strategy !== undefined || workflowContext.reusableWorkflowJob?.strategy !== undefined;
 }

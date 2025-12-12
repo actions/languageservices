@@ -31,7 +31,10 @@ function stepContext(): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#steps-context
   const d = new DescriptionDictionary();
 
-  d.add("outputs", new data.Null(), getDescription("steps", "outputs"));
+  // Step outputs are dynamic - actions can generate outputs based on their inputs
+  const outputs = new DescriptionDictionary();
+  outputs.complete = false;
+  d.add("outputs", outputs, getDescription("steps", "outputs"));
 
   // Can be "success", "failure", "cancelled", or "skipped"
   d.add("conclusion", new data.Null(), getDescription("steps", "conclusion"));

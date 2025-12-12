@@ -299,7 +299,16 @@ jobs:
         "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    environment:\n      url: ${{ runner.| }}\n    steps:\n      - run: echo";
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).toEqual(["arch", "name", "os", "temp", "tool_cache"]);
+      expect(result.map(x => x.label)).toEqual([
+        "arch",
+        "debug",
+        "environment",
+        "name",
+        "os",
+        "temp",
+        "tool_cache",
+        "workspace"
+      ]);
     });
 
     describe("job if", () => {
@@ -861,7 +870,7 @@ jobs:
   });
 
   describe("strategy context", () => {
-    it("strategy is not suggested when outside of a matrix job", async () => {
+    it("strategy is suggested even when no strategy defined", async () => {
       const input = `
 on: push
 
@@ -875,7 +884,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).not.toContain("strategy");
+      expect(result.map(x => x.label)).toContain("strategy");
     });
 
     it("strategy is suggested within a matrix job", async () => {
@@ -922,7 +931,7 @@ jobs:
   });
 
   describe("matrix context", () => {
-    it("matrix is not suggested when outside of a matrix job", async () => {
+    it("matrix is suggested even when no strategy defined", async () => {
       const input = `
 on: push
 
@@ -936,7 +945,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).not.toContain("strategy");
+      expect(result.map(x => x.label)).toContain("matrix");
     });
 
     it("matrix is suggested within a matrix job", async () => {
@@ -1123,10 +1132,12 @@ jobs:
         "github",
         "inputs",
         "job",
+        "matrix",
         "needs",
         "runner",
         "secrets",
         "steps",
+        "strategy",
         "vars",
         "contains",
         "endsWith",
@@ -1268,7 +1279,7 @@ jobs:
 on: push
 jobs:
   a:
-    uses: ./reusable-workflow-with-outputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-outputs.yaml
   b:
     needs: [a]
     runs-on: ubuntu-latest

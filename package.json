@@ -1,6 +1,7 @@
 {
   "name": "actions-languageservices",
   "private": true,
+  "type": "module",
   "workspaces": [
     "./expressions",
     "./workflow-parser",

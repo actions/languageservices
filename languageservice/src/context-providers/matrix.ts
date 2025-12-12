@@ -10,7 +10,8 @@ export function getMatrixContext(workflowContext: WorkflowContext, mode: Mode): 
   // https://docs.github.com/en/actions/learn-github-actions/contexts#matrix-context
   const strategy = workflowContext.job?.strategy ?? workflowContext.reusableWorkflowJob?.strategy;
   if (!strategy || !isMapping(strategy)) {
-    return new DescriptionDictionary();
+    // No strategy defined - matrix is null at runtime (not empty object)
+    return new data.Null();
   }
 
   const matrix = strategy.find("matrix");

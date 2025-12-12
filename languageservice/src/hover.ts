@@ -2,11 +2,9 @@ import {data, DescriptionDictionary, Parser} from "@actions/expressions";
 import {FunctionDefinition, FunctionInfo} from "@actions/expressions/funcs/info";
 import {Lexer} from "@actions/expressions/lexer";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
-import {getCronDescription} from "@actions/workflow-parser/model/converter/cron";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
-import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
-import {isBasicExpression, isString} from "@actions/workflow-parser/templates/tokens/type-guards";
+import {isBasicExpression} from "@actions/workflow-parser/templates/tokens/type-guards";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
@@ -23,7 +21,7 @@ import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-p
 import {HoverVisitor} from "./expression-hover/visitor";
 import {info} from "./log";
 import {isPotentiallyExpression} from "./utils/expression-detection";
-import {findToken, TokenResult} from "./utils/find-token";
+import {findToken} from "./utils/find-token";
 import {mapRange} from "./utils/range";
 import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
 
@@ -89,17 +87,6 @@ export async function hover(document: TextDocument, position: Position, config?:
 
   info(`Calculating hover for token with definition ${token.definition.key}`);
 
-  if (tokenResult.parent && isCronMappingValue(tokenResult)) {
-    const tokenValue = (token as StringToken).value;
-    const description = getCronDescription(tokenValue);
-    if (description) {
-      return {
-        contents: description,
-        range: mapRange(token.range)
-      } satisfies Hover;
-    }
-  }
-
   if (tokenResult.parent && isReusableWorkflowJobInput(tokenResult)) {
     let description = getReusableWorkflowInputDescription(workflowContext, tokenResult);
     description = appendContext(description, token.definitionInfo?.allowedContext);
@@ -154,15 +141,6 @@ async function getDescription(
 
   const description = await config.descriptionProvider.getDescription(workflowContext, token, path);
   return description || defaultDescription;
-}
-
-function isCronMappingValue(tokenResult: TokenResult): boolean {
-  return (
-    tokenResult.parent?.definition?.key === "cron-mapping" &&
-    !!tokenResult.token &&
-    isString(tokenResult.token) &&
-    tokenResult.token.value !== "cron"
-  );
 }
 
 function expressionHover(

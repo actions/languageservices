@@ -99,6 +99,7 @@
           "discussion_comment": "discussion-comment",
           "fork": "fork",
           "gollum": "gollum",
+          "image_version": "image-version",
           "issue_comment": "issue-comment",
           "issues": "issues",
           "label": "label",
@@ -140,6 +141,7 @@
         "discussion-comment-string",
         "fork-string",
         "gollum-string",
+        "image-version-string",
         "issue-comment-string",
         "issues-string",
         "label-string",
@@ -435,6 +437,47 @@
     "gollum": {
       "description": "Runs your workflow when someone creates or updates a Wiki page.",
       "null": {}
+    },
+    "image-version-string": {
+      "description": "Runs your workflow when an image version is created or changes state.",
+      "string": {
+        "constant": "image_version"
+      }
+    },
+    "image-version": {
+      "description": "Runs your workflow when an image version is created or changes state.",
+      "one-of": [
+        "null",
+        "image-version-mapping"
+      ]
+    },
+    "image-version-mapping": {
+      "mapping": {
+        "properties": {
+          "types": "image-version-activity",
+          "names": "event-names",
+          "versions": "event-versions"
+        }
+      }
+    },
+    "image-version-activity": {
+      "description": "The types of image version activity that trigger the workflow. Supported activity types: `created`, `ready`, `deleted`.",
+      "one-of": [
+        "image-version-activity-type",
+        "image-version-activity-types"
+      ]
+    },
+    "image-version-activity-types": {
+      "sequence": {
+        "item-type": "image-version-activity-type"
+      }
+    },
+    "image-version-activity-type": {
+      "allowed-values": [
+        "created",
+        "ready",
+        "deleted"
+      ]
     },
     "issue-comment-string": {
       "description": "Runs your workflow when an issue or pull request comment is created, edited, or deleted.",
@@ -813,7 +856,7 @@
       }
     },
     "pull-request-activity": {
-      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `ready_for_review`, `locked`, `unlocked`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
+      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `locked`, `unlocked`, `enqueued`, `dequeued`, `milestoned`, `demilestoned`, `ready_for_review`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
       "one-of": [
         "pull-request-activity-type",
         "pull-request-activity-types"
@@ -836,9 +879,13 @@
         "reopened",
         "synchronize",
         "converted_to_draft",
-        "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
+        "milestoned",
+        "demilestoned",
+        "ready_for_review",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
@@ -961,7 +1008,7 @@
       }
     },
     "pull-request-target-activity": {
-      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `ready_for_review`, `locked`, `unlocked`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
+      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `locked`, `unlocked`, `enqueued`, `dequeued`, `milestoned`, `demilestoned`, `ready_for_review`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
       "one-of": [
         "pull-request-target-activity-type",
         "pull-request-target-activity-types"
@@ -984,9 +1031,13 @@
         "reopened",
         "synchronize",
         "converted_to_draft",
-        "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
+        "milestoned",
+        "demilestoned",
+        "ready_for_review",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
@@ -1221,6 +1272,13 @@
         "sequence-of-non-empty-string"
       ]
     },
+    "event-names": {
+      "description": "Use the `names` filter when you want to include names via patterns or when you want to both include and exclude names using patterns. ",
+      "one-of": [
+        "non-empty-string",
+        "sequence-of-non-empty-string"
+      ]
+    },
     "event-tags": {
       "description": "Use the `tags` filter when you want to include tag name patterns or when you want to both include and exclude tag names patterns. You cannot use both the `tags` and `tags-ignore` filters for the same event in a workflow.",
       "one-of": [
@@ -1244,6 +1302,13 @@
     },
     "event-paths-ignore": {
       "description": "Use the `paths-ignore` filter when you only want to exclude file path patterns. You cannot use both the `paths` and `paths-ignore` filters for the same event in a workflow.",
+      "one-of": [
+        "non-empty-string",
+        "sequence-of-non-empty-string"
+      ]
+    },
+    "event-versions": {
+      "description": "Use the `versions` filter when you want to include versions via patterns or when you want to both include and exclude versions using patterns. ",
       "one-of": [
         "non-empty-string",
         "sequence-of-non-empty-string"
@@ -1482,7 +1547,7 @@
           },
           "default": "workflow-dispatch-input-default",
           "options": {
-            "type": "sequence-of-non-empty-string",
+            "type": "sequence-of-string",
             "description": "The options of the dropdown list, if the type is a choice."
           }
         }
@@ -1520,6 +1585,10 @@
           "actions": {
             "type": "permission-level-any",
             "description": "Actions workflows, workflow runs, and artifacts."
+          },
+          "artifact-metadata": {
+            "type": "permission-level-any",
+            "description": "Storage and deployment records for build artifacts."
           },
           "attestations": {
             "type": "permission-level-any",
@@ -1710,7 +1779,8 @@
           "concurrency": "job-concurrency",
           "outputs": "job-outputs",
           "defaults": "job-defaults",
-          "steps": "steps"
+          "steps": "steps",
+          "snapshot": "snapshot"
         }
       }
     },
@@ -1780,9 +1850,7 @@
         "cancelled(0,0)",
         "success(0,MAX)"
       ],
-      "string": {
-        "is-expression": true
-      }
+      "string": {}
     },
     "job-if-result": {
       "context": [
@@ -1853,6 +1921,41 @@
         "loose-key-type": "non-empty-string",
         "loose-value-type": "any"
       }
+    },
+    "snapshot": {
+      "description": "Use `snapshot` to define a custom image you want to create or update after your job succeeds by taking a snapshot of your runner.",
+      "one-of": [
+        "non-empty-string",
+        "snapshot-mapping"
+      ]
+    },
+    "snapshot-mapping": {
+      "mapping": {
+        "properties": {
+          "image-name": {
+            "description": "The desired name of the custom image you want to create or update.",
+            "type": "non-empty-string",
+            "required": true
+          },
+          "if": "snapshot-if",
+          "version": {
+            "description": "The desired major version updates upon a new custom image version creation.",
+            "type": "non-empty-string"
+          }
+        }
+      }
+    },
+    "snapshot-if": {
+      "context": [
+        "github",
+        "inputs",
+        "vars",
+        "needs",
+        "strategy",
+        "matrix"
+      ],
+      "description": "Use the if conditional to prevent a snapshot from being taken unless a condition is met. Any supported context and expression can be used to create a conditional. Expressions in an `if` conditional do not require the bracketed expression syntax. When you use expressions in an `if` conditional, you may omit the expression syntax because GitHub automatically evaluates the `if` conditional as an expression.",
+      "string": {}
     },
     "runs-on": {
       "description": "Use `runs-on` to define the type of machine to run the job on.\n* The destination machine can be either a GitHub-hosted runner, larger runner, or a self-hosted runner.\n* You can target runners based on the labels assigned to them, or their group membership, or a combination of these.\n* You can provide `runs-on` as a single string or as an array of strings.\n* If you specify an array of strings, your workflow will execute on any runner that matches all of the specified `runs-on` values.\n* If you would like to run your workflow on multiple machines, use `jobs.<job_id>.strategy`.",
@@ -2117,9 +2220,7 @@
         "hashFiles(1,255)"
       ],
       "description": "Use the `if` conditional to prevent a step from running unless a condition is met. Any supported context and expression can be used to create a conditional. Expressions in an `if` conditional do not require the bracketed expression syntax. When you use expressions in an `if` conditional, you may omit the expression syntax because GitHub automatically evaluates the `if` conditional as an expression.",
-      "string": {
-        "is-expression": true
-      }
+      "string": {}
     },
     "step-if-result": {
       "context": [
@@ -2324,6 +2425,11 @@
     "sequence-of-non-empty-string": {
       "sequence": {
         "item-type": "non-empty-string"
+      }
+    },
+    "sequence-of-string": {
+      "sequence": {
+        "item-type": "string"
       }
     },
     "boolean-needs-context": {

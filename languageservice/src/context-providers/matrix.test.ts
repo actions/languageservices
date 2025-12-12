@@ -64,7 +64,7 @@ describe("matrix context", () => {
       expect(workflowContext.job).toBeUndefined();
 
       const context = getMatrixContext(workflowContext, Mode.Validation);
-      expect(context).toEqual(new DescriptionDictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("strategy not defined", () => {
@@ -73,7 +73,7 @@ describe("matrix context", () => {
       expect(workflowContext.job!.strategy).toBeUndefined();
 
       const context = getMatrixContext(workflowContext, Mode.Validation);
-      expect(context).toEqual(new DescriptionDictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("strategy is not a mapping token", () => {
@@ -81,7 +81,7 @@ describe("matrix context", () => {
       expect(workflowContext.job!.strategy).toBeDefined();
 
       const context = getMatrixContext(workflowContext, Mode.Validation);
-      expect(context).toEqual(new DescriptionDictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("matrix is not defined", () => {

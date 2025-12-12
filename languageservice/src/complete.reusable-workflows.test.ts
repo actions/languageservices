@@ -21,7 +21,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     with:
       |
 `;
@@ -49,7 +49,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     with:
       username: monalisa
       |
@@ -74,7 +74,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     secrets:
       |
 `;
@@ -102,7 +102,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     secrets: |
 `;
     const result = await complete(...getPositionFromCursor(input), {fileProvider: testFileProvider});
@@ -117,7 +117,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     secrets:
       envPAT: "myPAT"
       |

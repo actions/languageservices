@@ -1,6 +1,6 @@
 {
   "name": "@actions/expressions",
-  "version": "0.3.17",
+  "version": "0.3.25",
   "license": "MIT",
   "type": "module",
   "source": "./src/index.ts",
@@ -9,10 +9,12 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./*": {
-      "import": "./dist/*.js"
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
     }
   },
   "typesVersions": {
@@ -42,7 +44,7 @@
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "engines": {
-    "node": ">= 16.15"
+    "node": ">= 18"
   },
   "files": [
     "dist/**/*"
