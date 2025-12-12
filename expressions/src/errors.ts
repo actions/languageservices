@@ -12,6 +12,7 @@ export enum ErrorType {
   ErrorExceededMaxLength,
   ErrorTooFewParameters,
   ErrorTooManyParameters,
+  ErrorEvenParameters,
   ErrorUnrecognizedContext,
   ErrorUnrecognizedFunction
 }
@@ -42,6 +43,8 @@ function errorDescription(typ: ErrorType): string {
       return "Too few parameters supplied";
     case ErrorType.ErrorTooManyParameters:
       return "Too many parameters supplied";
+    case ErrorType.ErrorEvenParameters:
+      return "Even number of parameters supplied, requires an odd number of parameters";
     case ErrorType.ErrorUnrecognizedContext:
       return "Unrecognized named-value";
     case ErrorType.ErrorUnrecognizedFunction:

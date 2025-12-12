@@ -1,4 +1,5 @@
 import {ErrorType, ExpressionError} from "./errors.js";
+import {caseFunc} from "./funcs/case.js";
 import {contains} from "./funcs/contains.js";
 import {endswith} from "./funcs/endswith.js";
 import {format} from "./funcs/format.js";
@@ -16,6 +17,7 @@ export type ParseContext = {
 };
 
 export const wellKnownFunctions: {[name: string]: FunctionDefinition} = {
+  case: caseFunc,
   contains: contains,
   endswith: endswith,
   format: format,
@@ -52,5 +54,10 @@ export function validateFunction(context: ParseContext, identifier: Token, argCo
 
   if (argCount > f.maxArgs) {
     throw new ExpressionError(ErrorType.ErrorTooManyParameters, identifier);
+  }
+
+  // case function requires an odd number of arguments
+  if (name === "case" && argCount % 2 === 0) {
+    throw new ExpressionError(ErrorType.ErrorEvenParameters, identifier);
   }
 }
