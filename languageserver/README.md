@@ -20,6 +20,86 @@ This makes the `actions-languageserver` command available globally.
 
 ## Usage
 
+### Basic usage using `vscode-languageserver-node`
+
+For the server, import the module. It detects whether it's running in a Node.js environment or a web worker and initializes the appropriate connection.
+
+`server.ts`:
+
+```typescript
+import "@actions/languageserver";
+```
+
+For the client, create a new `LanguageClient` pointing to the server module.
+
+`client.ts`:
+
+```typescript
+import {LanguageClient, ServerOptions, TransportKind} from "vscode-languageclient/node";
+
+const debugOptions = {execArgv: ["--nolazy", "--inspect=6010"]};
+
+const clientOptions: LanguageClientOptions = {
+  documentSelector: [{
+    pattern: "**/.github/workflows/*.{yaml,yml}"
+  }]
+};
+
+const serverModule = context.asAbsolutePath(path.join("dist", "server.js"));
+const serverOptions: ServerOptions = {
+  run: {module: serverModule, transport: TransportKind.ipc},
+  debug: {
+    module: serverModule,
+    transport: TransportKind.ipc,
+    options: debugOptions
+  }
+};
+
+const client = new LanguageClient("actions-language", "GitHub Actions Language Server", serverOptions, clientOptions);
+```
+
+### From a web worker
+
+See [../browser-playground](../browser-playground) for an example implementation that hosts the language server in a web worker.
+
+### Providing advanced functionality
+
+The language server accepts initialization options that can be used to configure additional functionality. If you pass in a github.com `sessionToken`, the language service will use data from github.com to perform additional validations and provide additional auto-completion suggestions.
+
+```typescript
+export interface InitializationOptions {
+  /**
+   * GitHub token that will be used to retrieve additional information from github.com
+   *
+   * Requires the `repo` and `workflow` scopes
+   */
+  sessionToken?: string;
+
+  /**
+   * List of repositories that the language server should be aware of
+   */
+  repos?: RepositoryContext[];
+
+  /**
+   * Desired log level
+   */
+  logLevel?: LogLevel;
+}
+```
+
+pass the `initializationOptions` to the `LanguageClient` when establishing the connection:
+
+```typescript
+const clientOptions: LanguageClientOptions = {
+  documentSelector: [{
+    pattern: "**/.github/workflows/*.{yaml,yml}"
+  }],
+  initializationOptions: initializationOptions
+};
+
+const client = new LanguageClient("actions-language", "GitHub Actions Language Server", serverOptions, clientOptions);
+```
+
 ### Standalone CLI
 
 After installing globally, you can run the language server directly:
@@ -31,8 +111,6 @@ actions-languageserver --stdio
 This starts the language server using stdio transport, which is the standard way for editors to communicate with language servers.
 
 ### In Neovim
-
-Neovim 0.5+ has built-in LSP support. To use the Actions language server:
 
 #### 1. Install the language server
 
@@ -56,7 +134,7 @@ This sets the filetype to `yaml.ghactions` for YAML files in `.github/workflows/
 
 #### 3. Create the LSP configuration
 
-Create `~/.config/nvim/lsp/actionsls.lua`:
+As of Neovim 0.11+ you can add this configuration in `~/.config/nvim/lsp/actionsls.lua`:
 
 ```lua
 local function get_github_token()
@@ -165,86 +243,6 @@ Open any `.github/workflows/*.yml` file and run:
 ```
 
 You should see `actionsls` in the list of attached clients.
-
-### Basic usage using `vscode-languageserver-node`
-
-For the server, import the module. It detects whether it's running in a Node.js environment or a web worker and initializes the appropriate connection.
-
-`server.ts`:
-
-```typescript
-import "@actions/languageserver";
-```
-
-For the client, create a new `LanguageClient` pointing to the server module.
-
-`client.ts`:
-
-```typescript
-import {LanguageClient, ServerOptions, TransportKind} from "vscode-languageclient/node";
-
-const debugOptions = {execArgv: ["--nolazy", "--inspect=6010"]};
-
-const clientOptions: LanguageClientOptions = {
-  documentSelector: [{
-    pattern: "**/.github/workflows/*.{yaml,yml}"
-  }]
-};
-
-const serverModule = context.asAbsolutePath(path.join("dist", "server.js"));
-const serverOptions: ServerOptions = {
-  run: {module: serverModule, transport: TransportKind.ipc},
-  debug: {
-    module: serverModule,
-    transport: TransportKind.ipc,
-    options: debugOptions
-  }
-};
-
-const client = new LanguageClient("actions-language", "GitHub Actions Language Server", serverOptions, clientOptions);
-```
-
-### From a web worker
-
-See [../browser-playground](../browser-playground) for an example implementation that hosts the language server in a web worker.
-
-### Providing advanced functionality
-
-The language server accepts initialization options that can be used to configure additional functionality. If you pass in a github.com `sessionToken`, the language service will use data from github.com to perform additional validations and provide additional auto-completion suggestions.
-
-```typescript
-export interface InitializationOptions {
-  /**
-   * GitHub token that will be used to retrieve additional information from github.com
-   *
-   * Requires the `repo` and `workflow` scopes
-   */
-  sessionToken?: string;
-
-  /**
-   * List of repositories that the language server should be aware of
-   */
-  repos?: RepositoryContext[];
-
-  /**
-   * Desired log level
-   */
-  logLevel?: LogLevel;
-}
-```
-
-pass the `initializationOptions` to the `LanguageClient` when establishing the connection:
-
-```typescript
-const clientOptions: LanguageClientOptions = {
-  documentSelector: [{
-    pattern: "**/.github/workflows/*.{yaml,yml}"
-  }],
-  initializationOptions: initializationOptions
-};
-
-const client = new LanguageClient("actions-language", "GitHub Actions Language Server", serverOptions, clientOptions);
-```
 
 ## Contributing
 
