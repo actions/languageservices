@@ -1,8 +1,11 @@
-import {documentLinks, hover, validate, ValidationConfig} from "@actions/languageservice";
+import {documentLinks, getCodeActions, hover, validate, ValidationConfig} from "@actions/languageservice";
 import {registerLogger, setLogLevel} from "@actions/languageservice/log";
 import {clearCache, clearCacheEntry} from "@actions/languageservice/utils/workflow-cache";
 import {Octokit} from "@octokit/rest";
 import {
+  CodeAction,
+  CodeActionKind,
+  CodeActionParams,
   CompletionItem,
   Connection,
   DocumentLink,
@@ -72,6 +75,9 @@ export function initConnection(connection: Connection) {
         hoverProvider: true,
         documentLinkProvider: {
           resolveProvider: false
+        },
+        codeActionProvider: {
+          codeActionKinds: [CodeActionKind.QuickFix]
         }
       }
     };
@@ -156,6 +162,14 @@ export function initConnection(connection: Connection) {
   connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
     return documentLinks(getDocument(documents, textDocument), repoContext?.workspaceUri);
+  });
+
+  connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
+    return getCodeActions({
+      uri: params.textDocument.uri,
+      diagnostics: params.context.diagnostics,
+      only: params.context.only
+    });
   });
 
   // Make the text document manager listen on the connection
