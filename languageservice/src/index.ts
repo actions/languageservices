@@ -5,4 +5,4 @@ export {hover} from "./hover";
 export {Logger, LogLevel, registerLogger, setLogLevel} from "./log";
 export {validate, ValidationConfig, ActionsMetadataProvider} from "./validate";
 export {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
-export {getCodeActions, CodeActionParams, CodeActionConfig} from "./code-actions";
+export {getCodeActions, CodeActionParams} from "./code-actions";
