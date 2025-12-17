@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {nullTrace} from "../test-utils/null-trace";
-import {parseWorkflow} from "../workflows/workflow-parser";
-import {convertWorkflowTemplate, ErrorPolicy} from "./convert";
+import {nullTrace} from "../test-utils/null-trace.js";
+import {parseWorkflow} from "../workflows/workflow-parser.js";
+import {convertWorkflowTemplate, ErrorPolicy} from "./convert.js";
 
 function serializeTemplate(template: unknown): unknown {
   return JSON.parse(JSON.stringify(template));

@@ -1,13 +1,13 @@
-import {ErrorType, ExpressionError} from "./errors";
-import {contains} from "./funcs/contains";
-import {endswith} from "./funcs/endswith";
-import {format} from "./funcs/format";
-import {fromjson} from "./funcs/fromjson";
-import {FunctionDefinition, FunctionInfo} from "./funcs/info";
-import {join} from "./funcs/join";
-import {startswith} from "./funcs/startswith";
-import {tojson} from "./funcs/tojson";
-import {Token} from "./lexer";
+import {ErrorType, ExpressionError} from "./errors.js";
+import {contains} from "./funcs/contains.js";
+import {endswith} from "./funcs/endswith.js";
+import {format} from "./funcs/format.js";
+import {fromjson} from "./funcs/fromjson.js";
+import {FunctionDefinition, FunctionInfo} from "./funcs/info.js";
+import {join} from "./funcs/join.js";
+import {startswith} from "./funcs/startswith.js";
+import {tojson} from "./funcs/tojson.js";
+import {Token} from "./lexer.js";
 
 export type ParseContext = {
   allowUnknownKeywords: boolean;

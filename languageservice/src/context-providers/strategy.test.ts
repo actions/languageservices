@@ -5,8 +5,8 @@ import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-to
 import {NumberToken} from "@actions/workflow-parser/templates/tokens/number-token";
 import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
-import {WorkflowContext} from "../context/workflow-context";
-import {getStrategyContext} from "./strategy";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {getStrategyContext} from "./strategy.js";
 
 function stringToToken(value: string) {
   return new StringToken(undefined, undefined, value, undefined);

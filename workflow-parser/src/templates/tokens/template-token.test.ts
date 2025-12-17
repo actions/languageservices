@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-unnecessary-type-assertion */
-import {nullTrace} from "../../test-utils/null-trace";
-import {parseWorkflow} from "../../workflows/workflow-parser";
-import {StringToken} from "./string-token";
-import {TemplateToken} from "./template-token";
+import {nullTrace} from "../../test-utils/null-trace.js";
+import {parseWorkflow} from "../../workflows/workflow-parser.js";
+import {StringToken} from "./string-token.js";
+import {TemplateToken} from "./template-token.js";
 
 describe("traverse", () => {
   it("returns parent token and key", () => {

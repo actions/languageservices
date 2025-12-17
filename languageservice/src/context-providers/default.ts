@@ -1,18 +1,18 @@
 import {data, DescriptionDictionary} from "@actions/expressions";
 import {Kind} from "@actions/expressions/data/expressiondata";
-import {WorkflowContext} from "../context/workflow-context";
-import {ContextProviderConfig} from "./config";
-import {getDescription, RootContext} from "./descriptions";
-import {getEnvContext} from "./env";
-import {getGithubContext} from "./github";
-import {getInputsContext} from "./inputs";
-import {getJobContext} from "./job";
-import {getJobsContext} from "./jobs";
-import {getMatrixContext} from "./matrix";
-import {getNeedsContext} from "./needs";
-import {getSecretsContext} from "./secrets";
-import {getStepsContext} from "./steps";
-import {getStrategyContext} from "./strategy";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {ContextProviderConfig} from "./config.js";
+import {getDescription, RootContext} from "./descriptions.js";
+import {getEnvContext} from "./env.js";
+import {getGithubContext} from "./github.js";
+import {getInputsContext} from "./inputs.js";
+import {getJobContext} from "./job.js";
+import {getJobsContext} from "./jobs.js";
+import {getMatrixContext} from "./matrix.js";
+import {getNeedsContext} from "./needs.js";
+import {getSecretsContext} from "./secrets.js";
+import {getStepsContext} from "./steps.js";
+import {getStrategyContext} from "./strategy.js";
 
 // ContextValue is the type of the value returned by a context provider
 // Null indicates that the context provider doesn't have any value to provide

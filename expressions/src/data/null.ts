@@ -1,4 +1,4 @@
-import {ExpressionDataInterface, Kind} from "./expressiondata";
+import {ExpressionDataInterface, Kind} from "./expressiondata.js";
 
 export class Null implements ExpressionDataInterface {
   public readonly kind = Kind.Null;

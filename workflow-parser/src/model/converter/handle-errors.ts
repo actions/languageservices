@@ -1,5 +1,5 @@
-import {TemplateContext} from "../../templates/template-context";
-import {TemplateToken, TemplateTokenError} from "../../templates/tokens/template-token";
+import {TemplateContext} from "../../templates/template-context.js";
+import {TemplateToken, TemplateTokenError} from "../../templates/tokens/template-token.js";
 
 export function handleTemplateTokenErrors<TResult>(
   root: TemplateToken,

@@ -1,5 +1,5 @@
-export {convertWorkflowTemplate} from "./model/convert";
-export {WorkflowTemplate} from "./model/workflow-template";
-export * from "./templates/tokens/type-guards";
-export {NoOperationTraceWriter, TraceWriter} from "./templates/trace-writer";
-export {parseWorkflow, ParseWorkflowResult} from "./workflows/workflow-parser";
+export {convertWorkflowTemplate} from "./model/convert.js";
+export {WorkflowTemplate} from "./model/workflow-template.js";
+export * from "./templates/tokens/type-guards.js";
+export {NoOperationTraceWriter, TraceWriter} from "./templates/trace-writer.js";
+export {parseWorkflow, ParseWorkflowResult} from "./workflows/workflow-parser.js";

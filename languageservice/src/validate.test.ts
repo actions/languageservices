@@ -1,9 +1,9 @@
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {createDocument} from "./test-utils/document";
-import {validate} from "./validate";
-import {defaultValueProviders} from "./value-providers/default";
-import {clearCache} from "./utils/workflow-cache";
-import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
+import {createDocument} from "./test-utils/document.js";
+import {validate} from "./validate.js";
+import {defaultValueProviders} from "./value-providers/default.js";
+import {clearCache} from "./utils/workflow-cache.js";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
 
 beforeEach(() => {
   clearCache();

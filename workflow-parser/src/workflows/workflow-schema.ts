@@ -1,5 +1,5 @@
-import {JSONObjectReader} from "../templates/json-object-reader";
-import {TemplateSchema} from "../templates/schema";
+import {JSONObjectReader} from "../templates/json-object-reader.js";
+import {TemplateSchema} from "../templates/schema/index.js";
 import WorkflowSchema from "../workflow-v1.0.min.json";
 
 let schema: TemplateSchema;

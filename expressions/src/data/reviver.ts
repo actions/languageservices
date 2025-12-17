@@ -1,10 +1,10 @@
-import {Array as dArray} from "./array";
-import {BooleanData} from "./boolean";
-import {Dictionary} from "./dictionary";
-import {ExpressionData} from "./expressiondata";
-import {Null} from "./null";
-import {NumberData} from "./number";
-import {StringData} from "./string";
+import {Array as dArray} from "./array.js";
+import {BooleanData} from "./boolean.js";
+import {Dictionary} from "./dictionary.js";
+import {ExpressionData} from "./expressiondata.js";
+import {Null} from "./null.js";
+import {NumberData} from "./number.js";
+import {StringData} from "./string.js";
 
 /**
  * Reviver can be passed to `JSON.parse` to convert plain JSON into an `ExpressionData` object.

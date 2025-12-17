@@ -1,4 +1,4 @@
-import {LiteralToken, SequenceToken, MappingToken} from "./tokens";
+import {LiteralToken, SequenceToken, MappingToken} from "./tokens/index.js";
 
 /**
  * Interface for reading a source object (or file).

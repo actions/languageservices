@@ -1,6 +1,6 @@
-import {DefinitionInfo} from "../schema/definition-info";
-import {TemplateToken} from "./template-token";
-import {TokenRange} from "./token-range";
+import {DefinitionInfo} from "../schema/definition-info.js";
+import {TemplateToken} from "./template-token.js";
+import {TokenRange} from "./token-range.js";
 
 /**
  * Base class for everything that is not a mapping or sequence

@@ -1,6 +1,6 @@
 import cronstrue from "cronstrue";
 
-import {MONTH_RANGE, HOUR_RANGE, MINUTE_RANGE, DOM_RANGE, DOW_RANGE} from "./cron-constants";
+import {MONTH_RANGE, HOUR_RANGE, MINUTE_RANGE, DOM_RANGE, DOW_RANGE} from "./cron-constants.js";
 
 type Range = {
   min: number;

@@ -3,8 +3,8 @@ import {isBasicExpression, isMapping, isSequence, isString} from "@actions/workf
 import {KeyValuePair} from "@actions/workflow-parser/templates/tokens/key-value-pair";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
-import {WorkflowContext} from "../context/workflow-context";
-import {ContextValue, Mode} from "./default";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {ContextValue, Mode} from "./default.js";
 
 export function getMatrixContext(workflowContext: WorkflowContext, mode: Mode): ContextValue {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#matrix-context

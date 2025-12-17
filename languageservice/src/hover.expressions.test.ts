@@ -1,12 +1,12 @@
 import {data, DescriptionDictionary} from "@actions/expressions";
 import {format} from "@actions/expressions/funcs/format";
 import {Hover} from "vscode-languageserver-types";
-import {ContextProviderConfig} from "./context-providers/config";
-import {hover} from "./hover";
-import {registerLogger} from "./log";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {TestLogger} from "./test-utils/logger";
-import {clearCache} from "./utils/workflow-cache";
+import {ContextProviderConfig} from "./context-providers/config.js";
+import {hover} from "./hover.js";
+import {registerLogger} from "./log.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {TestLogger} from "./test-utils/logger.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: (context: string) => {

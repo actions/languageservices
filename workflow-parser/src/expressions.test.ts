@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {StringToken} from "./templates/tokens";
-import {isBasicExpression, isString} from "./templates/tokens/type-guards";
-import {nullTrace} from "./test-utils/null-trace";
-import {parseWorkflow} from "./workflows/workflow-parser";
+import {StringToken} from "./templates/tokens/index.js";
+import {isBasicExpression, isString} from "./templates/tokens/type-guards.js";
+import {nullTrace} from "./test-utils/null-trace.js";
+import {parseWorkflow} from "./workflows/workflow-parser.js";
 
 describe("Workflow Expression Parsing", () => {
   it("preserves original expressions when building format", () => {

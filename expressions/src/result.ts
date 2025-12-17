@@ -1,4 +1,4 @@
-import * as data from "./data";
+import * as data from "./data/index.js";
 
 export function falsy(d: data.ExpressionData): boolean {
   switch (d.kind) {
