@@ -1,4 +1,4 @@
-import {DescriptionDictionary} from "@actions/expressions/.";
+import {DescriptionDictionary} from "@actions/expressions";
 import {DiagnosticSeverity} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config.js";
 import {registerLogger} from "./log.js";
