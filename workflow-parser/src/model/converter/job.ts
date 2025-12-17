@@ -1,5 +1,11 @@
 import {TemplateContext} from "../../templates/template-context.js";
-import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens/index.js";
+import {
+  BasicExpressionToken,
+  MappingToken,
+  ScalarToken,
+  StringToken,
+  TemplateToken
+} from "../../templates/tokens/index.js";
 import {isSequence, isString} from "../../templates/tokens/type-guards.js";
 import {Step, WorkflowJob} from "../workflow-template.js";
 import {convertToIfCondition} from "./if-condition.js";

@@ -1,4 +1,15 @@
-import {Binary, ContextAccess, Expr, FunctionCall, Grouping, IndexAccess, Literal, Logical, Star, Unary} from "./ast.js";
+import {
+  Binary,
+  ContextAccess,
+  Expr,
+  FunctionCall,
+  Grouping,
+  IndexAccess,
+  Literal,
+  Logical,
+  Star,
+  Unary
+} from "./ast.js";
 import * as data from "./data/index.js";
 import {ErrorType, ExpressionError, MAX_PARSER_DEPTH} from "./errors.js";
 import {ParseContext, validateFunction} from "./funcs.js";
