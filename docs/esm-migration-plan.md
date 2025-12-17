@@ -157,25 +157,57 @@ at Object.<anonymous> (node_modules/ts-jest/dist/compiler/ts-compiler.js:43:123)
 
 **Workaround:** Post-process `.d.ts` files with a script. See `script/fix-dts-extensions.cjs`.
 
-### 4. languageserver Tests Hang
+**Note:** Since we use Option B (manual `.js` extensions), this bug does not affect our migration.
 
-**Problem:** The languageserver tests hang indefinitely when running with the ESM configuration.
+### 4. yaml Package Internal Types Not Exported
 
-**Status:** Not fully diagnosed. Tests pass on main branch but hang on ESM branch.
+**Problem:** The `yaml` package does not export internal types like `LinePos` and `NodeBase` that are used in `workflow-parser/src/workflows/yaml-object-reader.ts`.
 
-**Possible causes:**
-- Jest ESM module resolution issues
-- Cross-package source mappings in jest.config.js
-- vscode-languageserver ESM compatibility issues
-- Specific test file causing hang (needs isolation testing)
+**Error:**
+```
+error TS2305: Module '"yaml"' has no exported member 'LinePos'.
+error TS2305: Module '"yaml"' has no exported member 'NodeBase'.
+```
 
-**Current Decision:** The languageserver package is **deferred** from this migration until the test hang issue is resolved. It will continue using the old configuration.
+**Solution:** Define local type aliases in the file that uses them:
+```typescript
+// Local type definitions to replace yaml internal imports
+type LinePos = { line: number; col: number };
+type NodeBase = { range?: [number, number, number] };
+```
 
-**Investigation needed:**
-- Run individual test files to isolate the hanging test
-- Check if vscode-languageserver has ESM compatibility issues
-- Review jest configuration for problematic mappings
-- Try running with `--detectOpenHandles` flag
+### 5. languageserver Blocked by vscode-languageserver Dependency
+
+**Problem:** The `vscode-languageserver` package (v8.0.2) does not have proper ESM exports. When using `moduleResolution: "node16"`, TypeScript requires packages to have an `exports` field in `package.json` for subpath imports to work.
+
+**Error:**
+```
+src/index.ts(6,8): error TS2307: Cannot find module 'vscode-languageserver/browser' or its corresponding type declarations.
+src/connection.ts(1,43): error TS2307: Cannot find module 'vscode-languageserver/node' or its corresponding type declarations.
+```
+
+**Root Cause:** The `vscode-languageserver` package.json only has `main` and `browser` fields, but no `exports` field:
+```json
+{
+  "main": "./lib/node/main.js",
+  "browser": {
+    "./lib/node/main.js": "./lib/browser/main.js"
+  }
+  // No "exports" field!
+}
+```
+
+With `moduleResolution: "node16"`, TypeScript follows Node.js ESM resolution rules which require explicit `exports` for subpath imports like `vscode-languageserver/browser` and `vscode-languageserver/node`.
+
+**Status:** Verified December 2025. Version 9.0.1 is available but ESM export support is not confirmed.
+
+**Current Decision:** The languageserver package is **deferred** from this migration until the upstream `vscode-languageserver` package adds proper ESM exports. It will continue using the old `moduleResolution: "node"` configuration.
+
+**Options to resolve:**
+- Wait for vscode-languageserver to add ESM exports
+- Try upgrading to vscode-languageserver v9.x to see if exports were added
+- Use a bundler to work around the module resolution
+- Fork or patch the dependency
 
 ---
 
@@ -186,24 +218,29 @@ at Object.<anonymous> (node_modules/ts-jest/dist/compiler/ts-compiler.js:43:123)
 | expressions | 1068 | ✅ Migrated |
 | workflow-parser | 292 | ✅ Migrated |
 | languageservice | 452 | ✅ Migrated |
-| languageserver | 6 files | ⏸️ Deferred (test hang) |
+| languageserver | 6 files | ⏸️ Deferred (vscode-languageserver lacks ESM exports) |
 
 ---
 
 ## Required Configuration Changes
 
-### tsconfig.json (each migrated package)
+### tsconfig.build.json (each migrated package)
+
+**Note:** We use **Option B** (manual `.js` extensions in source files) rather than `rewriteRelativeImportExtensions` because Option A caused ts-jest compatibility issues (tests would hang indefinitely).
 
 ```json
 {
   "compilerOptions": {
     "module": "node16",
     "moduleResolution": "node16",
-    "rewriteRelativeImportExtensions": true,
+    "skipLibCheck": true,
     "lib": ["ES2022"],
     "target": "ES2022"
   }
 }
+```
+
+The `skipLibCheck: true` is needed to work around @types/node compatibility issues with TypeScript 5.x (TS2386 overload signature errors).
 ```
 
 ### jest.config.js (each migrated package)
