@@ -6,16 +6,17 @@ import {stringsToValues} from "./strings-to-values";
 
 export const DEFAULT_RUNNER_LABELS = [
   "ubuntu-latest",
+  "ubuntu-24.04",
   "ubuntu-22.04",
   "ubuntu-20.04",
-  "ubuntu-18.04",
+  "ubuntu-slim",
   "windows-latest",
   "windows-2022",
   "windows-2019",
   "macos-latest",
-  "macos-12",
-  "macos-11",
-  "macos-10.15",
+  "macos-15",
+  "macos-14",
+  "macos-13",
   "self-hosted"
 ];
 
