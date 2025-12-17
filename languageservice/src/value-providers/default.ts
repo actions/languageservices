@@ -16,7 +16,6 @@ export const DEFAULT_RUNNER_LABELS = [
   "macos-latest",
   "macos-15",
   "macos-14",
-  "macos-13",
   "self-hosted"
 ];
 
