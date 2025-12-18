@@ -1,4 +1,4 @@
-import {isValidCron, getCronDescription, hasCronIntervalLessThan5Minutes} from "./cron";
+import {isValidCron, getCronDescription, hasCronIntervalLessThan5Minutes} from "./cron.js";
 
 describe("cron", () => {
   describe("valid cron", () => {

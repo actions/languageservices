@@ -1,4 +1,4 @@
-import {parseFileReference} from "./file-reference";
+import {parseFileReference} from "./file-reference.js";
 
 describe("parseFileReference", () => {
   it("parses local file reference", () => {

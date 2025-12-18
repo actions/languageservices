@@ -13,7 +13,7 @@ import {
 } from "@actions/expressions/ast";
 import {FunctionDefinition} from "@actions/expressions/funcs/info";
 import {Pos, Range} from "@actions/expressions/lexer";
-import {posWithinRange} from "./pos-range";
+import {posWithinRange} from "./pos-range.js";
 
 export type HoverResult =
   | undefined

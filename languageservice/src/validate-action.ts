@@ -4,9 +4,9 @@ import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {ScalarToken} from "@actions/workflow-parser/templates/tokens/scalar-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {parseActionReference} from "./action";
-import {mapRange} from "./utils/range";
-import {ValidationConfig} from "./validate";
+import {parseActionReference} from "./action.js";
+import {mapRange} from "./utils/range.js";
+import {ValidationConfig} from "./validate.js";
 
 export async function validateAction(
   diagnostics: Diagnostic[],

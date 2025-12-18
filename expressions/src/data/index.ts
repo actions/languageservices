@@ -1,9 +1,9 @@
-export {Array} from "./array";
-export {BooleanData} from "./boolean";
-export {Dictionary} from "./dictionary";
-export {ExpressionData, Kind} from "./expressiondata";
-export {Null} from "./null";
-export {NumberData} from "./number";
-export {replacer} from "./replacer";
-export {reviver} from "./reviver";
-export {StringData} from "./string";
+export {Array} from "./array.js";
+export {BooleanData} from "./boolean.js";
+export {Dictionary} from "./dictionary.js";
+export {ExpressionData, Kind} from "./expressiondata.js";
+export {Null} from "./null.js";
+export {NumberData} from "./number.js";
+export {replacer} from "./replacer.js";
+export {reviver} from "./reviver.js";
+export {StringData} from "./string.js";

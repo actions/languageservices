@@ -4,8 +4,8 @@ import {TemplateContext} from "@actions/workflow-parser/templates/template-conte
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {File} from "@actions/workflow-parser/workflows/file";
 
-import {CompletionConfig} from "../complete";
-import {nullTrace} from "../nulltrace";
+import {CompletionConfig} from "../complete.js";
+import {nullTrace} from "../nulltrace.js";
 
 const parsedWorkflowCache = new Map<string, ParseWorkflowResult>();
 const workflowTemplateCache = new Map<string, WorkflowTemplate>();

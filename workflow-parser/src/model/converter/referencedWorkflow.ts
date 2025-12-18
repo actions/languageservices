@@ -1,11 +1,11 @@
-import {TemplateContext} from "../../templates/template-context";
-import {TemplateToken} from "../../templates/tokens";
-import {TokenType} from "../../templates/tokens/types";
-import {ReusableWorkflowJob} from "../workflow-template";
-import {handleTemplateTokenErrors} from "./handle-errors";
-import {convertWorkflowJobInputs} from "./job/inputs";
-import {convertWorkflowJobSecrets} from "./job/secrets";
-import {convertJobs} from "./jobs";
+import {TemplateContext} from "../../templates/template-context.js";
+import {TemplateToken} from "../../templates/tokens/index.js";
+import {TokenType} from "../../templates/tokens/types.js";
+import {ReusableWorkflowJob} from "../workflow-template.js";
+import {handleTemplateTokenErrors} from "./handle-errors.js";
+import {convertWorkflowJobInputs} from "./job/inputs.js";
+import {convertWorkflowJobSecrets} from "./job/secrets.js";
+import {convertJobs} from "./jobs.js";
 
 export function convertReferencedWorkflow(
   context: TemplateContext,

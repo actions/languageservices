@@ -1,7 +1,7 @@
-import {TemplateContext} from "../../templates/template-context";
-import {TemplateToken} from "../../templates/tokens/template-token";
-import {isString} from "../../templates/tokens/type-guards";
-import {ConcurrencySetting} from "../workflow-template";
+import {TemplateContext} from "../../templates/template-context.js";
+import {TemplateToken} from "../../templates/tokens/template-token.js";
+import {isString} from "../../templates/tokens/type-guards.js";
+import {ConcurrencySetting} from "../workflow-template.js";
 
 export function convertConcurrency(context: TemplateContext, token: TemplateToken): ConcurrencySetting {
   const result: ConcurrencySetting = {};

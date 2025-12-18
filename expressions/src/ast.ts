@@ -1,5 +1,5 @@
-import {ExpressionData} from "./data";
-import {Token} from "./lexer";
+import {ExpressionData} from "./data/index.js";
+import {Token} from "./lexer.js";
 
 export interface ExprVisitor<R> {
   visitLiteral(literal: Literal): R;

@@ -1,9 +1,9 @@
-import {TemplateSchema} from "./template-schema";
-import {DEFINITION, MAPPING, PROPERTIES, LOOSE_KEY_TYPE, LOOSE_VALUE_TYPE} from "../template-constants";
-import {MappingToken} from "../tokens";
-import {Definition} from "./definition";
-import {DefinitionType} from "./definition-type";
-import {PropertyDefinition} from "./property-definition";
+import {TemplateSchema} from "./template-schema.js";
+import {DEFINITION, MAPPING, PROPERTIES, LOOSE_KEY_TYPE, LOOSE_VALUE_TYPE} from "../template-constants.js";
+import {MappingToken} from "../tokens/index.js";
+import {Definition} from "./definition.js";
+import {DefinitionType} from "./definition-type.js";
+import {PropertyDefinition} from "./property-definition.js";
 
 export class MappingDefinition extends Definition {
   public readonly properties: {[key: string]: PropertyDefinition} = {};

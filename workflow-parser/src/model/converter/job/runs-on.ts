@@ -1,6 +1,6 @@
-import {TemplateContext} from "../../../templates/template-context";
-import {TemplateToken} from "../../../templates/tokens";
-import {isMapping, isString, isSequence} from "../../../templates/tokens/type-guards";
+import {TemplateContext} from "../../../templates/template-context.js";
+import {TemplateToken} from "../../../templates/tokens/index.js";
+import {isMapping, isString, isSequence} from "../../../templates/tokens/type-guards.js";
 
 type RunsOn = {
   labels: Set<string>;

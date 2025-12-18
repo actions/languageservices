@@ -1,9 +1,9 @@
-import {TemplateContext} from "../../templates/template-context";
-import {MappingToken} from "../../templates/tokens/mapping-token";
-import {SequenceToken} from "../../templates/tokens/sequence-token";
-import {TemplateToken} from "../../templates/tokens/template-token";
-import {isLiteral, isMapping, isSequence, isString} from "../../templates/tokens/type-guards";
-import {TokenType} from "../../templates/tokens/types";
+import {TemplateContext} from "../../templates/template-context.js";
+import {MappingToken} from "../../templates/tokens/mapping-token.js";
+import {SequenceToken} from "../../templates/tokens/sequence-token.js";
+import {TemplateToken} from "../../templates/tokens/template-token.js";
+import {isLiteral, isMapping, isSequence, isString} from "../../templates/tokens/type-guards.js";
+import {TokenType} from "../../templates/tokens/types.js";
 import {
   BranchFilterConfig,
   EventsConfig,
@@ -14,11 +14,11 @@ import {
   TypesFilterConfig,
   VersionsFilterConfig,
   WorkflowFilterConfig
-} from "../workflow-template";
-import {isValidCron} from "./cron";
-import {convertStringList} from "./string-list";
-import {convertEventWorkflowCall} from "./workflow-call";
-import {convertEventWorkflowDispatchInputs} from "./workflow-dispatch";
+} from "../workflow-template.js";
+import {isValidCron} from "./cron.js";
+import {convertStringList} from "./string-list.js";
+import {convertEventWorkflowCall} from "./workflow-call.js";
+import {convertEventWorkflowDispatchInputs} from "./workflow-dispatch.js";
 
 export function convertOn(context: TemplateContext, token: TemplateToken): EventsConfig {
   if (isLiteral(token)) {

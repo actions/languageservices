@@ -1,8 +1,8 @@
 import {CompletionItem, MarkupContent} from "vscode-languageserver-types";
-import {complete} from "./complete";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearCache} from "./utils/workflow-cache";
+import {complete} from "./complete.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 function mapResult(result: CompletionItem[]) {
   return result.map(x => {

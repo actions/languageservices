@@ -1,8 +1,8 @@
-import {CONSTANT, DEFINITION, IGNORE_CASE, IS_EXPRESSION, REQUIRE_NON_EMPTY, STRING} from "../template-constants";
-import {LiteralToken, MappingToken, StringToken} from "../tokens";
-import {TokenType} from "../tokens/types";
-import {DefinitionType} from "./definition-type";
-import {ScalarDefinition} from "./scalar-definition";
+import {CONSTANT, DEFINITION, IGNORE_CASE, IS_EXPRESSION, REQUIRE_NON_EMPTY, STRING} from "../template-constants.js";
+import {LiteralToken, MappingToken, StringToken} from "../tokens/index.js";
+import {TokenType} from "../tokens/types.js";
+import {DefinitionType} from "./definition-type.js";
+import {ScalarDefinition} from "./scalar-definition.js";
 
 export class StringDefinition extends ScalarDefinition {
   public constant = "";

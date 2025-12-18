@@ -1,4 +1,4 @@
-import {NumberData} from "./number";
+import {NumberData} from "./number.js";
 
 describe("number", () => {
   it("coerces to string", () => {

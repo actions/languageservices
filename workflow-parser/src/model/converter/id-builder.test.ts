@@ -1,4 +1,4 @@
-import {IdBuilder} from "./id-builder";
+import {IdBuilder} from "./id-builder.js";
 
 function build(...segments: string[]): string {
   const builder = new IdBuilder();

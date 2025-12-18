@@ -1,8 +1,8 @@
 import {isString} from "@actions/workflow-parser";
-import {DescriptionProvider, hover, HoverConfig} from "./hover";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearCache} from "./utils/workflow-cache";
+import {DescriptionProvider, hover, HoverConfig} from "./hover.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 export function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
   return {

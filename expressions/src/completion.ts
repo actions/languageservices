@@ -1,11 +1,11 @@
-import {DescriptionPair} from "./completion/descriptionDictionary";
-import {Dictionary, isDictionary} from "./data/dictionary";
-import {ExpressionData} from "./data/expressiondata";
-import {Evaluator} from "./evaluator";
-import {wellKnownFunctions} from "./funcs";
-import {FunctionDefinition, FunctionInfo} from "./funcs/info";
-import {Lexer, Token, TokenType} from "./lexer";
-import {Parser} from "./parser";
+import {DescriptionPair} from "./completion/descriptionDictionary.js";
+import {Dictionary, isDictionary} from "./data/dictionary.js";
+import {ExpressionData} from "./data/expressiondata.js";
+import {Evaluator} from "./evaluator.js";
+import {wellKnownFunctions} from "./funcs.js";
+import {FunctionDefinition, FunctionInfo} from "./funcs/info.js";
+import {Lexer, Token, TokenType} from "./lexer.js";
+import {Parser} from "./parser.js";
 
 export type CompletionItem = {
   label: string;

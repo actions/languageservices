@@ -1,7 +1,7 @@
-import {complete} from "./complete";
+import {complete} from "./complete.js";
 import {TextDocument} from "vscode-languageserver-textdocument";
-import {clearCache} from "./utils/workflow-cache";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
+import {clearCache} from "./utils/workflow-cache.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
 
 beforeEach(() => {
   clearCache();
