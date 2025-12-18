@@ -8,7 +8,6 @@ export const DEFAULT_RUNNER_LABELS = [
   "ubuntu-latest",
   "ubuntu-24.04",
   "ubuntu-22.04",
-  "ubuntu-20.04",
   "ubuntu-slim",
   "windows-latest",
   "windows-2022",
