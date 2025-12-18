@@ -2,7 +2,6 @@ import {CodeAction, Diagnostic} from "vscode-languageserver-types";
 
 export interface CodeActionContext {
   uri: string;
-  // TODO: add things like workflow template, parsed content, etc.
 }
 
 /**

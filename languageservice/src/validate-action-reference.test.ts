@@ -258,6 +258,7 @@ jobs:
             ref: "v1"
           },
           hasWithKey: true,
+          indentSize: 2,
           insertPosition: {
             character: 0,
             line: 9
@@ -324,6 +325,7 @@ jobs:
             ref: "v1"
           },
           hasWithKey: true,
+          indentSize: 2,
           insertPosition: {
             character: 0,
             line: 9
@@ -378,6 +380,7 @@ jobs:
             ref: "v1"
           },
           hasWithKey: false,
+          indentSize: 2,
           insertPosition: {
             character: 0,
             line: 7

@@ -29,17 +29,19 @@ export const addMissingInputsProvider: CodeActionProvider = {
   }
 };
 
-function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] | undefined {
+function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] {
   const edits: TextEdit[] = [];
+
+  const formatInputLines = (indent: string) =>
+    data.missingInputs.map(input => {
+      const value = input.default ?? '""';
+      return `${indent}${input.name}: ${value}`;
+    });
 
   if (data.hasWithKey && data.withIndent !== undefined) {
     // `with:` exists - use its indentation + 2 for inputs
-    const inputIndent = " ".repeat(data.withIndent + 2);
-
-    const inputLines = data.missingInputs.map(input => {
-      const value = input.default !== undefined ? input.default : '""';
-      return `${inputIndent}${input.name}: ${value}`;
-    });
+    const inputIndent = " ".repeat(data.withIndent + data.indentSize);
+    const inputLines = formatInputLines(inputIndent);
 
     edits.push({
       range: {start: data.insertPosition, end: data.insertPosition},
@@ -48,12 +50,8 @@ function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] | undef
   } else {
     // No `with:` key - `with:` at step indentation, inputs at step indentation + 2
     const withIndent = " ".repeat(data.stepIndent);
-    const inputIndent = " ".repeat(data.stepIndent + 2);
-
-    const inputLines = data.missingInputs.map(input => {
-      const value = input.default !== undefined ? input.default : '""';
-      return `${inputIndent}${input.name}: ${value}`;
-    });
+    const inputIndent = " ".repeat(data.stepIndent + data.indentSize);
+    const inputLines = formatInputLines(inputIndent);
 
     const newText = [`${withIndent}with:\n`, ...inputLines.map(line => `${line}\n`)].join("");
 
