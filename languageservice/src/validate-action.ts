@@ -22,6 +22,7 @@ export interface MissingInputsDiagnosticData {
   // Indentation of the `with:` key if present, or the step's base indentation
   withIndent?: number;
   stepIndent: number;
+  indentSize: number;
   // Position where new content should be inserted
   insertPosition: {line: number; character: number};
 }
@@ -30,7 +31,8 @@ export async function validateAction(
   diagnostics: Diagnostic[],
   stepToken: TemplateToken,
   step: Step | undefined,
-  config: ValidationConfig | undefined
+  config: ValidationConfig | undefined,
+  indentSize: number
 ): Promise<void> {
   if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.actionsMetadataProvider) {
     return;
@@ -135,6 +137,7 @@ export async function validateAction(
       hasWithKey: withKey !== undefined,
       withIndent,
       stepIndent,
+      indentSize,
       insertPosition
     };
 
