@@ -53,7 +53,7 @@ function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] {
     const inputIndent = " ".repeat(data.stepIndent + data.indentSize);
     const inputLines = formatInputLines(inputIndent);
 
-    const newText = [`${withIndent}with:\n`, ...inputLines.map(line => `${line}\n`)].join("");
+    const newText = `${withIndent}with:\n` + inputLines.map(line => `${line}\n`).join("");
 
     edits.push({
       range: {start: data.insertPosition, end: data.insertPosition},
