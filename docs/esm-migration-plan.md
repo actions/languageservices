@@ -4,6 +4,27 @@
 
 This document outlines the plan to migrate from TypeScript's deprecated `"moduleResolution": "node"` (node10) to `"moduleResolution": "node16"` or `"nodenext"`. This change is necessary because the published ESM packages have extensionless imports that don't work correctly in modern ESM environments.
 
+## TL;DR - Remaining Work
+
+- [x] expressions - Migrated ✅
+- [x] workflow-parser - Migrated ✅
+- [x] languageservice - Migrated ✅
+- [x] languageserver - Add `.js` extensions to imports ✅
+- [ ] languageserver - Update `tsconfig.build.json` to `moduleResolution: "node16"` (blocked by vscode-languageserver)
+- [ ] languageserver - Upgrade `vscode-languageserver` to stable v10+ when released
+
+**Blocker:** `vscode-languageserver@8.0.2` lacks ESM exports. Stable v10 with `exports` field needed.
+
+### ⚠️ Important: `skipLibCheck: true` Required
+
+All migrated packages use `skipLibCheck: true` in their `tsconfig.build.json`. This works around a TS2386 "Overload signatures must all be optional or required" error in `@types/node/module.d.ts`.
+
+**Why can't we just fix the error?** The error is in `@types/node`, a third-party package maintained by DefinitelyTyped. We can't modify `node_modules`, and upstream fixes take time.
+
+**Is `skipLibCheck` safe?** Yes. It only skips type checking of `.d.ts` files (declaration files from dependencies). Our own `.ts` source files are still fully type-checked. This is a common and recommended workaround for issues in third-party type definitions.
+
+---
+
 ## Issues Fixed
 
 This migration will resolve the following issues:
@@ -199,14 +220,13 @@ src/connection.ts(1,43): error TS2307: Cannot find module 'vscode-languageserver
 
 With `moduleResolution: "node16"`, TypeScript follows Node.js ESM resolution rules which require explicit `exports` for subpath imports like `vscode-languageserver/browser` and `vscode-languageserver/node`.
 
-**Status:** Verified December 2025. Version 9.0.1 is available but ESM export support is not confirmed.
+**Status:** Partial - `.js` extensions added, waiting for stable `vscode-languageserver` release with ESM exports to complete migration.
 
-**Current Decision:** The languageserver package is **deferred** from this migration until the upstream `vscode-languageserver` package adds proper ESM exports. It will continue using the old `moduleResolution: "node"` configuration.
+**Completed:** All relative imports in languageserver source files have been updated to use `.js` extensions. This is compatible with the current `moduleResolution: "node"` and will enable a seamless migration once a stable vscode-languageserver version with ESM exports is available.
 
 **Options to resolve:**
-- Wait for vscode-languageserver to add ESM exports
-- Try upgrading to vscode-languageserver v9.x to see if exports were added
-- Use a bundler to work around the module resolution
+- Wait for stable vscode-languageserver v10+ with ESM exports
+- Use pre-release `vscode-languageserver@10.0.0-next.16` (has proper exports but is unstable)
 - Fork or patch the dependency
 
 ---
@@ -218,7 +238,7 @@ With `moduleResolution: "node16"`, TypeScript follows Node.js ESM resolution rul
 | expressions | 1068 | ✅ Migrated |
 | workflow-parser | 292 | ✅ Migrated |
 | languageservice | 452 | ✅ Migrated |
-| languageserver | 6 files | ⏸️ Deferred (vscode-languageserver lacks ESM exports) |
+| languageserver | 31 | 🔶 Partial (`.js` extensions added, awaiting stable vscode-languageserver) |
 
 ---
 

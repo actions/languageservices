@@ -6,10 +6,10 @@ import {warn} from "@actions/languageservice/log";
 import {isMapping, isString} from "@actions/workflow-parser";
 import {Octokit} from "@octokit/rest";
 
-import {RepositoryContext} from "../initializationOptions";
-import {TTLCache} from "../utils/cache";
-import {errorStatus} from "../utils/error";
-import {getRepoPermission} from "../utils/repo-permission";
+import {RepositoryContext} from "../initializationOptions.js";
+import {TTLCache} from "../utils/cache.js";
+import {errorStatus} from "../utils/error.js";
+import {getRepoPermission} from "../utils/repo-permission.js";
 
 export async function getSecrets(
   workflowContext: WorkflowContext,

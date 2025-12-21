@@ -2,10 +2,10 @@ import {StringToken} from "@actions/workflow-parser/templates/tokens/string-toke
 import {Octokit} from "@octokit/rest";
 import fetchMock from "fetch-mock";
 
-import {actionsCheckoutMetadata} from "../test-utils/action-metadata";
-import {createWorkflowContext} from "../test-utils/workflow-context";
-import {TTLCache} from "../utils/cache";
-import {getActionInputDescription} from "./action-input";
+import {actionsCheckoutMetadata} from "../test-utils/action-metadata.js";
+import {createWorkflowContext} from "../test-utils/workflow-context.js";
+import {TTLCache} from "../utils/cache.js";
+import {getActionInputDescription} from "./action-input.js";
 
 const workflow = `
 name: Hello World

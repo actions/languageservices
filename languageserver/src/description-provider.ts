@@ -1,8 +1,8 @@
 import {DescriptionProvider} from "@actions/languageservice/hover";
 import {Octokit} from "@octokit/rest";
-import {getActionDescription} from "./description-providers/action-description";
-import {getActionInputDescription} from "./description-providers/action-input";
-import {TTLCache} from "./utils/cache";
+import {getActionDescription} from "./description-providers/action-description.js";
+import {getActionInputDescription} from "./description-providers/action-input.js";
+import {TTLCache} from "./utils/cache.js";
 
 export function descriptionProvider(client: Octokit | undefined, cache: TTLCache): DescriptionProvider {
   const getDescription: DescriptionProvider["getDescription"] = async (context, token, path) => {

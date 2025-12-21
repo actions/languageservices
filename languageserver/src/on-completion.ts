@@ -2,12 +2,12 @@ import {complete} from "@actions/languageservice/complete";
 import {Octokit} from "@octokit/rest";
 import {CompletionItem, Connection, Position} from "vscode-languageserver";
 import {TextDocument} from "vscode-languageserver-textdocument";
-import {contextProviders} from "./context-providers";
-import {getFileProvider} from "./file-provider";
-import {RepositoryContext} from "./initializationOptions";
-import {Requests} from "./request";
-import {TTLCache} from "./utils/cache";
-import {valueProviders} from "./value-providers";
+import {contextProviders} from "./context-providers.js";
+import {getFileProvider} from "./file-provider.js";
+import {RepositoryContext} from "./initializationOptions.js";
+import {Requests} from "./request.js";
+import {TTLCache} from "./utils/cache.js";
+import {valueProviders} from "./value-providers.js";
 
 export async function onCompletion(
   connection: Connection,
