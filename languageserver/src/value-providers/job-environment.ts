@@ -1,6 +1,6 @@
 import {Value} from "@actions/languageservice/value-providers/config";
 import {Octokit} from "@octokit/rest";
-import {TTLCache} from "../utils/cache";
+import {TTLCache} from "../utils/cache.js";
 
 export async function getEnvironments(client: Octokit, cache: TTLCache, owner: string, name: string): Promise<Value[]> {
   const environments = await cache.get(`${owner}/${name}/environments`, undefined, () =>

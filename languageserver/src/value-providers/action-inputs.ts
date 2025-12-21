@@ -3,8 +3,8 @@ import {WorkflowContext} from "@actions/languageservice/context/workflow-context
 import {Value} from "@actions/languageservice/value-providers/config";
 import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {Octokit} from "@octokit/rest";
-import {fetchActionMetadata} from "../utils/action-metadata";
-import {TTLCache} from "../utils/cache";
+import {fetchActionMetadata} from "../utils/action-metadata.js";
+import {TTLCache} from "../utils/cache.js";
 
 export async function getActionInputs(
   client: Octokit,

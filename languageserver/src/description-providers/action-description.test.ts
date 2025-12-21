@@ -1,9 +1,9 @@
 import {Octokit} from "@octokit/rest";
 import fetchMock from "fetch-mock";
-import {createWorkflowContext} from "../test-utils/workflow-context";
-import {TTLCache} from "../utils/cache";
-import {getActionDescription} from "./action-description";
-import {actionsCheckoutMetadata} from "../test-utils/action-metadata";
+import {createWorkflowContext} from "../test-utils/workflow-context.js";
+import {TTLCache} from "../utils/cache.js";
+import {getActionDescription} from "./action-description.js";
+import {actionsCheckoutMetadata} from "../test-utils/action-metadata.js";
 
 const workflow = `
 name: Hello World

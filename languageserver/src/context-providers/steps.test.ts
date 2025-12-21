@@ -3,9 +3,9 @@ import {getStepsContext as getDefaultStepsContext} from "@actions/languageservic
 import {Octokit} from "@octokit/rest";
 import fetchMock from "fetch-mock";
 
-import {createWorkflowContext} from "../test-utils/workflow-context";
-import {TTLCache} from "../utils/cache";
-import {getStepsContext} from "./steps";
+import {createWorkflowContext} from "../test-utils/workflow-context.js";
+import {TTLCache} from "../utils/cache.js";
+import {getStepsContext} from "./steps.js";
 
 const workflow = `
 name: Caching Primes
