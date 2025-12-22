@@ -510,11 +510,27 @@ jobs:
     expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["types: "]);
   });
 
-  it("does not add : for one-of in key mode", async () => {
+  it("adds newline and indentation for one-of in key mode", async () => {
     const input = "on:\n  check_run: ty|";
 
     const result = await complete(...getPositionFromCursor(input));
 
-    expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["types"]);
+    // When completing a one-of property in key mode (after colon on same line),
+    // insert newline + indentation + key + colon to create valid YAML structure
+    expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["\n  types: "]);
+  });
+
+  it("handles mixed string and mapping completions for one-of in key mode", async () => {
+    const input = "on: push\npermissions: |";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // String values (read-all, write-all) should insert directly without newline
+    expect(result.filter(x => x.label === "read-all").map(x => x.textEdit?.newText)).toEqual(["read-all"]);
+    expect(result.filter(x => x.label === "write-all").map(x => x.textEdit?.newText)).toEqual(["write-all"]);
+
+    // Mapping keys with one-of types should insert with newline and indentation
+    expect(result.filter(x => x.label === "actions").map(x => x.textEdit?.newText)).toEqual(["\n  actions: "]);
+    expect(result.filter(x => x.label === "contents").map(x => x.textEdit?.newText)).toEqual(["\n  contents: "]);
   });
 });
