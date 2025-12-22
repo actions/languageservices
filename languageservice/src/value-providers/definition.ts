@@ -92,10 +92,10 @@ function mappingValues(
             break;
 
           case DefinitionType.OneOf:
-            if (mode == DefinitionValueMode.Parent) {
-              insertText = `${key}: `;
+            if (mode == DefinitionValueMode.Key) {
+              insertText = `\n${indentation}${key}: `;
             } else {
-              // No special insertText in this case
+              insertText = `${key}: `;
             }
             break;
 
