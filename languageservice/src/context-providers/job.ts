@@ -35,6 +35,9 @@ export function getJobContext(workflowContext: WorkflowContext): DescriptionDict
   // Status
   jobContext.add("status", new data.Null());
 
+  // Check run ID
+  jobContext.add("check_run_id", new data.Null());
+
   return jobContext;
 }
 

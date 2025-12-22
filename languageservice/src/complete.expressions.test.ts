@@ -1110,7 +1110,7 @@ jobs:
 `;
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
-      expect(result.map(x => x.label)).toEqual(["container", "services", "status"]);
+      expect(result.map(x => x.label)).toEqual(["check_run_id", "container", "services", "status"]);
     });
 
     it("job context is suggested within a job output", async () => {

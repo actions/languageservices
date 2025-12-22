@@ -417,6 +417,21 @@ jobs:
       expect(result).toEqual([]);
     });
 
+    it("job.check_run_id", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ job.check_run_id }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
     it("job.services.<service_id>", async () => {
       const input = `
 on: push
