@@ -272,6 +272,31 @@ function validateCronExpression(diagnostics: Diagnostic[], token: StringToken): 
   }
 }
 
+// Matches a short SHA (7-8 hex characters) that looks like it should be a full SHA
+const SHORT_SHA_PATTERN = /^[0-9a-f]{7,8}$/i;
+const SHORT_SHA_DOCS_URL =
+  "https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions";
+
+/**
+ * Checks if a ref looks like a short SHA and adds a warning if so.
+ * Returns true if a warning was added.
+ */
+function warnIfShortSha(diagnostics: Diagnostic[], token: StringToken, ref: string): boolean {
+  if (SHORT_SHA_PATTERN.test(ref)) {
+    diagnostics.push({
+      message: `The provided ref '${ref}' may be a shortened commit SHA. If so, please use the full 40-character commit SHA instead, as short SHAs are not supported.`,
+      severity: DiagnosticSeverity.Warning,
+      range: mapRange(token.range),
+      code: "short-sha-ref",
+      codeDescription: {
+        href: SHORT_SHA_DOCS_URL
+      }
+    });
+    return true;
+  }
+  return false;
+}
+
 /**
  * Validates the format of a step's `uses` field.
  *
@@ -343,6 +368,9 @@ function validateStepUsesFormat(diagnostics: Diagnostic[], token: StringToken): 
     });
     return;
   }
+
+  // Warn if ref looks like a short SHA
+  warnIfShortSha(diagnostics, token, gitRef);
 }
 
 function addStepUsesFormatError(diagnostics: Diagnostic[], token: StringToken): void {
@@ -501,6 +529,9 @@ function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToke
     addWorkflowUsesFormatError(diagnostics, token, "invalid workflow file name");
     return;
   }
+
+  // Warn if version looks like a short SHA
+  warnIfShortSha(diagnostics, token, version);
 }
 
 function addWorkflowUsesFormatError(diagnostics: Diagnostic[], token: StringToken, reason: string): void {

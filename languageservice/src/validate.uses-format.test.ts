@@ -891,4 +891,200 @@ jobs:
       });
     });
   });
+
+  describe("short SHA warnings", () => {
+    describe("step uses", () => {
+      it("warns on 7-char short SHA", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@a1b2c3d
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([
+          {
+            message:
+              "The provided ref 'a1b2c3d' may be a shortened commit SHA. If so, please use the full 40-character commit SHA instead, as short SHAs are not supported.",
+            severity: DiagnosticSeverity.Warning,
+            range: {
+              start: {line: 5, character: 12},
+              end: {line: 5, character: 36}
+            },
+            code: "short-sha-ref",
+            codeDescription: {
+              href: "https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions"
+            }
+          }
+        ]);
+      });
+
+      it("warns on 8-char short SHA", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@a1b2c3d4
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([
+          {
+            message:
+              "The provided ref 'a1b2c3d4' may be a shortened commit SHA. If so, please use the full 40-character commit SHA instead, as short SHAs are not supported.",
+            severity: DiagnosticSeverity.Warning,
+            range: {
+              start: {line: 5, character: 12},
+              end: {line: 5, character: 37}
+            },
+            code: "short-sha-ref",
+            codeDescription: {
+              href: "https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions"
+            }
+          }
+        ]);
+      });
+
+      it("does not warn on full SHA (40 chars)", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("does not warn on tag ref", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("does not warn on branch ref", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("does not warn on Docker action", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: docker://alpine:3.8
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("does not warn on local action", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: ./my-action
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+    });
+
+    describe("workflow uses", () => {
+      it("warns on 7-char short SHA in reusable workflow", async () => {
+        const input = `on: push
+jobs:
+  test:
+    uses: owner/repo/.github/workflows/ci.yml@a1b2c3d
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([
+          {
+            message:
+              "The provided ref 'a1b2c3d' may be a shortened commit SHA. If so, please use the full 40-character commit SHA instead, as short SHAs are not supported.",
+            severity: DiagnosticSeverity.Warning,
+            range: {
+              start: {line: 3, character: 10},
+              end: {line: 3, character: 53}
+            },
+            code: "short-sha-ref",
+            codeDescription: {
+              href: "https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions"
+            }
+          }
+        ]);
+      });
+
+      it("warns on 8-char short SHA in reusable workflow", async () => {
+        const input = `on: push
+jobs:
+  test:
+    uses: owner/repo/.github/workflows/ci.yml@a1b2c3d4
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([
+          {
+            message:
+              "The provided ref 'a1b2c3d4' may be a shortened commit SHA. If so, please use the full 40-character commit SHA instead, as short SHAs are not supported.",
+            severity: DiagnosticSeverity.Warning,
+            range: {
+              start: {line: 3, character: 10},
+              end: {line: 3, character: 54}
+            },
+            code: "short-sha-ref",
+            codeDescription: {
+              href: "https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions"
+            }
+          }
+        ]);
+      });
+
+      it("does not warn on full SHA in reusable workflow", async () => {
+        const input = `on: push
+jobs:
+  test:
+    uses: owner/repo/.github/workflows/ci.yml@a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("does not warn on tag ref in reusable workflow", async () => {
+        const input = `on: push
+jobs:
+  test:
+    uses: owner/repo/.github/workflows/ci.yml@v1
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+
+      it("does not warn on local workflow", async () => {
+        const input = `on: push
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+`;
+        const result = await validate(createDocument("wf.yaml", input));
+        expect(result).toEqual([]);
+      });
+    });
+  });
 });
