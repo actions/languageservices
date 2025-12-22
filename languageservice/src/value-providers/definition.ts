@@ -200,6 +200,7 @@ function expandOneOfToCompletions(
   const needsQualifier = bucketCount > 1;
 
   // Emit completions in order: scalar, sequence, mapping
+  // Use sortText to preserve this order (scalar sorts first, then 1=sequence, 2=mapping)
   if (buckets.scalar) {
     // In Key mode, insert newline and indentation to produce valid YAML structure
     const insertText = mode === DefinitionValueMode.Key ? `\n${indentation}${key}: ` : `${key}: `;
@@ -219,7 +220,8 @@ function expandOneOfToCompletions(
       label: needsQualifier ? `${key} (list)` : key,
       description,
       insertText,
-      filterText: needsQualifier ? key : undefined
+      filterText: needsQualifier ? key : undefined,
+      sortText: needsQualifier ? `${key} 1` : undefined
     });
   }
 
@@ -232,7 +234,8 @@ function expandOneOfToCompletions(
       label: needsQualifier ? `${key} (full syntax)` : key,
       description,
       insertText,
-      filterText: needsQualifier ? key : undefined
+      filterText: needsQualifier ? key : undefined,
+      sortText: needsQualifier ? `${key} 2` : undefined
     });
   }
 

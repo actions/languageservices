@@ -32,8 +32,8 @@ describe("end-to-end", () => {
       "jobs",
       "name",
       "on",
-      "on (full syntax)",
       "on (list)",
+      "on (full syntax)",
       "permissions",
       "permissions (full syntax)",
       "run-name"

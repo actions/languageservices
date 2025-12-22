@@ -15,6 +15,9 @@ export interface Value {
 
   /** Alternative filter text, if not given `label` will be used for filtering */
   filterText?: string;
+
+  /** Sort text to control ordering, if not given `label` will be used for sorting */
+  sortText?: string;
 }
 
 export enum ValueProviderKind {
