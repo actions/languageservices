@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {data, DescriptionDictionary} from "@actions/expressions";
 import {CompletionItem, CompletionItemKind} from "vscode-languageserver-types";
-import {complete, getExpressionInput} from "./complete";
-import {ContextProviderConfig} from "./context-providers/config";
-import {registerLogger} from "./log";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {TestLogger} from "./test-utils/logger";
-import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearCache} from "./utils/workflow-cache";
+import {complete, getExpressionInput} from "./complete.js";
+import {ContextProviderConfig} from "./context-providers/config.js";
+import {registerLogger} from "./log.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {TestLogger} from "./test-utils/logger.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: (context: string) => {

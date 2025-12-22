@@ -1,10 +1,10 @@
-import {TemplateContext} from "../../templates/template-context";
-import {StringToken} from "../../templates/tokens";
-import {TemplateToken} from "../../templates/tokens/template-token";
-import {isMapping} from "../../templates/tokens/type-guards";
-import {WorkflowJob} from "../workflow-template";
-import {handleTemplateTokenErrors} from "./handle-errors";
-import {convertJob} from "./job";
+import {TemplateContext} from "../../templates/template-context.js";
+import {StringToken} from "../../templates/tokens/index.js";
+import {TemplateToken} from "../../templates/tokens/template-token.js";
+import {isMapping} from "../../templates/tokens/type-guards.js";
+import {WorkflowJob} from "../workflow-template.js";
+import {handleTemplateTokenErrors} from "./handle-errors.js";
+import {convertJob} from "./job.js";
 
 type nodeInfo = {
   name: string;

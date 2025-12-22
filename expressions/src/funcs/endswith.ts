@@ -1,6 +1,6 @@
-import {BooleanData, ExpressionData} from "../data";
-import {toUpperSpecial} from "../result";
-import {FunctionDefinition} from "./info";
+import {BooleanData, ExpressionData} from "../data/index.js";
+import {toUpperSpecial} from "../result.js";
+import {FunctionDefinition} from "./info.js";
 
 export const endswith: FunctionDefinition = {
   name: "endsWith",

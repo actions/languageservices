@@ -1,5 +1,5 @@
-import {StringData} from "../data";
-import {DescriptionDictionary} from "./descriptionDictionary";
+import {StringData} from "../data/index.js";
+import {DescriptionDictionary} from "./descriptionDictionary.js";
 
 describe("description dictionary", () => {
   it("pairs contains all values", () => {

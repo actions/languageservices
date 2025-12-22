@@ -2,9 +2,12 @@
   "exclude": ["./src/**/*.test.ts", "./src/test-utils"],
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "module": "node16",
+    "moduleResolution": "node16",
     "declaration": true,
     "declarationMap": true,
     "noEmit": false,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "skipLibCheck": true
   }
 }

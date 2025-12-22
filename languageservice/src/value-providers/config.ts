@@ -1,4 +1,4 @@
-import {WorkflowContext} from "../context/workflow-context";
+import {WorkflowContext} from "../context/workflow-context.js";
 
 export interface Value {
   /** Label of this value */

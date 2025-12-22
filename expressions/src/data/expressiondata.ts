@@ -1,9 +1,9 @@
-import {Dictionary} from "./dictionary";
-import {Null} from "./null";
-import {Array} from "./array";
-import {StringData} from "./string";
-import {NumberData} from "./number";
-import {BooleanData} from "./boolean";
+import {Dictionary} from "./dictionary.js";
+import {Null} from "./null.js";
+import {Array} from "./array.js";
+import {StringData} from "./string.js";
+import {NumberData} from "./number.js";
+import {BooleanData} from "./boolean.js";
 
 export enum Kind {
   String = 0,

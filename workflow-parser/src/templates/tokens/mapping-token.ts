@@ -1,8 +1,8 @@
-import {TemplateToken, KeyValuePair, ScalarToken} from ".";
-import {DefinitionInfo} from "../schema/definition-info";
-import {MapItem, SerializedToken} from "./serialization";
-import {TokenRange} from "./token-range";
-import {TokenType} from "./types";
+import {TemplateToken, KeyValuePair, ScalarToken} from "./index.js";
+import {DefinitionInfo} from "../schema/definition-info.js";
+import {MapItem, SerializedToken} from "./serialization.js";
+import {TokenRange} from "./token-range.js";
+import {TokenType} from "./types.js";
 
 export class MappingToken extends TemplateToken {
   private readonly map: KeyValuePair[] = [];

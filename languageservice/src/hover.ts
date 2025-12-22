@@ -9,21 +9,21 @@ import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Hover} from "vscode-languageserver-types";
-import {ContextProviderConfig} from "./context-providers/config";
-import {getContext, Mode} from "./context-providers/default";
-import {getFunctionDescription} from "./context-providers/descriptions";
-import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
+import {ContextProviderConfig} from "./context-providers/config.js";
+import {getContext, Mode} from "./context-providers/default.js";
+import {getFunctionDescription} from "./context-providers/descriptions.js";
+import {getWorkflowContext, WorkflowContext} from "./context/workflow-context.js";
 import {
   getReusableWorkflowInputDescription,
   isReusableWorkflowJobInput
-} from "./description-providers/reusable-job-inputs";
-import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-pos";
-import {HoverVisitor} from "./expression-hover/visitor";
-import {info} from "./log";
-import {isPotentiallyExpression} from "./utils/expression-detection";
-import {findToken} from "./utils/find-token";
-import {mapRange} from "./utils/range";
-import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
+} from "./description-providers/reusable-job-inputs.js";
+import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-pos.js";
+import {HoverVisitor} from "./expression-hover/visitor.js";
+import {info} from "./log.js";
+import {isPotentiallyExpression} from "./utils/expression-detection.js";
+import {findToken} from "./utils/find-token.js";
+import {mapRange} from "./utils/range.js";
+import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache.js";
 
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;

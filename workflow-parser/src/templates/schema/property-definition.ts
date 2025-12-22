@@ -1,6 +1,6 @@
-import {MAPPING_PROPERTY_VALUE, TYPE, REQUIRED, DESCRIPTION} from "../template-constants";
-import {TemplateToken, StringToken} from "../tokens";
-import {TokenType} from "../tokens/types";
+import {MAPPING_PROPERTY_VALUE, TYPE, REQUIRED, DESCRIPTION} from "../template-constants.js";
+import {TemplateToken, StringToken} from "../tokens/index.js";
+import {TokenType} from "../tokens/types.js";
 
 export class PropertyDefinition {
   public readonly type: string = "";

@@ -1,4 +1,4 @@
-import {Logger} from "../log";
+import {Logger} from "../log.js";
 
 export class TestLogger implements Logger {
   error(message: string): void {

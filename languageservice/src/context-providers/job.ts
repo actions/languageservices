@@ -1,7 +1,7 @@
 import {data, DescriptionDictionary} from "@actions/expressions";
 import {isMapping, isSequence} from "@actions/workflow-parser";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
-import {WorkflowContext} from "../context/workflow-context";
+import {WorkflowContext} from "../context/workflow-context.js";
 
 export function getJobContext(workflowContext: WorkflowContext): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#job-context

@@ -1,6 +1,6 @@
 import {DescriptionDictionary} from "@actions/expressions";
-import {WorkflowContext} from "../context/workflow-context";
-import {getContext, Mode} from "./default";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {getContext, Mode} from "./default.js";
 
 describe("getContext", () => {
   const emptyWorkflowContext: WorkflowContext = {

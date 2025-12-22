@@ -1,7 +1,7 @@
 import {isMapping, isString} from "@actions/workflow-parser";
 import {DESCRIPTION} from "@actions/workflow-parser/templates/template-constants";
-import {WorkflowContext} from "../context/workflow-context";
-import {TokenResult} from "../utils/find-token";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {TokenResult} from "../utils/find-token.js";
 
 export function isReusableWorkflowJobInput(tokenResult: TokenResult): boolean {
   return (

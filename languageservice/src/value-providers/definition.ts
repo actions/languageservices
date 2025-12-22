@@ -6,8 +6,8 @@ import {OneOfDefinition} from "@actions/workflow-parser/templates/schema/one-of-
 import {SequenceDefinition} from "@actions/workflow-parser/templates/schema/sequence-definition";
 import {StringDefinition} from "@actions/workflow-parser/templates/schema/string-definition";
 import {getWorkflowSchema} from "@actions/workflow-parser/workflows/workflow-schema";
-import {Value} from "./config";
-import {stringsToValues} from "./strings-to-values";
+import {Value} from "./config.js";
+import {stringsToValues} from "./strings-to-values.js";
 
 export enum DefinitionValueMode {
   /**

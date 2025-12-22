@@ -5,7 +5,7 @@ import {
   SequenceToken,
   StringToken,
   TemplateToken
-} from "../templates/tokens";
+} from "../templates/tokens/index.js";
 
 export type WorkflowTemplate = {
   events: EventsConfig;

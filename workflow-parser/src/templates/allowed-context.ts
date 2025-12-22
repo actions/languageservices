@@ -1,5 +1,5 @@
 import {FunctionInfo} from "@actions/expressions/funcs/info";
-import {MAX_CONSTANT} from "./template-constants";
+import {MAX_CONSTANT} from "./template-constants.js";
 
 export function splitAllowedContext(allowedContext: string[]): {
   namedContexts: string[];

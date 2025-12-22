@@ -1,4 +1,4 @@
-import {SequenceToken} from "../../templates/tokens/sequence-token";
+import {SequenceToken} from "../../templates/tokens/sequence-token.js";
 
 export function convertStringList(name: string, token: SequenceToken): string[] {
   const result = [] as string[];

@@ -1,10 +1,10 @@
-import {TemplateContext, TemplateValidationErrors} from "../templates/template-context";
-import {TemplateToken} from "../templates/tokens";
-import {TokenType} from "../templates/tokens/types";
-import {nullTrace} from "../test-utils/null-trace";
-import {parseWorkflow} from "./workflow-parser";
-import {getWorkflowSchema} from "./workflow-schema";
-import {YamlObjectReader} from "./yaml-object-reader";
+import {TemplateContext, TemplateValidationErrors} from "../templates/template-context.js";
+import {TemplateToken} from "../templates/tokens/index.js";
+import {TokenType} from "../templates/tokens/types.js";
+import {nullTrace} from "../test-utils/null-trace.js";
+import {parseWorkflow} from "./workflow-parser.js";
+import {getWorkflowSchema} from "./workflow-schema.js";
+import {YamlObjectReader} from "./yaml-object-reader.js";
 
 describe("getLiteralToken", () => {
   it("non-zero number", () => {

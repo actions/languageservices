@@ -11,20 +11,20 @@ import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
-import {ContextProviderConfig} from "./context-providers/config";
-import {getContext, Mode} from "./context-providers/default";
-import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
-import {validatorFunctions} from "./expression-validation/functions";
-import {error} from "./log";
-import {isPotentiallyExpression} from "./utils/expression-detection";
-import {findToken} from "./utils/find-token";
-import {guessIndentation} from "./utils/indentation-guesser";
-import {mapRange} from "./utils/range";
-import {isPlaceholder, transform} from "./utils/transform";
-import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
-import {Value, ValueProviderConfig} from "./value-providers/config";
-import {defaultValueProviders} from "./value-providers/default";
-import {DefinitionValueMode, definitionValues} from "./value-providers/definition";
+import {ContextProviderConfig} from "./context-providers/config.js";
+import {getContext, Mode} from "./context-providers/default.js";
+import {getWorkflowContext, WorkflowContext} from "./context/workflow-context.js";
+import {validatorFunctions} from "./expression-validation/functions.js";
+import {error} from "./log.js";
+import {isPotentiallyExpression} from "./utils/expression-detection.js";
+import {findToken} from "./utils/find-token.js";
+import {guessIndentation} from "./utils/indentation-guesser.js";
+import {mapRange} from "./utils/range.js";
+import {isPlaceholder, transform} from "./utils/transform.js";
+import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache.js";
+import {Value, ValueProviderConfig} from "./value-providers/config.js";
+import {defaultValueProviders} from "./value-providers/default.js";
+import {DefinitionValueMode, definitionValues} from "./value-providers/definition.js";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position

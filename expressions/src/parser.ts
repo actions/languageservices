@@ -1,9 +1,20 @@
-import {Binary, ContextAccess, Expr, FunctionCall, Grouping, IndexAccess, Literal, Logical, Star, Unary} from "./ast";
-import * as data from "./data";
-import {ErrorType, ExpressionError, MAX_PARSER_DEPTH} from "./errors";
-import {ParseContext, validateFunction} from "./funcs";
-import {FunctionInfo} from "./funcs/info";
-import {Token, TokenType} from "./lexer";
+import {
+  Binary,
+  ContextAccess,
+  Expr,
+  FunctionCall,
+  Grouping,
+  IndexAccess,
+  Literal,
+  Logical,
+  Star,
+  Unary
+} from "./ast.js";
+import * as data from "./data/index.js";
+import {ErrorType, ExpressionError, MAX_PARSER_DEPTH} from "./errors.js";
+import {ParseContext, validateFunction} from "./funcs.js";
+import {FunctionInfo} from "./funcs/info.js";
+import {Token, TokenType} from "./lexer.js";
 
 export class Parser {
   private extContexts: Map<string, boolean>;

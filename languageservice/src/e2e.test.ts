@@ -1,9 +1,9 @@
-import {complete} from "./complete";
-import {hover} from "./hover";
-import {registerLogger} from "./log";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {TestLogger} from "./test-utils/logger";
-import {clearCache} from "./utils/workflow-cache";
+import {complete} from "./complete.js";
+import {hover} from "./hover.js";
+import {registerLogger} from "./log.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {TestLogger} from "./test-utils/logger.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 registerLogger(new TestLogger());
 

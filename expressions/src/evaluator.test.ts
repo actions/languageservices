@@ -1,8 +1,8 @@
-import * as data from "./data";
-import {ExpressionEvaluationError} from "./errors";
-import {Evaluator} from "./evaluator";
-import {Lexer} from "./lexer";
-import {Parser} from "./parser";
+import * as data from "./data/index.js";
+import {ExpressionEvaluationError} from "./errors.js";
+import {Evaluator} from "./evaluator.js";
+import {Lexer} from "./lexer.js";
+import {Parser} from "./parser.js";
 
 describe("evaluator", () => {
   const lexAndParse = (input: string) => {

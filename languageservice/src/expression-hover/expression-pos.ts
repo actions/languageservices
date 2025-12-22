@@ -3,8 +3,8 @@ import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {isBasicExpression, isString} from "@actions/workflow-parser/templates/tokens/type-guards";
 import {Position, Range as LSPRange} from "vscode-languageserver-textdocument";
-import {mapRange} from "../utils/range";
-import {posWithinRange} from "./pos-range";
+import {mapRange} from "../utils/range.js";
+import {posWithinRange} from "./pos-range.js";
 
 export type ExpressionPos = {
   /** The expression that includes the position */

@@ -1,4 +1,4 @@
-import {actionIdentifier, parseActionReference as parse} from "./action";
+import {actionIdentifier, parseActionReference as parse} from "./action.js";
 
 describe("parseActionReference", () => {
   it("basic action", () => {

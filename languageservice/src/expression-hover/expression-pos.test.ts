@@ -1,9 +1,9 @@
 import {parseWorkflow} from "@actions/workflow-parser";
 import {File} from "@actions/workflow-parser/workflows/file";
-import {nullTrace} from "../nulltrace";
-import {getPositionFromCursor} from "../test-utils/cursor-position";
-import {findToken} from "../utils/find-token";
-import {ExpressionPos, mapToExpressionPos} from "./expression-pos";
+import {nullTrace} from "../nulltrace.js";
+import {getPositionFromCursor} from "../test-utils/cursor-position.js";
+import {findToken} from "../utils/find-token.js";
+import {ExpressionPos, mapToExpressionPos} from "./expression-pos.js";
 
 describe("mapToExpressionPos", () => {
   it("simple expression", () => {

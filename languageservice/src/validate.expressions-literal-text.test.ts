@@ -1,9 +1,9 @@
 import {DiagnosticSeverity} from "vscode-languageserver-types";
-import {registerLogger} from "./log";
-import {createDocument} from "./test-utils/document";
-import {TestLogger} from "./test-utils/logger";
-import {clearCache} from "./utils/workflow-cache";
-import {validate} from "./validate";
+import {registerLogger} from "./log.js";
+import {createDocument} from "./test-utils/document.js";
+import {TestLogger} from "./test-utils/logger.js";
+import {clearCache} from "./utils/workflow-cache.js";
+import {validate} from "./validate.js";
 
 registerLogger(new TestLogger());
 

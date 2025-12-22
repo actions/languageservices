@@ -1,7 +1,7 @@
 import {DiagnosticSeverity} from "vscode-languageserver-types";
-import {validate} from "./validate";
-import {createDocument} from "./test-utils/document";
-import {clearCache} from "./utils/workflow-cache";
+import {validate} from "./validate.js";
+import {createDocument} from "./test-utils/document.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 beforeEach(() => {
   clearCache();

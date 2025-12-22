@@ -1,11 +1,11 @@
-import {complete, CompletionItem, trimTokenVector} from "./completion";
-import {DescriptionDictionary} from "./completion/descriptionDictionary";
-import {BooleanData} from "./data/boolean";
-import {Dictionary} from "./data/dictionary";
-import {StringData} from "./data/string";
-import {wellKnownFunctions} from "./funcs";
-import {FunctionDefinition, FunctionInfo} from "./funcs/info";
-import {Lexer, TokenType} from "./lexer";
+import {complete, CompletionItem, trimTokenVector} from "./completion.js";
+import {DescriptionDictionary} from "./completion/descriptionDictionary.js";
+import {BooleanData} from "./data/boolean.js";
+import {Dictionary} from "./data/dictionary.js";
+import {StringData} from "./data/string.js";
+import {wellKnownFunctions} from "./funcs.js";
+import {FunctionDefinition, FunctionInfo} from "./funcs/info.js";
+import {Lexer, TokenType} from "./lexer.js";
 
 const testContext = new Dictionary(
   {

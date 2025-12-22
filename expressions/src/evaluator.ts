@@ -10,14 +10,14 @@ import {
   Logical,
   Star,
   Unary
-} from "./ast";
-import * as data from "./data";
-import {FilteredArray} from "./filtered_array";
-import {wellKnownFunctions} from "./funcs";
-import {FunctionDefinition} from "./funcs/info";
-import {idxHelper} from "./idxHelper";
-import {TokenType} from "./lexer";
-import {equals, falsy, greaterThan, lessThan, truthy} from "./result";
+} from "./ast.js";
+import * as data from "./data/index.js";
+import {FilteredArray} from "./filtered_array.js";
+import {wellKnownFunctions} from "./funcs.js";
+import {FunctionDefinition} from "./funcs/info.js";
+import {idxHelper} from "./idxHelper.js";
+import {TokenType} from "./lexer.js";
+import {equals, falsy, greaterThan, lessThan, truthy} from "./result.js";
 
 export class Evaluator implements ExprVisitor<data.ExpressionData> {
   /**

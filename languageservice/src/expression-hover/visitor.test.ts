@@ -2,13 +2,13 @@ import {data, DescriptionDictionary, Lexer, Parser} from "@actions/expressions";
 import {convertWorkflowTemplate, parseWorkflow} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {File} from "@actions/workflow-parser/workflows/file";
-import {ContextProviderConfig} from "../context-providers/config";
-import {getContext, Mode} from "../context-providers/default";
-import {getWorkflowContext} from "../context/workflow-context";
-import {validatorFunctions} from "../expression-validation/functions";
-import {nullTrace} from "../nulltrace";
-import {getPositionFromCursor} from "../test-utils/cursor-position";
-import {HoverVisitor} from "./visitor";
+import {ContextProviderConfig} from "../context-providers/config.js";
+import {getContext, Mode} from "../context-providers/default.js";
+import {getWorkflowContext} from "../context/workflow-context.js";
+import {validatorFunctions} from "../expression-validation/functions.js";
+import {nullTrace} from "../nulltrace.js";
+import {getPositionFromCursor} from "../test-utils/cursor-position.js";
+import {HoverVisitor} from "./visitor.js";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: (context: string) => {

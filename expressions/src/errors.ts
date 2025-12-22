@@ -1,4 +1,4 @@
-import {Pos, Token, tokenString} from "./lexer";
+import {Pos, Token, tokenString} from "./lexer.js";
 
 export const MAX_PARSER_DEPTH = 50;
 export const MAX_EXPRESSION_LENGTH = 21000;

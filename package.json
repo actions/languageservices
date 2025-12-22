@@ -9,6 +9,10 @@
     "./languageserver"
   ],
   "devDependencies": {
-    "lerna": "^8.2.2"
+    "lerna": "^8.2.2",
+    "typescript": "5.8.3"
+  },
+  "overrides": {
+    "typescript": "$typescript"
   }
 }

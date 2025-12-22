@@ -1,8 +1,8 @@
-import {DEFINITION, SEQUENCE, ITEM_TYPE} from "../template-constants";
-import {MappingToken} from "../tokens";
-import {Definition} from "./definition";
-import {DefinitionType} from "./definition-type";
-import {TemplateSchema} from "./template-schema";
+import {DEFINITION, SEQUENCE, ITEM_TYPE} from "../template-constants.js";
+import {MappingToken} from "../tokens/index.js";
+import {Definition} from "./definition.js";
+import {DefinitionType} from "./definition-type.js";
+import {TemplateSchema} from "./template-schema.js";
 
 export class SequenceDefinition extends Definition {
   public itemType = "";

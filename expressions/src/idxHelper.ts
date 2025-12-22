@@ -1,4 +1,4 @@
-import {ExpressionData} from "./data";
+import {ExpressionData} from "./data/index.js";
 
 export class idxHelper {
   public readonly str: string | undefined;

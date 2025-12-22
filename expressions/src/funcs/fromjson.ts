@@ -1,7 +1,7 @@
-import {ExpressionData} from "../data";
-import {reviver} from "../data/reviver";
-import {ExpressionEvaluationError} from "../errors";
-import {FunctionDefinition} from "./info";
+import {ExpressionData} from "../data/index.js";
+import {reviver} from "../data/reviver.js";
+import {ExpressionEvaluationError} from "../errors.js";
+import {FunctionDefinition} from "./info.js";
 
 export const fromjson: FunctionDefinition = {
   name: "fromJson",

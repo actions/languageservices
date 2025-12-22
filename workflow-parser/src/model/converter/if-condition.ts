@@ -1,9 +1,9 @@
 import {Lexer, Parser} from "@actions/expressions";
 import {Binary, Expr, FunctionCall, Grouping, IndexAccess, Logical, Unary} from "@actions/expressions/ast";
-import {DefinitionInfo} from "../../templates/schema/definition-info";
-import {splitAllowedContext} from "../../templates/allowed-context";
-import {TemplateContext} from "../../templates/template-context";
-import {BasicExpressionToken, ExpressionToken, TemplateToken} from "../../templates/tokens";
+import {DefinitionInfo} from "../../templates/schema/definition-info.js";
+import {splitAllowedContext} from "../../templates/allowed-context.js";
+import {TemplateContext} from "../../templates/template-context.js";
+import {BasicExpressionToken, ExpressionToken, TemplateToken} from "../../templates/tokens/index.js";
 
 /**
  * Ensures a condition expression contains a status function call.

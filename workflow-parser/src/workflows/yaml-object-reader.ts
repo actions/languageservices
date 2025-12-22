@@ -11,10 +11,8 @@ import {
   Scalar
 } from "yaml";
 import type {Document} from "yaml";
-import type {LinePos} from "yaml/dist/errors";
-import type {NodeBase} from "yaml/dist/nodes/Node";
-import {ObjectReader} from "../templates/object-reader";
-import {EventType, ParseEvent} from "../templates/parse-event";
+import {ObjectReader} from "../templates/object-reader.js";
+import {EventType, ParseEvent} from "../templates/parse-event.js";
 import {
   BooleanToken,
   LiteralToken,
@@ -23,8 +21,12 @@ import {
   NumberToken,
   SequenceToken,
   StringToken
-} from "../templates/tokens/index";
-import {Position, TokenRange} from "../templates/tokens/token-range";
+} from "../templates/tokens/index.js";
+import {Position, TokenRange} from "../templates/tokens/token-range.js";
+
+// Internal yaml types - defined locally since yaml package doesn't export them
+type LinePos = {line: number; col: number};
+type NodeBase = {range?: [number, number, number] | null};
 
 export type YamlError = {
   message: string;

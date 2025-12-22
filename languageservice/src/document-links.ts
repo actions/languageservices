@@ -5,9 +5,9 @@ import {parseFileReference} from "@actions/workflow-parser/workflows/file-refere
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {DocumentLink} from "vscode-languageserver-types";
 import * as vscodeURI from "vscode-uri";
-import {actionUrl, parseActionReference} from "./action";
-import {mapRange} from "./utils/range";
-import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
+import {actionUrl, parseActionReference} from "./action.js";
+import {mapRange} from "./utils/range.js";
+import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache.js";
 
 export async function documentLinks(document: TextDocument, workspace: string | undefined): Promise<DocumentLink[]> {
   const file: File = {

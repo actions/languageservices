@@ -1,7 +1,7 @@
-import {TemplateContext} from "../../../templates/template-context";
-import {TemplateToken} from "../../../templates/tokens/template-token";
-import {isScalar} from "../../../templates/tokens/type-guards";
-import {ActionsEnvironmentReference} from "../../workflow-template";
+import {TemplateContext} from "../../../templates/template-context.js";
+import {TemplateToken} from "../../../templates/tokens/template-token.js";
+import {isScalar} from "../../../templates/tokens/type-guards.js";
+import {ActionsEnvironmentReference} from "../../workflow-template.js";
 
 export function convertToActionsEnvironmentRef(
   context: TemplateContext,

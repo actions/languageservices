@@ -1,6 +1,6 @@
-import {BooleanData, ExpressionData, Kind} from "../data";
-import {equals} from "../result";
-import {FunctionDefinition} from "./info";
+import {BooleanData, ExpressionData, Kind} from "../data/index.js";
+import {equals} from "../result.js";
+import {FunctionDefinition} from "./info.js";
 
 export const contains: FunctionDefinition = {
   name: "contains",

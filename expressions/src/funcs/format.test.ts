@@ -1,5 +1,5 @@
-import {Null, NumberData, StringData} from "../data";
-import {format} from "./format";
+import {Null, NumberData, StringData} from "../data/index.js";
+import {format} from "./format.js";
 
 describe("format", () => {
   it("null", () => {

@@ -1,7 +1,7 @@
-import {createDocument} from "./test-utils/document";
-import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearCache} from "./utils/workflow-cache";
-import {validate} from "./validate";
+import {createDocument} from "./test-utils/document.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
+import {validate} from "./validate.js";
 
 beforeEach(() => {
   clearCache();

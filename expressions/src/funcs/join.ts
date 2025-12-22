@@ -1,5 +1,5 @@
-import {ExpressionData, Kind, StringData} from "../data";
-import {FunctionDefinition} from "./info";
+import {ExpressionData, Kind, StringData} from "../data/index.js";
+import {FunctionDefinition} from "./info.js";
 
 export const join: FunctionDefinition = {
   name: "join",

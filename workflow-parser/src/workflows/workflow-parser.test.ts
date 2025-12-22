@@ -1,5 +1,5 @@
-import {parseWorkflow} from "./workflow-parser";
-import {nullTrace} from "../test-utils/null-trace";
+import {parseWorkflow} from "./workflow-parser.js";
+import {nullTrace} from "../test-utils/null-trace.js";
 
 it("The template is not read when there are YAML errors", () => {
   const content = `

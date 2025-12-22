@@ -1,5 +1,5 @@
 import {DescriptionDictionary} from "@actions/expressions";
-import {getEventPayload, getSupportedEventTypes} from "./eventPayloads";
+import {getEventPayload, getSupportedEventTypes} from "./eventPayloads.js";
 
 describe("eventPayloads", () => {
   describe("getSupportedEventTypes", () => {

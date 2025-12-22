@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions";
-import {WorkflowContext} from "../context/workflow-context";
-import {getStepsContext} from "./steps";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {getStepsContext} from "./steps.js";
 
 function createWorkflowContext(stepIds: string[], currentStepId?: string): WorkflowContext {
   return {

@@ -1,7 +1,7 @@
-import {TemplateContext} from "../../templates/template-context";
-import {MappingToken, SequenceToken, StringToken, TemplateToken} from "../../templates/tokens";
-import {isString} from "../../templates/tokens/type-guards";
-import {Container, Credential} from "../workflow-template";
+import {TemplateContext} from "../../templates/template-context.js";
+import {MappingToken, SequenceToken, StringToken, TemplateToken} from "../../templates/tokens/index.js";
+import {isString} from "../../templates/tokens/type-guards.js";
+import {Container, Credential} from "../workflow-template.js";
 
 export function convertToJobContainer(context: TemplateContext, container: TemplateToken): Container | undefined {
   let image: StringToken | undefined;
