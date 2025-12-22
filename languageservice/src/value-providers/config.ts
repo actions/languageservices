@@ -12,6 +12,9 @@ export interface Value {
 
   /** Alternative insert text, if not given `label` will be used */
   insertText?: string;
+
+  /** Alternative filter text, if not given `label` will be used for filtering */
+  filterText?: string;
 }
 
 export enum ValueProviderKind {

@@ -129,6 +129,7 @@ export async function complete(
 
     const item: CompletionItem = {
       label: value.label,
+      filterText: value.filterText,
       documentation: value.description && {
         kind: "markdown",
         value: value.description
