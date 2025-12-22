@@ -129,6 +129,8 @@ export async function complete(
 
     const item: CompletionItem = {
       label: value.label,
+      filterText: value.filterText,
+      sortText: value.sortText,
       documentation: value.description && {
         kind: "markdown",
         value: value.description
@@ -253,7 +255,7 @@ function getExpressionCompletionItems(
 
 function filterAndSortCompletionOptions(options: Value[], existingValues?: Set<string>) {
   options = options.filter(x => !existingValues?.has(x.label));
-  options.sort((a, b) => a.label.localeCompare(b.label));
+  options.sort((a, b) => (a.sortText ?? a.label).localeCompare(b.sortText ?? b.label));
   return options;
 }
 

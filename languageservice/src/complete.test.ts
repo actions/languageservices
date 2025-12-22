@@ -44,7 +44,7 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(9);
+    expect(result.length).toEqual(13);
     expect(result[0].label).toEqual("concurrency");
   });
 
@@ -70,7 +70,7 @@ jobs:
     |`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(21);
+    expect(result.length).toEqual(30);
   });
 
   it("string definition completion in sequence", async () => {
@@ -243,7 +243,7 @@ jobs:
     runs-|`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result).toHaveLength(21);
+    expect(result).toHaveLength(30);
   });
 
   it("job key with comment afterwards", async () => {
@@ -254,7 +254,7 @@ jobs:
   #`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result).toHaveLength(21);
+    expect(result).toHaveLength(30);
   });
 
   it("job key with other values afterwards", async () => {
@@ -266,7 +266,7 @@ jobs:
     concurrency: 'group-name'`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result).toHaveLength(20);
+    expect(result).toHaveLength(29);
   });
 
   it("step key without space after colon", async () => {
@@ -335,7 +335,7 @@ jobs:
     - uses: actions/checkout@v2
 `;
     const result = await complete(...getPositionFromCursor(input));
-    expect(result).toHaveLength(17);
+    expect(result).toHaveLength(25);
   });
 
   it("complete from behind a colon will replace it", async () => {
@@ -348,7 +348,7 @@ jobs:
     - uses: actions/checkout@v2
 `;
     const result = await complete(...getPositionFromCursor(input));
-    expect(result).toHaveLength(17);
+    expect(result).toHaveLength(25);
     const textEdit = result[0].textEdit as TextEdit;
     expect(textEdit.range).toEqual({
       start: {line: 5, character: 4},
@@ -532,5 +532,82 @@ jobs:
     // Mapping keys with one-of types should insert with newline and indentation
     expect(result.filter(x => x.label === "actions").map(x => x.textEdit?.newText)).toEqual(["\n  actions: "]);
     expect(result.filter(x => x.label === "contents").map(x => x.textEdit?.newText)).toEqual(["\n  contents: "]);
+  });
+
+  it("shows both simple and full syntax for null+mapping one-of", async () => {
+    // check_run is a one-of: [null, mapping]. Show both:
+    // - check_run (simple, just the key with colon)
+    // - check_run (full syntax) (ready to add mapping keys)
+    const input = "on:\n  |";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // Should have both check_run and check_run (full syntax)
+    expect(result.some(x => x.label === "check_run")).toBe(true);
+    expect(result.some(x => x.label === "check_run (full syntax)")).toBe(true);
+  });
+
+  it("shows all three variants for scalar+sequence+mapping one-of", async () => {
+    // runs-on is a one-of: [string, sequence, mapping]
+    const input = `on: push
+jobs:
+  build:
+    |`;
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // Should have runs-on, runs-on (list), and runs-on (full syntax)
+    expect(result.some(x => x.label === "runs-on")).toBe(true);
+    expect(result.some(x => x.label === "runs-on (list)")).toBe(true);
+    expect(result.some(x => x.label === "runs-on (full syntax)")).toBe(true);
+  });
+
+  it("generates correct insertText for one-of variants in parent mode", async () => {
+    // runs-on is a one-of: [string, sequence, mapping]
+    const input = `on: push
+jobs:
+  build:
+    |`;
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // Scalar: just key with colon and space
+    expect(result.find(x => x.label === "runs-on")?.textEdit?.newText).toEqual("runs-on: ");
+
+    // Sequence: key with colon, newline, and list item
+    expect(result.find(x => x.label === "runs-on (list)")?.textEdit?.newText).toEqual("runs-on:\n  - ");
+
+    // Mapping: key with colon, newline, and indentation for nested keys
+    expect(result.find(x => x.label === "runs-on (full syntax)")?.textEdit?.newText).toEqual("runs-on:\n  ");
+  });
+
+  it("generates correct insertText for one-of variants in key mode", async () => {
+    // concurrency is a one-of: [string, mapping] - testing key mode (after colon on same line)
+    const input = "concurrency: |";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // Scalar in key mode: newline + indented key + colon + space
+    expect(result.find(x => x.label === "group")?.textEdit?.newText).toEqual("\n  group: ");
+
+    // Boolean in key mode (cancel-in-progress): newline + indented key + colon + space
+    expect(result.find(x => x.label === "cancel-in-progress")?.textEdit?.newText).toEqual("\n  cancel-in-progress: ");
+  });
+
+  it("uses base key as filterText for qualified one-of variants", async () => {
+    // runs-on has multiple structural types, so variants get qualifiers
+    const input = `on: push
+jobs:
+  build:
+    |`;
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // Scalar: no qualifier, so no filterText needed
+    expect(result.find(x => x.label === "runs-on")?.filterText).toBeUndefined();
+
+    // Sequence and mapping: qualified labels should filter on base key
+    expect(result.find(x => x.label === "runs-on (list)")?.filterText).toEqual("runs-on");
+    expect(result.find(x => x.label === "runs-on (full syntax)")?.filterText).toEqual("runs-on");
   });
 });
