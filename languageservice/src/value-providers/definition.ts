@@ -1,3 +1,4 @@
+import {NullDefinition} from "@actions/workflow-parser/templates/schema/null-definition";
 import {BooleanDefinition} from "@actions/workflow-parser/templates/schema/boolean-definition";
 import {Definition} from "@actions/workflow-parser/templates/schema/definition";
 import {DefinitionType} from "@actions/workflow-parser/templates/schema/definition-type";
@@ -24,7 +25,35 @@ export enum DefinitionValueMode {
   Key
 }
 
-export function definitionValues(def: Definition, indentation: string, mode: DefinitionValueMode): Value[] {
+/**
+ * What YAML structure the user has started typing.
+ * Used to filter completions - e.g., if user started a mapping, don't show string completions.
+ */
+export type TokenStructure = "scalar" | "sequence" | "mapping" | undefined;
+
+/**
+ * Generates completion values from a workflow schema definition.
+ *
+ * This is the fallback when no custom or default value provider exists for a token.
+ * It reads the schema definition to determine what values are valid.
+ *
+ * Examples:
+ * - For a job definition this returns keys like "runs-on", "steps", "env", "timeout-minutes", etc.
+ * - For `shell: |`, the schema says it's a string with no constants,
+ *   so this returns no completions
+ * - For `continue-on-error: |` on a step, the schema has a boolean definition,
+ *   so this returns ["true", "false"]
+ *
+ * @param tokenStructure - If provided, filters completions to only those matching
+ *   the YAML structure the user has already started (e.g., only mapping keys if
+ *   they've started a mapping)
+ */
+export function definitionValues(
+  def: Definition,
+  indentation: string,
+  mode: DefinitionValueMode,
+  tokenStructure?: TokenStructure
+): Value[] {
   const schema = getWorkflowSchema();
 
   if (def instanceof MappingDefinition) {
@@ -32,7 +61,7 @@ export function definitionValues(def: Definition, indentation: string, mode: Def
   }
 
   if (def instanceof OneOfDefinition) {
-    return oneOfValues(def, schema.definitions, indentation, mode);
+    return oneOfValues(def, schema.definitions, indentation, mode, tokenStructure);
   }
 
   if (def instanceof BooleanDefinition) {
@@ -58,6 +87,16 @@ export function definitionValues(def: Definition, indentation: string, mode: Def
   return [];
 }
 
+/**
+ * Returns completion items for keys in a mapping (object).
+ *
+ * For example, given the job definition, this returns completions for
+ * "runs-on", "steps", "env", etc. Each completion includes appropriate
+ * insert text based on the expected value type:
+ * - Sequence properties insert `key:\n  - ` to start a list
+ * - Mapping properties insert `key:\n  ` to start nested keys
+ * - Scalar properties insert `key: ` for inline values
+ */
 function mappingValues(
   mappingDefinition: MappingDefinition,
   definitions: {[key: string]: Definition},
@@ -123,15 +162,43 @@ function mappingValues(
   return properties;
 }
 
+/**
+ * Returns completions for values that can be one of several types.
+ *
+ * For example, `on:` can be a string ("push"), a list (["push", "pull_request"]),
+ * or a mapping with event configuration. This function collects completions from
+ * all valid variants.
+ *
+ * If the user has already started typing a specific structure (e.g., started a list),
+ * only completions for that structure are returned.
+ */
 function oneOfValues(
   oneOfDefinition: OneOfDefinition,
   definitions: {[key: string]: Definition},
   indentation: string,
-  mode: DefinitionValueMode
+  mode: DefinitionValueMode,
+  tokenStructure?: TokenStructure
 ): Value[] {
   const values: Value[] = [];
   for (const key of oneOfDefinition.oneOf) {
-    values.push(...definitionValues(definitions[key], indentation, mode));
+    const variantDef = definitions[key];
+
+    // Should never happen - the schema should always have valid references
+    if (!variantDef) {
+      continue;
+    }
+
+    // Skip variants that don't match what the user has already started typing.
+    // For example, if user is at `runs-on:\n  |` (inside a mapping), skip the string
+    // variant - only include the mapping variant that suggests keys like "group" or "labels".
+    if (tokenStructure) {
+      const variantBucket = getStructuralBucket(variantDef.definitionType);
+      if (variantBucket !== tokenStructure) {
+        continue;
+      }
+    }
+
+    values.push(...definitionValues(variantDef, indentation, mode, tokenStructure));
   }
   return distinctValues(values);
 }
@@ -167,8 +234,15 @@ function getStructuralBucket(defType: DefinitionType): StructuralBucket {
 }
 
 /**
- * Expand a one-of definition into multiple completion items based on structural types.
- * Returns one completion per unique structural type (scalar, sequence, mapping).
+ * Creates completion items for a key whose value can be multiple formats.
+ *
+ * For example, `runs-on` can be a string, list, or mapping. This function creates
+ * separate completions for each format:
+ * - "runs-on" for the string form (`runs-on: ubuntu-latest`)
+ * - "runs-on (list)" for the list form (`runs-on:\n  - ubuntu-latest`)
+ * - "runs-on (full syntax)" for the mapping form (`runs-on:\n  group: my-group`)
+ *
+ * The qualifier (list/full syntax) is only added when multiple formats exist.
  */
 function expandOneOfToCompletions(
   oneOfDef: OneOfDefinition,
@@ -185,11 +259,19 @@ function expandOneOfToCompletions(
     mapping: false
   };
 
+  // Track if scalar bucket only contains null (no actual string/boolean/number values)
+  let scalarIsOnlyNull = true;
+
   for (const variantKey of oneOfDef.oneOf) {
     const variantDef = definitions[variantKey];
     if (variantDef) {
       const bucket = getStructuralBucket(variantDef.definitionType);
       buckets[bucket] = true;
+
+      // Check if this scalar is NOT null
+      if (bucket === "scalar" && !(variantDef instanceof NullDefinition)) {
+        scalarIsOnlyNull = false;
+      }
     }
   }
 
@@ -201,8 +283,15 @@ function expandOneOfToCompletions(
 
   // Emit completions in order: scalar, sequence, mapping
   // Use sortText to preserve this order (scalar sorts first, then 1=sequence, 2=mapping)
-  if (buckets.scalar) {
-    // In Key mode, insert newline and indentation to produce valid YAML structure
+  //
+  // In Key mode (after colon on same line), skip the key completion if scalar only allows null.
+  // Example: at `on: |`, we want `check_run` to insert inline, not start a new mapping.
+  //
+  // In Parent mode (typing a new key), we DO show it since `check_run:` with no value
+  // is valid (triggers on all check_run events).
+  const skipNullOnlyScalar = mode === DefinitionValueMode.Key && scalarIsOnlyNull;
+  if (buckets.scalar && !skipNullOnlyScalar) {
+    // If cursor is after colon (`on: |`), insert newline first so result is `on:\n  check_run: `
     const insertText = mode === DefinitionValueMode.Key ? `\n${indentation}${key}: ` : `${key}: `;
     results.push({
       label: key,
