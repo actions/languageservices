@@ -5,3 +5,4 @@ export {hover} from "./hover.js";
 export {Logger, LogLevel, registerLogger, setLogLevel} from "./log.js";
 export {validate, ValidationConfig, ActionsMetadataProvider} from "./validate.js";
 export {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
+export {getCodeActions, CodeActionParams} from "./code-actions.js";

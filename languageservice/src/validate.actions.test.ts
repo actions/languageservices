@@ -249,7 +249,29 @@ jobs:
             line: 7
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          hasWithKey: true,
+          indentSize: 2,
+          insertPosition: {
+            character: 0,
+            line: 9
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            }
+          ],
+          stepIndent: 6,
+          withIndent: 6
+        }
       }
     ]);
   });
@@ -294,7 +316,33 @@ jobs:
             line: 7
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          hasWithKey: true,
+          indentSize: 2,
+          insertPosition: {
+            character: 0,
+            line: 9
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            },
+            {
+              default: undefined,
+              name: "key"
+            }
+          ],
+          stepIndent: 6,
+          withIndent: 6
+        }
       }
     ]);
   });
@@ -323,7 +371,33 @@ jobs:
             line: 6
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          hasWithKey: false,
+          indentSize: 2,
+          insertPosition: {
+            character: 0,
+            line: 7
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            },
+            {
+              default: undefined,
+              name: "key"
+            }
+          ],
+          stepIndent: 6,
+          withIndent: undefined
+        }
       }
     ]);
   });
