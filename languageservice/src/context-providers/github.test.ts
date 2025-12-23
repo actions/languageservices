@@ -1,7 +1,7 @@
-import {DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions/.";
-import {testGetWorkflowContext} from "../test-utils/test-workflow-context";
-import {Mode} from "./default";
-import {getGithubContext} from "./github";
+import {DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions";
+import {testGetWorkflowContext} from "../test-utils/test-workflow-context.js";
+import {Mode} from "./default.js";
+import {getGithubContext} from "./github.js";
 
 describe("github context", () => {
   it("single event", async () => {

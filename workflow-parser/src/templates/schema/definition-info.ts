@@ -1,7 +1,7 @@
-import {TemplateSchema} from ".";
-import {Definition} from "./definition";
-import {DefinitionType} from "./definition-type";
-import {ScalarDefinition} from "./scalar-definition";
+import {TemplateSchema} from "./index.js";
+import {Definition} from "./definition.js";
+import {DefinitionType} from "./definition-type.js";
+import {ScalarDefinition} from "./scalar-definition.js";
 
 export class DefinitionInfo {
   private readonly _schema: TemplateSchema;

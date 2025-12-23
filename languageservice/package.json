@@ -1,6 +1,6 @@
 {
   "name": "@actions/languageservice",
-  "version": "0.3.12",
+  "version": "0.3.27",
   "description": "Language service for GitHub Actions",
   "license": "MIT",
   "type": "module",
@@ -37,22 +37,25 @@
     "format-check": "prettier --check '**/*.ts'",
     "lint": "eslint 'src/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts'",
+    "minify-json": "node ../script/minify-json.js src/context-providers/descriptions.json src/context-providers/events/webhooks.json src/context-providers/events/objects.json src/context-providers/events/schedule.json src/context-providers/events/workflow_call.json",
+    "prebuild": "npm run minify-json",
     "prepublishOnly": "npm run build && npm run test",
+    "pretest": "npm run minify-json",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test-watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
-    "update-webhooks": "ts-node-esm script/webhooks/index.ts",
+    "update-webhooks": "npx tsx script/webhooks/index.ts",
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@actions/expressions": "^0.3.12",
-    "@actions/workflow-parser": "^0.3.12",
+    "@actions/expressions": "^0.3.27",
+    "@actions/workflow-parser": "^0.3.27",
     "vscode-languageserver-textdocument": "^1.0.7",
     "vscode-languageserver-types": "^3.17.2",
     "vscode-uri": "^3.0.8",
     "yaml": "^2.1.1"
   },
   "engines": {
-    "node": ">= 16.15"
+    "node": ">= 18"
   },
   "files": [
     "dist/**/*"

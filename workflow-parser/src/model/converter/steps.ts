@@ -1,10 +1,17 @@
-import {TemplateContext} from "../../templates/template-context";
-import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
-import {isSequence} from "../../templates/tokens/type-guards";
-import {isActionStep} from "../type-guards";
-import {ActionStep, Step} from "../workflow-template";
-import {handleTemplateTokenErrors} from "./handle-errors";
-import {IdBuilder} from "./id-builder";
+import {TemplateContext} from "../../templates/template-context.js";
+import {
+  BasicExpressionToken,
+  MappingToken,
+  ScalarToken,
+  StringToken,
+  TemplateToken
+} from "../../templates/tokens/index.js";
+import {isSequence} from "../../templates/tokens/type-guards.js";
+import {isActionStep} from "../type-guards.js";
+import {convertToIfCondition} from "./if-condition.js";
+import {ActionStep, Step} from "../workflow-template.js";
+import {handleTemplateTokenErrors} from "./handle-errors.js";
+import {IdBuilder} from "./id-builder.js";
 
 export function convertSteps(context: TemplateContext, steps: TemplateToken): Step[] {
   if (!isSequence(steps)) {
@@ -52,7 +59,7 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
   let uses: StringToken | undefined;
   let continueOnError: boolean | ScalarToken | undefined;
   let env: MappingToken | undefined;
-  const ifCondition = new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined);
+  let ifCondition: BasicExpressionToken | undefined;
   for (const item of mapping) {
     const key = item.key.assertString("steps item key");
     switch (key.value) {
@@ -77,6 +84,9 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
       case "env":
         env = item.value.assertMapping("step env");
         break;
+      case "if":
+        ifCondition = convertToIfCondition(context, item.value);
+        break;
       case "continue-on-error":
         if (!item.value.isExpression) {
           continueOnError = item.value.assertBoolean("steps item continue-on-error").value;
@@ -90,7 +100,7 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
     return {
       id: id?.value || "",
       name,
-      if: ifCondition,
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       "continue-on-error": continueOnError,
       env,
       run
@@ -101,7 +111,7 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
     return {
       id: id?.value || "",
       name,
-      if: ifCondition,
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       "continue-on-error": continueOnError,
       env,
       uses

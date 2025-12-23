@@ -1,4 +1,4 @@
-import {WorkflowContext} from "../context/workflow-context";
+import {WorkflowContext} from "../context/workflow-context.js";
 
 export interface Value {
   /** Label of this value */
@@ -12,6 +12,12 @@ export interface Value {
 
   /** Alternative insert text, if not given `label` will be used */
   insertText?: string;
+
+  /** Alternative filter text, if not given `label` will be used for filtering */
+  filterText?: string;
+
+  /** Sort text to control ordering, if not given `label` will be used for sorting */
+  sortText?: string;
 }
 
 export enum ValueProviderKind {

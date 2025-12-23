@@ -1,4 +1,4 @@
-import {ExpressionData, ExpressionDataInterface, Kind, kindStr, Pair} from "./expressiondata";
+import {ExpressionData, ExpressionDataInterface, Kind, kindStr, Pair} from "./expressiondata.js";
 
 export class Dictionary implements ExpressionDataInterface {
   private keys: string[] = [];

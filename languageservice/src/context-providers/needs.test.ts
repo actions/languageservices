@@ -1,8 +1,8 @@
 import {DescriptionDictionary} from "@actions/expressions";
 import {StringData} from "@actions/expressions/data/string";
-import {WorkflowContext} from "../context/workflow-context";
-import {testGetWorkflowContext} from "../test-utils/test-workflow-context";
-import {getNeedsContext} from "./needs";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {testGetWorkflowContext} from "../test-utils/test-workflow-context.js";
+import {getNeedsContext} from "./needs.js";
 
 describe("needs context", () => {
   describe("invalid workflow context", () => {
@@ -111,7 +111,7 @@ jobs:
 on: push
 jobs:
   a:
-    uses: ./reusable-workflow-with-outputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-outputs.yaml
 
   b:
     needs: [a]

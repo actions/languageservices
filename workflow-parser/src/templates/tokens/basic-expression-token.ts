@@ -1,12 +1,12 @@
-import {DefinitionInfo} from "../schema/definition-info";
+import {DefinitionInfo} from "../schema/definition-info.js";
 
-import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "../template-constants";
-import {ExpressionToken} from "./expression-token";
-import {ScalarToken} from "./scalar-token";
-import {SerializedExpressionToken} from "./serialization";
-import {TemplateToken} from "./template-token";
-import {TokenRange} from "./token-range";
-import {TokenType} from "./types";
+import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "../template-constants.js";
+import {ExpressionToken} from "./expression-token.js";
+import {ScalarToken} from "./scalar-token.js";
+import {SerializedExpressionToken} from "./serialization.js";
+import {TemplateToken} from "./template-token.js";
+import {TokenRange} from "./token-range.js";
+import {TokenType} from "./types.js";
 
 export class BasicExpressionToken extends ExpressionToken {
   private readonly expr: string;

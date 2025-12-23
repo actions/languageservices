@@ -1,5 +1,5 @@
-import {Dictionary} from "../data/dictionary";
-import {ExpressionData, Kind, Pair} from "../data/expressiondata";
+import {Dictionary} from "../data/dictionary.js";
+import {ExpressionData, Kind, Pair} from "../data/expressiondata.js";
 
 export type DescriptionPair = Pair & {description?: string};
 

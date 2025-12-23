@@ -1,9 +1,9 @@
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {createDocument} from "./test-utils/document";
-import {validate} from "./validate";
-import {defaultValueProviders} from "./value-providers/default";
-import {clearCache} from "./utils/workflow-cache";
-import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
+import {createDocument} from "./test-utils/document.js";
+import {validate} from "./validate.js";
+import {defaultValueProviders} from "./value-providers/default.js";
+import {clearCache} from "./utils/workflow-cache.js";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
 
 beforeEach(() => {
   clearCache();
@@ -187,7 +187,7 @@ jobs:
 
     expect(result.length).toBe(1);
     expect(result[0]).toEqual({
-      message: "Invalid cron string",
+      message: "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)",
       range: {
         end: {
           character: 21,
@@ -199,6 +199,96 @@ jobs:
         }
       }
     } as Diagnostic);
+  });
+
+  it("cron with interval less than 5 minutes shows warning", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  schedule:
+    - cron: '*/1 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      ),
+      {valueProviderConfig: defaultValueProviders}
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message:
+        'Actions schedules run at most every 5 minutes. "*/1 * * * *" (runs every minute) will not run as frequently as specified.',
+      severity: DiagnosticSeverity.Warning,
+      code: "on-schedule",
+      codeDescription: {
+        href: "https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule"
+      },
+      range: {
+        end: {
+          character: 25,
+          line: 2
+        },
+        start: {
+          character: 12,
+          line: 2
+        }
+      }
+    } as Diagnostic);
+  });
+
+  it("cron with interval of 5 minutes or more shows info", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  schedule:
+    - cron: '*/5 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      ),
+      {valueProviderConfig: defaultValueProviders}
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message: "Runs every 5 minutes",
+      severity: DiagnosticSeverity.Information,
+      code: "on-schedule",
+      codeDescription: {
+        href: "https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule"
+      },
+      range: {
+        end: {
+          character: 25,
+          line: 2
+        },
+        start: {
+          character: 12,
+          line: 2
+        }
+      }
+    } as Diagnostic);
+  });
+
+  it("cron with comma-separated minutes less than 5 apart shows warning", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  schedule:
+    - cron: '0,2 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      ),
+      {valueProviderConfig: defaultValueProviders}
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]?.severity).toBe(DiagnosticSeverity.Warning);
+    expect(result[0]?.message).toContain("Actions schedules run at most every 5 minutes.");
   });
 
   it("invalid YAML", async () => {
@@ -298,6 +388,33 @@ jobs:
       };
 
       const result = await validate(createDocument("wf.yaml", workflow), {valueProviderConfig});
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("workflow_dispatch", () => {
+    it("allows empty string in choice options", async () => {
+      const result = await validate(
+        createDocument(
+          "wf.yaml",
+          `on:
+  workflow_dispatch:
+    inputs:
+      plugin-name:
+        description: Specific plugin to build
+        type: choice
+        options:
+          - ''
+          - foo
+          - bar
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`
+        )
+      );
+
       expect(result).toEqual([]);
     });
   });

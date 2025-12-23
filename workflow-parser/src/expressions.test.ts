@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {StringToken} from "./templates/tokens";
-import {isBasicExpression, isString} from "./templates/tokens/type-guards";
-import {nullTrace} from "./test-utils/null-trace";
-import {parseWorkflow} from "./workflows/workflow-parser";
+import {StringToken} from "./templates/tokens/index.js";
+import {isBasicExpression, isString} from "./templates/tokens/type-guards.js";
+import {nullTrace} from "./test-utils/null-trace.js";
+import {parseWorkflow} from "./workflows/workflow-parser.js";
 
 describe("Workflow Expression Parsing", () => {
   it("preserves original expressions when building format", () => {
@@ -194,10 +194,11 @@ jobs:
     const jobs = workflowRoot.get(1).value.assertMapping("jobs");
     const build = jobs.get(0).value.assertMapping("job");
     const ifToken = build.get(1).value;
-    expect(ifToken.toString()).toEqual("${{ github.event_name == 'push' }}");
+    // Without isExpression: true, the value is kept as a string until convertToIfCondition processes it
+    expect(ifToken.toString()).toEqual("github.event_name == 'push'");
 
-    if (!isBasicExpression(ifToken)) {
-      throw new Error("expected if to be a basic expression");
+    if (!isString(ifToken)) {
+      throw new Error("expected if to be a string (will be converted to expression later)");
     }
   });
 });

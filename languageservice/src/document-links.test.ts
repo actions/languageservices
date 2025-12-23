@@ -1,6 +1,6 @@
-import {documentLinks} from "./document-links";
-import {createDocument} from "./test-utils/document";
-import {clearCache} from "./utils/workflow-cache";
+import {documentLinks} from "./document-links.js";
+import {createDocument} from "./test-utils/document.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 beforeEach(() => {
   clearCache();

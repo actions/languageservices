@@ -1,6 +1,7 @@
 {
   "name": "actions-languageservices",
   "private": true,
+  "type": "module",
   "workspaces": [
     "./expressions",
     "./workflow-parser",
@@ -8,6 +9,10 @@
     "./languageserver"
   ],
   "devDependencies": {
-    "lerna": "^6.0.3"
+    "lerna": "^8.2.2",
+    "typescript": "5.8.3"
+  },
+  "overrides": {
+    "typescript": "$typescript"
   }
 }

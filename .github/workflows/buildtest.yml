@@ -1,4 +1,6 @@
 name: Build & Test
+permissions:
+  contents: read
 
 on:
   push:
@@ -10,18 +12,55 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js 16.15
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
       with:
-        node-version: 16.15
+        node-version: ${{ matrix.node-version }}
         cache: 'npm'
         registry-url: 'https://npm.pkg.github.com'
-    - run: npm ci
+    - run: npm ci --engine-strict
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - run: npm run format-check -ws
     - run: npm run build -ws
     - run: npm run lint -ws
     - run: npm test -ws
+
+  check-generated:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+        registry-url: 'https://npm.pkg.github.com'
+    - run: npm ci
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Regenerate JSON files
+      run: |
+        cd languageservice && npm run update-webhooks && cd ..
+    - name: Check for uncommitted changes
+      run: |
+        if ! git diff --exit-code; then
+          echo ""
+          echo "=========================================="
+          echo "ERROR: Generated files are out of date!"
+          echo "=========================================="
+          echo ""
+          echo "Please run the following commands locally and commit the changes:"
+          echo ""
+          echo "  cd languageservice && npm run update-webhooks && cd .."
+          echo "  git add -A && git commit -m 'Regenerate JSON files'"
+          echo ""
+          exit 1
+        fi

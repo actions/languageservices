@@ -1,5 +1,5 @@
-import {StringData} from "./data";
-import {MAX_EXPRESSION_LENGTH} from "./errors";
+import {StringData} from "./data/index.js";
+import {MAX_EXPRESSION_LENGTH} from "./errors.js";
 
 export enum TokenType {
   UNKNOWN,

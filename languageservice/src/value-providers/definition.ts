@@ -6,8 +6,8 @@ import {OneOfDefinition} from "@actions/workflow-parser/templates/schema/one-of-
 import {SequenceDefinition} from "@actions/workflow-parser/templates/schema/sequence-definition";
 import {StringDefinition} from "@actions/workflow-parser/templates/schema/string-definition";
 import {getWorkflowSchema} from "@actions/workflow-parser/workflows/workflow-schema";
-import {Value} from "./config";
-import {stringsToValues} from "./strings-to-values";
+import {Value} from "./config.js";
+import {stringsToValues} from "./strings-to-values.js";
 
 export enum DefinitionValueMode {
   /**
@@ -91,13 +91,13 @@ function mappingValues(
             }
             break;
 
-          case DefinitionType.OneOf:
-            if (mode == DefinitionValueMode.Parent) {
-              insertText = `${key}: `;
-            } else {
-              // No special insertText in this case
-            }
-            break;
+          case DefinitionType.OneOf: {
+            // Expand one-of into multiple completions based on structural type
+            const oneOfDef = typeDef as OneOfDefinition;
+            const expanded = expandOneOfToCompletions(oneOfDef, definitions, key, description, indentation, mode);
+            properties.push(...expanded);
+            continue; // Skip the default push below
+          }
 
           case DefinitionType.String:
           case DefinitionType.Boolean:
@@ -142,4 +142,102 @@ function distinctValues(values: Value[]): Value[] {
     map.set(value.label, value);
   }
   return Array.from(map.values());
+}
+
+/**
+ * Bucket type for one-of expansion
+ */
+type StructuralBucket = "scalar" | "sequence" | "mapping";
+
+/**
+ * Get the structural bucket for a definition type.
+ * Nested one-of is treated as scalar.
+ */
+function getStructuralBucket(defType: DefinitionType): StructuralBucket {
+  switch (defType) {
+    case DefinitionType.Sequence:
+      return "sequence";
+    case DefinitionType.Mapping:
+      return "mapping";
+    default:
+      // String, Boolean, Number, Null, OneOf (nested), AllowedValues -> scalar
+      // Note, nested OneOf is assumed to be all scalar values, which is true in practice.
+      return "scalar";
+  }
+}
+
+/**
+ * Expand a one-of definition into multiple completion items based on structural types.
+ * Returns one completion per unique structural type (scalar, sequence, mapping).
+ */
+function expandOneOfToCompletions(
+  oneOfDef: OneOfDefinition,
+  definitions: {[key: string]: Definition},
+  key: string,
+  description: string | undefined,
+  indentation: string,
+  mode: DefinitionValueMode
+): Value[] {
+  // Bucket variants by structural type
+  const buckets: Record<StructuralBucket, boolean> = {
+    scalar: false,
+    sequence: false,
+    mapping: false
+  };
+
+  for (const variantKey of oneOfDef.oneOf) {
+    const variantDef = definitions[variantKey];
+    if (variantDef) {
+      const bucket = getStructuralBucket(variantDef.definitionType);
+      buckets[bucket] = true;
+    }
+  }
+
+  const results: Value[] = [];
+
+  // Count how many structural types are present
+  const bucketCount = [buckets.scalar, buckets.sequence, buckets.mapping].filter(Boolean).length;
+  const needsQualifier = bucketCount > 1;
+
+  // Emit completions in order: scalar, sequence, mapping
+  // Use sortText to preserve this order (scalar sorts first, then 1=sequence, 2=mapping)
+  if (buckets.scalar) {
+    // In Key mode, insert newline and indentation to produce valid YAML structure
+    const insertText = mode === DefinitionValueMode.Key ? `\n${indentation}${key}: ` : `${key}: `;
+    results.push({
+      label: key,
+      description,
+      insertText
+    });
+  }
+
+  if (buckets.sequence) {
+    const insertText =
+      mode === DefinitionValueMode.Key
+        ? `\n${indentation}${key}:\n${indentation}${indentation}- `
+        : `${key}:\n${indentation}- `;
+    results.push({
+      label: needsQualifier ? `${key} (list)` : key,
+      description,
+      insertText,
+      filterText: needsQualifier ? key : undefined,
+      sortText: needsQualifier ? `${key} 1` : undefined
+    });
+  }
+
+  if (buckets.mapping) {
+    const insertText =
+      mode === DefinitionValueMode.Key
+        ? `\n${indentation}${key}:\n${indentation}${indentation}`
+        : `${key}:\n${indentation}`;
+    results.push({
+      label: needsQualifier ? `${key} (full syntax)` : key,
+      description,
+      insertText,
+      filterText: needsQualifier ? key : undefined,
+      sortText: needsQualifier ? `${key} 2` : undefined
+    });
+  }
+
+  return results;
 }

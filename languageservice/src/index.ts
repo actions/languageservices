@@ -1,7 +1,7 @@
-export {complete} from "./complete";
-export {ContextProviderConfig} from "./context-providers/config";
-export {documentLinks} from "./document-links";
-export {hover} from "./hover";
-export {Logger, LogLevel, registerLogger, setLogLevel} from "./log";
-export {validate, ValidationConfig, ActionsMetadataProvider} from "./validate";
-export {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
+export {complete} from "./complete.js";
+export {ContextProviderConfig} from "./context-providers/config.js";
+export {documentLinks} from "./document-links.js";
+export {hover} from "./hover.js";
+export {Logger, LogLevel, registerLogger, setLogLevel} from "./log.js";
+export {validate, ValidationConfig, ActionsMetadataProvider} from "./validate.js";
+export {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";

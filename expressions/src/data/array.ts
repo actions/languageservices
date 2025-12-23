@@ -1,4 +1,4 @@
-import {ExpressionData, ExpressionDataInterface, Kind, kindStr} from "./expressiondata";
+import {ExpressionData, ExpressionDataInterface, Kind, kindStr} from "./expressiondata.js";
 
 export class Array implements ExpressionDataInterface {
   private v: ExpressionData[] = [];

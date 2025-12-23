@@ -5,26 +5,26 @@ import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {OPEN_EXPRESSION} from "@actions/workflow-parser/templates/template-constants";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/index";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
+import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
 import {TokenType} from "@actions/workflow-parser/templates/tokens/types";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
-import {ContextProviderConfig} from "./context-providers/config";
-import {getContext, Mode} from "./context-providers/default";
-import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
-import {validatorFunctions} from "./expression-validation/functions";
-import {error} from "./log";
-import {isPotentiallyExpression} from "./utils/expression-detection";
-import {findToken} from "./utils/find-token";
-import {guessIndentation} from "./utils/indentation-guesser";
-import {mapRange} from "./utils/range";
-import {getRelCharOffset} from "./utils/rel-char-pos";
-import {isPlaceholder, transform} from "./utils/transform";
-import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
-import {Value, ValueProviderConfig} from "./value-providers/config";
-import {defaultValueProviders} from "./value-providers/default";
-import {DefinitionValueMode, definitionValues} from "./value-providers/definition";
+import {ContextProviderConfig} from "./context-providers/config.js";
+import {getContext, Mode} from "./context-providers/default.js";
+import {getWorkflowContext, WorkflowContext} from "./context/workflow-context.js";
+import {validatorFunctions} from "./expression-validation/functions.js";
+import {error} from "./log.js";
+import {isPotentiallyExpression} from "./utils/expression-detection.js";
+import {findToken} from "./utils/find-token.js";
+import {guessIndentation} from "./utils/indentation-guesser.js";
+import {mapRange} from "./utils/range.js";
+import {isPlaceholder, transform} from "./utils/transform.js";
+import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache.js";
+import {Value, ValueProviderConfig} from "./value-providers/config.js";
+import {defaultValueProviders} from "./value-providers/default.js";
+import {DefinitionValueMode, definitionValues} from "./value-providers/definition.js";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
@@ -129,6 +129,8 @@ export async function complete(
 
     const item: CompletionItem = {
       label: value.label,
+      filterText: value.filterText,
+      sortText: value.sortText,
       documentation: value.description && {
         kind: "markdown",
         value: value.description
@@ -238,12 +240,12 @@ function getExpressionCompletionItems(
     currentInput = stringToken.source || stringToken.value;
   }
 
-  const relCharOffset = getRelCharOffset(token.range, currentInput, pos);
-  const expressionInput = (getExpressionInput(currentInput, relCharOffset) || "").trim();
+  const cursorOffset = getOffsetInContent(token.range, currentInput, pos);
+  const expressionInput = (getExpressionInput(currentInput, cursorOffset) || "").trim();
 
   try {
     return completeExpression(expressionInput, context, [], validatorFunctions).map(item =>
-      mapExpressionCompletionItem(item, currentInput[relCharOffset])
+      mapExpressionCompletionItem(item, currentInput[cursorOffset])
     );
   } catch (e) {
     error(`Error while completing expression: '${(e as Error)?.message || "<no details>"}'`);
@@ -253,7 +255,7 @@ function getExpressionCompletionItems(
 
 function filterAndSortCompletionOptions(options: Value[], existingValues?: Set<string>) {
   options = options.filter(x => !existingValues?.has(x.label));
-  options.sort((a, b) => a.label.localeCompare(b.label));
+  options.sort((a, b) => (a.sortText ?? a.label).localeCompare(b.sortText ?? b.label));
   return options;
 }
 
@@ -273,4 +275,51 @@ function mapExpressionCompletionItem(item: ExpressionCompletionItem, charAfterPo
     insertText: insertText,
     kind: item.function ? CompletionItemKind.Function : CompletionItemKind.Variable
   };
+}
+
+/**
+ * Converts a document position to an offset within the token's content string.
+ */
+function getOffsetInContent(tokenRange: TokenRange, currentInput: string, pos: Position): number {
+  const range = mapRange(tokenRange);
+
+  if (range.start.line === range.end.line) {
+    // Single-line example:
+    //   if: github.ref == 'main'
+    //       ^8      ^15 (cursor)
+    // currentInput = "github.ref == 'main'"
+    // offset = 15 - 8 = 7
+    return pos.character - range.start.character;
+  }
+
+  // Multi-line example:
+  //   if: |                         <- line 3 (range.start.line)
+  //     first line                  <- line 4, content line 0
+  //     second line                 <- line 5, content line 1
+  //     github.                     <- line 6, content line 2, cursor at index 11
+  //            ^11 (cursor)
+  //
+  // currentInput = "    first line\n    second line\n    github."
+  //                 ^0              ^15              ^32        ^43
+
+  // Line index within content.
+  // From the example:
+  // lineIndexWithinContent = pos.line - range.start.line - 1
+  //                        = 6 - 3 - 1 = 2
+  const lineIndexWithinContent = pos.line - range.start.line - 1;
+
+  // Length of content before current line.
+  // From the example:
+  // lengthOfContentBeforeCurrentLine => 14 + 1 = 15 (after first iteration)
+  //                                  => 31 + 1 = 32 (after second iteration)
+  let lengthOfContentBeforeCurrentLine = 0;
+  for (let i = 0; i < lineIndexWithinContent; i++) {
+    lengthOfContentBeforeCurrentLine = currentInput.indexOf("\n", lengthOfContentBeforeCurrentLine) + 1;
+  }
+
+  // Final offset within content.
+  // From the example:
+  // finalOffset = lengthOfContentBeforeCurrentLine + pos.character
+  //             = 32 + 11 = 43
+  return lengthOfContentBeforeCurrentLine + pos.character;
 }

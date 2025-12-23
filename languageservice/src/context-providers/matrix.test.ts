@@ -6,9 +6,9 @@ import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-to
 import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
 import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
-import {WorkflowContext} from "../context/workflow-context";
-import {Mode} from "./default";
-import {getMatrixContext} from "./matrix";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {Mode} from "./default.js";
+import {getMatrixContext} from "./matrix.js";
 
 type MatrixMap = {
   [key: string]: Array<string> | Array<{[key: string]: string}>;
@@ -64,7 +64,7 @@ describe("matrix context", () => {
       expect(workflowContext.job).toBeUndefined();
 
       const context = getMatrixContext(workflowContext, Mode.Validation);
-      expect(context).toEqual(new DescriptionDictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("strategy not defined", () => {
@@ -73,7 +73,7 @@ describe("matrix context", () => {
       expect(workflowContext.job!.strategy).toBeUndefined();
 
       const context = getMatrixContext(workflowContext, Mode.Validation);
-      expect(context).toEqual(new DescriptionDictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("strategy is not a mapping token", () => {
@@ -81,7 +81,7 @@ describe("matrix context", () => {
       expect(workflowContext.job!.strategy).toBeDefined();
 
       const context = getMatrixContext(workflowContext, Mode.Validation);
-      expect(context).toEqual(new DescriptionDictionary());
+      expect(context).toEqual(new data.Null());
     });
 
     it("matrix is not defined", () => {

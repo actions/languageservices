@@ -1,8 +1,8 @@
 import {Lexer, Parser} from "@actions/expressions";
-import {splitAllowedContext} from "../allowed-context";
-import {DefinitionInfo} from "../schema/definition-info";
-import {ScalarToken} from "./scalar-token";
-import {TokenRange} from "./token-range";
+import {splitAllowedContext} from "../allowed-context.js";
+import {DefinitionInfo} from "../schema/definition-info.js";
+import {ScalarToken} from "./scalar-token.js";
+import {TokenRange} from "./token-range.js";
 
 export abstract class ExpressionToken extends ScalarToken {
   public readonly directive: string | undefined;

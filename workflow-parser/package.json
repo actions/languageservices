@@ -1,6 +1,6 @@
 {
   "name": "@actions/workflow-parser",
-  "version": "0.3.12",
+  "version": "0.3.27",
   "license": "MIT",
   "type": "module",
   "source": "./src/index.ts",
@@ -9,10 +9,12 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     },
     "./*": {
-      "import": "./dist/*.js"
+      "import": "./dist/*.js",
+      "types": "./dist/*.d.ts"
     }
   },
   "typesVersions": {
@@ -36,19 +38,22 @@
     "format-check": "prettier --check '**/*.ts'",
     "lint": "eslint 'src/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts'",
+    "minify-json": "node ../script/minify-json.js src/workflow-v1.0.json",
+    "prebuild": "npm run minify-json",
     "prepublishOnly": "npm run build && npm run test",
+    "pretest": "npm run minify-json",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest",
     "test-xlang": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --testPathPattern xlang",
     "test-watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --watch",
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@actions/expressions": "^0.3.12",
+    "@actions/expressions": "^0.3.27",
     "cronstrue": "^2.21.0",
     "yaml": "^2.0.0-8"
   },
   "engines": {
-    "node": ">= 16.15"
+    "node": ">= 18"
   },
   "files": [
     "dist/**/*"

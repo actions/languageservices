@@ -1,14 +1,21 @@
-import {TemplateContext} from "../../templates/template-context";
-import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
-import {isSequence, isString} from "../../templates/tokens/type-guards";
-import {Step, WorkflowJob} from "../workflow-template";
-import {convertConcurrency} from "./concurrency";
-import {convertToJobContainer, convertToJobServices} from "./container";
-import {handleTemplateTokenErrors} from "./handle-errors";
-import {IdBuilder} from "./id-builder";
-import {convertToActionsEnvironmentRef} from "./job/environment";
-import {convertRunsOn} from "./job/runs-on";
-import {convertSteps} from "./steps";
+import {TemplateContext} from "../../templates/template-context.js";
+import {
+  BasicExpressionToken,
+  MappingToken,
+  ScalarToken,
+  StringToken,
+  TemplateToken
+} from "../../templates/tokens/index.js";
+import {isSequence, isString} from "../../templates/tokens/type-guards.js";
+import {Step, WorkflowJob} from "../workflow-template.js";
+import {convertToIfCondition} from "./if-condition.js";
+import {convertConcurrency} from "./concurrency.js";
+import {convertToJobContainer, convertToJobServices} from "./container.js";
+import {handleTemplateTokenErrors} from "./handle-errors.js";
+import {IdBuilder} from "./id-builder.js";
+import {convertToActionsEnvironmentRef} from "./job/environment.js";
+import {convertRunsOn} from "./job/runs-on.js";
+import {convertSteps} from "./steps.js";
 
 export function convertJob(context: TemplateContext, jobKey: StringToken, token: MappingToken): WorkflowJob {
   const error = new IdBuilder().tryAddKnownId(jobKey.value);
@@ -16,7 +23,17 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
     context.error(jobKey, error);
   }
 
-  let concurrency, container, env, environment, name, outputs, runsOn, services, strategy: TemplateToken | undefined;
+  let concurrency,
+    container,
+    env,
+    environment,
+    ifCondition,
+    name,
+    outputs,
+    runsOn,
+    services,
+    strategy,
+    snapshot: TemplateToken | undefined;
   let needs: StringToken[] | undefined = undefined;
   let steps: Step[] = [];
   let workflowJobRef: StringToken | undefined;
@@ -48,6 +65,10 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
           convertToActionsEnvironmentRef(context, item.value)
         );
         environment = item.value;
+        break;
+
+      case "if":
+        ifCondition = convertToIfCondition(context, item.value);
         break;
 
       case "name":
@@ -86,6 +107,10 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
         services = item.value;
         break;
 
+      case "snapshot":
+        snapshot = item.value;
+        break;
+
       case "steps":
         steps = convertSteps(context, item.value);
         break;
@@ -121,7 +146,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       id: jobKey,
       name: jobName(name, jobKey),
       needs: needs || [],
-      if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       ref: workflowJobRef,
       "input-definitions": undefined,
       "input-values": workflowJobInputs,
@@ -138,7 +163,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       id: jobKey,
       name: jobName(name, jobKey),
       needs,
-      if: new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       env,
       concurrency,
       environment,
@@ -147,7 +172,8 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
       container,
       services,
       outputs,
-      steps
+      steps,
+      snapshot
     };
   }
 }

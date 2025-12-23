@@ -26,6 +26,8 @@ export async function getVariables(
     return secretsContext;
   }
 
+  const variablesContext = defaultContext || new DescriptionDictionary();
+
   let environmentName: string | undefined;
   if (workflowContext?.job?.environment) {
     if (isString(workflowContext.job.environment)) {
@@ -35,14 +37,19 @@ export async function getVariables(
         if (isString(x.key) && x.key.value === "name") {
           if (isString(x.value)) {
             environmentName = x.value.value;
+          } else {
+            // this means we have a dynamic environment, in those situations we want to skip validation
+            variablesContext.complete = false;
           }
           break;
         }
       }
+    } else {
+      // if the expression is something like environment: ${{ ... }} then we want to skip validation
+      variablesContext.complete = false;
     }
   }
 
-  const variablesContext = defaultContext || new DescriptionDictionary();
   try {
     const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
 
@@ -115,7 +122,7 @@ export async function getRemoteVariables(
     environmentVariables:
       (environmentName &&
         (await cache.get(`${repo.owner}/${repo.name}/vars/environment/${environmentName}`, undefined, () =>
-          fetchEnvironmentVariables(octokit, repo.id, environmentName)
+          fetchEnvironmentVariables(octokit, repo.owner, repo.name, environmentName)
         ))) ||
       [],
     organizationVariables: await cache.get(`${repo.owner}/vars`, undefined, () =>
@@ -146,14 +153,16 @@ async function fetchVariables(octokit: Octokit, owner: string, name: string): Pr
 
 async function fetchEnvironmentVariables(
   octokit: Octokit,
-  repositoryId: number,
+  owner: string,
+  name: string,
   environmentName: string
 ): Promise<Pair[]> {
   try {
     return await octokit.paginate(
       octokit.actions.listEnvironmentVariables,
       {
-        repository_id: repositoryId,
+        owner: owner,
+        repo: name,
         environment_name: environmentName,
         per_page: 100
       },
