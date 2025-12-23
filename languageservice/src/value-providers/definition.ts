@@ -203,10 +203,16 @@ function oneOfValues(
   return distinctValues(values);
 }
 
+/**
+ * Deduplicates values by label and detail.
+ * Values with the same label but different details are preserved as distinct items.
+ */
 function distinctValues(values: Value[]): Value[] {
   const map = new Map<string, Value>();
   for (const value of values) {
-    map.set(value.label, value);
+    // Include detail in the key to preserve variants with different details
+    const key = value.detail ? `${value.label}\0${value.detail}` : value.label;
+    map.set(key, value);
   }
   return Array.from(map.values());
 }
@@ -306,10 +312,10 @@ function expandOneOfToCompletions(
         ? `\n${indentation}${key}:\n${indentation}${indentation}- `
         : `${key}:\n${indentation}- `;
     results.push({
-      label: needsQualifier ? `${key} (list)` : key,
+      label: key,
       description,
+      detail: needsQualifier ? "list" : undefined,
       insertText,
-      filterText: needsQualifier ? key : undefined,
       sortText: needsQualifier ? `${key} 1` : undefined
     });
   }
@@ -320,10 +326,10 @@ function expandOneOfToCompletions(
         ? `\n${indentation}${key}:\n${indentation}${indentation}`
         : `${key}:\n${indentation}`;
     results.push({
-      label: needsQualifier ? `${key} (full syntax)` : key,
+      label: key,
       description,
+      detail: needsQualifier ? "full syntax" : undefined,
       insertText,
-      filterText: needsQualifier ? key : undefined,
       sortText: needsQualifier ? `${key} 2` : undefined
     });
   }
