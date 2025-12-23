@@ -494,12 +494,15 @@ jobs:
     expect(result.filter(x => x.label === "run-name").map(x => x.textEdit?.newText)).toEqual(["run-name: "]);
   });
 
-  it("adds new line for nested mapping", async () => {
+  it("does not show mapping keys when user has started typing a scalar value", async () => {
+    // User typed `workflow_dispatch: in` - they've committed to a scalar value
+    // Should not show mapping keys like `inputs`
     const input = "on:\n  workflow_dispatch: in|";
 
     const result = await complete(...getPositionFromCursor(input));
 
-    expect(result.filter(x => x.label === "inputs").map(x => x.textEdit?.newText)).toEqual(["\n  inputs:\n    "]);
+    // No mapping keys should be shown since user started typing a scalar
+    expect(result.filter(x => x.label === "inputs")).toEqual([]);
   });
 
   it("adds : for one-of", async () => {
@@ -510,40 +513,59 @@ jobs:
     expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["types: "]);
   });
 
-  it("adds newline and indentation for one-of in key mode", async () => {
+  it("does not show mapping keys for one-of when user has typed a scalar value", async () => {
+    // User typed `check_run: ty` - they've committed to scalar form
+    // The only valid value for check_run scalar is null, so no completions
     const input = "on:\n  check_run: ty|";
 
     const result = await complete(...getPositionFromCursor(input));
 
-    // When completing a one-of property in key mode (after colon on same line),
-    // insert newline + indentation + key + colon to create valid YAML structure
-    expect(result.filter(x => x.label === "types").map(x => x.textEdit?.newText)).toEqual(["\n  types: "]);
+    // check_run's scalar form only accepts null, so typing anything should show no completions
+    // (we don't show mapping keys like `types` anymore - user should use `check_run (full syntax)` instead)
+    expect(result.filter(x => x.label === "types")).toEqual([]);
   });
 
-  it("handles mixed string and mapping completions for one-of in key mode", async () => {
+  it("shows all options for one-of when user hasn't committed to a type yet", async () => {
+    // At `permissions: |` user hasn't typed anything yet - show all options
     const input = "on: push\npermissions: |";
 
     const result = await complete(...getPositionFromCursor(input));
 
-    // String values (read-all, write-all) should insert directly without newline
+    // String values (read-all, write-all) should be available
     expect(result.filter(x => x.label === "read-all").map(x => x.textEdit?.newText)).toEqual(["read-all"]);
     expect(result.filter(x => x.label === "write-all").map(x => x.textEdit?.newText)).toEqual(["write-all"]);
 
-    // Mapping keys with one-of types should insert with newline and indentation
+    // Mapping keys should also be available (user hasn't committed yet)
     expect(result.filter(x => x.label === "actions").map(x => x.textEdit?.newText)).toEqual(["\n  actions: "]);
     expect(result.filter(x => x.label === "contents").map(x => x.textEdit?.newText)).toEqual(["\n  contents: "]);
   });
 
-  it("shows both simple and full syntax for null+mapping one-of", async () => {
-    // check_run is a one-of: [null, mapping]. Show both:
-    // - check_run (simple, just the key with colon)
-    // - check_run (full syntax) (ready to add mapping keys)
+  it("filters to scalar options when user has started typing a scalar", async () => {
+    // User typed `permissions: r` - they've committed to scalar form
+    const input = "on: push\npermissions: r|";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // Only scalar values should be shown (filtering on 'r')
+    expect(result.some(x => x.label === "read-all")).toBe(true);
+    // Mapping keys should NOT be shown
+    expect(result.filter(x => x.label === "actions")).toEqual([]);
+    expect(result.filter(x => x.label === "contents")).toEqual([]);
+  });
+
+  it("shows full syntax for null+mapping one-of (skips null-only scalar)", async () => {
+    // check_run is a one-of: [null, mapping].
+    // Since the scalar form is only null (no string constants), we skip it
+    // to avoid clobbering string constants from elsewhere in the schema.
+    // User should see check_run (full syntax) for the mapping form.
     const input = "on:\n  |";
 
     const result = await complete(...getPositionFromCursor(input));
 
-    // Should have both check_run and check_run (full syntax)
+    // Should NOT have plain check_run (null-only scalar is skipped)
+    // Instead, string constant check_run from on-string-strict is available
     expect(result.some(x => x.label === "check_run")).toBe(true);
+    // Full syntax variant should be available
     expect(result.some(x => x.label === "check_run (full syntax)")).toBe(true);
   });
 
@@ -609,5 +631,45 @@ jobs:
     // Sequence and mapping: qualified labels should filter on base key
     expect(result.find(x => x.label === "runs-on (list)")?.filterText).toEqual("runs-on");
     expect(result.find(x => x.label === "runs-on (full syntax)")?.filterText).toEqual("runs-on");
+  });
+
+  it("scalar event completion inserts inline without newline", async () => {
+    // At `on: |` user is completing the value for 'on' key
+    // Scalar events like `push`, `check_run` should insert inline
+    const input = "on: |";
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // Scalar forms should NOT have newline - they insert inline
+    const push = result.find(x => x.label === "push");
+    expect(push?.textEdit?.newText).toEqual("push");
+
+    const checkRun = result.find(x => x.label === "check_run");
+    expect(checkRun?.textEdit?.newText).toEqual("check_run");
+
+    // Full syntax form inserts as a mapping key (with newline in Key mode)
+    // This is expected behavior - it starts the mapping form
+    const checkRunFull = result.find(x => x.label === "check_run (full syntax)");
+    // In Key mode: \n + indent + key + : + \n + indent + indent (for nested content)
+    expect(checkRunFull?.textEdit?.newText).toEqual("\n  check_run:\n    ");
+  });
+
+  it("filters to sequence options when user has started a sequence", async () => {
+    // User started a sequence with `- ` syntax - they've committed to sequence form
+    const input = `on: push
+jobs:
+  build:
+    runs-on:
+      - |`;
+
+    const result = await complete(...getPositionFromCursor(input));
+
+    // Should show runner labels (sequence item values)
+    expect(result.some(x => x.label === "ubuntu-latest")).toBe(true);
+    expect(result.some(x => x.label === "macos-latest")).toBe(true);
+
+    // Should NOT show mapping keys like `group` or `labels` (those are for full syntax)
+    expect(result.filter(x => x.label === "group")).toEqual([]);
+    expect(result.filter(x => x.label === "labels")).toEqual([]);
   });
 });

@@ -24,7 +24,7 @@ import {isPlaceholder, transform} from "./utils/transform.js";
 import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache.js";
 import {Value, ValueProviderConfig} from "./value-providers/config.js";
 import {defaultValueProviders} from "./value-providers/default.js";
-import {DefinitionValueMode, definitionValues} from "./value-providers/definition.js";
+import {DefinitionValueMode, definitionValues, TokenStructure} from "./value-providers/definition.js";
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
@@ -143,6 +143,17 @@ export async function complete(
   });
 }
 
+/**
+ * Retrieves completion values for a token based on value providers and definitions.
+ *
+ * This function determines which values to suggest for auto-completion by:
+ * 1. First checking for custom value providers configured for the token's definition key
+ * 2. Then checking for default value providers for the token's definition key
+ * 3. Finally falling back to values derived from the token's schema definition
+ *
+ * The results are filtered to exclude duplicates (e.g., keys already defined in a mapping
+ * or values already present in a sequence) and sorted alphabetically.
+ */
 async function getValues(
   token: TemplateToken | null,
   keyToken: TemplateToken | null,
@@ -182,10 +193,75 @@ async function getValues(
     return [];
   }
 
-  const values = definitionValues(def, indentation, keyToken ? DefinitionValueMode.Key : DefinitionValueMode.Parent);
+  // When a schema allows multiple formats (e.g., `runs-on` can be a string OR a mapping),
+  // only suggest completions that match what the user has already started typing.
+  // For example, if they've started a mapping, don't suggest string values.
+  const tokenStructure = getTokenStructure(token);
+  const values = definitionValues(
+    def,
+    indentation,
+    keyToken ? DefinitionValueMode.Key : DefinitionValueMode.Parent,
+    tokenStructure
+  );
   return filterAndSortCompletionOptions(values, existingValues);
 }
 
+/**
+ * Determines what YAML structure the user has committed to, if any.
+ *
+ * Returns:
+ * - "mapping" if the user has started a key-value structure (e.g., `runs-on:\n  group: |`)
+ * - "sequence" if the user has started a list (e.g., `runs-on:\n  - |`)
+ * - "scalar" if the user has started typing a plain value (e.g., `runs-on: ubuntu-|`)
+ * - undefined if the user hasn't committed yet (e.g., `runs-on: |` with nothing typed)
+ */
+function getTokenStructure(token: TemplateToken | null): TokenStructure {
+  if (!token) {
+    return undefined;
+  }
+
+  switch (token.templateTokenType) {
+    case TokenType.Mapping:
+      return "mapping";
+    case TokenType.Sequence:
+      return "sequence";
+    case TokenType.Null:
+      // Null means `key: ` with nothing - user hasn't committed to a type yet
+      return undefined;
+    case TokenType.String: {
+      // Empty string means `key: |` - user hasn't committed yet
+      // Non-empty string means user has started typing a scalar value
+      const stringToken = token.assertString("getTokenStructure expected string token");
+      if (stringToken.value === "") {
+        return undefined;
+      }
+      return "scalar";
+    }
+    case TokenType.Boolean:
+    case TokenType.Number:
+      return "scalar";
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Collects values that are already present in the current context, so they can be
+ * excluded from completion suggestions.
+ *
+ * For sequences (lists), returns all existing items. For example, if the user has:
+ *   labels:
+ *     - bug
+ *     - |
+ * This returns {"bug"} so we don't suggest "bug" again.
+ *
+ * For mappings, returns all existing keys. For example, if the user has:
+ *   jobs:
+ *     build:
+ *       runs-on: ubuntu-latest
+ *       |
+ * This returns {"runs-on"} so we don't suggest "runs-on" again.
+ */
 export function getExistingValues(token: TemplateToken | null, parent: TemplateToken) {
   // For incomplete YAML, we may only have a parent token
   if (token) {
