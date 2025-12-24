@@ -4,8 +4,8 @@ import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {Octokit} from "@octokit/rest";
-import {fetchActionMetadata} from "../utils/action-metadata";
-import {TTLCache} from "../utils/cache";
+import {fetchActionMetadata} from "../utils/action-metadata.js";
+import {TTLCache} from "../utils/cache.js";
 
 export async function getActionInputDescription(
   client: Octokit,

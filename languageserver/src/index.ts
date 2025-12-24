@@ -6,7 +6,7 @@ import {
 } from "vscode-languageserver/browser";
 import {createConnection as createNodeConnection} from "vscode-languageserver/node";
 
-import {initConnection} from "./connection";
+import {initConnection} from "./connection.js";
 
 /** Helper function determining whether we are executing with node runtime */
 function isNode(): boolean {

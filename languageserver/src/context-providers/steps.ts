@@ -3,8 +3,8 @@ import {parseActionReference} from "@actions/languageservice/action";
 import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
 import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {Octokit} from "@octokit/rest";
-import {TTLCache} from "../utils/cache";
-import {getActionOutputs} from "./action-outputs";
+import {TTLCache} from "../utils/cache.js";
+import {getActionOutputs} from "./action-outputs.js";
 
 export async function getStepsContext(
   octokit: Octokit,
