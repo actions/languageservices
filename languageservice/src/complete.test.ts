@@ -212,7 +212,9 @@ jobs:
     expect(result[0].label).toEqual("my-custom-label");
   });
 
-  it("does not show parent mapping sibling keys", async () => {
+  it("does not show mapping keys or parent sibling keys in Key mode", async () => {
+    // At `container: |`, the scalar form is a string with no constants.
+    // Mapping keys should NOT be shown - users should use `container (full syntax)`.
     const input = `on: push
 jobs:
   build:
@@ -220,20 +222,21 @@ jobs:
     runs-on: ubuntu-latest`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(6);
-    // Should not contain other top-level job keys like `if` and `runs-on`
-    expect(result.map(x => x.label)).not.toContain("if");
-    expect(result.map(x => x.label)).not.toContain("runs-on");
+    // No completions because: scalar has no constants, mapping variant skipped in Key mode
+    expect(result.length).toEqual(0);
   });
 
-  it("shows mapping keys within a new map ", async () => {
+  it("does not show mapping keys in Key mode when structure is uncommitted", async () => {
+    // At `concurrency: |`, user is in Key mode but hasn't committed to a structure.
+    // The scalar form is a string with no constants, so no completions.
+    // Mapping keys are NOT shown - users should use `concurrency (full syntax)` at parent level.
     const input = `on: push
 jobs:
   build:
     concurrency: |`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result.map(x => x.label).sort()).toEqual(["cancel-in-progress", "group"]);
+    expect(result.map(x => x.label)).toEqual([]);
   });
 
   it("job key", async () => {
@@ -475,15 +478,15 @@ jobs:
     });
   });
 
-  it("adds a new line and indentation for mapping keys when the key is given", async () => {
+  it("does not show mapping keys in Key mode for one-of with mapping variant", async () => {
+    // At `concurrency: |`, mapping keys should NOT be shown.
+    // Users who want the mapping form should use `concurrency (full syntax)` at parent level.
     const input = "concurrency: |";
 
     const result = await complete(...getPositionFromCursor(input));
 
-    expect(result.filter(x => x.label === "cancel-in-progress").map(x => x.textEdit?.newText)).toEqual([
-      "\n  cancel-in-progress: "
-    ]);
-    expect(result.filter(x => x.label === "group").map(x => x.textEdit?.newText)).toEqual(["\n  group: "]);
+    expect(result.filter(x => x.label === "cancel-in-progress")).toEqual([]);
+    expect(result.filter(x => x.label === "group")).toEqual([]);
   });
 
   it("does not add new line if no key in line", async () => {
@@ -525,8 +528,10 @@ jobs:
     expect(result.filter(x => x.label === "types")).toEqual([]);
   });
 
-  it("shows all options for one-of when user hasn't committed to a type yet", async () => {
-    // At `permissions: |` user hasn't typed anything yet - show all options
+  it("shows only scalar options for one-of in Key mode when user hasn't committed to a type", async () => {
+    // At `permissions: |` user hasn't typed anything yet - show only scalar options
+    // Mapping keys are NOT shown because they would require a newline
+    // Users who want the mapping form can use `permissions (full syntax)` at the parent level
     const input = "on: push\npermissions: |";
 
     const result = await complete(...getPositionFromCursor(input));
@@ -535,9 +540,9 @@ jobs:
     expect(result.filter(x => x.label === "read-all").map(x => x.textEdit?.newText)).toEqual(["read-all"]);
     expect(result.filter(x => x.label === "write-all").map(x => x.textEdit?.newText)).toEqual(["write-all"]);
 
-    // Mapping keys should also be available (user hasn't committed yet)
-    expect(result.filter(x => x.label === "actions").map(x => x.textEdit?.newText)).toEqual(["\n  actions: "]);
-    expect(result.filter(x => x.label === "contents").map(x => x.textEdit?.newText)).toEqual(["\n  contents: "]);
+    // Mapping keys should NOT be shown - they require a newline which is confusing inline
+    expect(result.filter(x => x.label === "actions")).toEqual([]);
+    expect(result.filter(x => x.label === "contents")).toEqual([]);
   });
 
   it("filters to scalar options when user has started typing a scalar", async () => {
@@ -603,17 +608,18 @@ jobs:
     expect(result.find(x => x.label === "runs-on (full syntax)")?.textEdit?.newText).toEqual("runs-on:\n  ");
   });
 
-  it("generates correct insertText for one-of variants in key mode", async () => {
-    // concurrency is a one-of: [string, mapping] - testing key mode (after colon on same line)
-    const input = "concurrency: |";
+  it("generates correct insertText for one-of variants in parent mode", async () => {
+    // concurrency is a one-of: [string, mapping] - testing parent mode (inside mapping)
+    // At `concurrency:\n  |`, user HAS committed to mapping structure, so mapping keys are shown
+    const input = "concurrency:\n  |";
 
     const result = await complete(...getPositionFromCursor(input));
 
-    // Scalar in key mode: newline + indented key + colon + space
-    expect(result.find(x => x.label === "group")?.textEdit?.newText).toEqual("\n  group: ");
+    // In parent mode: just key + colon + space (no leading newline)
+    expect(result.find(x => x.label === "group")?.textEdit?.newText).toEqual("group: ");
 
-    // Boolean in key mode (cancel-in-progress): newline + indented key + colon + space
-    expect(result.find(x => x.label === "cancel-in-progress")?.textEdit?.newText).toEqual("\n  cancel-in-progress: ");
+    // Boolean in parent mode (cancel-in-progress): key + colon + space
+    expect(result.find(x => x.label === "cancel-in-progress")?.textEdit?.newText).toEqual("cancel-in-progress: ");
   });
 
   it("uses base key as filterText for qualified one-of variants", async () => {
@@ -647,11 +653,10 @@ jobs:
     const checkRun = result.find(x => x.label === "check_run");
     expect(checkRun?.textEdit?.newText).toEqual("check_run");
 
-    // Full syntax form inserts as a mapping key (with newline in Key mode)
-    // This is expected behavior - it starts the mapping form
-    const checkRunFull = result.find(x => x.label === "check_run (full syntax)");
-    // In Key mode: \n + indent + key + : + \n + indent + indent (for nested content)
-    expect(checkRunFull?.textEdit?.newText).toEqual("\n  check_run:\n    ");
+    // Full syntax form should NOT be shown in Key mode - it requires a newline
+    // which is confusing when typing inline. Users who want the mapping form
+    // can use `on (full syntax)` at the parent level.
+    expect(result.find(x => x.label === "check_run (full syntax)")).toBeUndefined();
   });
 
   it("filters to sequence options when user has started a sequence", async () => {
