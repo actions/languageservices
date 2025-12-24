@@ -198,6 +198,17 @@ function oneOfValues(
       }
     }
 
+    // In Key mode (after colon, e.g., `on: |`), only include scalar variants when
+    // completing an empty value. Mapping/sequence forms require newlines which is
+    // confusing when typing inline. Users who want those forms can use completions
+    // like `(full syntax)` or `(list)` at the parent level.
+    if (!tokenStructure && mode === DefinitionValueMode.Key) {
+      const variantBucket = getStructuralBucket(variantDef.definitionType);
+      if (variantBucket !== "scalar") {
+        continue;
+      }
+    }
+
     values.push(...definitionValues(variantDef, indentation, mode, tokenStructure));
   }
   return distinctValues(values);
