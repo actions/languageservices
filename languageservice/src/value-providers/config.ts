@@ -21,6 +21,12 @@ export interface Value {
 
   /** Sort text to control ordering, if not given `label` will be used for sorting */
   sortText?: string;
+
+  /** Custom text edit with specific range, overrides default range calculation */
+  textEdit?: {
+    range: {start: {line: number; character: number}; end: {line: number; character: number}};
+    newText: string;
+  };
 }
 
 export enum ValueProviderKind {
