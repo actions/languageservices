@@ -2,6 +2,8 @@ import {complete as completeExpression, DescriptionDictionary} from "@actions/ex
 import {CompletionItem as ExpressionCompletionItem} from "@actions/expressions/completion";
 import {isBasicExpression, isSequence, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {DefinitionType} from "@actions/workflow-parser/templates/schema/definition-type";
+import {OneOfDefinition} from "@actions/workflow-parser/templates/schema/one-of-definition";
 import {OPEN_EXPRESSION} from "@actions/workflow-parser/templates/template-constants";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/index";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
@@ -9,6 +11,7 @@ import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range"
 import {TokenType} from "@actions/workflow-parser/templates/tokens/types";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
+import {getWorkflowSchema} from "@actions/workflow-parser/workflows/workflow-schema";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config.js";
@@ -100,8 +103,17 @@ export async function complete(
 
   const values = await getValues(token, keyToken, parent, config?.valueProviderConfig, workflowContext, indentString);
 
+  // Add escape hatch completions when completing an empty scalar value for a one-of field.
+  // These provide a way out of "dead end" situations where no scalar completions exist
+  // but alternative structural forms (list, mapping) are available.
+  const escapeHatches = getEscapeHatchCompletions(token, keyToken, indentString, newPos);
+  values.push(...escapeHatches);
+
+  // Figure out what text to replace when the user picks a completion.
+  // For example, if they typed `runs-|` and pick `runs-on`, we need to replace `runs-`.
   let replaceRange: Range | undefined;
   if (token?.range) {
+    // Prefer the token's range since it accounts for YAML syntax like quotes
     replaceRange = mapRange(token.range);
   } else if (!token) {
     // Not a valid token, create a range from the current position
@@ -127,6 +139,16 @@ export async function complete(
   return values.map(value => {
     const newText = value.insertText || value.label;
 
+    // Escape hatches provide their own textEdit to restructure the YAML
+    let textEdit: TextEdit;
+    if (value.textEdit) {
+      textEdit = TextEdit.replace(value.textEdit.range, value.textEdit.newText);
+    } else if (replaceRange) {
+      textEdit = TextEdit.replace(replaceRange, newText);
+    } else {
+      textEdit = TextEdit.insert(position, newText);
+    }
+
     const item: CompletionItem = {
       label: value.label,
       detail: value.detail,
@@ -137,7 +159,7 @@ export async function complete(
         value: value.description
       },
       tags: value.deprecated ? [CompletionItemTag.Deprecated] : undefined,
-      textEdit: replaceRange ? TextEdit.replace(replaceRange, newText) : TextEdit.insert(position, newText)
+      textEdit
     };
 
     return item;
@@ -244,6 +266,112 @@ function getTokenStructure(token: TemplateToken | null): TokenStructure {
     default:
       return undefined;
   }
+}
+
+/**
+ * Generates escape hatch completions that allow switching from scalar form to
+ * alternative structural forms (sequence or mapping) when the value is empty.
+ *
+ * For example, at `runs-on: |`, this adds "(switch to list)" and "(switch to full syntax)"
+ * completions that restructure the YAML to `runs-on:\n  - |` or `runs-on:\n  |`.
+ *
+ * Only shown when:
+ * - Completing in value position (keyToken exists)
+ * - Value is empty (user hasn't committed to a structure yet)
+ * - Definition allows sequence or mapping structure
+ */
+function getEscapeHatchCompletions(
+  token: TemplateToken | null,
+  keyToken: TemplateToken | null,
+  indentation: string,
+  position: Position
+): Value[] {
+  // Only show escape hatches when value is empty
+  const tokenStructure = getTokenStructure(token);
+  if (tokenStructure !== undefined) {
+    return [];
+  }
+
+  // Need a key token with a definition
+  if (!keyToken?.definition) {
+    return [];
+  }
+
+  // Determine which structural types are available from the definition
+  const def = keyToken.definition;
+  const schema = getWorkflowSchema();
+  const buckets = {
+    sequence: false,
+    mapping: false
+  };
+
+  if (def instanceof OneOfDefinition) {
+    // OneOf: check each variant
+    for (const variantKey of def.oneOf) {
+      const variantDef = schema.definitions[variantKey];
+      if (variantDef) {
+        switch (variantDef.definitionType) {
+          case DefinitionType.Sequence:
+            buckets.sequence = true;
+            break;
+          case DefinitionType.Mapping:
+            buckets.mapping = true;
+            break;
+        }
+      }
+    }
+  } else {
+    // Single definition type
+    switch (def.definitionType) {
+      case DefinitionType.Sequence:
+        buckets.sequence = true;
+        break;
+      case DefinitionType.Mapping:
+        buckets.mapping = true;
+        break;
+    }
+  }
+
+  const results: Value[] = [];
+  const keyName = isString(keyToken) ? keyToken.value : "";
+  const keyRange = keyToken.range;
+
+  if (!keyRange || !keyName) {
+    return [];
+  }
+
+  // Calculate the range from key start to current position
+  // This covers "key: " so we can replace it with "key:\n  - " or "key:\n  "
+  const editRange = {
+    start: {line: keyRange.start.line - 1, character: keyRange.start.column - 1},
+    end: {line: position.line, character: position.character}
+  };
+
+  if (buckets.sequence) {
+    results.push({
+      label: "(switch to list)",
+      sortText: "zzz_switch_1",
+      filterText: keyName, // Allow filtering by key name
+      textEdit: {
+        range: editRange,
+        newText: `${keyName}:\n${indentation}- `
+      }
+    });
+  }
+
+  if (buckets.mapping) {
+    results.push({
+      label: "(switch to mapping)",
+      sortText: "zzz_switch_2",
+      filterText: keyName, // Allow filtering by key name
+      textEdit: {
+        range: editRange,
+        newText: `${keyName}:\n${indentation}`
+      }
+    });
+  }
+
+  return results;
 }
 
 /**

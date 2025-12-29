@@ -19,9 +19,12 @@ describe("completion", () => {
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(12);
+    // 12 runner labels + 2 escape hatches (switch to list, switch to full syntax)
+    expect(result.length).toEqual(14);
     const labels = result.map(x => x.label);
     expect(labels).toContain("macos-latest");
+    expect(labels).toContain("(switch to list)");
+    expect(labels).toContain("(switch to mapping)");
   });
 
   it("needs", async () => {
@@ -95,6 +98,7 @@ jobs:
   release:
     types: |`;
     const result = await complete(...getPositionFromCursor(input));
+    // Expect string values plus escape hatch to switch to list form
     expect(result.map(x => x.label)).toEqual([
       "created",
       "deleted",
@@ -102,7 +106,8 @@ jobs:
       "prereleased",
       "published",
       "released",
-      "unpublished"
+      "unpublished",
+      "(switch to list)"
     ]);
   });
 
@@ -190,8 +195,11 @@ jobs:
     const result = await complete(...getPositionFromCursor(input), {valueProviderConfig: config});
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(1);
+    // Custom value plus escape hatches for list and full syntax
+    expect(result.length).toEqual(3);
     expect(result[0].label).toEqual("my-custom-label");
+    expect(result.map(x => x.label)).toContain("(switch to list)");
+    expect(result.map(x => x.label)).toContain("(switch to mapping)");
   });
 
   it("custom value providers for sequences", async () => {
@@ -214,7 +222,7 @@ jobs:
 
   it("does not show mapping keys or parent sibling keys in Key mode", async () => {
     // At `container: |`, the scalar form is a string with no constants.
-    // Mapping keys should NOT be shown - users should use `container (full syntax)`.
+    // Mapping keys should NOT be shown inline - but escape hatch to full syntax IS shown.
     const input = `on: push
 jobs:
   build:
@@ -222,21 +230,21 @@ jobs:
     runs-on: ubuntu-latest`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    // No completions because: scalar has no constants, mapping variant skipped in Key mode
-    expect(result.length).toEqual(0);
+    // Only escape hatch to full syntax (container has mapping form but no sequence)
+    expect(result.map(x => x.label)).toEqual(["(switch to mapping)"]);
   });
 
   it("does not show mapping keys in Key mode when structure is uncommitted", async () => {
     // At `concurrency: |`, user is in Key mode but hasn't committed to a structure.
-    // The scalar form is a string with no constants, so no completions.
-    // Mapping keys are NOT shown - users should use `concurrency (full syntax)` at parent level.
+    // The scalar form is a string with no constants, so no scalar completions.
+    // But escape hatch to full syntax IS shown as a way out.
     const input = `on: push
 jobs:
   build:
     concurrency: |`;
     const result = await complete(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result.map(x => x.label)).toEqual([]);
+    expect(result.map(x => x.label)).toEqual(["(switch to mapping)"]);
   });
 
   it("job key", async () => {
@@ -690,5 +698,131 @@ jobs:
     // Should NOT show mapping keys like `group` or `labels` (those are for full syntax)
     expect(result.filter(x => x.label === "group")).toEqual([]);
     expect(result.filter(x => x.label === "labels")).toEqual([]);
+  });
+
+  describe("escape hatch completions", () => {
+    it("runs-on shows switch to list and full syntax", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // Should have escape hatches at the end
+      const switchToList = result.find(x => x.label === "(switch to list)");
+      const switchToFull = result.find(x => x.label === "(switch to mapping)");
+
+      expect(switchToList).toBeDefined();
+      expect(switchToFull).toBeDefined();
+
+      // Escape hatches should sort last
+      expect(switchToList!.sortText).toEqual("zzz_switch_1");
+      expect(switchToFull!.sortText).toEqual("zzz_switch_2");
+
+      // Escape hatches should have textEdit that restructures the YAML
+      const listEdit = switchToList!.textEdit as TextEdit;
+      const fullEdit = switchToFull!.textEdit as TextEdit;
+
+      expect(listEdit.newText).toEqual("runs-on:\n  - ");
+      expect(fullEdit.newText).toEqual("runs-on:\n  ");
+
+      // TextEdit range should cover from key start to cursor position
+      expect(listEdit.range.start).toEqual({line: 3, character: 4});
+      expect(fullEdit.range.start).toEqual({line: 3, character: 4});
+    });
+
+    it("permissions shows only switch to full syntax (no sequence form)", async () => {
+      const input = `on: push
+permissions: |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // Should have full syntax escape hatch but NOT list (permissions has no sequence form)
+      expect(result.some(x => x.label === "(switch to mapping)")).toBe(true);
+      expect(result.some(x => x.label === "(switch to list)")).toBe(false);
+    });
+
+    it("escape hatches are not shown when value is non-empty", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-|`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // User has started typing a scalar value, no escape hatches
+      expect(result.some(x => x.label === "(switch to list)")).toBe(false);
+      expect(result.some(x => x.label === "(switch to mapping)")).toBe(false);
+    });
+
+    it("escape hatches are not shown when inside a sequence", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on:
+      - |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // User is already in sequence form, no escape hatches
+      expect(result.some(x => x.label === "(switch to list)")).toBe(false);
+      expect(result.some(x => x.label === "(switch to mapping)")).toBe(false);
+    });
+
+    it("escape hatches are not shown when inside a mapping", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on:
+      group: |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // User is in mapping form completing a value, no escape hatches for the parent
+      expect(result.some(x => x.label === "(switch to list)")).toBe(false);
+      expect(result.some(x => x.label === "(switch to mapping)")).toBe(false);
+    });
+
+    it("escape hatches ARE shown even when no scalar completions exist", async () => {
+      // concurrency: | has no scalar constants, but escape hatch provides a way out
+      const input = `on: push
+jobs:
+  build:
+    concurrency: |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // Escape hatch to mapping should be available even with no scalar completions
+      expect(result.map(x => x.label)).toEqual(["(switch to mapping)"]);
+    });
+
+    it("pure mapping type (strategy) shows switch to mapping", async () => {
+      const input = `on: push
+jobs:
+  build:
+    strategy: |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      expect(result.some(x => x.label === "(switch to mapping)")).toBe(true);
+    });
+
+    it("pure sequence type (steps) shows switch to list", async () => {
+      const input = `on: push
+jobs:
+  build:
+    steps: |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      expect(result.some(x => x.label === "(switch to list)")).toBe(true);
+    });
+
+    it("selecting switch to list restructures YAML", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      const switchToList = result.find(x => x.label === "(switch to list)");
+      const textEdit = switchToList!.textEdit as TextEdit;
+
+      // Applying this edit to "runs-on: " should produce "runs-on:\n  - "
+      expect(textEdit.newText).toEqual("runs-on:\n  - ");
+    });
   });
 });
