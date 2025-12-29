@@ -258,17 +258,6 @@ function validateCronExpression(diagnostics: Diagnostic[], token: StringToken): 
         href: CRON_SCHEDULE_DOCS_URL
       }
     });
-  } else {
-    // Show info message for valid cron expressions
-    diagnostics.push({
-      message: description,
-      range: mapRange(token.range),
-      severity: DiagnosticSeverity.Information,
-      code: "on-schedule",
-      codeDescription: {
-        href: CRON_SCHEDULE_DOCS_URL
-      }
-    });
   }
 }
 

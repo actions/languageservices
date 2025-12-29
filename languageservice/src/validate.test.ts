@@ -231,7 +231,7 @@ jobs:
     } as Diagnostic);
   });
 
-  it("cron with interval of 5 minutes or more shows info", async () => {
+  it("cron with interval of 5 minutes or more shows no diagnostic", async () => {
     const result = await validate(
       createDocument(
         "wf.yaml",
@@ -245,25 +245,7 @@ jobs:
       {valueProviderConfig: defaultValueProviders}
     );
 
-    expect(result.length).toBe(1);
-    expect(result[0]).toEqual({
-      message: "Runs every 5 minutes",
-      severity: DiagnosticSeverity.Information,
-      code: "on-schedule",
-      codeDescription: {
-        href: "https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule"
-      },
-      range: {
-        end: {
-          character: 25,
-          line: 2
-        },
-        start: {
-          character: 12,
-          line: 2
-        }
-      }
-    } as Diagnostic);
+    expect(result.length).toBe(0);
   });
 
   it("cron with comma-separated minutes less than 5 apart shows warning", async () => {

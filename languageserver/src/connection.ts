@@ -1,4 +1,4 @@
-import {documentLinks, hover, validate, ValidationConfig} from "@actions/languageservice";
+import {documentLinks, getInlayHints, hover, validate, ValidationConfig} from "@actions/languageservice";
 import {registerLogger, setLogLevel} from "@actions/languageservice/log";
 import {clearCache, clearCacheEntry} from "@actions/languageservice/utils/workflow-cache";
 import {Octokit} from "@octokit/rest";
@@ -12,6 +12,8 @@ import {
   HoverParams,
   InitializeParams,
   InitializeResult,
+  InlayHint,
+  InlayHintParams,
   TextDocumentIdentifier,
   TextDocumentPositionParams,
   TextDocuments,
@@ -72,7 +74,8 @@ export function initConnection(connection: Connection) {
         hoverProvider: true,
         documentLinkProvider: {
           resolveProvider: false
-        }
+        },
+        inlayHintProvider: true
       }
     };
 
@@ -156,6 +159,12 @@ export function initConnection(connection: Connection) {
   connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
     return documentLinks(getDocument(documents, textDocument), repoContext?.workspaceUri);
+  });
+
+  connection.languages.inlayHint.on(async ({textDocument}: InlayHintParams): Promise<InlayHint[] | null> => {
+    return timeOperation("inlayHints", () => {
+      return getInlayHints(getDocument(documents, textDocument));
+    });
   });
 
   // Make the text document manager listen on the connection
