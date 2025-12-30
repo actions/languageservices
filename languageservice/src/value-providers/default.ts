@@ -19,6 +19,11 @@ export const DEFAULT_RUNNER_LABELS = [
   "self-hosted"
 ];
 
+const runsOnValueProvider = {
+  kind: ValueProviderKind.SuggestedValues,
+  get: () => Promise.resolve(stringsToValues(DEFAULT_RUNNER_LABELS))
+};
+
 export const defaultValueProviders: ValueProviderConfig = {
   needs: {
     kind: ValueProviderKind.AllowedValues,
@@ -32,8 +37,6 @@ export const defaultValueProviders: ValueProviderConfig = {
     kind: ValueProviderKind.SuggestedValues,
     get: (context, existingValues) => Promise.resolve(reusableJobSecrets(context, existingValues))
   },
-  "runs-on": {
-    kind: ValueProviderKind.SuggestedValues,
-    get: () => Promise.resolve(stringsToValues(DEFAULT_RUNNER_LABELS))
-  }
+  "runs-on": runsOnValueProvider,
+  "runs-on-labels": runsOnValueProvider
 };

@@ -825,4 +825,51 @@ jobs:
       expect(textEdit.newText).toEqual("runs-on:\n  - ");
     });
   });
+
+  describe("runs-on mapping syntax", () => {
+    it("provides label completions for labels as scalar", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on:
+      labels: |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // Should show runner labels
+      expect(result.some(x => x.label === "ubuntu-latest")).toBe(true);
+      expect(result.some(x => x.label === "macos-latest")).toBe(true);
+      expect(result.some(x => x.label === "self-hosted")).toBe(true);
+    });
+
+    it("provides label completions for labels as sequence item", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on:
+      labels:
+        - |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // Should show runner labels
+      expect(result.some(x => x.label === "ubuntu-latest")).toBe(true);
+      expect(result.some(x => x.label === "macos-latest")).toBe(true);
+      expect(result.some(x => x.label === "self-hosted")).toBe(true);
+    });
+
+    it("excludes already used labels in sequence", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on:
+      labels:
+        - ubuntu-latest
+        - |`;
+      const result = await complete(...getPositionFromCursor(input));
+
+      // Should NOT show ubuntu-latest since it's already in the list
+      expect(result.some(x => x.label === "ubuntu-latest")).toBe(false);
+      // But should show other labels
+      expect(result.some(x => x.label === "macos-latest")).toBe(true);
+    });
+  });
 });
