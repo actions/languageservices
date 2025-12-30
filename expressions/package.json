@@ -1,6 +1,6 @@
 {
   "name": "@actions/expressions",
-  "version": "0.3.28",
+  "version": "0.3.29",
   "license": "MIT",
   "type": "module",
   "source": "./src/index.ts",
