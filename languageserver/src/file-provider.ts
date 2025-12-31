@@ -2,7 +2,7 @@ import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {fileIdentifier} from "@actions/workflow-parser/workflows/file-reference";
 import {Octokit} from "@octokit/rest";
-import {TTLCache} from "./utils/cache";
+import {TTLCache} from "./utils/cache.js";
 import * as vscodeURI from "vscode-uri";
 
 export function getFileProvider(
