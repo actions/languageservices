@@ -4,7 +4,8 @@ import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-
 import {File} from "@actions/workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {InlayHint, InlayHintKind} from "vscode-languageserver-types";
-import {fetchOrParseWorkflow} from "./utils/workflow-cache.js";
+import {isActionDocument} from "./utils/document-type.js";
+import {getOrParseWorkflow} from "./utils/workflow-cache.js";
 
 /**
  * Returns inlay hints for a workflow document.
@@ -15,12 +16,17 @@ import {fetchOrParseWorkflow} from "./utils/workflow-cache.js";
  * @returns Array of inlay hints
  */
 export function getInlayHints(document: TextDocument): InlayHint[] {
+  // Inlay hints are only supported for workflow files (cron expressions)
+  if (isActionDocument(document.uri)) {
+    return [];
+  }
+
   const file: File = {
     name: document.uri,
     content: document.getText()
   };
 
-  const result = fetchOrParseWorkflow(file, document.uri);
+  const result = getOrParseWorkflow(file, document.uri);
   if (!result?.value) {
     return [];
   }

@@ -1,4 +1,10 @@
-import {convertWorkflowTemplate, parseWorkflow, ParseWorkflowResult, WorkflowTemplate} from "@actions/workflow-parser";
+import {convertWorkflowTemplate, parseWorkflow, TemplateParseResult, WorkflowTemplate} from "@actions/workflow-parser";
+import {parseAction} from "@actions/workflow-parser/actions/action-parser";
+import {
+  ActionTemplate,
+  ActionTemplateConverterOptions,
+  convertActionTemplate
+} from "@actions/workflow-parser/actions/action-template";
 import {WorkflowTemplateConverterOptions} from "@actions/workflow-parser/model/convert";
 import {TemplateContext} from "@actions/workflow-parser/templates/template-context";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
@@ -7,28 +13,36 @@ import {File} from "@actions/workflow-parser/workflows/file";
 import {CompletionConfig} from "../complete.js";
 import {nullTrace} from "../nulltrace.js";
 
-const parsedWorkflowCache = new Map<string, ParseWorkflowResult>();
+const parsedWorkflowCache = new Map<string, TemplateParseResult>();
+const parsedActionCache = new Map<string, TemplateParseResult>();
 const workflowTemplateCache = new Map<string, WorkflowTemplate>();
+const actionTemplateCache = new Map<string, ActionTemplate>();
 
 export function clearCacheEntry(uri: string) {
   parsedWorkflowCache.delete(uri);
-  parsedWorkflowCache.delete(workflowKey(uri, true));
+  parsedWorkflowCache.delete(cacheKey(uri, true));
+  parsedActionCache.delete(uri);
+  parsedActionCache.delete(cacheKey(uri, true));
   workflowTemplateCache.delete(uri);
-  workflowTemplateCache.delete(workflowKey(uri, true));
+  workflowTemplateCache.delete(cacheKey(uri, true));
+  actionTemplateCache.delete(uri);
+  actionTemplateCache.delete(cacheKey(uri, true));
 }
 
 export function clearCache() {
   parsedWorkflowCache.clear();
+  parsedActionCache.clear();
   workflowTemplateCache.clear();
+  actionTemplateCache.clear();
 }
 
 /**
- * Parses a workflow file and caches the result
+ * Parses a workflow file, returning cached result if available
  * @param transformed Indicates whether the workflow has been transformed before parsing
- * @returns the {@link ParseWorkflowResult}
+ * @returns the {@link TemplateParseResult}
  */
-export function fetchOrParseWorkflow(file: File, uri: string, transformed = false): ParseWorkflowResult {
-  const key = workflowKey(uri, transformed);
+export function getOrParseWorkflow(file: File, uri: string, transformed = false): TemplateParseResult {
+  const key = cacheKey(uri, transformed);
   const cachedResult = parsedWorkflowCache.get(key);
   if (cachedResult) {
     return cachedResult;
@@ -39,11 +53,27 @@ export function fetchOrParseWorkflow(file: File, uri: string, transformed = fals
 }
 
 /**
- * Converts a workflow template and caches the result
+ * Parses an action file, returning cached result if available
+ * @param transformed Indicates whether the action has been transformed before parsing
+ * @returns the {@link TemplateParseResult}
+ */
+export function getOrParseAction(file: File, uri: string, transformed = false): TemplateParseResult {
+  const key = cacheKey(uri, transformed);
+  const cachedResult = parsedActionCache.get(key);
+  if (cachedResult) {
+    return cachedResult;
+  }
+  const result = parseAction(file, nullTrace);
+  parsedActionCache.set(key, result);
+  return result;
+}
+
+/**
+ * Converts a workflow template, returning cached result if available
  * @param transformed Indicates whether the workflow has been transformed before parsing
  * @returns the converted {@link WorkflowTemplate}
  */
-export async function fetchOrConvertWorkflowTemplate(
+export async function getOrConvertWorkflowTemplate(
   context: TemplateContext,
   template: TemplateToken,
   uri: string,
@@ -51,7 +81,7 @@ export async function fetchOrConvertWorkflowTemplate(
   options?: WorkflowTemplateConverterOptions,
   transformed = false
 ): Promise<WorkflowTemplate> {
-  const key = workflowKey(uri, transformed);
+  const key = cacheKey(uri, transformed);
   const cachedTemplate = workflowTemplateCache.get(key);
   if (cachedTemplate) {
     return cachedTemplate;
@@ -61,8 +91,30 @@ export async function fetchOrConvertWorkflowTemplate(
   return workflowTemplate;
 }
 
-// Use a separate cache key for transformed workflows
-function workflowKey(uri: string, transformed: boolean): string {
+/**
+ * Converts an action template, returning cached result if available
+ * @param transformed Indicates whether the action has been transformed before parsing
+ * @returns the converted {@link ActionTemplate}
+ */
+export function getOrConvertActionTemplate(
+  context: TemplateContext,
+  template: TemplateToken,
+  uri: string,
+  options?: ActionTemplateConverterOptions,
+  transformed = false
+): ActionTemplate {
+  const key = cacheKey(uri, transformed);
+  const cachedTemplate = actionTemplateCache.get(key);
+  if (cachedTemplate) {
+    return cachedTemplate;
+  }
+  const actionTemplate = convertActionTemplate(context, template, options);
+  actionTemplateCache.set(key, actionTemplate);
+  return actionTemplate;
+}
+
+// Use a separate cache key for transformed documents
+function cacheKey(uri: string, transformed: boolean): string {
   if (transformed) {
     return `transformed-${uri}`;
   }

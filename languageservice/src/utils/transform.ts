@@ -6,8 +6,24 @@ import {Range} from "vscode-languageserver-types";
 
 const PLACEHOLDER_KEY = "key";
 
-// Transform a document to work around YAML parsing issues
-// Based on `_transform` in https://github.com/cschleiden/github-actions-parser/blob/main/src/lib/parser/complete.ts#L311
+/**
+ * Transforms a document to make it valid YAML so the parser can understand
+ * the cursor position during auto-completion.
+ *
+ * When typing in an IDE, the document is usually invalid YAML:
+ * - `runs-on` without `:` isn't a valid key
+ * - Empty lines don't parse as anything
+ * - `- ` without a value isn't complete
+ *
+ * This function inserts placeholders to make the document parseable:
+ * - Empty line → inserts `key:` placeholder
+ * - Line without colon → appends `:`
+ * - Sequence item `- ` → inserts `key` after the dash
+ *
+ * Lines containing `${{` are skipped to avoid breaking multi-line strings.
+ *
+ * The `isPlaceholder()` helper filters out the fake entries from completions.
+ */
 export function transform(doc: TextDocument, pos: Position): [TextDocument, Position] {
   let offset = doc.offsetAt(pos);
 

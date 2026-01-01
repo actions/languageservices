@@ -2,7 +2,11 @@ import {data, DescriptionDictionary} from "@actions/expressions";
 import {isMapping, isSequence} from "@actions/workflow-parser";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {WorkflowContext} from "../context/workflow-context.js";
+import {getDescription} from "./descriptions.js";
 
+/**
+ * Returns the job context with container, services, status, and check_run_id.
+ */
 export function getJobContext(workflowContext: WorkflowContext): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
   const jobContext = new DescriptionDictionary();
@@ -15,7 +19,7 @@ export function getJobContext(workflowContext: WorkflowContext): DescriptionDict
   const jobContainer = job.container;
   if (jobContainer && isMapping(jobContainer)) {
     const containerContext = createContainerContext(jobContainer, false);
-    jobContext.add("container", containerContext);
+    jobContext.add("container", containerContext, getDescription("job", "container"));
   }
 
   // Services
@@ -29,42 +33,48 @@ export function getJobContext(workflowContext: WorkflowContext): DescriptionDict
       const serviceContext = createContainerContext(service.value, true);
       servicesContext.add(service.key.toString(), serviceContext);
     }
-    jobContext.add("services", servicesContext);
+    jobContext.add("services", servicesContext, getDescription("job", "services"));
   }
 
   // Status
-  jobContext.add("status", new data.Null());
+  jobContext.add("status", new data.StringData(""), getDescription("job", "status"));
 
   // Check run ID
-  jobContext.add("check_run_id", new data.Null());
+  jobContext.add("check_run_id", new data.StringData(""), getDescription("job", "check_run_id"));
 
   return jobContext;
 }
 
-function createContainerContext(container: MappingToken, isServices: boolean): data.Dictionary {
-  const containerContext = new data.Dictionary();
-  for (const {key, value} of container) {
-    if (isSequence(value)) {
-      // service ports are the only thing that is part of the job context
-      if (key.toString() !== "ports") {
-        continue;
-      }
-      const ports = new data.Dictionary();
-      for (const item of value) {
-        // We can determine the context mapping fully only if the port is defined
-        // as a mapping (i.e. <port1>:<port2>), single ports are assigned randomly
-        const portParts = item.toString().split(":");
-        if (isServices && portParts.length === 2) {
-          ports.add(portParts[1], new data.StringData(portParts[0]));
-        } else {
-          // If the port isn't a mapping, just use null
-          ports.add(portParts[0], new data.Null());
+function createContainerContext(container: MappingToken, isServices: boolean): DescriptionDictionary {
+  const containerContext = new DescriptionDictionary();
+
+  // id and network are always available
+  containerContext.add(
+    "id",
+    new data.StringData(""),
+    getDescription("job", isServices ? "services.<service_id>.id" : "container.id")
+  );
+  containerContext.add(
+    "network",
+    new data.StringData(""),
+    getDescription("job", isServices ? "services.<service_id>.network" : "container.network")
+  );
+
+  // ports are only available for service containers (not job container)
+  if (isServices) {
+    const ports = new DescriptionDictionary();
+    for (const {key, value} of container) {
+      if (key.toString() === "ports" && isSequence(value)) {
+        for (const item of value) {
+          const portParts = item.toString().split(":");
+          // The key is the container port (second part if host:container format)
+          const containerPort = portParts.length === 2 ? portParts[1] : portParts[0];
+          ports.add(containerPort, new data.StringData(""));
         }
       }
-      containerContext.add(key.toString(), ports);
     }
+    containerContext.add("ports", ports, getDescription("job", "services.<service_id>.ports"));
   }
-  containerContext.add("id", new data.Null());
-  containerContext.add("network", new data.Null());
+
   return containerContext;
 }

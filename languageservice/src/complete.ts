@@ -1,9 +1,11 @@
 import {complete as completeExpression, DescriptionDictionary} from "@actions/expressions";
 import {CompletionItem as ExpressionCompletionItem} from "@actions/expressions/completion";
 import {isBasicExpression, isSequence, isString} from "@actions/workflow-parser";
+import {getActionSchema} from "@actions/workflow-parser/actions/action-schema";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {DefinitionType} from "@actions/workflow-parser/templates/schema/definition-type";
 import {OneOfDefinition} from "@actions/workflow-parser/templates/schema/one-of-definition";
+import {TemplateSchema} from "@actions/workflow-parser/templates/schema/template-schema";
 import {OPEN_EXPRESSION} from "@actions/workflow-parser/templates/template-constants";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/index";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
@@ -15,16 +17,23 @@ import {getWorkflowSchema} from "@actions/workflow-parser/workflows/workflow-sch
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
 import {ContextProviderConfig} from "./context-providers/config.js";
-import {getContext, Mode} from "./context-providers/default.js";
+import {getActionExpressionContext, getWorkflowExpressionContext, Mode} from "./context-providers/default.js";
+import {ActionContext, getActionContext} from "./context/action-context.js";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context.js";
 import {validatorFunctions} from "./expression-validation/functions.js";
 import {error} from "./log.js";
+import {detectDocumentType} from "./utils/document-type.js";
 import {isPotentiallyExpression} from "./utils/expression-detection.js";
 import {findToken} from "./utils/find-token.js";
 import {guessIndentation} from "./utils/indentation-guesser.js";
 import {mapRange} from "./utils/range.js";
 import {isPlaceholder, transform} from "./utils/transform.js";
-import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache.js";
+import {
+  getOrConvertActionTemplate,
+  getOrConvertWorkflowTemplate,
+  getOrParseAction,
+  getOrParseWorkflow
+} from "./utils/workflow-cache.js";
 import {Value, ValueProviderConfig} from "./value-providers/config.js";
 import {defaultValueProviders} from "./value-providers/default.js";
 import {DefinitionValueMode, definitionValues, TokenStructure} from "./value-providers/definition.js";
@@ -68,45 +77,78 @@ export async function complete(
     content: newDoc.getText()
   };
 
-  const parsedWorkflow = fetchOrParseWorkflow(file, textDocument.uri, true);
-  if (!parsedWorkflow.value) {
+  // Determine document type - unknown defaults to workflow (backwards compatibility)
+  const isAction = detectDocumentType(textDocument.uri) === "action";
+
+  // Parse the document
+  const parsedTemplate = isAction
+    ? getOrParseAction(file, textDocument.uri, true)
+    : getOrParseWorkflow(file, textDocument.uri, true);
+  if (!parsedTemplate.value) {
     return [];
   }
 
-  const template = await fetchOrConvertWorkflowTemplate(
-    parsedWorkflow.context,
-    parsedWorkflow.value,
-    textDocument.uri,
-    config,
-    {
-      fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
-      errorPolicy: ErrorPolicy.TryConversion
-    }
-  );
+  const schema = isAction ? getActionSchema() : getWorkflowSchema();
+  const {token, keyToken, parent, path} = findToken(newPos, parsedTemplate.value);
 
-  const {token, keyToken, parent, path} = findToken(newPos, parsedWorkflow.value);
-  const workflowContext = getWorkflowContext(textDocument.uri, template, path);
+  // Build context for position-aware completions (e.g., steps.*, needs.*, inputs.*)
+  let workflowContext: WorkflowContext | undefined;
+  let actionContext: ActionContext | undefined;
+  if (isAction) {
+    const actionTemplate = getOrConvertActionTemplate(
+      parsedTemplate.context,
+      parsedTemplate.value,
+      textDocument.uri,
+      {errorPolicy: ErrorPolicy.TryConversion},
+      true
+    );
+    actionContext = getActionContext(textDocument.uri, actionTemplate, path);
+  } else {
+    const workflowTemplate = await getOrConvertWorkflowTemplate(
+      parsedTemplate.context,
+      parsedTemplate.value,
+      textDocument.uri,
+      config,
+      {
+        fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
+        errorPolicy: ErrorPolicy.TryConversion
+      },
+      true
+    );
+    workflowContext = workflowTemplate ? getWorkflowContext(textDocument.uri, workflowTemplate, path) : undefined;
+  }
 
-  // If we are inside an expression, take a different code-path. The workflow parser does not correctly create
-  // expression nodes for invalid expressions and during editing expressions are invalid most of the time.
-  if (token) {
-    if (isBasicExpression(token) || isPotentiallyExpression(token)) {
-      const allowedContext = token.definitionInfo?.allowedContext || [];
-      const context = await getContext(allowedContext, config?.contextProviderConfig, workflowContext, Mode.Completion);
+  // Expression completions
+  if (token && (isBasicExpression(token) || isPotentiallyExpression(token))) {
+    const allowedContext = token.definitionInfo?.allowedContext || [];
+    const context = isAction
+      ? getActionExpressionContext(allowedContext, config?.contextProviderConfig, actionContext, Mode.Completion)
+      : await getWorkflowExpressionContext(
+          allowedContext,
+          config?.contextProviderConfig,
+          workflowContext,
+          Mode.Completion
+        );
 
-      return getExpressionCompletionItems(token, context, newPos);
-    }
+    return getExpressionCompletionItems(token, context, newPos);
   }
 
   const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
   const indentString = " ".repeat(indentation.tabSize);
 
-  const values = await getValues(token, keyToken, parent, config?.valueProviderConfig, workflowContext, indentString);
+  // YAML key/value completions
+  const values = await getValues(
+    token,
+    keyToken,
+    parent,
+    config?.valueProviderConfig,
+    workflowContext,
+    indentString,
+    schema
+  );
 
-  // Add escape hatch completions when completing an empty scalar value for a one-of field.
-  // These provide a way out of "dead end" situations where no scalar completions exist
-  // but alternative structural forms (list, mapping) are available.
-  const escapeHatches = getEscapeHatchCompletions(token, keyToken, indentString, newPos);
+  // Offer "(switch to list)" / "(switch to mapping)" when the schema allows alternative forms
+  const escapeHatches = getEscapeHatchCompletions(token, keyToken, indentString, newPos, schema);
   values.push(...escapeHatches);
 
   // Figure out what text to replace when the user picks a completion.
@@ -136,6 +178,7 @@ export async function complete(
     }
   }
 
+  // Convert values to LSP CompletionItems
   return values.map(value => {
     const newText = value.insertText || value.label;
 
@@ -182,8 +225,9 @@ async function getValues(
   keyToken: TemplateToken | null,
   parent: TemplateToken | null,
   valueProviderConfig: ValueProviderConfig | undefined,
-  workflowContext: WorkflowContext,
-  indentation: string
+  workflowContext: WorkflowContext | undefined,
+  indentation: string,
+  schema: TemplateSchema
 ): Promise<Value[]> {
   if (!parent) {
     return [];
@@ -194,20 +238,23 @@ async function getValues(
   // Use the value providers from the parent if the current key is null
   const valueProviderToken = keyToken || parent;
 
-  const customValueProvider =
-    valueProviderToken?.definition?.key && valueProviderConfig?.[valueProviderToken.definition.key];
-  if (customValueProvider) {
-    const customValues = await customValueProvider.get(workflowContext, existingValues);
-    if (customValues) {
-      return filterAndSortCompletionOptions(customValues, existingValues);
+  // Value providers require workflow context - only use them for workflows
+  if (workflowContext) {
+    const customValueProvider =
+      valueProviderToken?.definition?.key && valueProviderConfig?.[valueProviderToken.definition.key];
+    if (customValueProvider) {
+      const customValues = await customValueProvider.get(workflowContext, existingValues);
+      if (customValues) {
+        return filterAndSortCompletionOptions(customValues, existingValues);
+      }
     }
-  }
 
-  const defaultValueProvider =
-    valueProviderToken?.definition?.key && defaultValueProviders[valueProviderToken.definition.key];
-  if (defaultValueProvider) {
-    const values = await defaultValueProvider.get(workflowContext, existingValues);
-    return filterAndSortCompletionOptions(values, existingValues);
+    const defaultValueProvider =
+      valueProviderToken?.definition?.key && defaultValueProviders[valueProviderToken.definition.key];
+    if (defaultValueProvider) {
+      const values = await defaultValueProvider.get(workflowContext, existingValues);
+      return filterAndSortCompletionOptions(values, existingValues);
+    }
   }
 
   // Use the definition if there are no value providers
@@ -224,7 +271,8 @@ async function getValues(
     def,
     indentation,
     keyToken ? DefinitionValueMode.Key : DefinitionValueMode.Parent,
-    tokenStructure
+    tokenStructure,
+    schema
   );
   return filterAndSortCompletionOptions(values, existingValues);
 }
@@ -284,7 +332,8 @@ function getEscapeHatchCompletions(
   token: TemplateToken | null,
   keyToken: TemplateToken | null,
   indentation: string,
-  position: Position
+  position: Position,
+  schema: TemplateSchema
 ): Value[] {
   // Only show escape hatches when value is empty
   const tokenStructure = getTokenStructure(token);
@@ -299,7 +348,6 @@ function getEscapeHatchCompletions(
 
   // Determine which structural types are available from the definition
   const def = keyToken.definition;
-  const schema = getWorkflowSchema();
   const buckets = {
     sequence: false,
     mapping: false

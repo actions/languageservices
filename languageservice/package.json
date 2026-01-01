@@ -35,7 +35,7 @@
     "clean": "rimraf dist",
     "format": "prettier --write '**/*.ts'",
     "format-check": "prettier --check '**/*.ts'",
-    "lint": "eslint 'src/**/*.ts'",
+    "lint": "eslint --max-warnings 0 'src/**/*.ts'",
     "lint-fix": "eslint --fix 'src/**/*.ts'",
     "minify-json": "node ../script/minify-json.js src/context-providers/descriptions.json src/context-providers/events/webhooks.json src/context-providers/events/objects.json src/context-providers/events/schedule.json src/context-providers/events/workflow_call.json",
     "prebuild": "npm run minify-json",
