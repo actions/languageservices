@@ -84,13 +84,17 @@ it("outputs is an incomplete dictionary to allow dynamic outputs", async () => {
 
   // Get the step context
   const stepContext = stepsContext?.get("cache-primes");
-  expect(stepContext).toBeDefined();
-  expect(isDescriptionDictionary(stepContext!)).toBe(true);
+  if (!stepContext) {
+    throw new Error("Expected stepContext to be defined");
+  }
+  expect(isDescriptionDictionary(stepContext)).toBe(true);
 
   // Get the outputs - should be a dictionary, not null
   const outputs = (stepContext as DescriptionDictionary).get("outputs");
-  expect(outputs).toBeDefined();
-  expect(isDescriptionDictionary(outputs!)).toBe(true);
+  if (!outputs) {
+    throw new Error("Expected outputs to be defined");
+  }
+  expect(isDescriptionDictionary(outputs)).toBe(true);
 
   // Outputs should be marked incomplete to allow dynamic outputs
   const outputsDict = outputs as DescriptionDictionary;

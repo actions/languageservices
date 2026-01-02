@@ -1,6 +1,6 @@
 import {Lexer, Parser, data} from "@actions/expressions";
 import {Expr, FunctionCall, Literal, Logical} from "@actions/expressions/ast";
-import {ParseWorkflowResult, WorkflowTemplate, isBasicExpression, isMapping, isString} from "@actions/workflow-parser";
+import {TemplateParseResult, WorkflowTemplate, isBasicExpression, isMapping, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {getCronDescription, hasCronIntervalLessThan5Minutes} from "@actions/workflow-parser/model/converter/cron";
 import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
@@ -15,15 +15,17 @@ import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
 import {ActionMetadata, ActionReference} from "./action.js";
 import {ContextProviderConfig} from "./context-providers/config.js";
-import {Mode, getContext} from "./context-providers/default.js";
+import {Mode, getWorkflowExpressionContext} from "./context-providers/default.js";
 import {WorkflowContext, getWorkflowContext} from "./context/workflow-context.js";
 import {wrapDictionary} from "./expression-validation/error-dictionary.js";
 import {ValidationEvaluator} from "./expression-validation/evaluator.js";
 import {validatorFunctions} from "./expression-validation/functions.js";
 import {error} from "./log.js";
+import {isActionDocument} from "./utils/document-type.js";
 import {findToken} from "./utils/find-token.js";
 import {mapRange} from "./utils/range.js";
-import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache.js";
+import {getOrConvertWorkflowTemplate, getOrParseWorkflow} from "./utils/workflow-cache.js";
+import {validateActionReference} from "./validate-action-reference.js";
 import {validateAction} from "./validate-action.js";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
 import {defaultValueProviders} from "./value-providers/default.js";
@@ -43,12 +45,24 @@ export type ActionsMetadataProvider = {
 };
 
 /**
- * Validates a workflow file
+ * Validates a workflow or action file
  *
  * @param textDocument Document to validate
  * @returns Array of diagnostics
  */
 export async function validate(textDocument: TextDocument, config?: ValidationConfig): Promise<Diagnostic[]> {
+  return isActionDocument(textDocument.uri)
+    ? validateAction(textDocument, config)
+    : validateWorkflow(textDocument, config);
+}
+
+/**
+ * Validates a workflow file
+ *
+ * @param textDocument Document to validate
+ * @returns Array of diagnostics
+ */
+async function validateWorkflow(textDocument: TextDocument, config?: ValidationConfig): Promise<Diagnostic[]> {
   const file: File = {
     name: textDocument.uri,
     content: textDocument.getText()
@@ -57,14 +71,14 @@ export async function validate(textDocument: TextDocument, config?: ValidationCo
   const diagnostics: Diagnostic[] = [];
 
   try {
-    const result: ParseWorkflowResult | undefined = fetchOrParseWorkflow(file, textDocument.uri);
+    const result: TemplateParseResult | undefined = getOrParseWorkflow(file, textDocument.uri);
     if (!result) {
       return [];
     }
 
     if (result.value) {
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
-      const template = await fetchOrConvertWorkflowTemplate(result.context, result.value, textDocument.uri, config, {
+      const template = await getOrConvertWorkflowTemplate(result.context, result.value, textDocument.uri, config, {
         fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
         errorPolicy: ErrorPolicy.TryConversion
       });
@@ -155,7 +169,7 @@ async function additionalValidations(
     // Validate action metadata (inputs, required fields) for regular steps
     if (token.definition?.key === "regular-step" && token.range) {
       const context = getProviderContext(documentUri, template, root, token.range);
-      await validateAction(diagnostics, token, context.step, config);
+      await validateActionReference(diagnostics, token, context.step, config);
     }
 
     // Validate job-level reusable workflow uses field format
@@ -180,7 +194,7 @@ async function additionalValidations(
     if (token.range && validationDefinition) {
       const defKey = validationDefinition.key;
       if (defKey === "step-with") {
-        // Action inputs should be validated already in validateAction
+        // Action inputs should be validated already in validateActionReference
         continue;
       }
 
@@ -721,7 +735,12 @@ async function validateExpression(
       continue;
     }
 
-    const context = await getContext(namedContexts, contextProviderConfig, workflowContext, Mode.Validation);
+    const context = await getWorkflowExpressionContext(
+      namedContexts,
+      contextProviderConfig,
+      workflowContext,
+      Mode.Validation
+    );
 
     const e = new ValidationEvaluator(expr, wrapDictionary(context), validatorFunctions);
     e.validate();

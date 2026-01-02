@@ -6,6 +6,10 @@ import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-
 import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 
+/**
+ * Represents the contextual position within a workflow file.
+ * Used to determine which expression contexts are available at a given location.
+ */
 export interface WorkflowContext {
   uri: string;
 
@@ -21,6 +25,12 @@ export interface WorkflowContext {
   step?: Step;
 }
 
+/**
+ * Builds a WorkflowContext by walking the token path to identify the current job and step.
+ * @param uri - The URI of the workflow file
+ * @param template - The parsed workflow template
+ * @param tokenPath - The path of tokens from root to the current position
+ */
 export function getWorkflowContext(
   uri: string,
   template: WorkflowTemplate | undefined,
@@ -73,6 +83,10 @@ export function getWorkflowContext(
   return context;
 }
 
+/**
+ * Finds a Step by matching the step token's position in the steps sequence.
+ * Steps may not have IDs, so we locate them by index rather than by identifier.
+ */
 function findStep(steps?: Step[], stepSequence?: SequenceToken, stepToken?: MappingToken): Step | undefined {
   if (!steps || !stepSequence || !stepToken) {
     return undefined;

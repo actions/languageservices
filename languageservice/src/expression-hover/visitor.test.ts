@@ -3,7 +3,7 @@ import {convertWorkflowTemplate, parseWorkflow} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {ContextProviderConfig} from "../context-providers/config.js";
-import {getContext, Mode} from "../context-providers/default.js";
+import {getWorkflowExpressionContext, Mode} from "../context-providers/default.js";
 import {getWorkflowContext} from "../context/workflow-context.js";
 import {validatorFunctions} from "../expression-validation/functions.js";
 import {nullTrace} from "../nulltrace.js";
@@ -116,7 +116,12 @@ async function hoverExpression(input: string) {
     errorPolicy: ErrorPolicy.TryConversion
   });
   const workflowContext = getWorkflowContext(td.uri, template, []);
-  const context = await getContext(allowedContext, contextProviderConfig, workflowContext, Mode.Completion);
+  const context = await getWorkflowExpressionContext(
+    allowedContext,
+    contextProviderConfig,
+    workflowContext,
+    Mode.Completion
+  );
 
   const l = new Lexer(td.getText());
   const lr = l.lex();

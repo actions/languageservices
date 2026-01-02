@@ -129,4 +129,31 @@ jobs:
       }
     ]);
   });
+
+  it("links for actions in composite action", async () => {
+    const input = `name: My Composite Action
+description: A composite action with nested actions
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+    - run: echo "Hello"
+      shell: bash`;
+    const result = await documentLinks(createDocument("action.yml", input), undefined);
+    expect(result).toHaveLength(2);
+    expect(result[0].target).toBe("https://www.github.com/actions/checkout/tree/v4/");
+    expect(result[0].tooltip).toBe("Open action on GitHub");
+    expect(result[1].target).toBe("https://www.github.com/actions/setup-node/tree/v4/");
+  });
+
+  it("no links for non-composite action", async () => {
+    const input = `name: My Node Action
+description: A node action
+runs:
+  using: node20
+  main: index.js`;
+    const result = await documentLinks(createDocument("action.yml", input), undefined);
+    expect(result).toHaveLength(0);
+  });
 });

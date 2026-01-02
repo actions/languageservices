@@ -1,8 +1,8 @@
 import {DescriptionDictionary} from "@actions/expressions";
 import {WorkflowContext} from "../context/workflow-context.js";
-import {getContext, Mode} from "./default.js";
+import {getWorkflowExpressionContext, Mode} from "./default.js";
 
-describe("getContext", () => {
+describe("getWorkflowExpressionContext", () => {
   const emptyWorkflowContext: WorkflowContext = {
     uri: "test.yaml",
     template: undefined
@@ -10,7 +10,7 @@ describe("getContext", () => {
 
   describe("when no contextProviderConfig is provided", () => {
     it("should mark secrets context as incomplete", async () => {
-      const result = await getContext(["secrets"], undefined, emptyWorkflowContext, Mode.Validation);
+      const result = await getWorkflowExpressionContext(["secrets"], undefined, emptyWorkflowContext, Mode.Validation);
 
       const secretsContext = result.get("secrets") as DescriptionDictionary;
       expect(secretsContext).toBeDefined();
@@ -18,7 +18,7 @@ describe("getContext", () => {
     });
 
     it("should mark vars context as incomplete", async () => {
-      const result = await getContext(["vars"], undefined, emptyWorkflowContext, Mode.Validation);
+      const result = await getWorkflowExpressionContext(["vars"], undefined, emptyWorkflowContext, Mode.Validation);
 
       const varsContext = result.get("vars") as DescriptionDictionary;
       expect(varsContext).toBeDefined();
@@ -26,7 +26,12 @@ describe("getContext", () => {
     });
 
     it("should not mark other contexts as incomplete", async () => {
-      const result = await getContext(["env", "github"], undefined, emptyWorkflowContext, Mode.Validation);
+      const result = await getWorkflowExpressionContext(
+        ["env", "github"],
+        undefined,
+        emptyWorkflowContext,
+        Mode.Validation
+      );
 
       const envContext = result.get("env") as DescriptionDictionary;
       const githubContext = result.get("github") as DescriptionDictionary;
@@ -48,7 +53,7 @@ describe("getContext", () => {
         getContext: () => Promise.resolve(providedContext)
       };
 
-      const result = await getContext(["secrets"], config, emptyWorkflowContext, Mode.Validation);
+      const result = await getWorkflowExpressionContext(["secrets"], config, emptyWorkflowContext, Mode.Validation);
 
       const secretsContext = result.get("secrets");
       expect(secretsContext).toBe(providedContext);
@@ -63,7 +68,7 @@ describe("getContext", () => {
         getContext: () => Promise.resolve(providedContext)
       };
 
-      const result = await getContext(["vars"], config, emptyWorkflowContext, Mode.Validation);
+      const result = await getWorkflowExpressionContext(["vars"], config, emptyWorkflowContext, Mode.Validation);
 
       const varsContext = result.get("vars");
       expect(varsContext).toBe(providedContext);
@@ -77,7 +82,7 @@ describe("getContext", () => {
         getContext: () => Promise.resolve(undefined)
       };
 
-      const result = await getContext(["secrets"], config, emptyWorkflowContext, Mode.Validation);
+      const result = await getWorkflowExpressionContext(["secrets"], config, emptyWorkflowContext, Mode.Validation);
 
       const secretsContext = result.get("secrets") as DescriptionDictionary;
       expect(secretsContext.complete).toBe(false);
@@ -88,7 +93,7 @@ describe("getContext", () => {
         getContext: () => Promise.resolve(undefined)
       };
 
-      const result = await getContext(["vars"], config, emptyWorkflowContext, Mode.Validation);
+      const result = await getWorkflowExpressionContext(["vars"], config, emptyWorkflowContext, Mode.Validation);
 
       const varsContext = result.get("vars") as DescriptionDictionary;
       expect(varsContext.complete).toBe(false);

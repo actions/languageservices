@@ -7,7 +7,10 @@ import {getDescription} from "./descriptions.js";
 import {getEventPayload, getSupportedEventTypes} from "./events/eventPayloads.js";
 import {getInputsContext} from "./inputs.js";
 
-export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): DescriptionDictionary {
+/**
+ * Returns the github context with properties like actor, ref, sha, event, etc.
+ */
+export function getGithubContext(workflowContext: WorkflowContext | undefined, mode: Mode): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
   const keys = [
     "action",
@@ -73,7 +76,10 @@ export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): 
   );
 }
 
-function getEventContext(workflowContext: WorkflowContext, mode: Mode): ExpressionData {
+/**
+ * Builds the github.event context based on workflow trigger configuration.
+ */
+function getEventContext(workflowContext: WorkflowContext | undefined, mode: Mode): ExpressionData {
   const d = new DescriptionDictionary();
   const eventsConfig = workflowContext?.template?.events;
 

@@ -1,92 +1,104 @@
+/**
+ * Validation for action.yml / action.yaml manifest files
+ */
+
 import {isMapping} from "@actions/workflow-parser";
 import {isActionStep} from "@actions/workflow-parser/model/type-guards";
-import {Step} from "@actions/workflow-parser/model/workflow-template";
-import {ScalarToken} from "@actions/workflow-parser/templates/tokens/scalar-token";
+import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {File} from "@actions/workflow-parser/workflows/file";
+import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {parseActionReference} from "./action.js";
+import {error} from "./log.js";
 import {mapRange} from "./utils/range.js";
+import {getOrConvertActionTemplate, getOrParseAction} from "./utils/workflow-cache.js";
+import {validateActionReference} from "./validate-action-reference.js";
 import {ValidationConfig} from "./validate.js";
 
-export async function validateAction(
-  diagnostics: Diagnostic[],
-  stepToken: TemplateToken,
-  step: Step | undefined,
-  config: ValidationConfig | undefined
-): Promise<void> {
-  if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.actionsMetadataProvider) {
-    return;
-  }
+/**
+ * Validates an action.yml file
+ *
+ * @param textDocument Document to validate
+ * @param config Optional validation configuration for action metadata provider
+ * @returns Array of diagnostics
+ */
+export async function validateAction(textDocument: TextDocument, config?: ValidationConfig): Promise<Diagnostic[]> {
+  const file: File = {
+    name: textDocument.uri,
+    content: textDocument.getText()
+  };
 
-  const action = parseActionReference(step.uses.value);
-  if (!action) {
-    return;
-  }
+  const diagnostics: Diagnostic[] = [];
 
-  const actionMetadata = await config.actionsMetadataProvider.fetchActionMetadata(action);
-  if (actionMetadata === undefined) {
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: mapRange(step.uses.range),
-      message: `Unable to resolve action \`${step.uses.value}\`, repository or version not found`
-    });
-    return;
-  }
-
-  let withKey: ScalarToken | undefined;
-  let withToken: TemplateToken | undefined;
-  for (const {key, value} of stepToken) {
-    if (key.toString() === "with") {
-      withKey = key;
-      withToken = value;
-      break;
+  try {
+    // Parse and validate the action.yml against the schema
+    const result = getOrParseAction(file, textDocument.uri);
+    if (!result) {
+      return [];
     }
-  }
 
-  const stepInputs = new Map<string, ScalarToken>();
-  if (withToken && isMapping(withToken)) {
-    for (const {key} of withToken) {
-      stepInputs.set(key.toString(), key);
-    }
-  }
+    // Map parser errors to diagnostics
+    for (const err of result.context.errors.getErrors()) {
+      const range = mapRange(err.range);
 
-  const actionInputs = actionMetadata.inputs;
-  if (actionInputs === undefined) {
-    return;
-  }
+      // Determine severity based on error type
+      let severity: DiagnosticSeverity = DiagnosticSeverity.Error;
 
-  for (const [input, inputToken] of stepInputs) {
-    if (!actionInputs[input]) {
+      // Treat deprecation warnings as warnings
+      if (err.rawMessage.includes("deprecated")) {
+        severity = DiagnosticSeverity.Warning;
+      }
+
       diagnostics.push({
-        severity: DiagnosticSeverity.Error,
-        range: mapRange(inputToken.range),
-        message: `Invalid action input '${input}'`
+        message: err.rawMessage,
+        range,
+        severity
       });
     }
 
-    const deprecationMessage = actionInputs[input]?.deprecationMessage;
-    if (deprecationMessage) {
-      diagnostics.push({
-        severity: DiagnosticSeverity.Warning,
-        range: mapRange(inputToken.range),
-        message: deprecationMessage
+    // Validate composite action steps if we have a parsed result
+    if (result.value) {
+      const template = getOrConvertActionTemplate(result.context, result.value, textDocument.uri, {
+        errorPolicy: ErrorPolicy.TryConversion
       });
+
+      // Only composite actions have steps to validate
+      if (template?.runs?.using === "composite") {
+        const steps = template.runs.steps ?? [];
+
+        // Find the steps sequence token from the raw parsed result
+        const stepsSequence = findStepsSequence(result.value);
+        if (stepsSequence) {
+          // Validate each action step
+          for (let i = 0; i < steps.length; i++) {
+            const step = steps[i];
+            const stepToken = stepsSequence.get(i);
+
+            // Validate action references (inputs, required fields) for uses steps
+            if (isActionStep(step) && isMapping(stepToken)) {
+              await validateActionReference(diagnostics, stepToken, step, config);
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    error(`Unhandled error while validating action file: ${(e as Error).message}`);
+  }
+
+  return diagnostics;
+}
+
+/**
+ * Find the steps sequence token from the raw action template.
+ * Traverses the token tree looking for the "composite-steps" definition.
+ */
+function findStepsSequence(root: TemplateToken): SequenceToken | undefined {
+  for (const [, token] of TemplateToken.traverse(root)) {
+    if (token.definition?.key === "composite-steps" && token instanceof SequenceToken) {
+      return token;
     }
   }
-
-  const missingRequiredInputs = Object.entries(actionInputs).filter(
-    ([inputName, input]) => input.required && !stepInputs.has(inputName) && input.default === undefined
-  );
-
-  if (missingRequiredInputs.length > 0) {
-    const message =
-      missingRequiredInputs.length === 1
-        ? `Missing required input \`${missingRequiredInputs[0][0]}\``
-        : `Missing required inputs: ${missingRequiredInputs.map(input => `\`${input[0]}\``).join(", ")}`;
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: mapRange((withKey || stepToken).range), // Highlight the whole step if we don't have a with key
-      message: message
-    });
-  }
+  return undefined;
 }

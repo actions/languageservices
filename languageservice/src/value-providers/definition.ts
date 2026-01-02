@@ -6,7 +6,7 @@ import {MappingDefinition} from "@actions/workflow-parser/templates/schema/mappi
 import {OneOfDefinition} from "@actions/workflow-parser/templates/schema/one-of-definition";
 import {SequenceDefinition} from "@actions/workflow-parser/templates/schema/sequence-definition";
 import {StringDefinition} from "@actions/workflow-parser/templates/schema/string-definition";
-import {getWorkflowSchema} from "@actions/workflow-parser/workflows/workflow-schema";
+import {TemplateSchema} from "@actions/workflow-parser/templates/schema/template-schema";
 import {Value} from "./config.js";
 import {stringsToValues} from "./strings-to-values.js";
 
@@ -47,21 +47,21 @@ export type TokenStructure = "scalar" | "sequence" | "mapping" | undefined;
  * @param tokenStructure - If provided, filters completions to only those matching
  *   the YAML structure the user has already started (e.g., only mapping keys if
  *   they've started a mapping)
+ * @param schema - The schema to use for definition lookups
  */
 export function definitionValues(
   def: Definition,
   indentation: string,
   mode: DefinitionValueMode,
-  tokenStructure?: TokenStructure
+  tokenStructure: TokenStructure | undefined,
+  schema: TemplateSchema
 ): Value[] {
-  const schema = getWorkflowSchema();
-
   if (def instanceof MappingDefinition) {
     return mappingValues(def, schema.definitions, indentation, mode);
   }
 
   if (def instanceof OneOfDefinition) {
-    return oneOfValues(def, schema.definitions, indentation, mode, tokenStructure);
+    return oneOfValues(def, schema.definitions, indentation, mode, tokenStructure, schema);
   }
 
   if (def instanceof BooleanDefinition) {
@@ -80,7 +80,7 @@ export function definitionValues(
   if (def instanceof SequenceDefinition) {
     const itemDef = schema.getDefinition(def.itemType);
     if (itemDef) {
-      return definitionValues(itemDef, indentation, mode);
+      return definitionValues(itemDef, indentation, mode, undefined, schema);
     }
   }
 
@@ -177,7 +177,8 @@ function oneOfValues(
   definitions: {[key: string]: Definition},
   indentation: string,
   mode: DefinitionValueMode,
-  tokenStructure?: TokenStructure
+  tokenStructure: TokenStructure | undefined,
+  schema: TemplateSchema
 ): Value[] {
   const values: Value[] = [];
   for (const key of oneOfDefinition.oneOf) {
@@ -209,7 +210,7 @@ function oneOfValues(
       }
     }
 
-    values.push(...definitionValues(variantDef, indentation, mode, tokenStructure));
+    values.push(...definitionValues(variantDef, indentation, mode, tokenStructure, schema));
   }
   return distinctValues(values);
 }

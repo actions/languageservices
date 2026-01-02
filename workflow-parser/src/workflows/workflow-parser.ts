@@ -1,19 +1,22 @@
+import {TemplateParseResult} from "../templates/template-parse-result.js";
 import {TemplateContext, TemplateValidationErrors} from "../templates/template-context.js";
 import * as templateReader from "../templates/template-reader.js";
-import {TemplateToken} from "../templates/tokens/template-token.js";
 import {TraceWriter} from "../templates/trace-writer.js";
 import {File} from "./file.js";
 import {WORKFLOW_ROOT} from "./workflow-constants.js";
 import {getWorkflowSchema} from "./workflow-schema.js";
 import {YamlObjectReader} from "./yaml-object-reader.js";
-export interface ParseWorkflowResult {
-  context: TemplateContext;
-  value: TemplateToken | undefined;
-}
 
-export function parseWorkflow(entryFile: File, trace: TraceWriter): ParseWorkflowResult;
-export function parseWorkflow(entryFile: File, context: TemplateContext): ParseWorkflowResult;
-export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | TemplateContext): ParseWorkflowResult {
+/** @deprecated Use TemplateParseResult instead */
+export type ParseWorkflowResult = TemplateParseResult;
+
+/**
+ * Parses a GitHub Actions workflow YAML file and returns the parsed template result.
+ * Validates the workflow against the workflow schema and reports any errors.
+ */
+export function parseWorkflow(entryFile: File, trace: TraceWriter): TemplateParseResult;
+export function parseWorkflow(entryFile: File, context: TemplateContext): TemplateParseResult;
+export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | TemplateContext): TemplateParseResult {
   const context =
     contextOrTrace instanceof TemplateContext
       ? contextOrTrace
@@ -33,7 +36,7 @@ export function parseWorkflow(entryFile: File, contextOrTrace: TraceWriter | Tem
   }
   const result = templateReader.readTemplate(context, WORKFLOW_ROOT, reader, fileId);
 
-  return <ParseWorkflowResult>{
+  return <TemplateParseResult>{
     context,
     value: result
   };

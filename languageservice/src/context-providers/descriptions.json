@@ -198,6 +198,35 @@
       "description": "The default working directory on the runner for steps, and the default location of your repository when using the [`checkout`](https://github.com/actions/checkout) action."
     }
   },
+  "job": {
+    "container": {
+      "description": "Information about the job's container. For more information about containers, see \"[Running jobs in a container](https://docs.github.com/actions/using-jobs/running-jobs-in-a-container).\""
+    },
+    "container.id": {
+      "description": "The ID of the container."
+    },
+    "container.network": {
+      "description": "The ID of the container network. The runner creates the network used by all containers in a job."
+    },
+    "services": {
+      "description": "The service containers created for a job. For more information about service containers, see \"[Using service containers](https://docs.github.com/actions/using-containerized-services/about-service-containers).\""
+    },
+    "services.<service_id>.id": {
+      "description": "The ID of the service container."
+    },
+    "services.<service_id>.network": {
+      "description": "The ID of the service container network. The runner creates the network used by all containers in a job."
+    },
+    "services.<service_id>.ports": {
+      "description": "The exposed ports of the service container."
+    },
+    "status": {
+      "description": "The current status of the job. Possible values are `success`, `failure`, or `cancelled`."
+    },
+    "check_run_id": {
+      "description": "The unique identifier of the check run for this job."
+    }
+  },
   "secrets": {
     "GITHUB_TOKEN": {
       "description": "Automatically created token for each workflow run. For more information, see \"[Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication).\""

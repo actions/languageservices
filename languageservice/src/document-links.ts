@@ -6,29 +6,82 @@ import {TextDocument} from "vscode-languageserver-textdocument";
 import {DocumentLink} from "vscode-languageserver-types";
 import * as vscodeURI from "vscode-uri";
 import {actionUrl, parseActionReference} from "./action.js";
+import {isActionDocument} from "./utils/document-type.js";
 import {mapRange} from "./utils/range.js";
-import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache.js";
+import {
+  getOrConvertActionTemplate,
+  getOrConvertWorkflowTemplate,
+  getOrParseAction,
+  getOrParseWorkflow
+} from "./utils/workflow-cache.js";
 
+/**
+ * Generates clickable links for action references and reusable workflows.
+ */
 export async function documentLinks(document: TextDocument, workspace: string | undefined): Promise<DocumentLink[]> {
   const file: File = {
     name: document.uri,
     content: document.getText()
   };
 
-  const parsedWorkflow = fetchOrParseWorkflow(file, document.uri);
+  return isActionDocument(document.uri)
+    ? actionDocumentLinks(file, document.uri)
+    : workflowDocumentLinks(file, document.uri, workspace);
+}
+
+/**
+ * Generates clickable links for action references in action.yml files.
+ */
+function actionDocumentLinks(file: File, uri: string): DocumentLink[] {
+  const parsedAction = getOrParseAction(file, uri);
+  if (!parsedAction?.value) {
+    return [];
+  }
+
+  const template = getOrConvertActionTemplate(parsedAction.context, parsedAction.value, uri, {
+    errorPolicy: ErrorPolicy.TryConversion
+  });
+
+  const links: DocumentLink[] = [];
+
+  // Only composite actions have steps
+  if (template?.runs?.using !== "composite") {
+    return links;
+  }
+
+  const steps = template.runs.steps ?? [];
+  for (const step of steps) {
+    if ("uses" in step) {
+      const actionRef = parseActionReference(step.uses.value);
+      if (!actionRef) {
+        continue;
+      }
+
+      const url = actionUrl(actionRef);
+
+      links.push({
+        range: mapRange(step.uses.range),
+        target: url,
+        tooltip: `Open action on GitHub`
+      });
+    }
+  }
+
+  return links;
+}
+
+/**
+ * Generates clickable links for action references and reusable workflows in workflow files.
+ */
+async function workflowDocumentLinks(file: File, uri: string, workspace: string | undefined): Promise<DocumentLink[]> {
+  const parsedWorkflow = getOrParseWorkflow(file, uri);
   if (!parsedWorkflow?.value) {
     return [];
   }
 
-  const template = await fetchOrConvertWorkflowTemplate(
-    parsedWorkflow.context,
-    parsedWorkflow.value,
-    document.uri,
-    undefined,
-    {
-      errorPolicy: ErrorPolicy.TryConversion
-    }
-  );
+  const template = await getOrConvertWorkflowTemplate(parsedWorkflow.context, parsedWorkflow.value, uri, undefined, {
+    errorPolicy: ErrorPolicy.TryConversion
+  });
 
   const links: DocumentLink[] = [];
 
