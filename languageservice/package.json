@@ -1,6 +1,6 @@
 {
   "name": "@actions/languageservice",
-  "version": "0.3.31",
+  "version": "0.3.32",
   "description": "Language service for GitHub Actions",
   "license": "MIT",
   "type": "module",
@@ -47,8 +47,8 @@
     "watch": "tsc --build tsconfig.build.json --watch"
   },
   "dependencies": {
-    "@actions/expressions": "^0.3.31",
-    "@actions/workflow-parser": "^0.3.31",
+    "@actions/expressions": "^0.3.32",
+    "@actions/workflow-parser": "^0.3.32",
     "vscode-languageserver-textdocument": "^1.0.7",
     "vscode-languageserver-types": "^3.17.2",
     "vscode-uri": "^3.0.8",
