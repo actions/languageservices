@@ -605,7 +605,7 @@ jobs:
     expect(runsOnVariants.some(x => x.labelDetails === undefined)).toBe(true);
     expect(runsOnVariants.some(x => x.labelDetails?.description === "list")).toBe(true);
     expect(runsOnVariants.some(x => x.labelDetails?.description === "full syntax")).toBe(true);
-  });;
+  });
 
   it("generates correct insertText for one-of variants in parent mode", async () => {
     // runs-on is a one-of: [string, sequence, mapping]
@@ -622,10 +622,14 @@ jobs:
     expect(runsOnVariants.find(x => x.labelDetails === undefined)?.textEdit?.newText).toEqual("runs-on: ");
 
     // Sequence: key with colon, newline, and list item
-    expect(runsOnVariants.find(x => x.labelDetails?.description === "list")?.textEdit?.newText).toEqual("runs-on:\n  - ");
+    expect(runsOnVariants.find(x => x.labelDetails?.description === "list")?.textEdit?.newText).toEqual(
+      "runs-on:\n  - "
+    );
 
     // Mapping: key with colon, newline, and indentation for nested keys
-    expect(runsOnVariants.find(x => x.labelDetails?.description === "full syntax")?.textEdit?.newText).toEqual("runs-on:\n  ");
+    expect(runsOnVariants.find(x => x.labelDetails?.description === "full syntax")?.textEdit?.newText).toEqual(
+      "runs-on:\n  "
+    );
   });
 
   it("generates correct insertText for one-of variants in parent mode", async () => {
