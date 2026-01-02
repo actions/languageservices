@@ -22,7 +22,9 @@ describe("end-to-end", () => {
 
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(13);
-    const labelsWithDetails = result.map(x => (x.detail ? `${x.label} (${x.detail})` : x.label));
+    const labelsWithDetails = result.map(x =>
+      x.labelDetails?.description ? `${x.label} (${x.labelDetails.description})` : x.label
+    );
     expect(labelsWithDetails).toEqual([
       "concurrency",
       "concurrency (full syntax)",
