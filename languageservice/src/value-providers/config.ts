@@ -7,8 +7,8 @@ export interface Value {
   /** Optional description to show when auto-completing */
   description?: string;
 
-  /** Optional detail shown after the label, e.g. type or kind information */
-  detail?: string;
+  /** Optional qualifier shown inline after the label, e.g. "full syntax" or "list" */
+  labelDetail?: string;
 
   /** Whether this value is deprecated */
   deprecated?: boolean;

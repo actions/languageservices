@@ -465,7 +465,7 @@ jobs:
       ]);
 
       // One-of (scalar variant)
-      const concurrencyScalar = result.find(x => x.label === "concurrency" && x.detail === undefined);
+      const concurrencyScalar = result.find(x => x.label === "concurrency" && x.labelDetails === undefined);
       expect(concurrencyScalar?.textEdit?.newText).toEqual("concurrency: ");
     });
 
@@ -489,7 +489,7 @@ jobs:
       ]);
 
       // One-of (scalar variant)
-      const concurrencyScalar = result.find(x => x.label === "concurrency" && x.detail === undefined);
+      const concurrencyScalar = result.find(x => x.label === "concurrency" && x.labelDetails === undefined);
       expect(concurrencyScalar?.textEdit?.newText).toEqual("concurrency: ");
     });
   });
@@ -530,7 +530,7 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
 
     // Scalar variant inserts "types: "
-    const scalarVariant = result.find(x => x.label === "types" && x.detail === undefined);
+    const scalarVariant = result.find(x => x.label === "types" && x.labelDetails === undefined);
     expect(scalarVariant?.textEdit?.newText).toEqual("types: ");
   });
 
@@ -586,8 +586,8 @@ jobs:
 
     // Should have both check_run (scalar) and check_run with detail "full syntax"
     const checkRunVariants = result.filter(x => x.label === "check_run");
-    expect(checkRunVariants.some(x => x.detail === undefined)).toBe(true);
-    expect(checkRunVariants.some(x => x.detail === "full syntax")).toBe(true);
+    expect(checkRunVariants.some(x => x.labelDetails === undefined)).toBe(true);
+    expect(checkRunVariants.some(x => x.labelDetails?.description === "full syntax")).toBe(true);
   });
 
   it("shows all three variants for scalar+sequence+mapping one-of", async () => {
@@ -602,9 +602,9 @@ jobs:
     // Should have runs-on (scalar), runs-on with detail "list", and runs-on with detail "full syntax"
     const runsOnVariants = result.filter(x => x.label === "runs-on");
     expect(runsOnVariants.length).toBe(3);
-    expect(runsOnVariants.some(x => x.detail === undefined)).toBe(true);
-    expect(runsOnVariants.some(x => x.detail === "list")).toBe(true);
-    expect(runsOnVariants.some(x => x.detail === "full syntax")).toBe(true);
+    expect(runsOnVariants.some(x => x.labelDetails === undefined)).toBe(true);
+    expect(runsOnVariants.some(x => x.labelDetails?.description === "list")).toBe(true);
+    expect(runsOnVariants.some(x => x.labelDetails?.description === "full syntax")).toBe(true);
   });
 
   it("generates correct insertText for one-of variants in parent mode", async () => {
@@ -619,13 +619,17 @@ jobs:
     const runsOnVariants = result.filter(x => x.label === "runs-on");
 
     // Scalar: just key with colon and space
-    expect(runsOnVariants.find(x => x.detail === undefined)?.textEdit?.newText).toEqual("runs-on: ");
+    expect(runsOnVariants.find(x => x.labelDetails === undefined)?.textEdit?.newText).toEqual("runs-on: ");
 
     // Sequence: key with colon, newline, and list item
-    expect(runsOnVariants.find(x => x.detail === "list")?.textEdit?.newText).toEqual("runs-on:\n  - ");
+    expect(runsOnVariants.find(x => x.labelDetails?.description === "list")?.textEdit?.newText).toEqual(
+      "runs-on:\n  - "
+    );
 
     // Mapping: key with colon, newline, and indentation for nested keys
-    expect(runsOnVariants.find(x => x.detail === "full syntax")?.textEdit?.newText).toEqual("runs-on:\n  ");
+    expect(runsOnVariants.find(x => x.labelDetails?.description === "full syntax")?.textEdit?.newText).toEqual(
+      "runs-on:\n  "
+    );
   });
 
   it("generates correct insertText for one-of variants in parent mode", async () => {
@@ -654,11 +658,11 @@ jobs:
     const runsOnVariants = result.filter(x => x.label === "runs-on");
 
     // Scalar: no sortText needed (sorts naturally first)
-    expect(runsOnVariants.find(x => x.detail === undefined)?.sortText).toBeUndefined();
+    expect(runsOnVariants.find(x => x.labelDetails === undefined)?.sortText).toBeUndefined();
 
     // Sequence and mapping: sortText controls ordering
-    expect(runsOnVariants.find(x => x.detail === "list")?.sortText).toEqual("runs-on 1");
-    expect(runsOnVariants.find(x => x.detail === "full syntax")?.sortText).toEqual("runs-on 2");
+    expect(runsOnVariants.find(x => x.labelDetails?.description === "list")?.sortText).toEqual("runs-on 1");
+    expect(runsOnVariants.find(x => x.labelDetails?.description === "full syntax")?.sortText).toEqual("runs-on 2");
   });
 
   it("scalar event completion inserts inline without newline", async () => {
@@ -672,13 +676,13 @@ jobs:
     const push = result.find(x => x.label === "push");
     expect(push?.textEdit?.newText).toEqual("push");
 
-    const checkRun = result.find(x => x.label === "check_run" && x.detail === undefined);
+    const checkRun = result.find(x => x.label === "check_run" && x.labelDetails === undefined);
     expect(checkRun?.textEdit?.newText).toEqual("check_run");
 
     // Full syntax form should NOT be shown in Key mode - it requires a newline
     // which is confusing when typing inline. Users who want the mapping form
     // can use `on (full syntax)` at the parent level.
-    expect(result.find(x => x.label === "check_run" && x.detail === "full syntax")).toBeUndefined();
+    expect(result.find(x => x.label === "check_run" && x.labelDetails?.description === "full syntax")).toBeUndefined();
   });
 
   it("filters to sequence options when user has started a sequence", async () => {
