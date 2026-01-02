@@ -399,7 +399,6 @@ function getEscapeHatchCompletions(
     results.push({
       label: "(switch to list)",
       sortText: "zzz_switch_1",
-      filterText: keyName, // Allow filtering by key name
       textEdit: {
         range: editRange,
         newText: `${keyName}:\n${indentation}- `
@@ -411,7 +410,6 @@ function getEscapeHatchCompletions(
     results.push({
       label: "(switch to mapping)",
       sortText: "zzz_switch_2",
-      filterText: keyName, // Allow filtering by key name
       textEdit: {
         range: editRange,
         newText: `${keyName}:\n${indentation}`
