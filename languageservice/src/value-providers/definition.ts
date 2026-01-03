@@ -107,10 +107,14 @@ function mappingValues(
   for (const [key, value] of Object.entries(mappingDefinition.properties)) {
     let insertText: string | undefined;
 
-    let description: string | undefined;
+    // Prefer the property's own description (from the schema's property definition),
+    // fall back to the type definition's description if the property doesn't have one
+    let description: string | undefined = value.description;
     if (value.type) {
       const typeDef = definitions[value.type];
-      description = typeDef?.description;
+      if (!description) {
+        description = typeDef?.description;
+      }
 
       if (typeDef) {
         switch (typeDef.definitionType) {

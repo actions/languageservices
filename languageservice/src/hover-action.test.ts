@@ -53,6 +53,20 @@ ru|ns:
       expect(result).not.toBeNull();
       expect(result?.contents).toContain("runs");
     });
+
+    it("shows description for author key", async () => {
+      const [doc, position] = createActionDocument(`name: My Action
+description: Test
+au|thor: Me
+runs:
+  using: node20
+  main: index.js`);
+      const result = await hover(doc, position);
+
+      expect(result).not.toBeNull();
+      expect(result?.contents).toContain("author");
+      expect(result?.contents).toContain("Documentation");
+    });
   });
 
   describe("runs properties", () => {
@@ -145,6 +159,7 @@ brand|ing:
 
       expect(result).not.toBeNull();
       expect(result?.contents).toContain("brand");
+      expect(result?.contents).toContain("Documentation");
     });
 
     it("shows description for icon key", async () => {
