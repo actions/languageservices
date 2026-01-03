@@ -192,6 +192,12 @@ export async function complete(
       textEdit = TextEdit.insert(position, newText);
     }
 
+    // Convert additionalTextEdits if present
+    let additionalTextEdits: TextEdit[] | undefined;
+    if (value.additionalTextEdits) {
+      additionalTextEdits = value.additionalTextEdits.map(edit => TextEdit.replace(edit.range, edit.newText));
+    }
+
     const item: CompletionItem = {
       label: value.label,
       labelDetails: value.labelDetail ? {description: value.labelDetail} : undefined,
@@ -202,7 +208,8 @@ export async function complete(
         value: value.description
       },
       tags: value.deprecated ? [CompletionItemTag.Deprecated] : undefined,
-      textEdit
+      textEdit,
+      additionalTextEdits
     };
 
     return item;
@@ -388,9 +395,19 @@ function getEscapeHatchCompletions(
     return [];
   }
 
-  // Calculate the range from key start to current position
-  // This covers "key: " so we can replace it with "key:\n  - " or "key:\n  "
-  const editRange = {
+  // For VS Code compatibility, we use a cursor-position range for the main textEdit
+  // and additionalTextEdits to clean up the key portion. This prevents VS Code from
+  // filtering out escape hatches based on the key text (e.g., "runs-on: ").
+  //
+  // Main textEdit: insert at cursor position (newline + indented content)
+  // additionalTextEdits: replace "key: " with "key:" (removes trailing space)
+  const cursorRange = {
+    start: {line: position.line, character: position.character},
+    end: {line: position.line, character: position.character}
+  };
+
+  // Range from key start to cursor - used to replace "key: " with "key:" in additionalTextEdits
+  const keyToCursorRange = {
     start: {line: keyRange.start.line - 1, character: keyRange.start.column - 1},
     end: {line: position.line, character: position.character}
   };
@@ -400,9 +417,15 @@ function getEscapeHatchCompletions(
       label: "(switch to list)",
       sortText: "zzz_switch_1",
       textEdit: {
-        range: editRange,
-        newText: `${keyName}:\n${indentation}- `
-      }
+        range: cursorRange,
+        newText: `\n${indentation}- `
+      },
+      additionalTextEdits: [
+        {
+          range: keyToCursorRange,
+          newText: `${keyName}:`
+        }
+      ]
     });
   }
 
@@ -411,9 +434,15 @@ function getEscapeHatchCompletions(
       label: "(switch to mapping)",
       sortText: "zzz_switch_2",
       textEdit: {
-        range: editRange,
-        newText: `${keyName}:\n${indentation}`
-      }
+        range: cursorRange,
+        newText: `\n${indentation}`
+      },
+      additionalTextEdits: [
+        {
+          range: keyToCursorRange,
+          newText: `${keyName}:`
+        }
+      ]
     });
   }
 
