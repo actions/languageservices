@@ -723,16 +723,28 @@ jobs:
       expect(switchToList!.sortText).toEqual("zzz_switch_1");
       expect(switchToFull!.sortText).toEqual("zzz_switch_2");
 
-      // Escape hatches should have textEdit that restructures the YAML
+      // Escape hatches should have textEdit at cursor position (for VS Code filtering compatibility)
       const listEdit = switchToList!.textEdit as TextEdit;
       const fullEdit = switchToFull!.textEdit as TextEdit;
 
-      expect(listEdit.newText).toEqual("runs-on:\n  - ");
-      expect(fullEdit.newText).toEqual("runs-on:\n  ");
+      // Main textEdit inserts newline and indented content at cursor position
+      expect(listEdit.newText).toEqual("\n  - ");
+      expect(fullEdit.newText).toEqual("\n  ");
 
-      // TextEdit range should cover from key start to cursor position
-      expect(listEdit.range.start).toEqual({line: 3, character: 4});
-      expect(fullEdit.range.start).toEqual({line: 3, character: 4});
+      // TextEdit range should be at cursor position (empty range)
+      expect(listEdit.range.start).toEqual({line: 3, character: 13});
+      expect(listEdit.range.end).toEqual({line: 3, character: 13});
+      expect(fullEdit.range.start).toEqual({line: 3, character: 13});
+      expect(fullEdit.range.end).toEqual({line: 3, character: 13});
+
+      // additionalTextEdits should clean up the key portion
+      expect(switchToList!.additionalTextEdits).toHaveLength(1);
+      expect(switchToList!.additionalTextEdits![0].range.start).toEqual({line: 3, character: 4});
+      expect(switchToList!.additionalTextEdits![0].range.end).toEqual({line: 3, character: 13});
+      expect(switchToList!.additionalTextEdits![0].newText).toEqual("runs-on:");
+
+      expect(switchToFull!.additionalTextEdits).toHaveLength(1);
+      expect(switchToFull!.additionalTextEdits![0].newText).toEqual("runs-on:");
     });
 
     it("permissions shows only switch to full syntax (no sequence form)", async () => {
@@ -824,9 +836,16 @@ jobs:
 
       const switchToList = result.find(x => x.label === "(switch to list)");
       const textEdit = switchToList!.textEdit as TextEdit;
+      const additionalEdits = switchToList!.additionalTextEdits!;
 
-      // Applying this edit to "runs-on: " should produce "runs-on:\n  - "
-      expect(textEdit.newText).toEqual("runs-on:\n  - ");
+      // Main textEdit inserts newline content at cursor
+      expect(textEdit.newText).toEqual("\n  - ");
+
+      // additionalTextEdits replaces "runs-on: " with "runs-on:"
+      expect(additionalEdits).toHaveLength(1);
+      expect(additionalEdits[0].newText).toEqual("runs-on:");
+
+      // Combined result when applied: "runs-on:\n  - "
     });
   });
 

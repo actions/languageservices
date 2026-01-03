@@ -27,6 +27,12 @@ export interface Value {
     range: {start: {line: number; character: number}; end: {line: number; character: number}};
     newText: string;
   };
+
+  /** Additional text edits to apply after the main edit (e.g., cleanup edits) */
+  additionalTextEdits?: {
+    range: {start: {line: number; character: number}; end: {line: number; character: number}};
+    newText: string;
+  }[];
 }
 
 export enum ValueProviderKind {
