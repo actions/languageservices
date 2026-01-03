@@ -271,6 +271,18 @@ runs:
       expect((brandingCompletion?.documentation as {value: string})?.value).toContain("branding");
     });
 
+    it("falls back to type description when property has no description", async () => {
+      // `inputs` uses shorthand form in schema: "inputs": "inputs-strict"
+      // So the property has no description, but the type `inputs-strict` does
+      const [doc, position] = createActionDocument(`|`, "file:///my-repo/action.yml");
+      const completions = await complete(doc, position);
+
+      const inputsCompletion = completions.find(c => c.label === "inputs");
+      expect(inputsCompletion).toBeDefined();
+      expect(inputsCompletion?.documentation).toBeDefined();
+      expect((inputsCompletion?.documentation as {value: string})?.value).toContain("Input parameters");
+    });
+
     it("does not route workflow files to action completion", async () => {
       const doc = TextDocument.create("file:///repo/.github/workflows/ci.yml", "yaml", 1, `o`);
       const completions = await complete(doc, {line: 0, character: 1});
