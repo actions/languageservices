@@ -251,6 +251,26 @@ runs:
       expect(labels).not.toContain("jobs");
     });
 
+    it("includes descriptions from schema for completion items", async () => {
+      const [doc, position] = createActionDocument(`|`, "file:///my-repo/action.yml");
+      const completions = await complete(doc, position);
+
+      const authorCompletion = completions.find(c => c.label === "author");
+      expect(authorCompletion).toBeDefined();
+      expect(authorCompletion?.documentation).toBeDefined();
+      expect((authorCompletion?.documentation as {value: string})?.value).toContain("author");
+    });
+
+    it("includes descriptions for branding completion", async () => {
+      const [doc, position] = createActionDocument(`|`, "file:///my-repo/action.yml");
+      const completions = await complete(doc, position);
+
+      const brandingCompletion = completions.find(c => c.label === "branding");
+      expect(brandingCompletion).toBeDefined();
+      expect(brandingCompletion?.documentation).toBeDefined();
+      expect((brandingCompletion?.documentation as {value: string})?.value).toContain("branding");
+    });
+
     it("does not route workflow files to action completion", async () => {
       const doc = TextDocument.create("file:///repo/.github/workflows/ci.yml", "yaml", 1, `o`);
       const completions = await complete(doc, {line: 0, character: 1});
