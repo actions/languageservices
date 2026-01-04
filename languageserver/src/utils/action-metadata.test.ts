@@ -1,7 +1,7 @@
 import {Octokit} from "@octokit/rest";
 import fetchMock from "fetch-mock";
-import {fetchActionMetadata} from "./action-metadata";
-import {TTLCache} from "./cache";
+import {fetchActionMetadata} from "./action-metadata.js";
+import {TTLCache} from "./cache.js";
 
 // A simplified version of the action.yml file from actions/checkout
 const actionMetadataContent = `

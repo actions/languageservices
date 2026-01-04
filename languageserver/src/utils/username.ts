@@ -1,5 +1,5 @@
 import {Octokit} from "@octokit/rest";
-import {TTLCache} from "./cache";
+import {TTLCache} from "./cache.js";
 
 export async function getUsername(octokit: Octokit, cache: TTLCache): Promise<string> {
   return await cache.get(`/username`, undefined, () => fetchUsername(octokit));

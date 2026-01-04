@@ -1,9 +1,9 @@
 import {data, DescriptionDictionary} from "@actions/expressions";
 import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
 import {Mode} from "@actions/languageservice/context-providers/default";
-import {contextProviders} from "./context-providers";
-import {RepositoryContext} from "./initializationOptions";
-import {TTLCache} from "./utils/cache";
+import {contextProviders} from "./context-providers.js";
+import {RepositoryContext} from "./initializationOptions.js";
+import {TTLCache} from "./utils/cache.js";
 
 describe("contextProviders", () => {
   const mockCache = new TTLCache();

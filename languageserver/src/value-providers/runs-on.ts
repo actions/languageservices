@@ -2,8 +2,8 @@ import {log} from "@actions/languageservice/log";
 import {Value} from "@actions/languageservice/value-providers/config";
 import {DEFAULT_RUNNER_LABELS} from "@actions/languageservice/value-providers/default";
 import {Octokit} from "@octokit/rest";
-import {TTLCache} from "../utils/cache";
-import {errorMessage} from "../utils/error";
+import {TTLCache} from "../utils/cache.js";
+import {errorMessage} from "../utils/error.js";
 
 // Limitation: getRunnerLabels returns default hosted labels and labels for repository self-hosted runners.
 // It doesn't return labels for organization runners visible to the repository.

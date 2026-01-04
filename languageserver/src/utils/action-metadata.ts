@@ -3,8 +3,8 @@ import {ActionsMetadataProvider} from "@actions/languageservice";
 import {error} from "@actions/languageservice/log";
 import {Octokit, RestEndpointMethodTypes} from "@octokit/rest";
 import {parse} from "yaml";
-import {TTLCache} from "./cache";
-import {errorMessage, errorStatus} from "./error";
+import {TTLCache} from "./cache.js";
+import {errorMessage, errorStatus} from "./error.js";
 
 export function getActionsMetadataProvider(
   client: Octokit | undefined,

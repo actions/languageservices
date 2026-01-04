@@ -1,9 +1,9 @@
 import {error} from "@actions/languageservice/log";
 import {Octokit} from "@octokit/rest";
-import {RepositoryContext} from "../initializationOptions";
-import {TTLCache} from "./cache";
-import {errorStatus} from "./error";
-import {getUsername} from "./username";
+import {RepositoryContext} from "../initializationOptions.js";
+import {TTLCache} from "./cache.js";
+import {errorStatus} from "./error.js";
+import {getUsername} from "./username.js";
 
 export type RepoPermission = "admin" | "write" | "read" | "none";
 
