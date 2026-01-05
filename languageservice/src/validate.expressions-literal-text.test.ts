@@ -211,4 +211,104 @@ jobs:
       );
     });
   });
+
+  describe("YAML-quoted expressions (issue #542)", () => {
+    it("allows double-quoted expression in job-if", async () => {
+      // https://github.com/github/vscode-github-actions/issues/542
+      // Quotes are needed when the expression contains a colon
+      const input = `
+on: push
+jobs:
+  publish:
+    if: "\${{ startsWith(github.event.head_commit.message, 'chore: release') }}"
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).not.toContainEqual(
+        expect.objectContaining({
+          code: "expression-literal-text-in-condition"
+        })
+      );
+    });
+
+    it("allows single-quoted expression in job-if", async () => {
+      const input = `
+on: push
+jobs:
+  publish:
+    if: '\${{ startsWith(github.event.head_commit.message, "chore: release") }}'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).not.toContainEqual(
+        expect.objectContaining({
+          code: "expression-literal-text-in-condition"
+        })
+      );
+    });
+
+    it("allows double-quoted expression in step-if", async () => {
+      const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: "\${{ contains(github.event.head_commit.message, 'skip: ci') }}"
+        run: echo hi
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).not.toContainEqual(
+        expect.objectContaining({
+          code: "expression-literal-text-in-condition"
+        })
+      );
+    });
+
+    it("still errors when there is actual literal text outside expression", async () => {
+      // Even with quotes, if there's literal text outside ${{ }}, it should error
+      const input = `
+on: push
+jobs:
+  build:
+    if: "push == \${{ github.event_name }}"
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toContainEqual(
+        expect.objectContaining({
+          code: "expression-literal-text-in-condition"
+        })
+      );
+    });
+
+    it("errors on multiple expressions with literal text between them", async () => {
+      const input = `
+on: push
+jobs:
+  build:
+    if: "\${{ true }} and \${{ false }}"
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toContainEqual(
+        expect.objectContaining({
+          code: "expression-literal-text-in-condition"
+        })
+      );
+    });
+  });
 });
