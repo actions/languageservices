@@ -36,7 +36,7 @@ export async function validateActionReference(
   stepToken: TemplateToken,
   step: Step | undefined,
   config: ValidationConfig | undefined,
-  indentSize: number = 2
+  indentSize = 2
 ): Promise<void> {
   if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.actionsMetadataProvider) {
     return;
