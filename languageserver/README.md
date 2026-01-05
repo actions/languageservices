@@ -84,6 +84,11 @@ export interface InitializationOptions {
    * Desired log level
    */
   logLevel?: LogLevel;
+
+  /**
+   * Experimental features that are opt-in
+   */
+  experimentalFeatures?: ExperimentalFeatures;
 }
 ```
 
@@ -99,6 +104,32 @@ const clientOptions: LanguageClientOptions = {
 
 const client = new LanguageClient("actions-language", "GitHub Actions Language Server", serverOptions, clientOptions);
 ```
+
+### Experimental Features
+
+The language server supports opt-in experimental features via the `experimentalFeatures` initialization option. These features may change or be removed in between releases.
+
+```typescript
+initializationOptions: {
+  experimentalFeatures: {
+    // Enable all experimental features
+    all: true,
+
+    // Or enable specific features
+    missingInputsQuickfix: true,
+  }
+}
+```
+
+**Available experimental features:**
+
+| Feature | Description |
+|---------|-------------|
+| `missingInputsQuickfix` | Code action to add missing required inputs for actions |
+
+Individual feature flags take precedence over `all`. For example, `{ all: true, missingInputsQuickfix: false }` enables all experimental features except `missingInputsQuickfix`.
+
+When a feature graduates to stable, its flag becomes a no-op and the feature will be enabled regardless of the configuration value.
 
 ### Standalone CLI
 
