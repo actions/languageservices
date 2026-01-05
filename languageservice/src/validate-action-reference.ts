@@ -22,6 +22,8 @@ export interface MissingInputsDiagnosticData {
   // Indentation of the `with:` key if present, or the step's base indentation
   withIndent?: number;
   stepIndent: number;
+  // Indentation size (spaces per level)
+  indentSize: number;
   // Position where new content should be inserted
   insertPosition: {line: number; character: number};
 }
@@ -33,7 +35,8 @@ export async function validateActionReference(
   diagnostics: Diagnostic[],
   stepToken: TemplateToken,
   step: Step | undefined,
-  config: ValidationConfig | undefined
+  config: ValidationConfig | undefined,
+  indentSize: number = 2
 ): Promise<void> {
   if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.actionsMetadataProvider) {
     return;
@@ -116,6 +119,15 @@ export async function validateActionReference(
     const stepIndent = stepToken.range ? stepToken.range.start.column - 1 : 0; // 0-indexed
     const withIndent = withKey?.range ? withKey.range.start.column - 1 : undefined;
 
+    // Calculate actual indentSize from the first child of with: block, or use the provided default
+    let actualIndentSize = indentSize;
+    if (withToken && isMapping(withToken) && withToken.count > 0) {
+      const firstChild = withToken.get(0);
+      if (firstChild?.key.range && withKey?.range) {
+        actualIndentSize = firstChild.key.range.start.column - withKey.range.start.column;
+      }
+    }
+
     // Calculate insert position
     // For withToken, we need to handle empty mappings specially - insert after the with: line
     let insertPosition: {line: number; character: number};
@@ -146,6 +158,7 @@ export async function validateActionReference(
       hasWithKey: withKey !== undefined,
       withIndent,
       stepIndent,
+      indentSize: actualIndentSize,
       insertPosition
     };
 

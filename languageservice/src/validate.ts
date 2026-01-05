@@ -8,6 +8,7 @@ import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-co
 import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
 import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
@@ -169,7 +170,8 @@ async function additionalValidations(
     // Validate action metadata (inputs, required fields) for regular steps
     if (token.definition?.key === "regular-step" && token.range) {
       const context = getProviderContext(documentUri, template, root, token.range);
-      await validateActionReference(diagnostics, token, context.step, config);
+      const indentSize = detectIndentSize(root as MappingToken);
+      await validateActionReference(diagnostics, token, context.step, config, indentSize);
     }
 
     // Validate job-level reusable workflow uses field format
@@ -821,6 +823,33 @@ function getStaticConcurrencyGroup(token: TemplateToken | undefined): StringToke
   }
 
   return undefined;
+}
+
+/**
+ * Detects the indentation size used in the workflow file by examining the
+ * difference between the "jobs" key column and its first child's column.
+ */
+function detectIndentSize(rootToken: MappingToken): number {
+  // Find the "jobs" key in the root mapping to get its column position
+  let jobsKeyColumn: number | undefined;
+  let jobsValue: TemplateToken | undefined;
+
+  for (const {key, value} of rootToken) {
+    if (key.toString() === "jobs") {
+      jobsKeyColumn = key.range?.start.column;
+      jobsValue = value;
+      break;
+    }
+  }
+
+  if (jobsKeyColumn !== undefined && jobsValue && isMapping(jobsValue) && jobsValue.count > 0) {
+    const firstJob = jobsValue.get(0);
+    if (firstJob?.key.range) {
+      return firstJob.key.range.start.column - jobsKeyColumn;
+    }
+  }
+
+  return 2; // fallback
 }
 
 
