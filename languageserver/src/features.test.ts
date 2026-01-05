@@ -1,4 +1,3 @@
-import {FeatureFlags} from "./features";
 
 describe("FeatureFlags", () => {
   describe("isEnabled", () => {
