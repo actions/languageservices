@@ -212,9 +212,9 @@ jobs:
     });
   });
 
-  describe("YAML-quoted expressions (issue #542)", () => {
+  // https://github.com/github/vscode-github-actions/issues/542
+  describe("YAML-quoted expressions", () => {
     it("allows double-quoted expression in job-if", async () => {
-      // https://github.com/github/vscode-github-actions/issues/542
       // Quotes are needed when the expression contains a colon
       const input = `
 on: push
