@@ -1,4 +1,11 @@
-import {documentLinks, getCodeActions, getInlayHints, hover, validate, ValidationConfig} from "@actions/languageservice";
+import {
+  documentLinks,
+  getCodeActions,
+  getInlayHints,
+  hover,
+  validate,
+  ValidationConfig
+} from "@actions/languageservice";
 import {registerLogger, setLogLevel} from "@actions/languageservice/log";
 import {clearCache, clearCacheEntry} from "@actions/languageservice/utils/workflow-cache";
 import {Octokit} from "@octokit/rest";

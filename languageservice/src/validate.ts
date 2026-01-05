@@ -851,5 +851,3 @@ function detectIndentSize(rootToken: MappingToken): number {
 
   return 2; // fallback
 }
-
-
