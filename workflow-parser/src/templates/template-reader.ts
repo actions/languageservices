@@ -451,7 +451,13 @@ class TemplateReader {
     }
 
     const allowedContext = definitionInfo.allowedContext;
-    const raw = token.source || token.value;
+    const isSingleLine = token.range === undefined || token.range.start.line === token.range.end.line;
+
+    // For single-line strings, use token.value (without YAML quotes) for expression detection,
+    // because token.source includes quote characters that would be incorrectly detected as literal text.
+    // For multi-line block scalars, use token.source directly because it makes position calculation easier
+    // (no quote characters to handle, and token.source preserves the original line/column structure in YAML).
+    const raw = isSingleLine ? token.value : token.source ?? token.value;
 
     let startExpression: number = raw.indexOf(OPEN_EXPRESSION);
     if (startExpression < 0) {
@@ -496,14 +502,17 @@ class TemplateReader {
         );
 
         let tr = token.range!;
-        if (tr.start.line === tr.end.line) {
-          // If it's a single line expression, adjust the range to only cover the sub-expression
+        if (isSingleLine) {
+          // Single-line: Adjust the range to only cover the sub-expression.
+          // Calculate offset to account for YAML quote characters.
+          // For example, `"${{ expr }}"` has source with quotes, value without.
+          const offset = (token.source ?? raw).indexOf(OPEN_EXPRESSION) - raw.indexOf(OPEN_EXPRESSION);
           tr = {
-            start: {line: tr.start.line, column: tr.start.column + startExpression},
-            end: {line: tr.end.line, column: tr.start.column + endExpression + 1}
+            start: {line: tr.start.line, column: tr.start.column + startExpression + offset},
+            end: {line: tr.end.line, column: tr.start.column + endExpression + 1 + offset}
           };
         } else {
-          // Adjust the range to only cover the expression for multi-line strings
+          // Multi-line: Adjust the range to only cover the expression
           const startRaw = raw.substring(0, startExpression);
           const adjustedStartLine = startRaw.split("\n").length;
           const beginningOfLine = startRaw.lastIndexOf("\n");
