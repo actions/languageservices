@@ -24,7 +24,7 @@ import {getClient} from "./client.js";
 import {Commands} from "./commands.js";
 import {contextProviders} from "./context-providers.js";
 import {descriptionProvider} from "./description-provider.js";
-import {FeatureFlags} from "./features.js";
+import {FeatureFlags} from "@actions/expressions";
 import {getFileProvider} from "./file-provider.js";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions.js";
 import {onCompletion} from "./on-completion.js";
