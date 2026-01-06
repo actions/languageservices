@@ -1,26 +1,29 @@
+import {FeatureFlags} from "@actions/expressions";
 import {CodeAction, CodeActionKind, Diagnostic} from "vscode-languageserver-types";
 import {CodeActionContext, CodeActionProvider} from "./types.js";
-import {quickfixProviders} from "./quickfix/index.js";
-
-// Aggregate all providers by kind
-const providersByKind: Map<string, CodeActionProvider[]> = new Map([
-  [CodeActionKind.QuickFix, quickfixProviders]
-  // [CodeActionKind.Refactor, refactorProviders],
-  // [CodeActionKind.Source, sourceProviders],
-  // etc
-]);
+import {getQuickfixProviders} from "./quickfix/index.js";
 
 export interface CodeActionParams {
   uri: string;
   diagnostics: Diagnostic[];
   only?: string[];
+  featureFlags?: FeatureFlags;
 }
 
 export function getCodeActions(params: CodeActionParams): CodeAction[] {
   const actions: CodeAction[] = [];
   const context: CodeActionContext = {
-    uri: params.uri
+    uri: params.uri,
+    featureFlags: params.featureFlags
   };
+
+  // Build providers map based on feature flags
+  const providersByKind: Map<string, CodeActionProvider[]> = new Map([
+    [CodeActionKind.QuickFix, getQuickfixProviders(params.featureFlags)]
+    // [CodeActionKind.Refactor, getRefactorProviders(params.featureFlags)],
+    // [CodeActionKind.Source, getSourceProviders(params.featureFlags)],
+    // etc
+  ]);
 
   // Filter to requested kinds, or use all if none specified
   const requestedKinds = params.only;

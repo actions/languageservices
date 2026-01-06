@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {TextEdit} from "vscode-languageserver-types";
 import {TextDocument} from "vscode-languageserver-textdocument";
+import {FeatureFlags} from "@actions/expressions";
 import {validate, ValidationConfig} from "../../validate.js";
 import {getCodeActions, CodeActionParams} from "../index.js";
 
@@ -178,7 +179,8 @@ export async function runTestCase(testCase: TestCase, validationConfig: Validati
 
     const params: CodeActionParams = {
       uri: document.uri,
-      diagnostics: [diagnostic]
+      diagnostics: [diagnostic],
+      featureFlags: new FeatureFlags({all: true})
     };
 
     const actions = getCodeActions(params);

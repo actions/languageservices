@@ -193,7 +193,8 @@ export function initConnection(connection: Connection) {
     return getCodeActions({
       uri: params.textDocument.uri,
       diagnostics: params.context.diagnostics,
-      only: params.context.only
+      only: params.context.only,
+      featureFlags
     });
   });
 

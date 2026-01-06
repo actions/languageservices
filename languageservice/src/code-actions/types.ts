@@ -1,7 +1,9 @@
+import {FeatureFlags} from "@actions/expressions";
 import {CodeAction, Diagnostic} from "vscode-languageserver-types";
 
 export interface CodeActionContext {
   uri: string;
+  featureFlags?: FeatureFlags;
 }
 
 /**
