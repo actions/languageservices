@@ -1,3 +1,4 @@
+import {ExperimentalFeatures} from "@actions/expressions";
 import {LogLevel} from "@actions/languageservice/log";
 export {LogLevel} from "@actions/languageservice/log";
 
@@ -28,6 +29,12 @@ export interface InitializationOptions {
    * If a GitHub Enterprise Server should be used, the URL of the API endpoint, eg "https://ghe.my-company.com/api/v3"
    */
   gitHubApiUrl?: string;
+
+  /**
+   * Experimental features that are opt-in.
+   * Features listed here may change or be removed without notice.
+   */
+  experimentalFeatures?: ExperimentalFeatures;
 }
 
 export interface RepositoryContext {
