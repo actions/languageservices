@@ -267,6 +267,7 @@
           },
           "main": {
             "type": "non-empty-string",
+            "required": true,
             "description": "The file that contains your action code. The runtime specified in using executes this file.\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runsmain)"
           },
           "pre": {
