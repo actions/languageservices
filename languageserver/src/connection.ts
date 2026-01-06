@@ -34,6 +34,7 @@ import {getClient} from "./client.js";
 import {Commands} from "./commands.js";
 import {contextProviders} from "./context-providers.js";
 import {descriptionProvider} from "./description-provider.js";
+import {FeatureFlags} from "@actions/expressions";
 import {getFileProvider} from "./file-provider.js";
 import {InitializationOptions, RepositoryContext} from "./initializationOptions.js";
 import {onCompletion} from "./on-completion.js";
@@ -51,6 +52,7 @@ export function initConnection(connection: Connection) {
   const cache = new TTLCache();
 
   let hasWorkspaceFolderCapability = false;
+  let featureFlags = new FeatureFlags();
 
   // Register remote console logger with language service
   registerLogger(connection.console);
@@ -73,6 +75,8 @@ export function initConnection(connection: Connection) {
     if (options.logLevel !== undefined) {
       setLogLevel(options.logLevel);
     }
+
+    featureFlags = new FeatureFlags(options.experimentalFeatures);
 
     const result: InitializeResult = {
       capabilities: {
@@ -104,6 +108,11 @@ export function initConnection(connection: Connection) {
   });
 
   connection.onInitialized(() => {
+    const enabledFeatures = featureFlags.getEnabledFeatures();
+    if (enabledFeatures.length > 0) {
+      connection.console.info(`Experimental features enabled: ${enabledFeatures.join(", ")}`);
+    }
+
     if (hasWorkspaceFolderCapability) {
       connection.workspace.onDidChangeWorkspaceFolders(() => {
         clearCache();

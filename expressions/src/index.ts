@@ -4,6 +4,7 @@ export {DescriptionDictionary, DescriptionPair, isDescriptionDictionary} from ".
 export * as data from "./data/index.js";
 export {ExpressionError, ExpressionEvaluationError} from "./errors.js";
 export {Evaluator} from "./evaluator.js";
+export {ExperimentalFeatureKey, ExperimentalFeatures, FeatureFlags} from "./features.js";
 export {wellKnownFunctions} from "./funcs.js";
 export {Lexer, Result} from "./lexer.js";
 export {Parser} from "./parser.js";
