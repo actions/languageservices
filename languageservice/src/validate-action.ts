@@ -8,6 +8,7 @@ import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {TemplateValidationError} from "@actions/workflow-parser/templates/template-validation-error";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
@@ -64,8 +65,16 @@ export async function validateAction(textDocument: TextDocument, config?: Valida
       return [];
     }
 
-    // Map parser errors to diagnostics
-    for (const err of result.context.errors.getErrors()) {
+    // Get schema errors
+    const schemaErrors = result.context.errors.getErrors();
+
+    // Run custom runs key validation, which also filters redundant schema errors in place
+    if (result.value) {
+      diagnostics.push(...validateRunsKeysAndFilterErrors(result.value, schemaErrors));
+    }
+
+    // Map remaining schema errors to diagnostics
+    for (const err of schemaErrors) {
       const range = mapRange(err.range);
 
       // Determine severity based on error type
@@ -81,12 +90,6 @@ export async function validateAction(textDocument: TextDocument, config?: Valida
         range,
         severity
       });
-    }
-
-    // Validate runs key combinations based on using type
-    if (result.value) {
-      const runsKeyDiagnostics = validateRunsKeys(result.value);
-      diagnostics.push(...runsKeyDiagnostics);
     }
 
     // Validate composite action steps if we have a parsed result
@@ -137,8 +140,12 @@ function findStepsSequence(root: TemplateToken): SequenceToken | undefined {
 
 /**
  * Validates that the keys under `runs:` are valid for the specified `using:` type.
+ * Also filters out schema errors (in place) that this validation replaces with more specific messages.
  */
-function validateRunsKeys(root: TemplateToken): Diagnostic[] {
+function validateRunsKeysAndFilterErrors(
+  root: TemplateToken,
+  schemaErrors: TemplateValidationError[] // mutated: redundant errors are removed
+): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
 
   // Find the runs mapping from the root
@@ -229,6 +236,32 @@ function validateRunsKeys(root: TemplateToken): Diagnostic[] {
         range: mapRange(usingKeyRange),
         message: `'${requiredKey}' is required for ${actionType} actions (using: ${usingValue})`
       });
+    }
+  }
+
+  // Remove schema errors that we're replacing with more specific messages (mutate in place)
+  for (let i = schemaErrors.length - 1; i >= 0; i--) {
+    const err = schemaErrors[i];
+
+    // Keep errors not at the runs section start
+    if (
+      err.range?.start.line !== runsMapping.range?.start.line ||
+      err.range?.start.column !== runsMapping.range?.start.column
+    ) {
+      continue;
+    }
+
+    // Check if this is an error we're replacing
+    const isOneOfAmbiguity = err.rawMessage.startsWith("There's not enough info to determine");
+    const isRequiredKey = /^Required property is missing: (main|steps|image)$/.test(err.rawMessage);
+
+    if (!isOneOfAmbiguity && !isRequiredKey) {
+      continue; // Keep errors we're not replacing
+    }
+
+    // Remove only if we have custom diagnostics for this
+    if (diagnostics.length > 0) {
+      schemaErrors.splice(i, 1);
     }
   }
 
