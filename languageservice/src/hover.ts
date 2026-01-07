@@ -2,6 +2,8 @@ import {data, DescriptionDictionary, Parser} from "@actions/expressions";
 import {FunctionDefinition, FunctionInfo} from "@actions/expressions/funcs/info";
 import {Lexer} from "@actions/expressions/lexer";
 import {parseAction} from "@actions/workflow-parser/actions/action-parser";
+import {isString} from "@actions/workflow-parser";
+import {getCronDescription} from "@actions/workflow-parser/model/converter/cron";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
@@ -133,6 +135,17 @@ export async function hover(document: TextDocument, position: Position, config?:
 
   // Non-expression hover: show the schema description for the YAML key or value
   info(`Calculating hover for token with definition ${hoverToken.definition.key}`);
+
+  // Check for cron expression hover
+  if (isString(hoverToken) && hoverToken.definition.key === "cron-pattern") {
+    const cronDescription = getCronDescription(hoverToken.value);
+    if (cronDescription) {
+      return {
+        contents: cronDescription,
+        range: mapRange(hoverToken.range)
+      };
+    }
+  }
 
   let description: string;
   if (!isAction && tokenResult.parent && isReusableWorkflowJobInput(tokenResult)) {
