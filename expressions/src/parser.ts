@@ -15,6 +15,7 @@ import {ErrorType, ExpressionError, MAX_PARSER_DEPTH} from "./errors.js";
 import {ParseContext, validateFunction} from "./funcs.js";
 import {FunctionInfo} from "./funcs/info.js";
 import {Token, TokenType} from "./lexer.js";
+import {validateFormatString} from "./validate-format.js";
 
 export class Parser {
   private extContexts: Map<string, boolean>;
@@ -260,6 +261,30 @@ export class Parser {
     }
 
     validateFunction(this.context, identifier, args.length);
+
+    // Validate format() calls
+    if (identifier.lexeme.toLowerCase() === "format" && args.length > 0) {
+      const firstArg = args[0];
+      if (firstArg instanceof Literal && firstArg.literal.kind === data.Kind.String) {
+        const formatString = firstArg.literal.coerceString();
+        const result = validateFormatString(formatString);
+
+        if (!result.valid) {
+          throw new ExpressionError(ErrorType.ErrorInvalidFormatString, identifier);
+        }
+
+        // Check argument count: format string uses {0} to {N}, so need N+1 args after format string
+        const providedArgs = args.length - 1;
+        const requiredArgs = result.maxArgIndex + 1;
+        if (requiredArgs > providedArgs) {
+          throw new ExpressionError(
+            ErrorType.ErrorFormatArgCountMismatch,
+            identifier,
+            `Format string references {${result.maxArgIndex}} but only ${providedArgs} argument(s) provided`
+          );
+        }
+      }
+    }
 
     return new FunctionCall(identifier, args);
   }

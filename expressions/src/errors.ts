@@ -13,12 +13,14 @@ export enum ErrorType {
   ErrorTooFewParameters,
   ErrorTooManyParameters,
   ErrorUnrecognizedContext,
-  ErrorUnrecognizedFunction
+  ErrorUnrecognizedFunction,
+  ErrorInvalidFormatString,
+  ErrorFormatArgCountMismatch
 }
 
 export class ExpressionError extends Error {
-  constructor(private typ: ErrorType, private tok: Token) {
-    super(`${errorDescription(typ)}: '${tokenString(tok)}'`);
+  constructor(private typ: ErrorType, private tok: Token, customMessage?: string) {
+    super(customMessage ?? `${errorDescription(typ)}: '${tokenString(tok)}'`);
 
     this.pos = this.tok.range.start;
   }
@@ -46,6 +48,10 @@ function errorDescription(typ: ErrorType): string {
       return "Unrecognized named-value";
     case ErrorType.ErrorUnrecognizedFunction:
       return "Unrecognized function";
+    case ErrorType.ErrorInvalidFormatString:
+      return "Invalid format string";
+    case ErrorType.ErrorFormatArgCountMismatch:
+      return "Format string argument count mismatch";
     default: // Should never reach here.
       return "Unknown error";
   }

@@ -87,120 +87,120 @@
     {
       "expr": "format('{0')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {0"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{0', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {0"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{0}}', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {0}}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{0}}}}', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {0}}}}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('0}')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: 0}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('0}', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: 0}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{{0}')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {{0}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{{0}', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {{0}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{{{{0}')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {{{{0}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{{{{0}', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {{{{0}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('}0{')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: }0{"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('}0{', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: }0{"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('}{0}')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: }{0}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('}{0}', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: }{0}"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{0}{', '')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string is invalid: {0}{"
+        "kind": "parsing",
+        "value": "Invalid format string"
       }
     },
     {
       "expr": "format('{0}')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string references more arguments than were supplied: {0}"
+        "kind": "parsing",
+        "value": "Format string references {0} but only 0 argument(s) provided"
       }
     },
     {
       "expr": "format('{0}{1}', 'abc')",
       "err": {
-        "kind": "evaluation",
-        "value": "The following format string references more arguments than were supplied: {0}{1}"
+        "kind": "parsing",
+        "value": "Format string references {1} but only 1 argument(s) provided"
       }
     }
   ]
