@@ -27,6 +27,7 @@ import {mapRange} from "./utils/range.js";
 import {getOrConvertWorkflowTemplate, getOrParseWorkflow} from "./utils/workflow-cache.js";
 import {validateActionReference} from "./validate-action-reference.js";
 import {validateAction} from "./validate-action.js";
+import {validateFormatCalls} from "./validate-format-string.js";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
 import {defaultValueProviders} from "./value-providers/default.js";
 
@@ -733,6 +734,28 @@ async function validateExpression(
     } catch {
       // Ignore any error here, we should've caught this earlier in the parsing process
       continue;
+    }
+
+    // Validate format() function calls
+    const formatErrors = validateFormatCalls(expr);
+    for (const formatError of formatErrors) {
+      if (formatError.type === "invalid-syntax") {
+        diagnostics.push({
+          message: `Invalid format string: ${formatError.message}`,
+          range: mapRange(expression.range),
+          severity: DiagnosticSeverity.Error,
+          code: "invalid-format-string"
+        });
+      } else if (formatError.type === "arg-count-mismatch") {
+        diagnostics.push({
+          message: `Format string references argument {${formatError.expected - 1}} but only ${
+            formatError.provided
+          } argument(s) provided`,
+          range: mapRange(expression.range),
+          severity: DiagnosticSeverity.Error,
+          code: "format-arg-count-mismatch"
+        });
+      }
     }
 
     const context = await getWorkflowExpressionContext(
