@@ -658,23 +658,15 @@ function filterActionRunsCompletions(values: Value[], path: TemplateToken[], roo
     return values;
   }
 
-  // Also verify we're completing at the runs level, not deeper (like inside steps)
-  // The runs mapping should be the last mapping in the path before the completion position
-  // or the path should only have root -> runs
-  let lastMappingIndex = -1;
-  for (let i = path.length - 1; i >= 0; i--) {
-    if (path[i] instanceof MappingToken) {
-      lastMappingIndex = i;
-      break;
-    }
-  }
-  if (lastMappingIndex === -1) {
+  // Find where runsMapping is in the path
+  const runsMappingIndex = path.indexOf(runsMapping);
+  if (runsMappingIndex === -1) {
     return values;
   }
 
-  // If the last mapping in path is not the runs mapping, we're nested deeper (e.g., inside steps)
-  const lastMapping = path[lastMappingIndex];
-  if (lastMapping !== runsMapping) {
+  // Check if there's anything after runsMapping in the path
+  // If so, we're nested deeper (e.g., inside steps sequence or a step mapping)
+  if (runsMappingIndex < path.length - 1) {
     return values;
   }
 

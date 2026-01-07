@@ -262,6 +262,29 @@ runs:
       // It should have a sortText that makes it sort first
       expect(usingCompletion?.sortText).toBe("0_using");
     });
+
+    it("completes step keys inside composite action steps", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: composite
+  steps:
+    - run: echo hello
+      shell: bash
+    - |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show step keys, not filtered by runs-level logic
+      expect(labels).toContain("run");
+      expect(labels).toContain("uses");
+      expect(labels).toContain("shell");
+      expect(labels).toContain("id");
+      expect(labels).toContain("name");
+      expect(labels).toContain("if");
+      expect(labels).toContain("env");
+      expect(labels).toContain("working-directory");
+    });
   });
 
   describe("branding completions", () => {
