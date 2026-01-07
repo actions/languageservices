@@ -257,20 +257,30 @@ jobs:
             owner: "actions",
             ref: "v1"
           },
-          hasWithKey: true,
-          indentSize: 2,
-          insertPosition: {
-            character: 0,
-            line: 9
-          },
           missingInputs: [
             {
               default: undefined,
               name: "path"
             }
           ],
-          stepIndent: 6,
-          withIndent: 6
+          stepRange: {
+            start: {line: 7, column: 7},
+            end: {line: 10, column: 1}
+          },
+          firstStepKeyColumn: 7,
+          indentSize: 2,
+          withInfo: {
+            keyRange: {
+              start: {line: 8, column: 7},
+              end: {line: 8, column: 11}
+            },
+            valueRange: {
+              start: {line: 9, column: 9},
+              end: {line: 10, column: 1}
+            },
+            hasChildren: true,
+            firstChildColumn: 9
+          }
         }
       }
     ]);
@@ -324,12 +334,6 @@ jobs:
             owner: "actions",
             ref: "v1"
           },
-          hasWithKey: true,
-          indentSize: 2,
-          insertPosition: {
-            character: 0,
-            line: 9
-          },
           missingInputs: [
             {
               default: undefined,
@@ -340,8 +344,24 @@ jobs:
               name: "key"
             }
           ],
-          stepIndent: 6,
-          withIndent: 6
+          stepRange: {
+            start: {line: 7, column: 7},
+            end: {line: 10, column: 1}
+          },
+          firstStepKeyColumn: 7,
+          indentSize: 2,
+          withInfo: {
+            keyRange: {
+              start: {line: 8, column: 7},
+              end: {line: 8, column: 11}
+            },
+            valueRange: {
+              start: {line: 9, column: 9},
+              end: {line: 10, column: 1}
+            },
+            hasChildren: true,
+            firstChildColumn: 9
+          }
         }
       }
     ]);
@@ -379,12 +399,6 @@ jobs:
             owner: "actions",
             ref: "v1"
           },
-          hasWithKey: false,
-          indentSize: 2,
-          insertPosition: {
-            character: 0,
-            line: 7
-          },
           missingInputs: [
             {
               default: undefined,
@@ -395,8 +409,12 @@ jobs:
               name: "key"
             }
           ],
-          stepIndent: 6,
-          withIndent: undefined
+          stepRange: {
+            start: {line: 7, column: 7},
+            end: {line: 8, column: 1}
+          },
+          firstStepKeyColumn: 7,
+          indentSize: 2
         }
       }
     ]);

@@ -4,7 +4,7 @@ import {TextEdit} from "vscode-languageserver-types";
 import {TextDocument} from "vscode-languageserver-textdocument";
 import {FeatureFlags} from "@actions/expressions";
 import {validate, ValidationConfig} from "../../validate.js";
-import {getCodeActions, CodeActionParams} from "../index.js";
+import {getCodeActions, CodeActionParams} from "../code-actions.js";
 
 // Marker pattern: # want "diagnostic message" fix="code-action-name"
 const MARKER_PATTERN = /#\s*want\s+"([^"]+)"(?:\s+fix="([^"]+)")?/;

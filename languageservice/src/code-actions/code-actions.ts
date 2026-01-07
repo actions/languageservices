@@ -1,7 +1,7 @@
 import {FeatureFlags} from "@actions/expressions";
 import {CodeAction, CodeActionKind, Diagnostic} from "vscode-languageserver-types";
 import {CodeActionContext, CodeActionProvider} from "./types.js";
-import {getQuickfixProviders} from "./quickfix/index.js";
+import {getQuickfixProviders} from "./quickfix/quickfix-providers.js";
 
 export interface CodeActionParams {
   uri: string;

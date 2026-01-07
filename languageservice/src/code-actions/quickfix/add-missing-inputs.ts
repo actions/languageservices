@@ -1,4 +1,4 @@
-import {CodeAction, TextEdit} from "vscode-languageserver-types";
+import {CodeAction, Position, TextEdit} from "vscode-languageserver-types";
 import {CodeActionProvider} from "../types.js";
 import {DiagnosticCode, MissingInputsDiagnosticData} from "../../validate-action-reference.js";
 
@@ -12,7 +12,7 @@ export const addMissingInputsProvider: CodeActionProvider = {
     }
 
     const edits = createInputEdits(data);
-    if (!edits) {
+    if (!edits || edits.length === 0) {
       return undefined;
     }
 
@@ -29,37 +29,77 @@ export const addMissingInputsProvider: CodeActionProvider = {
   }
 };
 
+/**
+ * Calculate insert position and indentation, then generate edits for missing inputs.
+ * Position calculation is done here in the quickfix rather than during validation.
+ */
 function createInputEdits(data: MissingInputsDiagnosticData): TextEdit[] {
-  const edits: TextEdit[] = [];
-
   const formatInputLines = (indent: string) =>
     data.missingInputs.map(input => {
       const value = input.default ?? '""';
       return `${indent}${input.name}: ${value}`;
     });
 
-  if (data.hasWithKey && data.withIndent !== undefined) {
-    // `with:` exists - use its indentation + 2 for inputs
-    const inputIndent = " ".repeat(data.withIndent + data.indentSize);
+  if (data.withInfo) {
+    // `with:` exists - calculate indentation from existing structure
+    const withIndent = data.withInfo.keyRange.start.column - 1; // 0-indexed
+    const indentSize = data.withInfo.firstChildColumn
+      ? data.withInfo.firstChildColumn - data.withInfo.keyRange.start.column
+      : data.indentSize;
+
+    const inputIndent = " ".repeat(withIndent + indentSize);
     const inputLines = formatInputLines(inputIndent);
 
-    edits.push({
-      range: {start: data.insertPosition, end: data.insertPosition},
-      newText: inputLines.map(line => line + "\n").join("")
-    });
+    // Calculate insert position
+    const insertPosition = calculateWithInsertPosition(data.withInfo);
+
+    return [
+      {
+        range: {start: insertPosition, end: insertPosition},
+        newText: inputLines.map(line => line + "\n").join("")
+      }
+    ];
   } else {
-    // No `with:` key - `with:` at step indentation, inputs at step indentation + 2
-    const withIndent = " ".repeat(data.stepIndent);
-    const inputIndent = " ".repeat(data.stepIndent + data.indentSize);
+    // No `with:` key - add `with:` at the same level as other step keys (e.g., "uses")
+    const firstKeyColumn = data.firstStepKeyColumn ?? data.stepRange.start.column;
+    const withKeyIndent = firstKeyColumn - 1; // 0-indexed (columns are 1-based)
+
+    const withIndent = " ".repeat(withKeyIndent);
+    const inputIndent = " ".repeat(withKeyIndent + data.indentSize);
     const inputLines = formatInputLines(inputIndent);
 
     const newText = `${withIndent}with:\n` + inputLines.map(line => `${line}\n`).join("");
 
-    edits.push({
-      range: {start: data.insertPosition, end: data.insertPosition},
-      newText
-    });
-  }
+    // Insert at end of step (before the line after the step ends)
+    const insertPosition: Position = {
+      line: data.stepRange.end.line - 1,
+      character: 0
+    };
 
-  return edits;
+    return [
+      {
+        range: {start: insertPosition, end: insertPosition},
+        newText
+      }
+    ];
+  }
+}
+
+/**
+ * Calculate where to insert new inputs when `with:` already exists.
+ */
+function calculateWithInsertPosition(withInfo: NonNullable<MissingInputsDiagnosticData["withInfo"]>): Position {
+  if (withInfo.hasChildren) {
+    // Insert after the last child (at end of with: block)
+    return {
+      line: withInfo.valueRange.end.line - 1,
+      character: 0
+    };
+  } else {
+    // Empty with: block - insert on the next line after with:
+    return {
+      line: withInfo.keyRange.end.line,
+      character: 0
+    };
+  }
 }

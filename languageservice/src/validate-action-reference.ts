@@ -18,14 +18,29 @@ export interface MissingInputsDiagnosticData {
     name: string;
     default?: string;
   }>;
-  hasWithKey: boolean;
-  // Indentation of the `with:` key if present, or the step's base indentation
-  withIndent?: number;
-  stepIndent: number;
-  // Indentation size (spaces per level)
+  // Step token range for position calculation in quickfix
+  stepRange: {
+    start: {line: number; column: number};
+    end: {line: number; column: number};
+  };
+  // Column of the first key in the step (e.g., "uses"), used for with: placement
+  firstStepKeyColumn?: number;
+  // With token info if present
+  withInfo?: {
+    keyRange: {
+      start: {line: number; column: number};
+      end: {line: number; column: number};
+    };
+    valueRange: {
+      start: {line: number; column: number};
+      end: {line: number; column: number};
+    };
+    hasChildren: boolean;
+    // If has children, the first child's column for indentation detection
+    firstChildColumn?: number;
+  };
+  // Detected indent size from the document structure (fallback to 2 if not detectable)
   indentSize: number;
-  // Position where new content should be inserted
-  insertPosition: {line: number; character: number};
 }
 
 /**
@@ -35,8 +50,7 @@ export async function validateActionReference(
   diagnostics: Diagnostic[],
   stepToken: TemplateToken,
   step: Step | undefined,
-  config: ValidationConfig | undefined,
-  indentSize = 2
+  config: ValidationConfig | undefined
 ): Promise<void> {
   if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.actionsMetadataProvider) {
     return;
@@ -116,51 +130,82 @@ export async function validateActionReference(
         ? `Missing required input \`${missingRequiredInputs[0][0]}\``
         : `Missing required inputs: ${missingRequiredInputs.map(input => `\`${input[0]}\``).join(", ")}`;
 
-    const stepIndent = stepToken.range ? stepToken.range.start.column - 1 : 0; // 0-indexed
-    const withIndent = withKey?.range ? withKey.range.start.column - 1 : undefined;
-
-    // Calculate actual indentSize from the first child of with: block, or use the provided default
-    let actualIndentSize = indentSize;
-    if (withToken && isMapping(withToken) && withToken.count > 0) {
-      const firstChild = withToken.get(0);
-      if (firstChild?.key.range && withKey?.range) {
-        actualIndentSize = firstChild.key.range.start.column - withKey.range.start.column;
-      }
-    }
-
-    // Calculate insert position
-    // For withToken, we need to handle empty mappings specially - insert after the with: line
-    let insertPosition: {line: number; character: number};
-    if (withToken?.range) {
-      // Check if with: has any children by comparing start and end lines
-      const hasChildren = stepInputs.size > 0;
-      if (hasChildren) {
-        // Insert after the last child
-        insertPosition = {line: withToken.range.end.line - 1, character: 0};
-      } else if (withKey?.range) {
-        // Empty with: block - insert on the next line after with:
-        insertPosition = {line: withKey.range.end.line, character: 0};
-      } else {
-        insertPosition = {line: 0, character: 0};
-      }
-    } else if (stepToken.range) {
-      insertPosition = {line: stepToken.range.end.line - 1, character: 0};
-    } else {
-      insertPosition = {line: 0, character: 0};
-    }
-
+    // Build minimal diagnostic data - position calculation happens in the quickfix
     const diagnosticData: MissingInputsDiagnosticData = {
       action,
       missingInputs: missingRequiredInputs.map(([name, input]) => ({
         name,
         default: input.default
       })),
-      hasWithKey: withKey !== undefined,
-      withIndent,
-      stepIndent,
-      indentSize: actualIndentSize,
-      insertPosition
+      stepRange: stepToken.range
+        ? {
+            start: {line: stepToken.range.start.line, column: stepToken.range.start.column},
+            end: {line: stepToken.range.end.line, column: stepToken.range.end.column}
+          }
+        : {start: {line: 0, column: 0}, end: {line: 0, column: 0}},
+      indentSize: 2 // Default, will be updated below if we can detect it
     };
+
+    // Get the column of the first key in the step for with: placement
+    if (stepToken.count > 0) {
+      const firstEntry = stepToken.get(0);
+      if (firstEntry?.key.range) {
+        diagnosticData.firstStepKeyColumn = firstEntry.key.range.start.column;
+      }
+    }
+
+    // Add with: info if present and detect indent size from it
+    if (withKey?.range && withToken?.range) {
+      let firstChildColumn: number | undefined;
+      if (withToken && isMapping(withToken) && withToken.count > 0) {
+        const firstChild = withToken.get(0);
+        if (firstChild?.key.range) {
+          firstChildColumn = firstChild.key.range.start.column;
+          // Detect indent size from with: children
+          diagnosticData.indentSize = firstChildColumn - withKey.range.start.column;
+        }
+      }
+
+      diagnosticData.withInfo = {
+        keyRange: {
+          start: {line: withKey.range.start.line, column: withKey.range.start.column},
+          end: {line: withKey.range.end.line, column: withKey.range.end.column}
+        },
+        valueRange: {
+          start: {line: withToken.range.start.line, column: withToken.range.start.column},
+          end: {line: withToken.range.end.line, column: withToken.range.end.column}
+        },
+        hasChildren: stepInputs.size > 0,
+        firstChildColumn
+      };
+    } else if (stepToken.count >= 1) {
+      // No with:, try to detect indent size from the step's keys
+      // Use a heuristic based on the key column position
+      const firstKeyCol = diagnosticData.firstStepKeyColumn;
+      if (firstKeyCol) {
+        // Common positions for step content (after `- ` prefix):
+        // 2-space indent: columns 5, 7, 9, 11, ... (odd after 3)
+        // 4-space indent: columns 7, 11, 15, 19, ... (pattern of 4n+3)
+        //
+        // For a step in a workflow at typical nesting:
+        // - 2-space at jobs.job.steps.step: column 7
+        // - 4-space at jobs.job.steps.step: column 15
+        //
+        // Heuristic: if column > 11 and fits 4-space pattern, use 4-space
+        const zeroIndexedPos = firstKeyCol - 1;
+        // 4-space indent pattern: positions 6, 14, 22, 30... (0-indexed: 6 + 8n)
+        // which translates to columns 7, 15, 23, 31... (1-indexed)
+        // These are positions where (col - 7) % 8 === 0 OR col === 7 doesn't help distinguish
+        //
+        // Better: 4-space files typically have step content at column 15+ for normal nesting
+        // 2-space files have step content at column 7 for same nesting
+        if (zeroIndexedPos >= 10) {
+          // Only assume 4-space for deeper indentation
+          diagnosticData.indentSize = 4;
+        }
+        // Otherwise keep default of 2
+      }
+    }
 
     diagnostics.push({
       severity: DiagnosticSeverity.Error,
