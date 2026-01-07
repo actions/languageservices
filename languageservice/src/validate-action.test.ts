@@ -347,4 +347,85 @@ runs:
       expect(diagnostics).toEqual([]);
     });
   });
+
+  describe("invalid key combinations based on using type", () => {
+    it("reports error for node20 action with steps", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - node20 with steps
+runs:
+  using: node20
+  main: index.js
+  steps:
+    - run: echo "hello"
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Schema reports "Unexpected value 'steps'" for invalid keys
+      expect(diagnostics.some(d => d.message.includes("steps"))).toBe(true);
+    });
+
+    it("reports error for composite action with main", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - composite with main
+runs:
+  using: composite
+  steps:
+    - run: echo "hello"
+      shell: bash
+  main: index.js
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Schema reports "Unexpected value 'main'" for invalid keys
+      expect(diagnostics.some(d => d.message.includes("main"))).toBe(true);
+    });
+
+    it("reports error for docker action with steps", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - docker with steps
+runs:
+  using: docker
+  image: Dockerfile
+  steps:
+    - run: echo "hello"
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Schema reports "Unexpected value 'steps'" for invalid keys
+      expect(diagnostics.some(d => d.message.includes("steps"))).toBe(true);
+    });
+
+    it("reports error for docker action with main", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - docker with main
+runs:
+  using: docker
+  image: Dockerfile
+  main: index.js
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Schema reports "Unexpected value 'main'" for invalid keys
+      expect(diagnostics.some(d => d.message.includes("main"))).toBe(true);
+    });
+
+    it("reports error for node20 action missing main", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - node20 without main
+runs:
+  using: node20
+  pre: setup.js
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      expect(diagnostics.some(d => d.message.includes("main"))).toBe(true);
+    });
+  });
 });
