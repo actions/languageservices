@@ -347,4 +347,184 @@ runs:
       expect(diagnostics).toEqual([]);
     });
   });
+
+  describe("invalid key combinations based on using type", () => {
+    it("reports error for node20 action with steps", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - node20 with steps
+runs:
+  using: node20
+  main: index.js
+  steps:
+    - run: echo "hello"
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Schema reports "Unexpected value 'steps'" for invalid keys
+      expect(diagnostics.some(d => d.message.includes("steps"))).toBe(true);
+    });
+
+    it("reports error for composite action with main", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - composite with main
+runs:
+  using: composite
+  steps:
+    - run: echo "hello"
+      shell: bash
+  main: index.js
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Schema reports "Unexpected value 'main'" for invalid keys
+      expect(diagnostics.some(d => d.message.includes("main"))).toBe(true);
+    });
+
+    it("reports error for docker action with steps", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - docker with steps
+runs:
+  using: docker
+  image: Dockerfile
+  steps:
+    - run: echo "hello"
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Schema reports "Unexpected value 'steps'" for invalid keys
+      expect(diagnostics.some(d => d.message.includes("steps"))).toBe(true);
+    });
+
+    it("reports error for docker action with main", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - docker with main
+runs:
+  using: docker
+  image: Dockerfile
+  main: index.js
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Schema reports "Unexpected value 'main'" for invalid keys
+      expect(diagnostics.some(d => d.message.includes("main"))).toBe(true);
+    });
+
+    it("reports error for node20 action missing main", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - node20 without main
+runs:
+  using: node20
+  pre: setup.js
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.length).toBeGreaterThan(0);
+      expect(diagnostics.some(d => d.message.includes("main"))).toBe(true);
+    });
+
+    it("reports error for node24 action missing main", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - node24 without main
+runs:
+  using: node24
+  pre: setup.js
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message === "'main' is required for Node.js actions (using: node24)")).toBe(true);
+      // Should NOT have duplicate schema error
+      expect(diagnostics.filter(d => d.message.includes("main")).length).toBe(1);
+    });
+
+    it("reports error for node24 action with only using (no narrowing key)", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - node24 without main
+runs:
+  using: node24
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message === "'main' is required for Node.js actions (using: node24)")).toBe(true);
+      // Should NOT have the generic "not enough info" schema error
+      expect(diagnostics.some(d => d.message.includes("There's not enough info"))).toBe(false);
+    });
+
+    it("reports error for composite action missing steps", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - composite without steps
+runs:
+  using: composite
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message === "'steps' is required for composite actions (using: composite)")).toBe(
+        true
+      );
+      // Should NOT have duplicate schema error
+      expect(diagnostics.some(d => d.message.includes("There's not enough info"))).toBe(false);
+    });
+
+    it("reports error for docker action missing image", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - docker without image
+runs:
+  using: docker
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message === "'image' is required for Docker actions (using: docker)")).toBe(true);
+      // Should NOT have duplicate schema error
+      expect(diagnostics.some(d => d.message.includes("There's not enough info"))).toBe(false);
+    });
+
+    it("reports error for docker action with entrypoint but missing image", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - docker without image
+runs:
+  using: docker
+  entrypoint: /entrypoint.sh
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message === "'image' is required for Docker actions (using: docker)")).toBe(true);
+      // Should NOT have duplicate "Required property is missing: image" schema error
+      expect(diagnostics.filter(d => d.message.includes("image")).length).toBe(1);
+    });
+
+    it("lets schema handle missing using", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - no using
+runs:
+  main: index.js
+`);
+      const diagnostics = await validate(doc);
+      // Should have schema error about not enough info or unexpected value
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Should NOT have custom validation error (can't determine action type)
+      expect(diagnostics.some(d => d.message.includes("is required for"))).toBe(false);
+    });
+
+    it("lets schema handle invalid using value", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid - bad using value
+runs:
+  using: not-supported
+  main: index.js
+`);
+      const diagnostics = await validate(doc);
+      // Should have schema error about unexpected value
+      expect(diagnostics.length).toBeGreaterThan(0);
+      // Should NOT have custom validation error (unknown action type)
+      expect(diagnostics.some(d => d.message.includes("is required for"))).toBe(false);
+      expect(diagnostics.some(d => d.message.includes("is not valid for"))).toBe(false);
+    });
+  });
 });

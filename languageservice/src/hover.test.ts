@@ -110,8 +110,7 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    // Cron description is now shown via diagnostics, not hover
-    expect(result?.contents).toEqual("");
+    expect(result?.contents).toEqual("Runs at 0 and 30 minutes past the hour, at 00:00 and 12:00");
   });
 
   it("on a cron mapping key", async () => {

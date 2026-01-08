@@ -38,6 +38,24 @@ import {Value, ValueProviderConfig} from "./value-providers/config.js";
 import {defaultValueProviders} from "./value-providers/default.js";
 import {DefinitionValueMode, definitionValues, TokenStructure} from "./value-providers/definition.js";
 
+/**
+ * Valid keys for each action type under the `runs:` section.
+ * Source: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionManifestManager.cs
+ */
+const ACTION_NODE_KEYS = new Set(["using", "main", "pre", "post", "pre-if", "post-if"]);
+const ACTION_COMPOSITE_KEYS = new Set(["using", "steps"]);
+const ACTION_DOCKER_KEYS = new Set([
+  "using",
+  "image",
+  "args",
+  "env",
+  "entrypoint",
+  "pre-entrypoint",
+  "pre-if",
+  "post-entrypoint",
+  "post-if"
+]);
+
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
   let startPos = input.lastIndexOf(OPEN_EXPRESSION, pos);
@@ -137,7 +155,7 @@ export async function complete(
   const indentString = " ".repeat(indentation.tabSize);
 
   // YAML key/value completions
-  const values = await getValues(
+  let values = await getValues(
     token,
     keyToken,
     parent,
@@ -146,6 +164,11 @@ export async function complete(
     indentString,
     schema
   );
+
+  // Filter action.yml `runs:` completions based on `using:` value
+  if (isAction && parsedTemplate.value) {
+    values = filterActionRunsCompletions(values, path, parsedTemplate.value);
+  }
 
   // Offer "(switch to list)" / "(switch to mapping)" when the schema allows alternative forms
   const escapeHatches = getEscapeHatchCompletions(token, keyToken, indentString, newPos, schema);
@@ -602,4 +625,83 @@ function getOffsetInContent(tokenRange: TokenRange, currentInput: string, pos: P
   // finalOffset = lengthOfContentBeforeCurrentLine + pos.character
   //             = 32 + 11 = 43
   return lengthOfContentBeforeCurrentLine + pos.character;
+}
+
+/**
+ * Filters action.yml `runs:` completions based on the `using:` value.
+ *
+ * When the user is completing keys under `runs:`:
+ * - If `using: node20` is set, only show Node.js action keys
+ * - If `using: composite` is set, only show composite action keys
+ * - If `using: docker` is set, only show Docker action keys
+ * - If `using:` is not set, show all keys but prioritize `using` first
+ */
+function filterActionRunsCompletions(values: Value[], path: TemplateToken[], root: TemplateToken): Value[] {
+  // Find the runs mapping from the root
+  let runsMapping: MappingToken | undefined;
+  if (root instanceof MappingToken) {
+    for (let i = 0; i < root.count; i++) {
+      const {key, value} = root.get(i);
+      if (key.toString().toLowerCase() === "runs" && value instanceof MappingToken) {
+        runsMapping = value;
+        break;
+      }
+    }
+  }
+  if (!runsMapping) {
+    return values;
+  }
+
+  // Check if the runs mapping is in our path (meaning we're completing inside it)
+  const isInsideRuns = path.some(token => token === runsMapping);
+  if (!isInsideRuns) {
+    return values;
+  }
+
+  // Find where runsMapping is in the path
+  const runsMappingIndex = path.indexOf(runsMapping);
+  if (runsMappingIndex === -1) {
+    return values;
+  }
+
+  // Check if there's anything after runsMapping in the path
+  // If so, we're nested deeper (e.g., inside steps sequence or a step mapping)
+  if (runsMappingIndex < path.length - 1) {
+    return values;
+  }
+
+  // Get the using value from the runs mapping
+  let usingValue: string | undefined;
+  for (let i = 0; i < runsMapping.count; i++) {
+    const {key, value} = runsMapping.get(i);
+    if (key.toString().toLowerCase() === "using") {
+      usingValue = value.toString();
+      break;
+    }
+  }
+
+  // Determine which keys to allow
+  let allowedKeys: Set<string>;
+
+  if (!usingValue) {
+    // No using value set - show all keys but prioritize "using"
+    return values.map(v => {
+      if (v.label.toLowerCase() === "using") {
+        return {...v, sortText: "0_using"}; // Sort first
+      }
+      return v;
+    });
+  } else if (usingValue.match(/^node\d+$/i)) {
+    allowedKeys = ACTION_NODE_KEYS;
+  } else if (usingValue.toLowerCase() === "composite") {
+    allowedKeys = ACTION_COMPOSITE_KEYS;
+  } else if (usingValue.toLowerCase() === "docker") {
+    allowedKeys = ACTION_DOCKER_KEYS;
+  } else {
+    // Unknown using value - show all
+    return values;
+  }
+
+  // Filter to only allowed keys
+  return values.filter(v => allowedKeys.has(v.label.toLowerCase()));
 }

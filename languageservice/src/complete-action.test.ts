@@ -184,6 +184,107 @@ runs:
 
       expect(labels).toContain("using");
     });
+
+    it("filters runs keys for node20 actions", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: node20
+  |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show Node.js action keys
+      expect(labels).toContain("main");
+      expect(labels).toContain("pre");
+      expect(labels).toContain("post");
+      expect(labels).toContain("pre-if");
+      expect(labels).toContain("post-if");
+
+      // Should NOT show composite or docker keys
+      expect(labels).not.toContain("steps");
+      expect(labels).not.toContain("image");
+      expect(labels).not.toContain("entrypoint");
+    });
+
+    it("filters runs keys for composite actions", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: composite
+  |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show composite action keys
+      expect(labels).toContain("steps");
+
+      // Should NOT show Node.js or docker keys
+      expect(labels).not.toContain("main");
+      expect(labels).not.toContain("pre");
+      expect(labels).not.toContain("post");
+      expect(labels).not.toContain("image");
+    });
+
+    it("filters runs keys for docker actions", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: docker
+  |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show Docker action keys
+      expect(labels).toContain("image");
+      expect(labels).toContain("args");
+      expect(labels).toContain("env");
+      expect(labels).toContain("entrypoint");
+      expect(labels).toContain("pre-entrypoint");
+      expect(labels).toContain("post-entrypoint");
+
+      // Should NOT show Node.js or composite keys
+      expect(labels).not.toContain("main");
+      expect(labels).not.toContain("steps");
+    });
+
+    it("prioritizes using when not set", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  |`);
+      const completions = await complete(doc, position);
+
+      // Find the using completion
+      const usingCompletion = completions.find(c => c.label === "using");
+      expect(usingCompletion).toBeDefined();
+
+      // It should have a sortText that makes it sort first
+      expect(usingCompletion?.sortText).toBe("0_using");
+    });
+
+    it("completes step keys inside composite action steps", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: composite
+  steps:
+    - run: echo hello
+      shell: bash
+    - |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show step keys, not filtered by runs-level logic
+      expect(labels).toContain("run");
+      expect(labels).toContain("uses");
+      expect(labels).toContain("shell");
+      expect(labels).toContain("id");
+      expect(labels).toContain("name");
+      expect(labels).toContain("if");
+      expect(labels).toContain("env");
+      expect(labels).toContain("working-directory");
+    });
   });
 
   describe("branding completions", () => {
