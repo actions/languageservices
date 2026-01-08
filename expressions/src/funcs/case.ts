@@ -1,4 +1,4 @@
-import {BooleanData, ExpressionData, Kind} from "../data/index.js";
+import {ExpressionData, Kind} from "../data/index.js";
 import {FunctionDefinition} from "./info.js";
 
 export const caseFunc: FunctionDefinition = {
@@ -18,7 +18,7 @@ export const caseFunc: FunctionDefinition = {
       }
 
       // If predicate is true, return the corresponding result
-      if ((predicate as BooleanData).value) {
+      if (predicate.value) {
         return args[i + 1];
       }
     }
