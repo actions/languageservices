@@ -1,5 +1,5 @@
-import {BooleanData, ExpressionData, Kind} from "../data";
-import {FunctionDefinition} from "./info";
+import {BooleanData, ExpressionData, Kind} from "../data/index.js";
+import {FunctionDefinition} from "./info.js";
 
 export const caseFunc: FunctionDefinition = {
   name: "case",
