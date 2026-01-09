@@ -249,7 +249,21 @@ jobs:
             line: 7
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            }
+          ]
+        }
       }
     ]);
   });
@@ -294,7 +308,25 @@ jobs:
             line: 7
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            },
+            {
+              default: undefined,
+              name: "key"
+            }
+          ]
+        }
       }
     ]);
   });
@@ -323,7 +355,25 @@ jobs:
             line: 6
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            },
+            {
+              default: undefined,
+              name: "key"
+            }
+          ]
+        }
       }
     ]);
   });
