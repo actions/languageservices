@@ -190,8 +190,10 @@ export function initConnection(connection: Connection) {
   });
 
   connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
+    const document = getDocument(documents, params.textDocument);
     return getCodeActions({
       uri: params.textDocument.uri,
+      documentContent: document.getText(),
       diagnostics: params.context.diagnostics,
       only: params.context.only,
       featureFlags

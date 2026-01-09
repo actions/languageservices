@@ -3,6 +3,7 @@ import {CodeAction, Diagnostic} from "vscode-languageserver-types";
 
 export interface CodeActionContext {
   uri: string;
+  documentContent: string;
   featureFlags?: FeatureFlags;
 }
 

@@ -179,6 +179,7 @@ export async function runTestCase(testCase: TestCase, validationConfig: Validati
 
     const params: CodeActionParams = {
       uri: document.uri,
+      documentContent: strippedInput,
       diagnostics: [diagnostic],
       featureFlags: new FeatureFlags({all: true})
     };

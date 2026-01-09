@@ -5,6 +5,7 @@ import {getQuickfixProviders} from "./quickfix/quickfix-providers.js";
 
 export interface CodeActionParams {
   uri: string;
+  documentContent: string;
   diagnostics: Diagnostic[];
   only?: string[];
   featureFlags?: FeatureFlags;
@@ -14,6 +15,7 @@ export function getCodeActions(params: CodeActionParams): CodeAction[] {
   const actions: CodeAction[] = [];
   const context: CodeActionContext = {
     uri: params.uri,
+    documentContent: params.documentContent,
     featureFlags: params.featureFlags
   };
 
