@@ -126,6 +126,7 @@ initializationOptions: {
 | Feature | Description |
 |---------|-------------|
 | `missingInputsQuickfix` | Code action to add missing required inputs for actions |
+| `blockScalarChompingWarning` | Warn when block scalars (`\|` or `>`) use implicit clip chomping, which adds a trailing newline that may be unintentional |
 
 Individual feature flags take precedence over `all`. For example, `{ all: true, missingInputsQuickfix: false }` enables all experimental features except `missingInputsQuickfix`.
 

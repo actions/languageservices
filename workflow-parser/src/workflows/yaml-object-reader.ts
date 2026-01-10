@@ -152,11 +152,27 @@ export class YamlObjectReader implements ObjectReader {
         return new BooleanToken(fileId, range, value, undefined);
       case "string": {
         let source: string | undefined;
+        let blockScalarHeader: string | undefined;
+
         if (token.srcToken && "source" in token.srcToken) {
           source = token.srcToken.source;
+
+          // Extract block scalar header (e.g., |-, |+, >-)
+          //
+          // CST node interfaces are supported and documented per yaml library maintainer:
+          // https://eemeli.org/yaml/#parser -> "For a complete description of CST node
+          // interfaces, please consult the cst.ts source."
+          // See also: https://github.com/eemeli/yaml/issues/643
+          if (token.srcToken.type === "block-scalar" && "props" in token.srcToken) {
+            const props = token.srcToken.props as Array<{type: string; source?: string}>;
+            const headerProp = props.find(p => p.type === "block-scalar-header");
+            if (headerProp?.source) {
+              blockScalarHeader = headerProp.source;
+            }
+          }
         }
 
-        return new StringToken(fileId, range, value, undefined, source);
+        return new StringToken(fileId, range, value, undefined, source, blockScalarHeader);
       }
       default:
         throw new Error(`Unexpected value type '${typeof value}' when reading object`);
