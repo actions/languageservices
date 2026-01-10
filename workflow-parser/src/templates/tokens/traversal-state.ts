@@ -66,4 +66,19 @@ export class TraversalState {
         throw new Error(`Unexpected token type '${this._token.templateTokenType}' when traversing state`);
     }
   }
+
+  /**
+   * Returns the ancestor tokens from root to the current token's parent container.
+   */
+  public getAncestors(): TemplateToken[] {
+    const ancestors: TemplateToken[] = [];
+    let state: TraversalState | undefined = this.parent;
+    while (state) {
+      if (state.current) {
+        ancestors.unshift(state.current);
+      }
+      state = state.parent;
+    }
+    return ancestors;
+  }
 }

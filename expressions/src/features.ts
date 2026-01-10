@@ -21,6 +21,13 @@ export interface ExperimentalFeatures {
    * @default false
    */
   missingInputsQuickfix?: boolean;
+
+  /**
+   * Warn when block scalars (| or >) use implicit clip chomping,
+   * which adds a trailing newline that may be unintentional.
+   * @default false
+   */
+  blockScalarChompingWarning?: boolean;
 }
 
 /**
@@ -32,7 +39,7 @@ export type ExperimentalFeatureKey = Exclude<keyof ExperimentalFeatures, "all">;
  * All known experimental feature keys.
  * This list must be kept in sync with the ExperimentalFeatures interface.
  */
-const allFeatureKeys: ExperimentalFeatureKey[] = ["missingInputsQuickfix"];
+const allFeatureKeys: ExperimentalFeatureKey[] = ["missingInputsQuickfix", "blockScalarChompingWarning"];
 
 export class FeatureFlags {
   private readonly features: ExperimentalFeatures;
