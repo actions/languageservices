@@ -393,4 +393,149 @@ runs:
       expect(labels).toContain("jobs");
     });
   });
+
+  describe("action scaffolding snippets", () => {
+    it("offers full scaffolding snippets in empty file", async () => {
+      const [doc, position] = createActionDocument(`|`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      expect(labels).toContain("Node.js Action");
+      expect(labels).toContain("Composite Action");
+      expect(labels).toContain("Docker Action");
+
+      // Verify they are snippets
+      const nodeSnippet = completions.find(c => c.label === "Node.js Action");
+      expect(nodeSnippet?.kind).toBe(15); // CompletionItemKind.Snippet
+      expect(nodeSnippet?.insertTextFormat).toBe(2); // InsertTextFormat.Snippet
+    });
+
+    it("offers full scaffolding snippets when no name or description exists", async () => {
+      const [doc, position] = createActionDocument(`author: me
+|`);
+      const completions = await complete(doc, position);
+
+      const nodeSnippet = completions.find(c => c.label === "Node.js Action");
+      expect(nodeSnippet).toBeDefined();
+      // Full snippet should include name:
+      expect((nodeSnippet?.textEdit as {newText: string})?.newText).toContain("name:");
+    });
+
+    it("offers runs-only snippets when name exists", async () => {
+      const [doc, position] = createActionDocument(`name: My Action
+|`);
+      const completions = await complete(doc, position);
+
+      const nodeSnippet = completions.find(c => c.label === "Node.js Action");
+      expect(nodeSnippet).toBeDefined();
+      // Runs-only snippet should start with inputs:, not name:
+      expect((nodeSnippet?.textEdit as {newText: string})?.newText).toMatch(/^inputs:/);
+      expect((nodeSnippet?.textEdit as {newText: string})?.newText).toContain("runs:");
+    });
+
+    it("offers runs-only snippets when description exists", async () => {
+      const [doc, position] = createActionDocument(`description: Does something
+|`);
+      const completions = await complete(doc, position);
+
+      const compositeSnippet = completions.find(c => c.label === "Composite Action");
+      expect(compositeSnippet).toBeDefined();
+      // Runs-only snippet should start with inputs:, not description:
+      expect((compositeSnippet?.textEdit as {newText: string})?.newText).toMatch(/^inputs:/);
+      expect((compositeSnippet?.textEdit as {newText: string})?.newText).toContain("runs:");
+    });
+
+    it("does not offer snippets when runs.using already exists", async () => {
+      const [doc, position] = createActionDocument(`name: My Action
+description: Test
+runs:
+  using: composite
+  |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      expect(labels).not.toContain("Node.js Action");
+      expect(labels).not.toContain("Composite Action");
+      expect(labels).not.toContain("Docker Action");
+    });
+
+    it("offers snippets inside runs when using is not set", async () => {
+      const [doc, position] = createActionDocument(`name: My Action
+description: Test
+runs:
+  |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      expect(labels).toContain("Node.js Action");
+      expect(labels).toContain("Composite Action");
+      expect(labels).toContain("Docker Action");
+    });
+
+    it("does not offer snippets at root level when runs exists", async () => {
+      const [doc, position] = createActionDocument(`name: My Action
+description: Test
+runs:
+  steps: []
+|`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      expect(labels).not.toContain("Node.js Action");
+      expect(labels).not.toContain("Composite Action");
+      expect(labels).not.toContain("Docker Action");
+    });
+
+    it("does not offer snippets when nested inside runs steps", async () => {
+      const [doc, position] = createActionDocument(`name: My Action
+description: Test
+runs:
+  using: composite
+  steps:
+    - |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      expect(labels).not.toContain("Node.js Action");
+      expect(labels).not.toContain("Composite Action");
+      expect(labels).not.toContain("Docker Action");
+    });
+
+    it("Node.js snippet contains expected content", async () => {
+      const [doc, position] = createActionDocument(`|`);
+      const completions = await complete(doc, position);
+
+      const nodeSnippet = completions.find(c => c.label === "Node.js Action");
+      const text = (nodeSnippet?.textEdit as {newText: string})?.newText;
+
+      expect(text).toContain("using: node24");
+      expect(text).toContain("main:");
+      expect(text).toContain("inputs:");
+      expect(text).toContain("outputs:");
+    });
+
+    it("Composite snippet contains expected content", async () => {
+      const [doc, position] = createActionDocument(`|`);
+      const completions = await complete(doc, position);
+
+      const compositeSnippet = completions.find(c => c.label === "Composite Action");
+      const text = (compositeSnippet?.textEdit as {newText: string})?.newText;
+
+      expect(text).toContain("using: composite");
+      expect(text).toContain("steps:");
+      expect(text).toContain("shell: bash");
+    });
+
+    it("Docker snippet contains expected content", async () => {
+      const [doc, position] = createActionDocument(`|`);
+      const completions = await complete(doc, position);
+
+      const dockerSnippet = completions.find(c => c.label === "Docker Action");
+      const text = (dockerSnippet?.textEdit as {newText: string})?.newText;
+
+      expect(text).toContain("using: docker");
+      expect(text).toContain("image:");
+      expect(text).toContain("entrypoint:");
+    });
+  });
 });
