@@ -613,7 +613,9 @@ class TemplateReader {
       `format('${format.join("")}'${args.join("")})`,
       definitionInfo,
       expressionTokens,
-      raw
+      raw,
+      undefined,
+      token.blockScalarHeader
     );
   }
 
@@ -695,7 +697,8 @@ class TemplateReader {
         definitionInfo,
         undefined,
         token.source,
-        expressionRange
+        expressionRange,
+        token.blockScalarHeader
       ),
       error: undefined
     };

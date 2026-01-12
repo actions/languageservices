@@ -1,4 +1,4 @@
-import {Lexer, Parser, data} from "@actions/expressions";
+import {FeatureFlags, Lexer, Parser, data} from "@actions/expressions";
 import {Expr, FunctionCall, Literal, Logical} from "@actions/expressions/ast";
 import {TemplateParseResult, WorkflowTemplate, isBasicExpression, isMapping, isString} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
@@ -39,6 +39,7 @@ export type ValidationConfig = {
   contextProviderConfig?: ContextProviderConfig;
   actionsMetadataProvider?: ActionsMetadataProvider;
   fileProvider?: FileProvider;
+  featureFlags?: FeatureFlags;
 };
 
 export type ActionsMetadataProvider = {
@@ -85,7 +86,7 @@ async function validateWorkflow(textDocument: TextDocument, config?: ValidationC
       });
 
       // Validate expressions and value providers
-      await additionalValidations(diagnostics, textDocument.uri, template, result.value, config);
+      await additionalValidations(diagnostics, textDocument.uri, template, result.value, config, config?.featureFlags);
     }
 
     // For now map parser errors directly to diagnostics
@@ -109,9 +110,10 @@ async function additionalValidations(
   documentUri: URI,
   template: WorkflowTemplate,
   root: TemplateToken,
-  config?: ValidationConfig
+  config?: ValidationConfig,
+  featureFlags?: FeatureFlags
 ) {
-  for (const [parent, token, key] of TemplateToken.traverse(root)) {
+  for (const [parent, token, key, ancestors] of TemplateToken.traverse(root)) {
     // If  the token is a value in a pair, use the key definition for validation
     // If the token has a parent (map, sequence, etc), use this definition for validation
     const validationToken = key || parent || token;
@@ -129,7 +131,12 @@ async function additionalValidations(
       );
     }
 
-    // If this is a job-if, step-if, or snapshot-if field (which are strings that should be treated as expressions), validate it
+    // Validate block scalar chomping for expressions and strings
+    if (featureFlags?.isEnabled("blockScalarChompingWarning")) {
+      validateBlockScalarChomping(diagnostics, token, parent, key, ancestors);
+    }
+
+    // `if` conditions allow omitting ${{ }}, so validate strings in these fields as expressions
     const definitionKey = token.definition?.key;
     if (
       isString(token) &&
@@ -149,7 +156,9 @@ async function additionalValidations(
           finalCondition,
           token.definitionInfo,
           undefined,
-          token.source
+          token.source,
+          undefined,
+          token.blockScalarHeader
         );
 
         await validateExpression(
@@ -844,4 +853,91 @@ function getStaticConcurrencyGroup(token: TemplateToken | undefined): StringToke
   }
 
   return undefined;
+}
+
+/**
+ * Validates YAML block scalar chomping.
+ *
+ * Block scalars (| and >) implicitly add a trailing newline by default ("clip" chomping).
+ * This is often unintended by the workflow author and can cause unexpected behavior.
+ * This function warns on certain fields when clip chomping is used (implicit trailing newline)
+ * and suggests they explicitly use strip (|-) or keep (|+) to clarify intent.
+ *
+ * Only specific fields are validated - those where trailing newlines may cause
+ * issues but aren't automatically trimmed server-side. For example env, inputs, outputs, etc.
+ *
+ * Skipped fields:
+ * - run: Multi-line scripts commonly have trailing newlines
+ * - Fields trimmed server-side: name, uses, shell, if, etc.
+ */
+function validateBlockScalarChomping(
+  diagnostics: Diagnostic[],
+  token: TemplateToken,
+  parent: TemplateToken | undefined,
+  key: TemplateToken | undefined,
+  ancestors: TemplateToken[]
+): void {
+  // Not an expression or string?
+  if (!isBasicExpression(token) && !isString(token)) {
+    return;
+  }
+
+  // Not a block scalar?
+  const header = token.blockScalarHeader;
+  if (!header) {
+    return;
+  }
+
+  // Not "clip" chomp style?
+  if (header.includes("+") || header.includes("-")) {
+    return;
+  }
+
+  // Check if we should warn
+  let shouldWarn = false;
+  const parentDefinitionName = parent?.definition?.key;
+  const tokenDefinitionName = token.definition?.key;
+  const keyName = key && isString(key) ? key.value : undefined;
+  if (
+    parentDefinitionName &&
+    [
+      "workflow-env",
+      "job-env",
+      "step-env",
+      "container-env",
+      "step-with",
+      "job-outputs",
+      "workflow-job-with",
+      "workflow-job-secrets"
+    ].includes(parentDefinitionName)
+  ) {
+    // env, with, outputs, or secrets fields
+    shouldWarn = true;
+  } else if (
+    ancestors.some(ancestor => {
+      const ancestorKey = ancestor.definition?.key;
+      return ancestorKey === "matrix" || ancestorKey === "matrix-filter" || ancestorKey === "matrix-filter-item";
+    })
+  ) {
+    // Matrix values (vectors, include, exclude)
+    shouldWarn = true;
+  } else if (tokenDefinitionName && ["workflow-concurrency", "job-concurrency"].includes(tokenDefinitionName)) {
+    // Concurrency shorthand
+    shouldWarn = true;
+  } else if (keyName === "group" && parentDefinitionName === "concurrency-mapping") {
+    // Concurrency group field
+    shouldWarn = true;
+  }
+
+  if (!shouldWarn) {
+    return;
+  }
+
+  const blockIndicator = header.startsWith("|") ? "|" : ">";
+  diagnostics.push({
+    message: `Block scalar '${blockIndicator}' implicitly adds a trailing newline that may be unintentional. Use '${blockIndicator}-' to remove it, or '${blockIndicator}+' to explicitly keep it.`,
+    range: mapRange(token.range),
+    severity: DiagnosticSeverity.Warning,
+    code: "block-scalar-chomping"
+  });
 }

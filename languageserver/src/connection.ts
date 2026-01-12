@@ -123,7 +123,8 @@ export function initConnection(connection: Connection) {
       actionsMetadataProvider: getActionsMetadataProvider(client, cache),
       fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
         return await connection.sendRequest(Requests.ReadFile, {path} satisfies ReadFileRequest);
-      })
+      }),
+      featureFlags
     };
 
     const result = await validate(textDocument, config);
