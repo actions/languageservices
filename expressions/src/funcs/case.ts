@@ -4,7 +4,7 @@ import {FunctionDefinition} from "./info.js";
 export const caseFunc: FunctionDefinition = {
   name: "case",
   description:
-    "`case( pred1, val1, pred2, val2, ..., default )`\n\nEvaluates predicates in order and returns the value corresponding to the first predicate that evaluates to `true`. If no predicate matches, returns the default value (the last argument).",
+    "`case( pred1, val1, pred2, val2, ..., default )`\n\nEvaluates predicates in order and returns the value corresponding to the first predicate that evaluates to `true`. If no predicate matches, it returns the last argument as the default value.",
   minArgs: 3,
   maxArgs: Number.MAX_SAFE_INTEGER,
   call: (...args: ExpressionData[]): ExpressionData => {
