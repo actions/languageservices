@@ -1,4 +1,4 @@
-export {complete} from "./complete.js";
+export {complete, CompletionConfig} from "./complete.js";
 export {ContextProviderConfig} from "./context-providers/config.js";
 export {documentLinks} from "./document-links.js";
 export {hover} from "./hover.js";
