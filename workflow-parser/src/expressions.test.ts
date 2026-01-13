@@ -201,4 +201,355 @@ jobs:
       throw new Error("expected if to be a string (will be converted to expression later)");
     }
   });
+
+  describe("Block scalar chomp style preservation", () => {
+    it("preserves clip chomping (|) for literal block scalar", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: |
+        \${{ github.event_name }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      expect(testToken.blockScalarHeader).toBe("|");
+    });
+
+    it("preserves strip chomping (|-) for literal block scalar", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: |-
+        \${{ github.event_name }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      expect(testToken.blockScalarHeader).toBe("|-");
+    });
+
+    it("preserves keep chomping (|+) for literal block scalar", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: |+
+        \${{ github.event_name }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      expect(testToken.blockScalarHeader).toBe("|+");
+    });
+
+    it("preserves folded clip (>) chomping", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: >
+        \${{ github.event_name }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      expect(testToken.blockScalarHeader).toBe(">");
+    });
+
+    it("preserves folded strip (>-) chomping", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: >-
+        \${{ github.event_name }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      expect(testToken.blockScalarHeader).toBe(">-");
+    });
+
+    it("preserves with explicit indent (|2)", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: |2
+        \${{ github.event_name }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      expect(testToken.blockScalarHeader).toBe("|2");
+    });
+
+    it("preserves with explicit indent and strip (|-2)", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: |-2
+        \${{ github.event_name }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      expect(testToken.blockScalarHeader).toBe("|-2");
+    });
+
+    it("handles flow scalars (no chomp info for inline)", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: \${{ github.event_name }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      expect(testToken.blockScalarHeader).toBeUndefined();
+    });
+
+    it("preserves block scalar info for format expressions with multiple sub-expressions", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      TEST: |
+        Hello \${{ github.event_name }} World \${{ github.ref }}
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const env = build.get(1).value.assertMapping("env");
+      const testToken = env.get(0).value;
+
+      if (!isBasicExpression(testToken)) {
+        throw new Error("expected TEST to be a basic expression");
+      }
+
+      // The format expression should preserve the block scalar info
+      expect(testToken.blockScalarHeader).toBe("|");
+    });
+
+    it("preserves block scalar info on StringToken for isExpression fields", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push'
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const ifToken = build.get(1).value;
+
+      // For isExpression fields without ${{ }}, the token is a StringToken
+      if (!isString(ifToken)) {
+        throw new Error("expected if to be a string");
+      }
+
+      expect(ifToken.blockScalarHeader).toBe("|");
+    });
+
+    it("preserves block scalar info on StringToken for isExpression fields with strip", () => {
+      const result = parseWorkflow(
+        {
+          name: "test.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: |-
+      github.event_name == 'push'
+    steps:
+      - run: echo hi`
+        },
+        nullTrace
+      );
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+
+      const workflowRoot = result.value!.assertMapping("root")!;
+      const jobs = workflowRoot.get(1).value.assertMapping("jobs");
+      const build = jobs.get(0).value.assertMapping("job");
+      const ifToken = build.get(1).value;
+
+      if (!isString(ifToken)) {
+        throw new Error("expected if to be a string");
+      }
+
+      expect(ifToken.blockScalarHeader).toBe("|-");
+    });
+  });
 });
