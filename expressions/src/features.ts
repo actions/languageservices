@@ -30,6 +30,13 @@ export interface ExperimentalFeatures {
   blockScalarChompingWarning?: boolean;
 
   /**
+   * Enable action scaffolding snippets in action.yml files.
+   * Offers Node.js, Composite, and Docker action scaffolds.
+   * @default false
+   */
+  actionScaffoldingSnippets?: boolean;
+
+  /**
    * Enable the case() function in expressions.
    * @default false
    */
@@ -45,7 +52,12 @@ export type ExperimentalFeatureKey = Exclude<keyof ExperimentalFeatures, "all">;
  * All known experimental feature keys.
  * This list must be kept in sync with the ExperimentalFeatures interface.
  */
-const allFeatureKeys: ExperimentalFeatureKey[] = ["missingInputsQuickfix", "blockScalarChompingWarning", "allowCaseFunction"];
+const allFeatureKeys: ExperimentalFeatureKey[] = [
+  "missingInputsQuickfix",
+  "blockScalarChompingWarning",
+  "actionScaffoldingSnippets",
+  "allowCaseFunction",
+];
 
 export class FeatureFlags {
   private readonly features: ExperimentalFeatures;

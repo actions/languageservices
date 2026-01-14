@@ -1,4 +1,4 @@
-import {complete as completeExpression, DescriptionDictionary, ExperimentalFeatures, FeatureFlags} from "@actions/expressions";
+import {complete as completeExpression, DescriptionDictionary, FeatureFlags} from "@actions/expressions";
 import {CompletionItem as ExpressionCompletionItem} from "@actions/expressions/completion";
 import {isBasicExpression, isSequence, isString} from "@actions/workflow-parser";
 import {getActionSchema} from "@actions/workflow-parser/actions/action-schema";
@@ -16,6 +16,7 @@ import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {getWorkflowSchema} from "@actions/workflow-parser/workflows/workflow-schema";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} from "vscode-languageserver-types";
+import {filterActionRunsCompletions, getActionScaffoldingSnippets} from "./complete-action.js";
 import {ContextProviderConfig} from "./context-providers/config.js";
 import {getActionExpressionContext, getWorkflowExpressionContext, Mode} from "./context-providers/default.js";
 import {ActionContext, getActionContext} from "./context/action-context.js";
@@ -38,24 +39,6 @@ import {Value, ValueProviderConfig} from "./value-providers/config.js";
 import {defaultValueProviders} from "./value-providers/default.js";
 import {DefinitionValueMode, definitionValues, TokenStructure} from "./value-providers/definition.js";
 
-/**
- * Valid keys for each action type under the `runs:` section.
- * Source: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionManifestManager.cs
- */
-const ACTION_NODE_KEYS = new Set(["using", "main", "pre", "post", "pre-if", "post-if"]);
-const ACTION_COMPOSITE_KEYS = new Set(["using", "steps"]);
-const ACTION_DOCKER_KEYS = new Set([
-  "using",
-  "image",
-  "args",
-  "env",
-  "entrypoint",
-  "pre-entrypoint",
-  "pre-if",
-  "post-entrypoint",
-  "post-if"
-]);
-
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
   let startPos = input.lastIndexOf(OPEN_EXPRESSION, pos);
@@ -72,7 +55,7 @@ export type CompletionConfig = {
   valueProviderConfig?: ValueProviderConfig;
   contextProviderConfig?: ContextProviderConfig;
   fileProvider?: FileProvider;
-  experimentalFeatures?: ExperimentalFeatures;
+  featureFlags?: FeatureFlags;
 };
 
 export async function complete(
@@ -149,7 +132,7 @@ export async function complete(
           Mode.Completion
         );
 
-    return getExpressionCompletionItems(token, context, newPos, config?.experimentalFeatures);
+    return getExpressionCompletionItems(token, context, newPos, config?.featureFlags);
   }
 
   const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
@@ -174,6 +157,12 @@ export async function complete(
   // Offer "(switch to list)" / "(switch to mapping)" when the schema allows alternative forms
   const escapeHatches = getEscapeHatchCompletions(token, keyToken, indentString, newPos, schema);
   values.push(...escapeHatches);
+
+  // Get action scaffolding snippets if applicable
+  let actionSnippets: CompletionItem[] = [];
+  if (isAction && config?.featureFlags?.isEnabled("actionScaffoldingSnippets")) {
+    actionSnippets = getActionScaffoldingSnippets(parsedTemplate.value, path, position);
+  }
 
   // Figure out what text to replace when the user picks a completion.
   // For example, if they typed `runs-|` and pick `runs-on`, we need to replace `runs-`.
@@ -203,7 +192,7 @@ export async function complete(
   }
 
   // Convert values to LSP CompletionItems
-  return values.map(value => {
+  const completionItems = values.map(value => {
     const newText = value.insertText || value.label;
 
     // Escape hatches provide their own textEdit to restructure the YAML
@@ -238,6 +227,9 @@ export async function complete(
 
     return item;
   });
+
+  // Add action scaffolding snippets if available
+  return [...completionItems, ...actionSnippets];
 }
 
 /**
@@ -530,7 +522,7 @@ function getExpressionCompletionItems(
   token: TemplateToken,
   context: DescriptionDictionary,
   pos: Position,
-  experimentalFeatures?: ExperimentalFeatures
+  featureFlags?: FeatureFlags
 ): CompletionItem[] {
   if (!token.range) {
     return [];
@@ -549,7 +541,6 @@ function getExpressionCompletionItems(
   const expressionInput = (getExpressionInput(currentInput, cursorOffset) || "").trim();
 
   try {
-    const featureFlags = new FeatureFlags(experimentalFeatures);
     return completeExpression(expressionInput, context, [], validatorFunctions, featureFlags).map(item =>
       mapExpressionCompletionItem(item, currentInput[cursorOffset])
     );
@@ -628,83 +619,4 @@ function getOffsetInContent(tokenRange: TokenRange, currentInput: string, pos: P
   // finalOffset = lengthOfContentBeforeCurrentLine + pos.character
   //             = 32 + 11 = 43
   return lengthOfContentBeforeCurrentLine + pos.character;
-}
-
-/**
- * Filters action.yml `runs:` completions based on the `using:` value.
- *
- * When the user is completing keys under `runs:`:
- * - If `using: node20` is set, only show Node.js action keys
- * - If `using: composite` is set, only show composite action keys
- * - If `using: docker` is set, only show Docker action keys
- * - If `using:` is not set, show all keys but prioritize `using` first
- */
-function filterActionRunsCompletions(values: Value[], path: TemplateToken[], root: TemplateToken): Value[] {
-  // Find the runs mapping from the root
-  let runsMapping: MappingToken | undefined;
-  if (root instanceof MappingToken) {
-    for (let i = 0; i < root.count; i++) {
-      const {key, value} = root.get(i);
-      if (key.toString().toLowerCase() === "runs" && value instanceof MappingToken) {
-        runsMapping = value;
-        break;
-      }
-    }
-  }
-  if (!runsMapping) {
-    return values;
-  }
-
-  // Check if the runs mapping is in our path (meaning we're completing inside it)
-  const isInsideRuns = path.some(token => token === runsMapping);
-  if (!isInsideRuns) {
-    return values;
-  }
-
-  // Find where runsMapping is in the path
-  const runsMappingIndex = path.indexOf(runsMapping);
-  if (runsMappingIndex === -1) {
-    return values;
-  }
-
-  // Check if there's anything after runsMapping in the path
-  // If so, we're nested deeper (e.g., inside steps sequence or a step mapping)
-  if (runsMappingIndex < path.length - 1) {
-    return values;
-  }
-
-  // Get the using value from the runs mapping
-  let usingValue: string | undefined;
-  for (let i = 0; i < runsMapping.count; i++) {
-    const {key, value} = runsMapping.get(i);
-    if (key.toString().toLowerCase() === "using") {
-      usingValue = value.toString();
-      break;
-    }
-  }
-
-  // Determine which keys to allow
-  let allowedKeys: Set<string>;
-
-  if (!usingValue) {
-    // No using value set - show all keys but prioritize "using"
-    return values.map(v => {
-      if (v.label.toLowerCase() === "using") {
-        return {...v, sortText: "0_using"}; // Sort first
-      }
-      return v;
-    });
-  } else if (usingValue.match(/^node\d+$/i)) {
-    allowedKeys = ACTION_NODE_KEYS;
-  } else if (usingValue.toLowerCase() === "composite") {
-    allowedKeys = ACTION_COMPOSITE_KEYS;
-  } else if (usingValue.toLowerCase() === "docker") {
-    allowedKeys = ACTION_DOCKER_KEYS;
-  } else {
-    // Unknown using value - show all
-    return values;
-  }
-
-  // Filter to only allowed keys
-  return values.filter(v => allowedKeys.has(v.label.toLowerCase()));
 }

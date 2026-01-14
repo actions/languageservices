@@ -6,6 +6,7 @@ import {getPositionFromCursor} from "./test-utils/cursor-position.js";
 import {TestLogger} from "./test-utils/logger.js";
 import {clearCache} from "./utils/workflow-cache.js";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
+import { FeatureFlags } from "@actions/expressions/features";
 
 registerLogger(new TestLogger());
 
@@ -901,7 +902,7 @@ jobs:
     it("include case function when enabled", async () => {
       const input = "on: push\njobs:\n  build:\n    runs-on: ${{ c|";
       const result = await complete(...getPositionFromCursor(input), {
-        experimentalFeatures: {allowCaseFunction: true}
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
       });
 
       expect(result).not.toBeUndefined();
@@ -914,7 +915,7 @@ jobs:
     it("exclude case function when disabled", async () => {
       const input = "on: push\njobs:\n  build:\n    runs-on: ${{ c|";
       const result = await complete(...getPositionFromCursor(input), {
-        experimentalFeatures: {allowCaseFunction: false}
+        featureFlags: new FeatureFlags({allowCaseFunction: false})
       });
 
       expect(result).not.toBeUndefined();
