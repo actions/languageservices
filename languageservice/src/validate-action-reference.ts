@@ -12,10 +12,6 @@ export const DiagnosticCode = {
   MissingRequiredInputs: "missing-required-inputs"
 } as const;
 
-/**
- * Minimal diagnostic data for missing inputs.
- * Position calculation is done in the quickfix by re-parsing the document.
- */
 export interface MissingInputsDiagnosticData {
   action: ActionReference;
   missingInputs: Array<{
