@@ -136,6 +136,11 @@ export async function complete(
     workflowContext = workflowTemplate ? getWorkflowContext(textDocument.uri, workflowTemplate, path) : undefined;
   }
 
+  // Populate currentValue for value providers that need the query (e.g., step-uses marketplace search)
+  if (workflowContext && token && isString(token)) {
+    workflowContext.currentValue = token.value;
+  }
+
   // Expression completions
   if (token && (isBasicExpression(token) || isPotentiallyExpression(token))) {
     const allowedContext = token.definitionInfo?.allowedContext || [];
@@ -224,6 +229,7 @@ export async function complete(
     const item: CompletionItem = {
       label: value.label,
       labelDetails: value.labelDetail ? {description: value.labelDetail} : undefined,
+      kind: value.kind as CompletionItemKind,
       filterText: value.filterText,
       sortText: value.sortText,
       documentation: value.description && {

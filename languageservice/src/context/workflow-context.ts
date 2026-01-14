@@ -23,6 +23,9 @@ export interface WorkflowContext {
 
   /** If the context is for a position within a step, this will be the step */
   step?: Step;
+
+  /** The current value being typed at the cursor position (for value providers that need the query) */
+  currentValue?: string;
 }
 
 /**

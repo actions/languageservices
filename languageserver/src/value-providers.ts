@@ -7,6 +7,7 @@ import {TTLCache} from "./utils/cache.js";
 import {getActionInputValues} from "./value-providers/action-inputs.js";
 import {getEnvironments} from "./value-providers/job-environment.js";
 import {getRunnerLabels} from "./value-providers/runs-on.js";
+import {getStepUsesValues} from "./value-providers/step-uses.js";
 
 export function valueProviders(
   client: Octokit | undefined,
@@ -35,6 +36,10 @@ export function valueProviders(
     "step-with": {
       kind: ValueProviderKind.AllowedValues,
       get: (context: WorkflowContext) => getActionInputValues(client, cache, context)
+    },
+    "step-uses": {
+      kind: ValueProviderKind.SuggestedValues,
+      get: (context: WorkflowContext) => getStepUsesValues(context)
     }
   };
 }

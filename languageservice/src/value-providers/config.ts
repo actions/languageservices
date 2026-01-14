@@ -22,6 +22,9 @@ export interface Value {
   /** Sort text to control ordering, if not given `label` will be used for sorting */
   sortText?: string;
 
+  /** CompletionItemKind (as number to avoid LSP dependency). E.g., 9 = Module */
+  kind?: number;
+
   /** Custom text edit with specific range, overrides default range calculation */
   textEdit?: {
     range: {start: {line: number; character: number}; end: {line: number; character: number}};
