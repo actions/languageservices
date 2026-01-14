@@ -54,7 +54,8 @@ describe("FeatureFlags", () => {
       expect(flags.getEnabledFeatures()).toEqual([
         "missingInputsQuickfix",
         "blockScalarChompingWarning",
-        "actionScaffoldingSnippets"
+        "actionScaffoldingSnippets",
+        "allowCaseFunction"
       ]);
     });
   });

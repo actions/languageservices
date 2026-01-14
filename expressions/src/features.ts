@@ -35,6 +35,12 @@ export interface ExperimentalFeatures {
    * @default false
    */
   actionScaffoldingSnippets?: boolean;
+
+  /**
+   * Enable the case() function in expressions.
+   * @default false
+   */
+  allowCaseFunction?: boolean;
 }
 
 /**
@@ -49,7 +55,8 @@ export type ExperimentalFeatureKey = Exclude<keyof ExperimentalFeatures, "all">;
 const allFeatureKeys: ExperimentalFeatureKey[] = [
   "missingInputsQuickfix",
   "blockScalarChompingWarning",
-  "actionScaffoldingSnippets"
+  "actionScaffoldingSnippets",
+  "allowCaseFunction"
 ];
 
 export class FeatureFlags {

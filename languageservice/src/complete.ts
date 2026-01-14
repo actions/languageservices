@@ -132,7 +132,7 @@ export async function complete(
           Mode.Completion
         );
 
-    return getExpressionCompletionItems(token, context, newPos);
+    return getExpressionCompletionItems(token, context, newPos, config?.featureFlags);
   }
 
   const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
@@ -521,7 +521,8 @@ export function getExistingValues(token: TemplateToken | null, parent: TemplateT
 function getExpressionCompletionItems(
   token: TemplateToken,
   context: DescriptionDictionary,
-  pos: Position
+  pos: Position,
+  featureFlags?: FeatureFlags
 ): CompletionItem[] {
   if (!token.range) {
     return [];
@@ -540,7 +541,7 @@ function getExpressionCompletionItems(
   const expressionInput = (getExpressionInput(currentInput, cursorOffset) || "").trim();
 
   try {
-    return completeExpression(expressionInput, context, [], validatorFunctions).map(item =>
+    return completeExpression(expressionInput, context, [], validatorFunctions, featureFlags).map(item =>
       mapExpressionCompletionItem(item, currentInput[cursorOffset])
     );
   } catch (e) {

@@ -6,6 +6,7 @@ import {getPositionFromCursor} from "./test-utils/cursor-position.js";
 import {TestLogger} from "./test-utils/logger.js";
 import {clearCache} from "./utils/workflow-cache.js";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
+import {FeatureFlags} from "@actions/expressions/features";
 
 registerLogger(new TestLogger());
 
@@ -893,6 +894,34 @@ jobs:
       expect(result.some(x => x.label === "ubuntu-latest")).toBe(false);
       // But should show other labels
       expect(result.some(x => x.label === "macos-latest")).toBe(true);
+    });
+  });
+
+  describe("expression completions", () => {
+    it("include case function when enabled", async () => {
+      const input = "on: push\njobs:\n  build:\n    runs-on: ${{ c|";
+      const result = await complete(...getPositionFromCursor(input), {
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
+      });
+
+      expect(result).not.toBeUndefined();
+      // Expression completions starting with 'c': case, contains
+      const labels = result.map(x => x.label);
+      expect(labels).toContain("case");
+      expect(labels).toContain("contains");
+    });
+
+    it("exclude case function when disabled", async () => {
+      const input = "on: push\njobs:\n  build:\n    runs-on: ${{ c|";
+      const result = await complete(...getPositionFromCursor(input), {
+        featureFlags: new FeatureFlags({allowCaseFunction: false})
+      });
+
+      expect(result).not.toBeUndefined();
+      // Expression completions starting with 'c': contains
+      const labels = result.map(x => x.label);
+      expect(labels).not.toContain("case");
+      expect(labels).toContain("contains");
     });
   });
 });
