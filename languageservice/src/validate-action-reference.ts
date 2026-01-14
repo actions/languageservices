@@ -4,9 +4,21 @@ import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {ScalarToken} from "@actions/workflow-parser/templates/tokens/scalar-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {parseActionReference} from "./action.js";
+import {ActionReference, parseActionReference} from "./action.js";
 import {mapRange} from "./utils/range.js";
 import {ValidationConfig} from "./validate.js";
+
+export const DiagnosticCode = {
+  MissingRequiredInputs: "missing-required-inputs"
+} as const;
+
+export interface MissingInputsDiagnosticData {
+  action: ActionReference;
+  missingInputs: Array<{
+    name: string;
+    default?: string;
+  }>;
+}
 
 /**
  * Validates action references in workflow steps, checking for valid inputs and required inputs.
@@ -94,10 +106,22 @@ export async function validateActionReference(
       missingRequiredInputs.length === 1
         ? `Missing required input \`${missingRequiredInputs[0][0]}\``
         : `Missing required inputs: ${missingRequiredInputs.map(input => `\`${input[0]}\``).join(", ")}`;
+
+    // Build minimal diagnostic data - position calculation happens in the quickfix
+    const diagnosticData: MissingInputsDiagnosticData = {
+      action,
+      missingInputs: missingRequiredInputs.map(([name, input]) => ({
+        name,
+        default: input.default
+      }))
+    };
+
     diagnostics.push({
       severity: DiagnosticSeverity.Error,
-      range: mapRange((withKey || stepToken).range), // Highlight the whole step if we don't have a with key
-      message: message
+      range: mapRange((withKey || stepToken).range),
+      message: message,
+      code: DiagnosticCode.MissingRequiredInputs,
+      data: diagnosticData
     });
   }
 }
