@@ -2,6 +2,7 @@ import {DescriptionPair} from "./completion/descriptionDictionary.js";
 import {Dictionary, isDictionary} from "./data/dictionary.js";
 import {ExpressionData} from "./data/expressiondata.js";
 import {Evaluator} from "./evaluator.js";
+import {FeatureFlags} from "./features.js";
 import {wellKnownFunctions} from "./funcs.js";
 import {FunctionDefinition, FunctionInfo} from "./funcs/info.js";
 import {Lexer, Token, TokenType} from "./lexer.js";
@@ -26,13 +27,15 @@ export type CompletionItem = {
  * @param context Context available for the expression
  * @param extensionFunctions List of functions available
  * @param functions Optional map of functions to use during evaluation
+ * @param featureFlags Optional feature flags to control which features are enabled
  * @returns Array of completion items
  */
 export function complete(
   input: string,
   context: Dictionary,
   extensionFunctions: FunctionInfo[],
-  functions?: Map<string, FunctionDefinition>
+  functions?: Map<string, FunctionDefinition>,
+  featureFlags?: FeatureFlags
 ): CompletionItem[] {
   // Lex
   const lexer = new Lexer(input);
@@ -63,7 +66,7 @@ export function complete(
     const result = contextKeys(context);
 
     // Merge with functions
-    result.push(...functionItems(extensionFunctions));
+    result.push(...functionItems(extensionFunctions, featureFlags));
 
     return result;
   }
@@ -88,10 +91,15 @@ export function complete(
   return contextKeys(result);
 }
 
-function functionItems(extensionFunctions: FunctionInfo[]): CompletionItem[] {
+function functionItems(extensionFunctions: FunctionInfo[], featureFlags?: FeatureFlags): CompletionItem[] {
   const result: CompletionItem[] = [];
+  const flags = featureFlags ?? new FeatureFlags();
 
   for (const fdef of [...Object.values(wellKnownFunctions), ...extensionFunctions]) {
+    // Filter out case function if feature is disabled
+    if (fdef.name === "case" && !flags.isEnabled("allowCaseFunction")) {
+      continue;
+    }
     result.push({
       label: fdef.name,
       description: fdef.description,

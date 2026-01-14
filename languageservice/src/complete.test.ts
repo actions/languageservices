@@ -895,4 +895,33 @@ jobs:
       expect(result.some(x => x.label === "macos-latest")).toBe(true);
     });
   });
+
+
+  describe("expression completions", () => {
+    it("include case function when enabled", async () => {
+      const input = "on: push\njobs:\n  build:\n    runs-on: ${{ c|";
+      const result = await complete(...getPositionFromCursor(input), {
+        experimentalFeatures: {allowCaseFunction: true}
+      });
+
+      expect(result).not.toBeUndefined();
+      // Expression completions starting with 'c': case, contains
+      const labels = result.map(x => x.label);
+      expect(labels).toContain("case");
+      expect(labels).toContain("contains");
+    });
+
+    it("exclude case function when disabled", async () => {
+      const input = "on: push\njobs:\n  build:\n    runs-on: ${{ c|";
+      const result = await complete(...getPositionFromCursor(input), {
+        experimentalFeatures: {allowCaseFunction: false}
+      });
+
+      expect(result).not.toBeUndefined();
+      // Expression completions starting with 'c': contains
+      const labels = result.map(x => x.label);
+      expect(labels).not.toContain("case");
+      expect(labels).toContain("contains");
+    });
+  });
 });

@@ -1,4 +1,4 @@
-import {complete as completeExpression, DescriptionDictionary} from "@actions/expressions";
+import {complete as completeExpression, DescriptionDictionary, ExperimentalFeatures, FeatureFlags} from "@actions/expressions";
 import {CompletionItem as ExpressionCompletionItem} from "@actions/expressions/completion";
 import {isBasicExpression, isSequence, isString} from "@actions/workflow-parser";
 import {getActionSchema} from "@actions/workflow-parser/actions/action-schema";
@@ -72,6 +72,7 @@ export type CompletionConfig = {
   valueProviderConfig?: ValueProviderConfig;
   contextProviderConfig?: ContextProviderConfig;
   fileProvider?: FileProvider;
+  experimentalFeatures?: ExperimentalFeatures;
 };
 
 export async function complete(
@@ -148,7 +149,7 @@ export async function complete(
           Mode.Completion
         );
 
-    return getExpressionCompletionItems(token, context, newPos);
+    return getExpressionCompletionItems(token, context, newPos, config?.experimentalFeatures);
   }
 
   const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
@@ -528,7 +529,8 @@ export function getExistingValues(token: TemplateToken | null, parent: TemplateT
 function getExpressionCompletionItems(
   token: TemplateToken,
   context: DescriptionDictionary,
-  pos: Position
+  pos: Position,
+  experimentalFeatures?: ExperimentalFeatures
 ): CompletionItem[] {
   if (!token.range) {
     return [];
@@ -547,7 +549,8 @@ function getExpressionCompletionItems(
   const expressionInput = (getExpressionInput(currentInput, cursorOffset) || "").trim();
 
   try {
-    return completeExpression(expressionInput, context, [], validatorFunctions).map(item =>
+    const featureFlags = new FeatureFlags(experimentalFeatures);
+    return completeExpression(expressionInput, context, [], validatorFunctions, featureFlags).map(item =>
       mapExpressionCompletionItem(item, currentInput[cursorOffset])
     );
   } catch (e) {
