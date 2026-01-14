@@ -6,7 +6,7 @@ import {getPositionFromCursor} from "./test-utils/cursor-position.js";
 import {TestLogger} from "./test-utils/logger.js";
 import {clearCache} from "./utils/workflow-cache.js";
 import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
-import { FeatureFlags } from "@actions/expressions/features";
+import {FeatureFlags} from "@actions/expressions/features";
 
 registerLogger(new TestLogger());
 
@@ -896,7 +896,6 @@ jobs:
       expect(result.some(x => x.label === "macos-latest")).toBe(true);
     });
   });
-
 
   describe("expression completions", () => {
     it("include case function when enabled", async () => {

@@ -56,7 +56,7 @@ const allFeatureKeys: ExperimentalFeatureKey[] = [
   "missingInputsQuickfix",
   "blockScalarChompingWarning",
   "actionScaffoldingSnippets",
-  "allowCaseFunction",
+  "allowCaseFunction"
 ];
 
 export class FeatureFlags {
