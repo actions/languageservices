@@ -91,7 +91,6 @@ main: index.js
 #   console.log('Hello World');
 `;
 
-/* eslint-disable no-useless-escape -- \$ is required to escape $ in VS Code snippets */
 const ACTION_SNIPPET_COMPOSITE_FULL = `name: '\${1:Action Name}'
 description: '\${2:What this action does}'
 
@@ -116,9 +115,9 @@ runs:
       env:
         INPUT_NAME: \\\${{ inputs.name }}
       run: |
-        GREETING="Hello \$INPUT_NAME"
-        echo "\$GREETING"
-        echo "greeting=\$GREETING" >> \$GITHUB_OUTPUT
+        GREETING="Hello \\$INPUT_NAME"
+        echo "\\$GREETING"
+        echo "greeting=\\$GREETING" >> \\$GITHUB_OUTPUT
 `;
 
 const ACTION_SNIPPET_COMPOSITE_RUNS = `inputs:
@@ -142,9 +141,9 @@ runs:
       env:
         INPUT_NAME: \\\${{ inputs.name }}
       run: |
-        GREETING="Hello \$INPUT_NAME"
-        echo "\$GREETING"
-        echo "greeting=\$GREETING" >> \$GITHUB_OUTPUT
+        GREETING="Hello \\$INPUT_NAME"
+        echo "\\$GREETING"
+        echo "greeting=\\$GREETING" >> \\$GITHUB_OUTPUT
 `;
 
 const ACTION_SNIPPET_COMPOSITE_USING = `# For more on composite actions, see:
@@ -180,9 +179,9 @@ runs:
   args:
     - -c
     - |
-      GREETING="Hello \$INPUT_NAME"
-      echo "\$GREETING"
-      echo "greeting=\$GREETING" >> \$GITHUB_OUTPUT
+      GREETING="Hello \\$INPUT_NAME"
+      echo "\\$GREETING"
+      echo "greeting=\\$GREETING" >> \\$GITHUB_OUTPUT
 `;
 
 const ACTION_SNIPPET_DOCKER_RUNS = `inputs:
@@ -207,11 +206,10 @@ runs:
   args:
     - -c
     - |
-      GREETING="Hello \$INPUT_NAME"
-      echo "\$GREETING"
-      echo "greeting=\$GREETING" >> \$GITHUB_OUTPUT
+      GREETING="Hello \\$INPUT_NAME"
+      echo "\\$GREETING"
+      echo "greeting=\\$GREETING" >> \\$GITHUB_OUTPUT
 `;
-/* eslint-enable no-useless-escape */
 
 const ACTION_SNIPPET_DOCKER_USING = `# For more on Docker actions, see:
 # https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action
