@@ -265,8 +265,8 @@ runs:
       const usingCompletion = completions.find(c => c.label === "using");
       expect(usingCompletion).toBeDefined();
 
-      // It should have a sortText that makes it sort first
-      expect(usingCompletion?.sortText).toBe("0_using");
+      // It should have a sortText that makes it sort after snippets
+      expect(usingCompletion?.sortText).toBe("9_using");
     });
 
     it("completes step keys inside composite action steps", async () => {

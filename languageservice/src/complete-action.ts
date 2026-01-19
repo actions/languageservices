@@ -83,14 +83,15 @@ runs:
 `;
 
 const ACTION_SNIPPET_NODEJS_USING = `# For more on JavaScript actions (including @actions/toolkit), see:
-  # https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action
-  using: node24
-  main: index.js
-  # Sample index.js (vanilla JS, no build required):
-  #
-  #   console.log('Hello World');
+# https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action
+using: node24
+main: index.js
+# Sample index.js (vanilla JS, no build required):
+#
+#   console.log('Hello World');
 `;
 
+/* eslint-disable no-useless-escape -- \$ is required to escape $ in VS Code snippets */
 const ACTION_SNIPPET_COMPOSITE_FULL = `name: '\${1:Action Name}'
 description: '\${2:What this action does}'
 
@@ -115,9 +116,9 @@ runs:
       env:
         INPUT_NAME: \\\${{ inputs.name }}
       run: |
-        GREETING="Hello $INPUT_NAME"
-        echo "$GREETING"
-        echo "greeting=$GREETING" >> $GITHUB_OUTPUT
+        GREETING="Hello \$INPUT_NAME"
+        echo "\$GREETING"
+        echo "greeting=\$GREETING" >> \$GITHUB_OUTPUT
 `;
 
 const ACTION_SNIPPET_COMPOSITE_RUNS = `inputs:
@@ -141,17 +142,17 @@ runs:
       env:
         INPUT_NAME: \\\${{ inputs.name }}
       run: |
-        GREETING="Hello $INPUT_NAME"
-        echo "$GREETING"
-        echo "greeting=$GREETING" >> $GITHUB_OUTPUT
+        GREETING="Hello \$INPUT_NAME"
+        echo "\$GREETING"
+        echo "greeting=\$GREETING" >> \$GITHUB_OUTPUT
 `;
 
 const ACTION_SNIPPET_COMPOSITE_USING = `# For more on composite actions, see:
-  # https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action
-  using: composite
-  steps:
-    - shell: bash
-      run: echo "Hello World"
+# https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action
+using: composite
+steps:
+  - shell: bash
+    run: echo "Hello World"
 `;
 
 const ACTION_SNIPPET_DOCKER_FULL = `name: '\${1:Action Name}'
@@ -179,9 +180,9 @@ runs:
   args:
     - -c
     - |
-      GREETING="Hello $INPUT_NAME"
-      echo "$GREETING"
-      echo "greeting=$GREETING" >> $GITHUB_OUTPUT
+      GREETING="Hello \$INPUT_NAME"
+      echo "\$GREETING"
+      echo "greeting=\$GREETING" >> \$GITHUB_OUTPUT
 `;
 
 const ACTION_SNIPPET_DOCKER_RUNS = `inputs:
@@ -206,20 +207,21 @@ runs:
   args:
     - -c
     - |
-      GREETING="Hello $INPUT_NAME"
-      echo "$GREETING"
-      echo "greeting=$GREETING" >> $GITHUB_OUTPUT
+      GREETING="Hello \$INPUT_NAME"
+      echo "\$GREETING"
+      echo "greeting=\$GREETING" >> \$GITHUB_OUTPUT
 `;
+/* eslint-enable no-useless-escape */
 
 const ACTION_SNIPPET_DOCKER_USING = `# For more on Docker actions, see:
-  # https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action
-  using: docker
-  # 'docker://image:tag' uses pre-built image, 'Dockerfile' builds locally
-  image: '\${1:docker://alpine:3.20}'
-  entrypoint: '\${2:sh}'
-  args:
-    - -c
-    - echo "Hello World"
+# https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action
+using: docker
+# 'docker://image:tag' uses pre-built image, 'Dockerfile' builds locally
+image: '\${1:docker://alpine:3.20}'
+entrypoint: '\${2:sh}'
+args:
+  - -c
+  - echo "Hello World"
 `;
 
 /**
@@ -282,7 +284,7 @@ export function filterActionRunsCompletions(values: Value[], path: TemplateToken
     // No using value set - show all keys but prioritize "using"
     return values.map(v => {
       if (v.label.toLowerCase() === "using") {
-        return {...v, sortText: "0_using"}; // Sort first
+        return {...v, sortText: "9_using"}; // Sort after snippets (0_, 1_, 2_)
       }
       return v;
     });
@@ -354,21 +356,21 @@ export function getActionScaffoldingSnippets(
         "Scaffold a Node.js action",
         ACTION_SNIPPET_NODEJS_USING,
         position,
-        "1_nodejs"
+        "0_nodejs"
       ),
       createSnippetCompletion(
         "Composite Action",
         "Scaffold a composite action",
         ACTION_SNIPPET_COMPOSITE_USING,
         position,
-        "2_composite"
+        "1_composite"
       ),
       createSnippetCompletion(
         "Docker Action",
         "Scaffold a Docker action",
         ACTION_SNIPPET_DOCKER_USING,
         position,
-        "3_docker"
+        "2_docker"
       )
     ];
   }
