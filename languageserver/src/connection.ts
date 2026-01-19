@@ -154,7 +154,8 @@ export function initConnection(connection: Connection) {
           getDocument(documents, textDocument),
           client,
           repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri)),
-          cache
+          cache,
+          featureFlags
         )
     );
   });
