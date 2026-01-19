@@ -1,5 +1,5 @@
 import {complete} from "@actions/languageservice/complete";
-import {FeatureFlags} from "@actions/expressions";
+import type {FeatureFlags} from "@actions/expressions";
 import {Octokit} from "@octokit/rest";
 import {CompletionItem, Connection, Position} from "vscode-languageserver";
 import {TextDocument} from "vscode-languageserver-textdocument";
