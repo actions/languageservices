@@ -351,21 +351,21 @@ export function getActionScaffoldingSnippets(
     return [
       createSnippetCompletion(
         "Node.js Action",
-        "Scaffold a Node.js action",
+        "Scaffold a Node.js action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action)",
         ACTION_SNIPPET_NODEJS_USING,
         position,
         "0_nodejs"
       ),
       createSnippetCompletion(
         "Composite Action",
-        "Scaffold a composite action",
+        "Scaffold a composite action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action)",
         ACTION_SNIPPET_COMPOSITE_USING,
         position,
         "1_composite"
       ),
       createSnippetCompletion(
         "Docker Action",
-        "Scaffold a Docker action",
+        "Scaffold a Docker action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action)",
         ACTION_SNIPPET_DOCKER_USING,
         position,
         "2_docker"
@@ -396,21 +396,21 @@ export function getActionScaffoldingSnippets(
     return [
       createSnippetCompletion(
         "Node.js Action",
-        "Scaffold a Node.js action",
+        "Scaffold a Node.js action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action)",
         ACTION_SNIPPET_NODEJS_RUNS,
         position,
         "1_nodejs"
       ),
       createSnippetCompletion(
         "Composite Action",
-        "Scaffold a composite action",
+        "Scaffold a composite action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action)",
         ACTION_SNIPPET_COMPOSITE_RUNS,
         position,
         "2_composite"
       ),
       createSnippetCompletion(
         "Docker Action",
-        "Scaffold a Docker action",
+        "Scaffold a Docker action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action)",
         ACTION_SNIPPET_DOCKER_RUNS,
         position,
         "3_docker"
@@ -422,21 +422,21 @@ export function getActionScaffoldingSnippets(
   return [
     createSnippetCompletion(
       "Node.js Action",
-      "Scaffold a complete Node.js action",
+      "Scaffold a complete Node.js action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action)",
       ACTION_SNIPPET_NODEJS_FULL,
       position,
       "1_nodejs"
     ),
     createSnippetCompletion(
       "Composite Action",
-      "Scaffold a complete composite action",
+      "Scaffold a complete composite action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action)",
       ACTION_SNIPPET_COMPOSITE_FULL,
       position,
       "2_composite"
     ),
     createSnippetCompletion(
       "Docker Action",
-      "Scaffold a complete Docker action",
+      "Scaffold a complete Docker action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action)",
       ACTION_SNIPPET_DOCKER_FULL,
       position,
       "3_docker"
