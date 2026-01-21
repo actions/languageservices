@@ -1,7 +1,7 @@
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/index";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {Position} from "vscode-languageserver-textdocument";
-import {CompletionItem, CompletionItemKind, InsertTextFormat, TextEdit} from "vscode-languageserver-types";
+import {CompletionItem, CompletionItemKind, InsertTextFormat, Range, TextEdit} from "vscode-languageserver-types";
 import {Value} from "./value-providers/config.js";
 
 /**
@@ -320,7 +320,8 @@ export function filterActionRunsCompletions(values: Value[], path: TemplateToken
 export function getActionScaffoldingSnippets(
   root: TemplateToken | undefined,
   path: TemplateToken[],
-  position: Position
+  position: Position,
+  replaceRange?: Range
 ): CompletionItem[] {
   // Get the runs mapping from the root, if it exists
   let runsMapping: MappingToken | undefined;
@@ -354,21 +355,24 @@ export function getActionScaffoldingSnippets(
         "Scaffold a Node.js action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action)",
         ACTION_SNIPPET_NODEJS_USING,
         position,
-        "0_nodejs"
+        "0_nodejs",
+        replaceRange
       ),
       createSnippetCompletion(
         "Composite Action",
         "Scaffold a composite action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action)",
         ACTION_SNIPPET_COMPOSITE_USING,
         position,
-        "1_composite"
+        "1_composite",
+        replaceRange
       ),
       createSnippetCompletion(
         "Docker Action",
         "Scaffold a Docker action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action)",
         ACTION_SNIPPET_DOCKER_USING,
         position,
-        "2_docker"
+        "2_docker",
+        replaceRange
       )
     ];
   }
@@ -399,21 +403,24 @@ export function getActionScaffoldingSnippets(
         "Scaffold a Node.js action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action)",
         ACTION_SNIPPET_NODEJS_RUNS,
         position,
-        "1_nodejs"
+        "1_nodejs",
+        replaceRange
       ),
       createSnippetCompletion(
         "Composite Action",
         "Scaffold a composite action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action)",
         ACTION_SNIPPET_COMPOSITE_RUNS,
         position,
-        "2_composite"
+        "2_composite",
+        replaceRange
       ),
       createSnippetCompletion(
         "Docker Action",
         "Scaffold a Docker action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action)",
         ACTION_SNIPPET_DOCKER_RUNS,
         position,
-        "3_docker"
+        "3_docker",
+        replaceRange
       )
     ];
   }
@@ -425,21 +432,24 @@ export function getActionScaffoldingSnippets(
       "Scaffold a complete Node.js action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action)",
       ACTION_SNIPPET_NODEJS_FULL,
       position,
-      "1_nodejs"
+      "1_nodejs",
+      replaceRange
     ),
     createSnippetCompletion(
       "Composite Action",
       "Scaffold a complete composite action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action)",
       ACTION_SNIPPET_COMPOSITE_FULL,
       position,
-      "2_composite"
+      "2_composite",
+      replaceRange
     ),
     createSnippetCompletion(
       "Docker Action",
       "Scaffold a complete Docker action\n\n[Documentation](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-docker-container-action)",
       ACTION_SNIPPET_DOCKER_FULL,
       position,
-      "3_docker"
+      "3_docker",
+      replaceRange
     )
   ];
 }
@@ -452,8 +462,12 @@ function createSnippetCompletion(
   description: string,
   snippetText: string,
   position: Position,
-  sortText: string
+  sortText: string,
+  replaceRange?: Range
 ): CompletionItem {
+  // Use replace if we have a range, otherwise insert at position
+  const textEdit = replaceRange ? TextEdit.replace(replaceRange, snippetText) : TextEdit.insert(position, snippetText);
+
   return {
     label,
     kind: CompletionItemKind.Snippet,
@@ -463,6 +477,6 @@ function createSnippetCompletion(
     },
     insertTextFormat: InsertTextFormat.Snippet,
     sortText,
-    textEdit: TextEdit.insert(position, snippetText)
+    textEdit
   };
 }

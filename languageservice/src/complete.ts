@@ -158,12 +158,6 @@ export async function complete(
   const escapeHatches = getEscapeHatchCompletions(token, keyToken, indentString, newPos, schema);
   values.push(...escapeHatches);
 
-  // Get action scaffolding snippets if applicable
-  let actionSnippets: CompletionItem[] = [];
-  if (isAction && config?.featureFlags?.isEnabled("actionScaffoldingSnippets")) {
-    actionSnippets = getActionScaffoldingSnippets(parsedTemplate.value, path, position);
-  }
-
   // Figure out what text to replace when the user picks a completion.
   // For example, if they typed `runs-|` and pick `runs-on`, we need to replace `runs-`.
   let replaceRange: Range | undefined;
@@ -189,6 +183,12 @@ export async function complete(
     } else {
       replaceRange = Range.create({line: position.line, character: position.character - val}, position);
     }
+  }
+
+  // Get action scaffolding snippets if applicable
+  let actionSnippets: CompletionItem[] = [];
+  if (isAction && config?.featureFlags?.isEnabled("actionScaffoldingSnippets")) {
+    actionSnippets = getActionScaffoldingSnippets(parsedTemplate.value, path, position, replaceRange);
   }
 
   // Convert values to LSP CompletionItems

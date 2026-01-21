@@ -553,5 +553,31 @@ runs:
       expect(labels).not.toContain("Composite Action");
       expect(labels).not.toContain("Docker Action");
     });
+
+    it("replaces typed text when selecting scaffolding snippet", async () => {
+      // User typed "compo" and then triggered completion
+      const [doc, position] = createActionDocument(`compo|`);
+      const completions = await complete(doc, position, scaffoldingConfig);
+
+      const compositeSnippet = completions.find(c => c.label === "Composite Action");
+      expect(compositeSnippet).toBeDefined();
+
+      // The textEdit should replace "compo", not insert after it
+      const textEdit = compositeSnippet?.textEdit as {range: {start: {character: number}; end: {character: number}}};
+      expect(textEdit.range.start.character).toBe(0); // Start of "compo"
+      expect(textEdit.range.end.character).toBe(5); // End of "compo"
+    });
+
+    it("handles empty file with no typed text", async () => {
+      const [doc, position] = createActionDocument(`|`);
+      const completions = await complete(doc, position, scaffoldingConfig);
+
+      const compositeSnippet = completions.find(c => c.label === "Composite Action");
+      const textEdit = compositeSnippet?.textEdit as {range: {start: {character: number}; end: {character: number}}};
+
+      // Zero-length range is fine when there's nothing to replace
+      expect(textEdit.range.start.character).toBe(0);
+      expect(textEdit.range.end.character).toBe(0);
+    });
   });
 });
