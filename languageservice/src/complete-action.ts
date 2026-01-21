@@ -470,6 +470,7 @@ function createSnippetCompletion(
 
   return {
     label,
+    labelDetails: {description: "snippet"},
     kind: CompletionItemKind.Snippet,
     documentation: {
       kind: "markdown",
