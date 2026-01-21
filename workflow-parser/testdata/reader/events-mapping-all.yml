@@ -137,6 +137,8 @@ on:
       - review_request_removed
       - auto_merge_enabled
       - auto_merge_disabled
+      - milestoned
+      - demilestoned
   pull_request_comment:
     types:
       - created
