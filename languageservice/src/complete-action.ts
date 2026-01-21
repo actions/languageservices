@@ -53,9 +53,6 @@ runs:
   #   const greeting = \\\`Hello \\\${name}\\\`;
   #   console.log(greeting);
   #   fs.appendFileSync(process.env.GITHUB_OUTPUT, \\\`greeting=\\\${greeting}\\\\n\\\`);
-  #
-  # For JavaScript actions with @actions/toolkit, see:
-  # https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-javascript-action
 `;
 
 const ACTION_SNIPPET_NODEJS_RUNS = `inputs:

@@ -187,7 +187,7 @@ export async function complete(
 
   // Get action scaffolding snippets if applicable
   let actionSnippets: CompletionItem[] = [];
-  if (isAction && config?.featureFlags?.isEnabled("actionScaffoldingSnippets")) {
+  if (isAction) {
     actionSnippets = getActionScaffoldingSnippets(parsedTemplate.value, path, position, replaceRange);
   }
 

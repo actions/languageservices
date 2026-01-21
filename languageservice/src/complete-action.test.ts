@@ -1,16 +1,10 @@
-import {FeatureFlags} from "@actions/expressions";
 import {TextDocument} from "vscode-languageserver-textdocument";
-import {complete, CompletionConfig} from "./complete";
+import {complete} from "./complete";
 import {clearCache} from "./utils/workflow-cache";
 
 beforeEach(() => {
   clearCache();
 });
-
-// Config to enable action scaffolding snippets
-const scaffoldingConfig: CompletionConfig = {
-  featureFlags: new FeatureFlags({actionScaffoldingSnippets: true})
-};
 
 describe("complete action files", () => {
   function createActionDocument(
@@ -403,7 +397,7 @@ runs:
   describe("action scaffolding snippets", () => {
     it("offers full scaffolding snippets in empty file", async () => {
       const [doc, position] = createActionDocument(`|`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
       const labels = completions.map(c => c.label);
 
       expect(labels).toContain("Node.js Action");
@@ -419,7 +413,7 @@ runs:
     it("offers full scaffolding snippets when no name or description exists", async () => {
       const [doc, position] = createActionDocument(`author: me
 |`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
 
       const nodeSnippet = completions.find(c => c.label === "Node.js Action");
       expect(nodeSnippet).toBeDefined();
@@ -430,7 +424,7 @@ runs:
     it("offers runs-only snippets when name exists", async () => {
       const [doc, position] = createActionDocument(`name: My Action
 |`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
 
       const nodeSnippet = completions.find(c => c.label === "Node.js Action");
       expect(nodeSnippet).toBeDefined();
@@ -442,7 +436,7 @@ runs:
     it("offers runs-only snippets when description exists", async () => {
       const [doc, position] = createActionDocument(`description: Does something
 |`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
 
       const compositeSnippet = completions.find(c => c.label === "Composite Action");
       expect(compositeSnippet).toBeDefined();
@@ -457,7 +451,7 @@ description: Test
 runs:
   using: composite
   |`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
       const labels = completions.map(c => c.label);
 
       expect(labels).not.toContain("Node.js Action");
@@ -470,7 +464,7 @@ runs:
 description: Test
 runs:
   |`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
       const labels = completions.map(c => c.label);
 
       expect(labels).toContain("Node.js Action");
@@ -484,7 +478,7 @@ description: Test
 runs:
   steps: []
 |`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
       const labels = completions.map(c => c.label);
 
       expect(labels).not.toContain("Node.js Action");
@@ -499,7 +493,7 @@ runs:
   using: composite
   steps:
     - |`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
       const labels = completions.map(c => c.label);
 
       expect(labels).not.toContain("Node.js Action");
@@ -509,7 +503,7 @@ runs:
 
     it("Node.js snippet contains expected content", async () => {
       const [doc, position] = createActionDocument(`|`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
 
       const nodeSnippet = completions.find(c => c.label === "Node.js Action");
       const text = (nodeSnippet?.textEdit as {newText: string})?.newText;
@@ -522,7 +516,7 @@ runs:
 
     it("Composite snippet contains expected content", async () => {
       const [doc, position] = createActionDocument(`|`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
 
       const compositeSnippet = completions.find(c => c.label === "Composite Action");
       const text = (compositeSnippet?.textEdit as {newText: string})?.newText;
@@ -534,7 +528,7 @@ runs:
 
     it("Docker snippet contains expected content", async () => {
       const [doc, position] = createActionDocument(`|`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
 
       const dockerSnippet = completions.find(c => c.label === "Docker Action");
       const text = (dockerSnippet?.textEdit as {newText: string})?.newText;
@@ -544,20 +538,10 @@ runs:
       expect(text).toContain("entrypoint:");
     });
 
-    it("does not offer snippets when feature flag is disabled", async () => {
-      const [doc, position] = createActionDocument(`|`);
-      const completions = await complete(doc, position);
-      const labels = completions.map(c => c.label);
-
-      expect(labels).not.toContain("Node.js Action");
-      expect(labels).not.toContain("Composite Action");
-      expect(labels).not.toContain("Docker Action");
-    });
-
     it("replaces typed text when selecting scaffolding snippet", async () => {
       // User typed "compo" and then triggered completion
       const [doc, position] = createActionDocument(`compo|`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
 
       const compositeSnippet = completions.find(c => c.label === "Composite Action");
       expect(compositeSnippet).toBeDefined();
@@ -570,7 +554,7 @@ runs:
 
     it("handles empty file with no typed text", async () => {
       const [doc, position] = createActionDocument(`|`);
-      const completions = await complete(doc, position, scaffoldingConfig);
+      const completions = await complete(doc, position);
 
       const compositeSnippet = completions.find(c => c.label === "Composite Action");
       const textEdit = compositeSnippet?.textEdit as {range: {start: {character: number}; end: {character: number}}};
