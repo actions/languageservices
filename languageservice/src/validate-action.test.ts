@@ -527,4 +527,488 @@ runs:
       expect(diagnostics.some(d => d.message.includes("is not valid for"))).toBe(false);
     });
   });
+
+  describe("composite step uses format validation", () => {
+    it("validates valid uses format with version", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Uses another action
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "invalid-uses-format")).toBe(false);
+    });
+
+    it("validates docker:// uses format", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Uses docker image
+runs:
+  using: composite
+  steps:
+    - uses: docker://alpine:3.14
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "invalid-uses-format")).toBe(false);
+    });
+
+    it("validates local ./ uses format", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Uses local action
+runs:
+  using: composite
+  steps:
+    - uses: ./local-action
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "invalid-uses-format")).toBe(false);
+    });
+
+    it("errors on missing @ref", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Missing version
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "invalid-uses-format")).toBe(true);
+      expect(diagnostics.some(d => d.message.includes("Expected format"))).toBe(true);
+    });
+
+    it("errors on invalid format", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid format
+runs:
+  using: composite
+  steps:
+    - uses: invalid-format
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "invalid-uses-format")).toBe(true);
+    });
+
+    it("warns on short SHA", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Short SHA
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@a1b2c3d
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "short-sha-ref")).toBe(true);
+      expect(diagnostics.some(d => d.message.includes("shortened commit SHA"))).toBe(true);
+    });
+
+    it("allows full SHA", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Full SHA
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "short-sha-ref")).toBe(false);
+    });
+
+    it("errors on reusable workflow in step uses", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Wrong workflow reference
+runs:
+  using: composite
+  steps:
+    - uses: owner/repo/.github/workflows/build.yml@main
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Reusable workflows should be referenced"))).toBe(true);
+    });
+  });
+
+  describe("composite step if literal text validation", () => {
+    it("errors when literal text mixed with embedded expression", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Literal text in if
+runs:
+  using: composite
+  steps:
+    - if: push == \${{ github.event_name }}
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(true);
+      expect(diagnostics.some(d => d.message.includes("literal text outside replacement tokens"))).toBe(true);
+    });
+
+    it("allows valid expression in if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid if expression
+runs:
+  using: composite
+  steps:
+    - if: \${{ github.event_name == 'push' }}
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(false);
+    });
+
+    it("allows if without expression markers (auto-wrapped)", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: If without markers
+runs:
+  using: composite
+  steps:
+    - if: github.event_name == 'push'
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(false);
+    });
+
+    it("allows success() function", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Success function
+runs:
+  using: composite
+  steps:
+    - if: success()
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(false);
+    });
+
+    it("errors on format with literal text in if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Format with literal text
+runs:
+  using: composite
+  steps:
+    - if: \${{ format('event is {0}', github.event_name) }}
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(true);
+    });
+
+    it("allows format with only replacement tokens", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Format with only tokens
+runs:
+  using: composite
+  steps:
+    - if: \${{ format('{0}', github.event_name) }}
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(false);
+    });
+
+    it("validates if in uses-step", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: If in uses step
+runs:
+  using: composite
+  steps:
+    - if: push == \${{ github.event_name }}
+      uses: actions/checkout@v4
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(true);
+    });
+  });
+
+  describe("pre-if and post-if validation", () => {
+    it("errors on explicit expression with literal text in pre-if for node action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Literal text in pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: push == \${{ github.event_name }}
+`);
+      const diagnostics = await validate(doc);
+      // Explicit ${{ }} syntax is not allowed for pre-if, so we get that error
+      expect(diagnostics.some(d => d.code === "explicit-expression-not-allowed")).toBe(true);
+    });
+
+    it("errors on explicit expression with literal text in post-if for node action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Literal text in post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: event == \${{ github.event_name }}
+`);
+      const diagnostics = await validate(doc);
+      // Explicit ${{ }} syntax is not allowed for post-if, so we get that error
+      expect(diagnostics.some(d => d.code === "explicit-expression-not-allowed")).toBe(true);
+    });
+
+    it("errors on explicit expression with literal text in pre-if for docker action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Literal text in pre-if
+runs:
+  using: docker
+  image: Dockerfile
+  pre-entrypoint: /setup.sh
+  pre-if: push == \${{ github.event_name }}
+`);
+      const diagnostics = await validate(doc);
+      // Explicit ${{ }} syntax is not allowed for pre-if, so we get that error
+      expect(diagnostics.some(d => d.code === "explicit-expression-not-allowed")).toBe(true);
+    });
+
+    it("errors on explicit expression with literal text in post-if for docker action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Literal text in post-if
+runs:
+  using: docker
+  image: Dockerfile
+  post-entrypoint: /cleanup.sh
+  post-if: event == \${{ github.event_name }}
+`);
+      const diagnostics = await validate(doc);
+      // Explicit ${{ }} syntax is not allowed for post-if, so we get that error
+      expect(diagnostics.some(d => d.code === "explicit-expression-not-allowed")).toBe(true);
+    });
+
+    it("allows valid expression in pre-if for node action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: success()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(false);
+    });
+
+    it("allows valid expression in post-if for node action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: always()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(false);
+    });
+
+    it("errors on explicit expression syntax in pre-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Explicit expression in pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: \${{ runner.os == 'Windows' }}
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "explicit-expression-not-allowed")).toBe(true);
+      expect(diagnostics.some(d => d.message.includes("pre-if"))).toBe(true);
+    });
+
+    it("errors on explicit expression syntax in post-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Explicit expression in post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: \${{ always() }}
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "explicit-expression-not-allowed")).toBe(true);
+      expect(diagnostics.some(d => d.message.includes("post-if"))).toBe(true);
+    });
+
+    it("allows expression with failure() in post-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: failure()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(false);
+    });
+
+    it("allows expression with cancelled() in post-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: cancelled()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "expression-literal-text-in-condition")).toBe(false);
+    });
+  });
+
+  describe("format string validation", () => {
+    it("errors on format() with too few arguments in composite step if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Format mismatch
+runs:
+  using: composite
+  steps:
+    - if: format('{0} {1}', 'only-one')
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "format-arg-count-mismatch")).toBe(true);
+    });
+
+    it("errors on invalid format string in composite step if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Invalid format
+runs:
+  using: composite
+  steps:
+    - if: format('{', 'arg')
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "invalid-format-string")).toBe(true);
+    });
+
+    it("errors on format() with too few arguments in pre-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Format mismatch in pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: format('{0} {1}', 'only-one')
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "format-arg-count-mismatch")).toBe(true);
+    });
+
+    it("errors on format() with too few arguments in post-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Format mismatch in post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: format('{0} {1} {2}', 'a', 'b')
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "format-arg-count-mismatch")).toBe(true);
+    });
+
+    it("allows valid format() call in composite step if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid format
+runs:
+  using: composite
+  steps:
+    - if: format('{0} {1}', 'a', 'b') == 'a b'
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "format-arg-count-mismatch")).toBe(false);
+      expect(diagnostics.some(d => d.code === "invalid-format-string")).toBe(false);
+    });
+
+    it("allows valid format() call in pre-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid format in pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: format('{0}', runner.os) == 'Linux'
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "format-arg-count-mismatch")).toBe(false);
+      expect(diagnostics.some(d => d.code === "invalid-format-string")).toBe(false);
+    });
+
+    it("errors on format() with too few arguments in run expression", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Format mismatch in run
+runs:
+  using: composite
+  steps:
+    - run: echo \${{ format('{0} {1}', 'only-one') }}
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "format-arg-count-mismatch")).toBe(true);
+    });
+
+    it("errors on format() with too few arguments in input default", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Format mismatch in input default
+inputs:
+  greeting:
+    description: Greeting message
+    default: \${{ format('{0} {1}', 'hello') }}
+runs:
+  using: node20
+  main: index.js
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.code === "format-arg-count-mismatch")).toBe(true);
+    });
+  });
 });

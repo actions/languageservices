@@ -295,7 +295,7 @@ jobs:
 `;
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toContainEqual({
-        message: "`uses' value in action cannot be blank",
+        message: "'uses' value in action cannot be blank",
         severity: DiagnosticSeverity.Error,
         range: {
           start: {line: 5, character: 12},

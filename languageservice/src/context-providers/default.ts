@@ -198,9 +198,13 @@ function getDefaultActionContext(
     case "runner":
       return getRunnerContext();
 
-    case "env":
-      // Actions can access env but we don't have runtime values
-      return new DescriptionDictionary();
+    case "env": {
+      // Actions can access env but we don't know what env vars the calling workflow defines
+      // Mark as incomplete to avoid false positive "Context access might be invalid" warnings
+      const envContext = new DescriptionDictionary();
+      envContext.complete = false;
+      return envContext;
+    }
 
     case "job": {
       // https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
@@ -218,9 +222,13 @@ function getDefaultActionContext(
     case "strategy":
       return getStrategyContext();
 
-    case "matrix":
-      // Actions can access matrix context at runtime
-      return new DescriptionDictionary();
+    case "matrix": {
+      // Actions can access matrix context at runtime but we don't know the calling workflow's matrix
+      // Mark as incomplete to avoid false positive "Context access might be invalid" warnings
+      const matrixContext = new DescriptionDictionary();
+      matrixContext.complete = false;
+      return matrixContext;
+    }
   }
 
   return undefined;

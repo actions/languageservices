@@ -137,6 +137,21 @@
       ],
       "string": {}
     },
+    "runs-if": {
+      "description": "Condition to control when this action's pre or post script runs.",
+      "context": [
+        "runner",
+        "github",
+        "job",
+        "env",
+        "inputs",
+        "always(0,0)",
+        "success(0,0)",
+        "failure(0,0)",
+        "cancelled(0,0)"
+      ],
+      "string": {}
+    },
     "runs": {
       "one-of": [
         "container-runs",
@@ -242,7 +257,7 @@
             "description": "Allows you to run a script before the entrypoint action begins.\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runspre-entrypoint)"
           },
           "pre-if": {
-            "type": "non-empty-string",
+            "type": "runs-if",
             "description": "Allows you to define conditions for the pre: action execution. The pre: action will only run if the conditions in pre-if are met. If not set, then pre-if defaults to always().\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runspre-if)"
           },
           "post-entrypoint": {
@@ -250,7 +265,7 @@
             "description": "Allows you to run a cleanup script once the runs.entrypoint action has completed.\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runspost-entrypoint)"
           },
           "post-if": {
-            "type": "non-empty-string",
+            "type": "runs-if",
             "description": "Allows you to define conditions for the post: action execution. The post: action will only run if the conditions in post-if are met. If not set, then post-if defaults to always().\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runspost-if)"
           }
         }
@@ -275,7 +290,7 @@
             "description": "Allows you to run a script at the start of a job, before the main: action begins. You can use pre: to run prerequisite setup scripts.\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runspre)"
           },
           "pre-if": {
-            "type": "non-empty-string",
+            "type": "runs-if",
             "description": "Allows you to define conditions for the pre: action execution. The pre: action will only run if the conditions in pre-if are met. If not set, then pre-if defaults to always().\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runspre-if)"
           },
           "post": {
@@ -283,7 +298,7 @@
             "description": "Allows you to run a script at the end of a job, once the main: action has completed. You can use post: to run cleanup scripts.\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runspost)"
           },
           "post-if": {
-            "type": "non-empty-string",
+            "type": "runs-if",
             "description": "Allows you to define conditions for the post: action execution. The post: action will only run if the conditions in post-if are met. If not set, then post-if defaults to always().\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#runspost-if)"
           }
         }
