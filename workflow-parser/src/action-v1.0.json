@@ -143,6 +143,8 @@
         "runner",
         "github",
         "job",
+        "strategy",
+        "matrix",
         "env",
         "inputs",
         "always(0,0)",
