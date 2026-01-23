@@ -134,6 +134,49 @@ runs:
       expect(labels).toContain("arch");
       expect(labels).toContain("temp");
     });
+
+    it("completes if expression value for composite run step", async () => {
+      const [doc, position] = createActionDocument(`name: My Action
+description: Test action
+runs:
+  using: composite
+  steps:
+    - if: |
+      run: echo "hello"
+      shell: bash`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show expression-related completions (status functions and contexts)
+      expect(labels).toContain("always");
+      expect(labels).toContain("success");
+      expect(labels).toContain("failure");
+      expect(labels).toContain("cancelled");
+      expect(labels).toContain("runner");
+      expect(labels).toContain("github");
+      expect(labels).toContain("inputs");
+      expect(labels).toContain("steps");
+    });
+
+    it("completes if expression value for composite uses step", async () => {
+      const [doc, position] = createActionDocument(`name: My Action
+description: Test action
+runs:
+  using: composite
+  steps:
+    - if: |
+      uses: actions/checkout@v4`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show expression-related completions
+      expect(labels).toContain("always");
+      expect(labels).toContain("success");
+      expect(labels).toContain("failure");
+      expect(labels).toContain("cancelled");
+      expect(labels).toContain("runner");
+      expect(labels).toContain("github");
+    });
   });
 
   describe("top-level completions", () => {
@@ -205,6 +248,85 @@ runs:
       expect(labels).not.toContain("steps");
       expect(labels).not.toContain("image");
       expect(labels).not.toContain("entrypoint");
+    });
+
+    it("filters runs keys for node24 actions", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: node24
+  |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show Node.js action keys
+      expect(labels).toContain("main");
+      expect(labels).toContain("pre");
+      expect(labels).toContain("post");
+      expect(labels).toContain("pre-if");
+      expect(labels).toContain("post-if");
+
+      // Should NOT show composite or docker keys
+      expect(labels).not.toContain("steps");
+      expect(labels).not.toContain("image");
+      expect(labels).not.toContain("entrypoint");
+    });
+
+    it("completes pre-if expression value for node actions", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: node24
+  main: index.js
+  pre: setup.js
+  pre-if: |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show expression-related completions (context functions and namespaces)
+      expect(labels).toContain("always");
+      expect(labels).toContain("success");
+      expect(labels).toContain("failure");
+      expect(labels).toContain("cancelled");
+      expect(labels).toContain("runner");
+      expect(labels).toContain("github");
+      expect(labels).toContain("inputs");
+      expect(labels).toContain("hashFiles");
+    });
+
+    it("completes post-if expression value for node actions", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: node24
+  main: index.js
+  post: cleanup.js
+  post-if: |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show expression-related completions
+      expect(labels).toContain("always");
+      expect(labels).toContain("runner");
+      expect(labels).toContain("hashFiles");
+    });
+
+    it("completes pre-if expression value for docker actions", async () => {
+      const [doc, position] = createActionDocument(`name: Test
+description: Test
+runs:
+  using: docker
+  image: docker://alpine
+  pre-entrypoint: setup.sh
+  pre-if: |`);
+      const completions = await complete(doc, position);
+      const labels = completions.map(c => c.label);
+
+      // Should show expression-related completions
+      expect(labels).toContain("always");
+      expect(labels).toContain("runner");
+      expect(labels).toContain("github");
+      expect(labels).toContain("hashFiles");
     });
 
     it("filters runs keys for composite actions", async () => {
