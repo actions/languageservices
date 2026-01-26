@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {data, DescriptionDictionary, FeatureFlags} from "@actions/expressions";
-import {CompletionItem, CompletionItemKind} from "vscode-languageserver-types";
+import {CompletionItem, CompletionItemKind, MarkupContent} from "vscode-languageserver-types";
 import {complete, getExpressionInput} from "./complete.js";
 import {ContextProviderConfig} from "./context-providers/config.js";
 import {registerLogger} from "./log.js";
@@ -418,6 +418,36 @@ jobs:
         const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
         expect(result.map(x => x.label)).toEqual(["event"]);
+      });
+
+      it("includes both contexts and extension functions", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+      if: |`;
+        const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+        const labels = result.map(x => x.label);
+
+        // Context namespaces should be present
+        expect(labels).toContain("github");
+        expect(labels).toContain("runner");
+        expect(labels).toContain("env");
+        expect(labels).toContain("steps");
+
+        // Extension functions should be present (from schema context array)
+        expect(labels).toContain("hashFiles");
+        expect(labels).toContain("always");
+        expect(labels).toContain("success");
+        expect(labels).toContain("failure");
+        expect(labels).toContain("cancelled");
+
+        // Built-in functions should be present
+        expect(labels).toContain("toJson");
+        expect(labels).toContain("fromJson");
+        expect(labels).toContain("contains");
       });
     });
   });
@@ -1278,6 +1308,7 @@ jobs:
     expect(hashFiles).toBeDefined();
     expect(hashFiles!.kind).toBe(CompletionItemKind.Function);
     expect(hashFiles!.insertText).toBe("hashFiles()");
+    expect((hashFiles!.documentation as MarkupContent)?.value).toContain("Returns a single hash for the set of files");
 
     // Not a function
     const github = result.find(x => x.label === "github");

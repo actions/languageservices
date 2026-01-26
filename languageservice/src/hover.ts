@@ -71,7 +71,7 @@ export async function hover(document: TextDocument, position: Position, config?:
   // Early exit if there's nothing to provide hover for
   const hoverToken = token || keyToken;
   const isExpressionHover =
-    token && tokenDefinitionInfo && (isBasicExpression(token) || isPotentiallyExpression(token));
+    token && tokenDefinitionInfo && (isBasicExpression(token) || isPotentiallyExpression(token, isAction));
   if (!isExpressionHover && !hoverToken?.definition) {
     return null;
   }

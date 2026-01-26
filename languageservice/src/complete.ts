@@ -1,8 +1,10 @@
 import {complete as completeExpression, DescriptionDictionary, FeatureFlags} from "@actions/expressions";
 import {CompletionItem as ExpressionCompletionItem} from "@actions/expressions/completion";
+import {FunctionInfo} from "@actions/expressions/funcs/info";
 import {isBasicExpression, isSequence, isString} from "@actions/workflow-parser";
 import {getActionSchema} from "@actions/workflow-parser/actions/action-schema";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
 import {DefinitionType} from "@actions/workflow-parser/templates/schema/definition-type";
 import {OneOfDefinition} from "@actions/workflow-parser/templates/schema/one-of-definition";
 import {TemplateSchema} from "@actions/workflow-parser/templates/schema/template-schema";
@@ -19,6 +21,7 @@ import {CompletionItem, CompletionItemKind, CompletionItemTag, Range, TextEdit} 
 import {filterActionRunsCompletions, getActionScaffoldingSnippets} from "./complete-action.js";
 import {ContextProviderConfig} from "./context-providers/config.js";
 import {getActionExpressionContext, getWorkflowExpressionContext, Mode} from "./context-providers/default.js";
+import {getFunctionDescription} from "./context-providers/descriptions.js";
 import {ActionContext, getActionContext} from "./context/action-context.js";
 import {getWorkflowContext, WorkflowContext} from "./context/workflow-context.js";
 import {validatorFunctions} from "./expression-validation/functions.js";
@@ -121,18 +124,24 @@ export async function complete(
   }
 
   // Expression completions
-  if (token && (isBasicExpression(token) || isPotentiallyExpression(token))) {
+  if (token && (isBasicExpression(token) || isPotentiallyExpression(token, isAction))) {
     const allowedContext = token.definitionInfo?.allowedContext || [];
+    const {namedContexts, functions: extensionFunctions} = splitAllowedContext(allowedContext);
     const context = isAction
-      ? getActionExpressionContext(allowedContext, config?.contextProviderConfig, actionContext, Mode.Completion)
+      ? getActionExpressionContext(namedContexts, config?.contextProviderConfig, actionContext, Mode.Completion)
       : await getWorkflowExpressionContext(
-          allowedContext,
+          namedContexts,
           config?.contextProviderConfig,
           workflowContext,
           Mode.Completion
         );
 
-    return getExpressionCompletionItems(token, context, newPos, config?.featureFlags);
+    // Populate function descriptions for completion display
+    for (const func of extensionFunctions) {
+      func.description = getFunctionDescription(func.name);
+    }
+
+    return getExpressionCompletionItems(token, context, extensionFunctions, newPos, config?.featureFlags);
   }
 
   const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
@@ -521,6 +530,7 @@ export function getExistingValues(token: TemplateToken | null, parent: TemplateT
 function getExpressionCompletionItems(
   token: TemplateToken,
   context: DescriptionDictionary,
+  extensionFunctions: FunctionInfo[],
   pos: Position,
   featureFlags?: FeatureFlags
 ): CompletionItem[] {
@@ -541,8 +551,8 @@ function getExpressionCompletionItems(
   const expressionInput = (getExpressionInput(currentInput, cursorOffset) || "").trim();
 
   try {
-    return completeExpression(expressionInput, context, [], validatorFunctions, featureFlags).map(item =>
-      mapExpressionCompletionItem(item, currentInput[cursorOffset])
+    return completeExpression(expressionInput, context, extensionFunctions, validatorFunctions, featureFlags).map(
+      item => mapExpressionCompletionItem(item, currentInput[cursorOffset])
     );
   } catch (e) {
     error(`Error while completing expression: '${(e as Error)?.message || "<no details>"}'`);
