@@ -160,6 +160,21 @@ jobs:
         })
       );
     });
+
+    it("errors on unknown context in plain string if condition", async () => {
+      const input = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: foo == bar
+        run: echo hi
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result.some(d => d.message.includes("Unrecognized named-value"))).toBe(true);
+    });
   });
 
   describe("snapshot-if", () => {

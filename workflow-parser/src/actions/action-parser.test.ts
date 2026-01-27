@@ -317,4 +317,53 @@ runs:
       }
     }
   });
+
+  it("reports error for invalid context in pre-if", () => {
+    const content = `
+name: Node Action
+description: A node action
+runs:
+  using: node20
+  main: dist/index.js
+  pre: dist/setup.js
+  pre-if: foo == bar`;
+
+    const result = parseAction({name: "action.yml", content}, nullTrace);
+    expect(result.value).toBeDefined();
+    if (!result.value) return;
+
+    // Should have no errors before conversion
+    expect(result.context.errors.count).toBe(0);
+
+    // Convert the template - this should add the validation error
+    convertActionTemplate(result.context, result.value);
+
+    // Should have an error now about invalid context
+    expect(result.context.errors.count).toBeGreaterThan(0);
+    const errors = result.context.errors.getErrors();
+    expect(errors.some(e => e.rawMessage.includes("foo"))).toBe(true);
+  });
+
+  it("accepts valid context in pre-if", () => {
+    const content = `
+name: Node Action
+description: A node action
+runs:
+  using: node20
+  main: dist/index.js
+  pre: dist/setup.js
+  pre-if: runner.os == 'Linux'`;
+
+    const result = parseAction({name: "action.yml", content}, nullTrace);
+    expect(result.value).toBeDefined();
+    if (!result.value) return;
+
+    const template = convertActionTemplate(result.context, result.value);
+
+    // Should have no errors
+    expect(result.context.errors.count).toBe(0);
+    if (template.runs.using === "node20") {
+      expect(template.runs.preIf).toBe("runner.os == 'Linux'");
+    }
+  });
 });

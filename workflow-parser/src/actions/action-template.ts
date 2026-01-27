@@ -9,7 +9,7 @@ import {TemplateContext} from "../templates/template-context.js";
 import {isBoolean, isMapping, isScalar, isSequence, isString} from "../templates/tokens/type-guards.js";
 import {ErrorPolicy} from "../model/convert.js";
 import {Step} from "../model/workflow-template.js";
-import {convertToIfCondition} from "../model/converter/if-condition.js";
+import {convertToIfCondition, validateRunsIfCondition} from "../model/converter/if-condition.js";
 
 /**
  * Represents a parsed and converted action.yml file
@@ -310,7 +310,7 @@ function convertRuns(context: TemplateContext, token: TemplateToken): ActionRuns
 
       case "pre-if":
         if (isString(item.value)) {
-          preIf = item.value.value;
+          preIf = validateRunsIfCondition(context, item.value, item.value.value);
         }
         break;
 
@@ -322,7 +322,7 @@ function convertRuns(context: TemplateContext, token: TemplateToken): ActionRuns
 
       case "post-if":
         if (isString(item.value)) {
-          postIf = item.value.value;
+          postIf = validateRunsIfCondition(context, item.value, item.value.value);
         }
         break;
 
