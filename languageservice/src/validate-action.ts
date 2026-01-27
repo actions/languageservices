@@ -4,9 +4,10 @@
 
 import {Lexer, Parser} from "@actions/expressions";
 import {Expr} from "@actions/expressions/ast";
-import {isBasicExpression, isMapping, isString} from "@actions/workflow-parser";
+import {isMapping, isString} from "@actions/workflow-parser";
 import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {ActionTemplate} from "@actions/workflow-parser/actions/action-template";
 import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
 import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
@@ -75,7 +76,15 @@ export async function validateAction(textDocument: TextDocument, config?: Valida
       return [];
     }
 
-    // Get schema errors
+    // Convert the action template (this may add validation errors for pre-if/post-if)
+    let template: ActionTemplate | undefined;
+    if (result.value) {
+      template = getOrConvertActionTemplate(result.context, result.value, textDocument.uri, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+    }
+
+    // Get schema and conversion errors (must be after conversion to include conversion errors)
     const schemaErrors = result.context.errors.getErrors();
 
     // Run custom runs key validation, which also filters redundant schema errors in place
@@ -103,13 +112,9 @@ export async function validateAction(textDocument: TextDocument, config?: Valida
     }
 
     // Validate composite action steps if we have a parsed result
-    if (result.value) {
-      const template = getOrConvertActionTemplate(result.context, result.value, textDocument.uri, {
-        errorPolicy: ErrorPolicy.TryConversion
-      });
-
+    if (result.value && template) {
       // Only composite actions have steps to validate
-      if (template?.runs?.using === "composite") {
+      if (template.runs?.using === "composite") {
         const steps = template.runs.steps ?? [];
 
         // Find the steps sequence token from the raw parsed result
@@ -125,22 +130,16 @@ export async function validateAction(textDocument: TextDocument, config?: Valida
               await validateActionReference(diagnostics, stepToken, step, config);
             }
 
-            // Validate step tokens (uses format, if conditions)
+            // Validate step uses format
             if (isMapping(stepToken)) {
-              validateCompositeStepTokens(diagnostics, stepToken);
+              validateStepUsesField(diagnostics, stepToken);
             }
           }
         }
       }
 
-      // Validate pre-if and post-if for node and docker actions
-      const runsMapping = findRunsMapping(result.value);
-      if (runsMapping) {
-        validateRunsIfConditions(diagnostics, runsMapping);
-      }
-
-      // Validate format() calls in all expressions throughout the action
-      validateAllExpressions(diagnostics, result.value);
+      // Single traversal for all expression validation (like workflow's additionalValidations)
+      validateAllTokens(diagnostics, result.value);
     }
   } catch (e) {
     error(`Unhandled error while validating action file: ${(e as Error).message}`);
@@ -150,93 +149,124 @@ export async function validateAction(textDocument: TextDocument, config?: Valida
 }
 
 /**
- * Validates tokens within a composite action step.
- * Checks `uses` format and `if` literal text detection.
+ * Validates the `uses` field format in a composite action step.
  */
-function validateCompositeStepTokens(diagnostics: Diagnostic[], stepToken: MappingToken): void {
+function validateStepUsesField(diagnostics: Diagnostic[], stepToken: MappingToken): void {
   for (let i = 0; i < stepToken.count; i++) {
     const {key, value} = stepToken.get(i);
     const keyStr = isString(key) ? key.value.toLowerCase() : "";
 
-    // Validate `uses` field format
     if (keyStr === "uses" && isString(value)) {
       validateStepUsesFormat(diagnostics, value);
-    }
-
-    // Validate `if` field for literal text outside expressions
-    if (keyStr === "if" && value.range) {
-      if (isString(value)) {
-        // Plain string if condition (no ${{ }} markers)
-        validateIfCondition(diagnostics, value);
-      } else if (isBasicExpression(value)) {
-        // Expression token - check for format() with literal text
-        // This happens when the parser converts "push == ${{ expr }}" to format('push == {0}', expr)
-        validateIfConditionExpression(diagnostics, value);
-      }
     }
   }
 }
 
 /**
- * Validates an `if` condition (StringToken).
- * Checks for literal text outside expressions and validates format() calls.
+ * Single traversal validation for all tokens in the action template.
+ * This follows the same pattern as workflow validation's additionalValidations:
+ * - For BasicExpressionToken: validate format() calls
+ * - For StringToken on if conditions: validate literal text detection and format() calls
+ * - For pre-if/post-if with explicit ${{ }}: report error (not supported by runner)
+ *
+ * Context validation (unknown named values) is handled by workflow-parser during conversion.
  */
-function validateIfCondition(diagnostics: Diagnostic[], token: StringToken): void {
+function validateAllTokens(diagnostics: Diagnostic[], root: TemplateToken): void {
+  for (const [parent, token] of TemplateToken.traverse(root)) {
+    const definitionKey = token.definition?.key;
+
+    // Validate all BasicExpressionToken instances for format() calls
+    if (token instanceof BasicExpressionToken && token.range) {
+      // Check for literal text in if conditions (format with literal text)
+      if (definitionKey === "step-if") {
+        validateIfLiteralText(diagnostics, token);
+      }
+
+      // Validate format() calls for all expressions
+      for (const expression of token.originalExpressions || [token]) {
+        validateExpressionFormatCalls(diagnostics, expression);
+      }
+
+      // Check for explicit ${{ }} in pre-if/post-if (not supported by runner)
+      if (definitionKey === "runs-if" && parent instanceof MappingToken) {
+        // Resolve the key name (pre-if or post-if) from parent mapping
+        let keyName: string | undefined;
+        for (let i = 0; i < parent.count; i++) {
+          const {key, value} = parent.get(i);
+          if (value === token) {
+            keyName = key.toString().toLowerCase();
+            break;
+          }
+        }
+
+        if (keyName) {
+          diagnostics.push({
+            message: `Explicit expression syntax \${{ }} is not supported for '${keyName}'. Remove the \${{ }} markers and use the expression directly.`,
+            range: mapRange(token.range),
+            severity: DiagnosticSeverity.Error,
+            code: "explicit-expression-not-allowed"
+          });
+        }
+      }
+    }
+
+    // Handle implicit if conditions (StringToken without ${{ }})
+    // These allow expression syntax without the markers
+    if (isString(token) && token.range) {
+      if (definitionKey === "step-if" || definitionKey === "runs-if") {
+        validateImplicitIfCondition(diagnostics, token);
+      }
+    }
+  }
+}
+
+const LITERAL_TEXT_IN_CONDITION_MESSAGE =
+  "Conditional expression contains literal text outside replacement tokens. This will cause the expression to always evaluate to truthy. Did you mean to put the entire expression inside ${{ }}?";
+const LITERAL_TEXT_IN_CONDITION_CODE = "expression-literal-text-in-condition";
+
+/**
+ * Validates an implicit if condition (StringToken without ${{ }}).
+ * Checks for literal text detection and validates format() calls.
+ */
+function validateImplicitIfCondition(diagnostics: Diagnostic[], token: StringToken): void {
   const condition = token.value.trim();
   if (!condition) {
     return;
   }
 
-  // Get allowed context for step-if from the token's definition
   const allowedContext = token.definitionInfo?.allowedContext || [];
   const {namedContexts, functions} = splitAllowedContext(allowedContext);
 
   // Ensure the condition has a status function, wrapping if needed
   const finalCondition = ensureStatusFunction(condition, token.definitionInfo);
 
-  // Create a BasicExpressionToken for validation
-  const expressionToken = new BasicExpressionToken(
-    token.file,
-    token.range,
-    finalCondition,
-    token.definitionInfo,
-    undefined,
-    token.source,
-    undefined,
-    token.blockScalarHeader
-  );
-
-  // Check for literal text in the expression (format with literal text)
   try {
-    const l = new Lexer(expressionToken.expression);
+    const l = new Lexer(finalCondition);
     const lr = l.lex();
     const p = new Parser(lr.tokens, namedContexts, functions);
     const expr = p.parse();
 
+    // Check for literal text in the expression (format with literal text)
     if (hasFormatWithLiteralText(expr)) {
       diagnostics.push({
-        message:
-          "Conditional expression contains literal text outside replacement tokens. This will cause the expression to always evaluate to truthy. Did you mean to put the entire expression inside ${{ }}?",
+        message: LITERAL_TEXT_IN_CONDITION_MESSAGE,
         range: mapRange(token.range),
         severity: DiagnosticSeverity.Error,
-        code: "expression-literal-text-in-condition"
+        code: LITERAL_TEXT_IN_CONDITION_CODE
       });
     }
 
     // Validate format() function calls
     validateFormatCallsAndAddDiagnostics(diagnostics, expr, token.range);
   } catch {
-    // Ignore parse errors here - they'll be caught by schema validation
+    // Ignore parse errors - they'll be caught by schema validation or workflow-parser
   }
 }
 
 /**
- * Validates an `if` condition (BasicExpressionToken).
- * Checks for literal text outside expressions.
- * Called when the parser has converted "push == ${{ expr }}" to format('push == {0}', expr).
- * Note: format() validation is handled by validateAllExpressions for BasicExpressionTokens.
+ * Validates a BasicExpressionToken for literal text in if conditions.
  */
-function validateIfConditionExpression(diagnostics: Diagnostic[], token: BasicExpressionToken): void {
+function validateIfLiteralText(diagnostics: Diagnostic[], token: BasicExpressionToken): void {
   const allowedContext = token.definitionInfo?.allowedContext || [];
   const {namedContexts, functions} = splitAllowedContext(allowedContext);
 
@@ -248,16 +278,33 @@ function validateIfConditionExpression(diagnostics: Diagnostic[], token: BasicEx
 
     if (hasFormatWithLiteralText(expr)) {
       diagnostics.push({
-        message:
-          "Conditional expression contains literal text outside replacement tokens. This will cause the expression to always evaluate to truthy. Did you mean to put the entire expression inside ${{ }}?",
+        message: LITERAL_TEXT_IN_CONDITION_MESSAGE,
         range: mapRange(token.range),
         severity: DiagnosticSeverity.Error,
-        code: "expression-literal-text-in-condition"
+        code: LITERAL_TEXT_IN_CONDITION_CODE
       });
     }
-    // Note: format() validation is done by validateAllExpressions() for all BasicExpressionTokens
   } catch {
-    // Ignore parse errors here - they'll be caught by schema validation
+    // Ignore parse errors - they'll be caught by schema validation or workflow-parser
+  }
+}
+
+/**
+ * Validates format() function calls in an expression token.
+ */
+function validateExpressionFormatCalls(diagnostics: Diagnostic[], token: BasicExpressionToken): void {
+  const allowedContext = token.definitionInfo?.allowedContext || [];
+  const {namedContexts, functions} = splitAllowedContext(allowedContext);
+
+  try {
+    const l = new Lexer(token.expression);
+    const lr = l.lex();
+    const p = new Parser(lr.tokens, namedContexts, functions);
+    const expr = p.parse();
+
+    validateFormatCallsAndAddDiagnostics(diagnostics, expr, token.range);
+  } catch {
+    // Ignore parse errors - they'll be caught by schema validation
   }
 }
 
@@ -302,77 +349,6 @@ function findStepsSequence(root: TemplateToken): SequenceToken | undefined {
     }
   }
   return undefined;
-}
-
-/**
- * Find the runs mapping token from the raw action template.
- */
-function findRunsMapping(root: TemplateToken): MappingToken | undefined {
-  if (root instanceof MappingToken) {
-    for (let i = 0; i < root.count; i++) {
-      const {key, value} = root.get(i);
-      if (key.toString().toLowerCase() === "runs" && value instanceof MappingToken) {
-        return value;
-      }
-    }
-  }
-  return undefined;
-}
-
-/**
- * Validates pre-if and post-if conditions at the runs level (for node and docker actions).
- * Checks for literal text outside expressions that would always be truthy.
- */
-function validateRunsIfConditions(diagnostics: Diagnostic[], runsMapping: MappingToken): void {
-  for (let i = 0; i < runsMapping.count; i++) {
-    const {key, value} = runsMapping.get(i);
-    const keyStr = key.toString().toLowerCase();
-
-    // Validate pre-if and post-if fields for literal text
-    if ((keyStr === "pre-if" || keyStr === "post-if") && value.range) {
-      if (isString(value)) {
-        // Plain string condition (no ${{ }} markers)
-        validateIfCondition(diagnostics, value);
-      } else if (isBasicExpression(value)) {
-        // The runner doesn't support explicit ${{ }} syntax for pre-if/post-if
-        // Only implicit expressions are allowed
-        diagnostics.push({
-          message: `Explicit expression syntax \${{ }} is not supported for '${keyStr}'. Remove the \${{ }} markers and use the expression directly.`,
-          range: mapRange(value.range),
-          severity: DiagnosticSeverity.Error,
-          code: "explicit-expression-not-allowed"
-        });
-      }
-    }
-  }
-}
-
-/**
- * Validates format() function calls in all expressions throughout the action template.
- * This catches format string errors in any expression, not just if conditions.
- */
-function validateAllExpressions(diagnostics: Diagnostic[], root: TemplateToken): void {
-  for (const [, token] of TemplateToken.traverse(root)) {
-    if (token instanceof BasicExpressionToken) {
-      // Process original expressions if available (for combined expressions like "${{ a }} text ${{ b }}")
-      // This ensures error ranges point to the correct original expression location
-      for (const expression of token.originalExpressions || [token]) {
-        const allowedContext = expression.definitionInfo?.allowedContext || [];
-        const {namedContexts, functions} = splitAllowedContext(allowedContext);
-
-        try {
-          const l = new Lexer(expression.expression);
-          const lr = l.lex();
-          const p = new Parser(lr.tokens, namedContexts, functions);
-          const expr = p.parse();
-
-          validateFormatCallsAndAddDiagnostics(diagnostics, expr, expression.range);
-        } catch {
-          // Ignore parse errors - they'll be caught by schema validation
-        }
-      }
-    }
-  }
 }
 
 /**

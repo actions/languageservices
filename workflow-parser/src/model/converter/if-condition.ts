@@ -136,3 +136,32 @@ function walkTreeToFindStatusFunctionCalls(tree: Expr | undefined): boolean {
 
   return false;
 }
+
+/**
+ * Validates a pre-if or post-if condition string.
+ * Unlike step if conditions, pre-if and post-if are evaluated as-is by the runner
+ * (they default to always() only when the field is missing entirely).
+ * This function validates the expression and reports errors through the context.
+ *
+ * @param context The template context for error reporting
+ * @param token The token containing the condition
+ * @param condition The condition string to validate
+ * @returns The validated condition string, or undefined on error
+ */
+export function validateRunsIfCondition(
+  context: TemplateContext,
+  token: TemplateToken,
+  condition: string
+): string | undefined {
+  const allowedContext = token.definitionInfo?.allowedContext || [];
+
+  // Validate the expression directly - no wrapping needed for pre-if/post-if
+  try {
+    ExpressionToken.validateExpression(condition, allowedContext);
+  } catch (err) {
+    context.error(token, err as Error);
+    return undefined;
+  }
+
+  return condition;
+}

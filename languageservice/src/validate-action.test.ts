@@ -1011,4 +1011,255 @@ runs:
       expect(diagnostics.some(d => d.code === "format-arg-count-mismatch")).toBe(true);
     });
   });
+
+  describe("if condition context validation", () => {
+    it("warns on unknown context in composite step if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown context in if
+runs:
+  using: composite
+  steps:
+    - if: foo == bar
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized named-value"))).toBe(true);
+    });
+
+    it("warns on unknown context in pre-if for node action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown context in pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: foo == bar
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized named-value"))).toBe(true);
+    });
+
+    it("warns on unknown context in post-if for node action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown context in post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: foo == bar
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized named-value"))).toBe(true);
+    });
+
+    it("warns on unknown context in pre-if for docker action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown context in pre-if
+runs:
+  using: docker
+  image: Dockerfile
+  pre-entrypoint: /setup.sh
+  pre-if: foo == bar
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized named-value"))).toBe(true);
+    });
+
+    it("warns on unknown context in post-if for docker action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown context in post-if
+runs:
+  using: docker
+  image: Dockerfile
+  post-entrypoint: /cleanup.sh
+  post-if: foo == bar
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized named-value"))).toBe(true);
+    });
+
+    it("allows valid contexts in composite step if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid context in if
+runs:
+  using: composite
+  steps:
+    - if: github.event_name == 'push'
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized named-value"))).toBe(false);
+    });
+
+    it("allows valid contexts in pre-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid context in pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: runner.os == 'Linux'
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized named-value"))).toBe(false);
+    });
+
+    it("allows valid contexts in post-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Valid context in post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: runner.os == 'Linux'
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized named-value"))).toBe(false);
+    });
+
+    it("allows hashFiles function in composite step if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: hashFiles in if
+runs:
+  using: composite
+  steps:
+    - if: hashFiles('**/package-lock.json') != ''
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized"))).toBe(false);
+    });
+
+    it("allows success, failure, always, cancelled functions in composite step if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Status functions in if
+runs:
+  using: composite
+  steps:
+    - if: success() && !cancelled()
+      run: echo success
+      shell: bash
+    - if: failure()
+      run: echo failure
+      shell: bash
+    - if: always()
+      run: echo always
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized"))).toBe(false);
+    });
+
+    it("allows hashFiles function in pre-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: hashFiles in pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: hashFiles('**/package-lock.json') != ''
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized"))).toBe(false);
+    });
+
+    it("allows status functions in post-if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Status functions in post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: always() || failure()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized"))).toBe(false);
+    });
+
+    it("errors on unknown function in composite step if", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown function in if
+runs:
+  using: composite
+  steps:
+    - if: unknownFunc()
+      run: echo hi
+      shell: bash
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized function"))).toBe(true);
+    });
+
+    it("errors on unknown function in pre-if for node action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown function in pre-if
+runs:
+  using: node20
+  main: index.js
+  pre: setup.js
+  pre-if: unknownFunc()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized function"))).toBe(true);
+    });
+
+    it("errors on unknown function in post-if for node action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown function in post-if
+runs:
+  using: node20
+  main: index.js
+  post: cleanup.js
+  post-if: unknownFunc()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized function"))).toBe(true);
+    });
+
+    it("errors on unknown function in pre-if for docker action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown function in pre-if
+runs:
+  using: docker
+  image: Dockerfile
+  pre-entrypoint: /setup.sh
+  pre-if: unknownFunc()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized function"))).toBe(true);
+    });
+
+    it("errors on unknown function in post-if for docker action", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Unknown function in post-if
+runs:
+  using: docker
+  image: Dockerfile
+  post-entrypoint: /cleanup.sh
+  post-if: unknownFunc()
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics.some(d => d.message.includes("Unrecognized function"))).toBe(true);
+    });
+  });
 });
