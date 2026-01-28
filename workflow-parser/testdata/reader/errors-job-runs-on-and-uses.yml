@@ -5,6 +5,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     uses: ./.github/workflows/foo.yml
+    steps:
+      - run: echo hello
 ---
 {
   "errors": [
