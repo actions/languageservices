@@ -141,7 +141,7 @@ export async function complete(
       func.description = getFunctionDescription(func.name);
     }
 
-    return getExpressionCompletionItems(token, context, extensionFunctions, newPos, config?.featureFlags);
+    return getExpressionCompletionItems(token, context, extensionFunctions, newPos);
   }
 
   const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
@@ -531,8 +531,7 @@ function getExpressionCompletionItems(
   token: TemplateToken,
   context: DescriptionDictionary,
   extensionFunctions: FunctionInfo[],
-  pos: Position,
-  _featureFlags?: FeatureFlags
+  pos: Position
 ): CompletionItem[] {
   if (!token.range) {
     return [];
