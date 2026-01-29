@@ -51,11 +51,7 @@ describe("FeatureFlags", () => {
 
     it("returns all features when all is enabled", () => {
       const flags = new FeatureFlags({all: true});
-      expect(flags.getEnabledFeatures()).toEqual([
-        "missingInputsQuickfix",
-        "blockScalarChompingWarning",
-        "allowCaseFunction"
-      ]);
+      expect(flags.getEnabledFeatures()).toEqual(["missingInputsQuickfix", "blockScalarChompingWarning"]);
     });
   });
 });
