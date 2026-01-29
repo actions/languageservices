@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {data, DescriptionDictionary, FeatureFlags} from "@actions/expressions";
+import {data, DescriptionDictionary} from "@actions/expressions";
 import {CompletionItem, CompletionItemKind, MarkupContent} from "vscode-languageserver-types";
 import {complete, getExpressionInput} from "./complete.js";
 import {ContextProviderConfig} from "./context-providers/config.js";
@@ -69,8 +69,7 @@ describe("expressions", () => {
     it("single region", async () => {
       const input = "run-name: ${{ | }}";
       const result = await complete(...getPositionFromCursor(input), {
-        contextProviderConfig,
-        featureFlags: new FeatureFlags({allowCaseFunction: true})
+        contextProviderConfig
       });
 
       expect(result.map(x => x.label)).toEqual([
@@ -113,8 +112,7 @@ describe("expressions", () => {
     it("single region with existing input", async () => {
       const input = "run-name: ${{ g| }}";
       const result = await complete(...getPositionFromCursor(input), {
-        contextProviderConfig,
-        featureFlags: new FeatureFlags({allowCaseFunction: true})
+        contextProviderConfig
       });
 
       expect(result.map(x => x.label)).toEqual([
@@ -135,8 +133,7 @@ describe("expressions", () => {
     it("single region with existing condition", async () => {
       const input = "run-name: ${{ g| == 'test' }}";
       const result = await complete(...getPositionFromCursor(input), {
-        contextProviderConfig,
-        featureFlags: new FeatureFlags({allowCaseFunction: true})
+        contextProviderConfig
       });
 
       expect(result.map(x => x.label)).toEqual([
@@ -157,8 +154,7 @@ describe("expressions", () => {
     it("multiple regions with partial function", async () => {
       const input = "run-name: Run a ${{ inputs.test }} one-line script ${{ from|('test') == inputs.name }}";
       const result = await complete(...getPositionFromCursor(input), {
-        contextProviderConfig,
-        featureFlags: new FeatureFlags({allowCaseFunction: true})
+        contextProviderConfig
       });
 
       expect(result.map(x => x.label)).toEqual([
@@ -179,8 +175,7 @@ describe("expressions", () => {
     it("multiple regions - first region", async () => {
       const input = "run-name: test-${{ git| == 1 }}-${{ github.event }}";
       const result = await complete(...getPositionFromCursor(input), {
-        contextProviderConfig,
-        featureFlags: new FeatureFlags({allowCaseFunction: true})
+        contextProviderConfig
       });
 
       expect(result.map(x => x.label)).toEqual([
@@ -201,8 +196,7 @@ describe("expressions", () => {
     it("multiple regions", async () => {
       const input = "run-name: test-${{ github }}-${{ | }}";
       const result = await complete(...getPositionFromCursor(input), {
-        contextProviderConfig,
-        featureFlags: new FeatureFlags({allowCaseFunction: true})
+        contextProviderConfig
       });
 
       expect(result.map(x => x.label)).toEqual([
@@ -1181,8 +1175,7 @@ jobs:
 `;
 
       const result = await complete(...getPositionFromCursor(input), {
-        contextProviderConfig,
-        featureFlags: new FeatureFlags({allowCaseFunction: true})
+        contextProviderConfig
       });
       expect(result.map(x => x.label)).toEqual([
         "env",
