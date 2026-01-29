@@ -141,7 +141,7 @@ export async function complete(
       func.description = getFunctionDescription(func.name);
     }
 
-    return getExpressionCompletionItems(token, context, extensionFunctions, newPos);
+    return getExpressionCompletionItems(token, context, extensionFunctions, newPos, config?.featureFlags);
   }
 
   const indentation = guessIndentation(newDoc, 2, true); // Use 2 spaces as default and most common for YAML
@@ -531,7 +531,8 @@ function getExpressionCompletionItems(
   token: TemplateToken,
   context: DescriptionDictionary,
   extensionFunctions: FunctionInfo[],
-  pos: Position
+  pos: Position,
+  featureFlags?: FeatureFlags
 ): CompletionItem[] {
   if (!token.range) {
     return [];
@@ -550,8 +551,8 @@ function getExpressionCompletionItems(
   const expressionInput = (getExpressionInput(currentInput, cursorOffset) || "").trim();
 
   try {
-    return completeExpression(expressionInput, context, extensionFunctions, validatorFunctions).map(item =>
-      mapExpressionCompletionItem(item, currentInput[cursorOffset])
+    return completeExpression(expressionInput, context, extensionFunctions, validatorFunctions, featureFlags).map(
+      item => mapExpressionCompletionItem(item, currentInput[cursorOffset])
     );
   } catch (e) {
     error(`Error while completing expression: '${(e as Error)?.message || "<no details>"}'`);
