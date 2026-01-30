@@ -195,7 +195,7 @@ jobs:
     const result = await hover(...getPositionFromCursor(input), testHoverConfig("uses", "step-uses", undefined));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
-      "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image."
+      "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, a [private repository with access enabled](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#allowing-access-to-components-in-a-private-repository), or in a published Docker container image."
     );
   });
 });
