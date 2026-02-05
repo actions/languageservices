@@ -50,7 +50,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
         break;
 
       case "container":
-        convertToJobContainer(context, item.value);
+        handleTemplateTokenErrors(item.value, context, undefined, () => convertToJobContainer(context, item.value));
         container = item.value;
         break;
 
@@ -103,7 +103,7 @@ export function convertJob(context: TemplateContext, jobKey: StringToken, token:
         break;
 
       case "services":
-        convertToJobServices(context, item.value);
+        handleTemplateTokenErrors(item.value, context, undefined, () => convertToJobServices(context, item.value));
         services = item.value;
         break;
 
