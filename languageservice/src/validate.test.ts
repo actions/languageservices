@@ -11,7 +11,9 @@ beforeEach(() => {
 
 describe("validation", () => {
   it("valid workflow", async () => {
-    const result = await validate(createDocument("wf.yaml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest"));
+    const result = await validate(
+      createDocument("wf.yaml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n    - run: echo")
+    );
 
     expect(result.length).toBe(0);
   });
@@ -144,7 +146,9 @@ jobs:
 jobs:
   build:
     runs-on:
-    - ubuntu-latest`
+    - ubuntu-latest
+    steps:
+    - run: echo hello`
       ),
       {valueProviderConfig: defaultValueProviders}
     );
@@ -174,7 +178,9 @@ jobs:
     - cron: '0 0 * *'
 jobs:
   build:
-    runs-on: ubuntu-latest`
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo hello`
       ),
       {valueProviderConfig: defaultValueProviders}
     );
