@@ -91,3 +91,4 @@ yaml-schema-sequence.yml
 yaml-schema-str-flow-styles.yml
 yaml-schema-string.yml
 yaml-schema-timestamp.yml
+job-container-invalid.yml
