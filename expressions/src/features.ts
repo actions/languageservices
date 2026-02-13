@@ -28,6 +28,13 @@ export interface ExperimentalFeatures {
    * @default false
    */
   blockScalarChompingWarning?: boolean;
+
+  /**
+   * Enable improved container image validation that handles
+   * expressions gracefully and validates empty/docker:// images.
+   * @default false
+   */
+  containerImageValidation?: boolean;
 }
 
 /**
@@ -39,7 +46,11 @@ export type ExperimentalFeatureKey = Exclude<keyof ExperimentalFeatures, "all">;
  * All known experimental feature keys.
  * This list must be kept in sync with the ExperimentalFeatures interface.
  */
-const allFeatureKeys: ExperimentalFeatureKey[] = ["missingInputsQuickfix", "blockScalarChompingWarning"];
+const allFeatureKeys: ExperimentalFeatureKey[] = [
+  "missingInputsQuickfix",
+  "blockScalarChompingWarning",
+  "containerImageValidation"
+];
 
 export class FeatureFlags {
   private readonly features: ExperimentalFeatures;

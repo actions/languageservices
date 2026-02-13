@@ -3,8 +3,12 @@ import {nullTrace} from "../../test-utils/null-trace.js";
 import {parseWorkflow} from "../../workflows/workflow-parser.js";
 import {convertWorkflowTemplate, ErrorPolicy} from "../convert.js";
 
+// Minimal FeatureFlags-compatible object for tests
+const featureFlags = {isEnabled: (f: string) => f === "containerImageValidation"};
+
 async function getErrors(content: string): Promise<string[]> {
   const result = parseWorkflow({name: "wf.yaml", content}, nullTrace);
+  result.context.state["featureFlags"] = featureFlags;
   const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
     errorPolicy: ErrorPolicy.TryConversion
   });

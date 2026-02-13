@@ -1,7 +1,12 @@
+import {FeatureFlags} from "@actions/expressions";
 import {TemplateContext} from "../../templates/template-context.js";
 import {MappingToken, SequenceToken, StringToken, TemplateToken} from "../../templates/tokens/index.js";
 import {isString} from "../../templates/tokens/type-guards.js";
 import {Container, Credential} from "../workflow-template.js";
+
+function getFeatureFlags(context: TemplateContext): FeatureFlags | undefined {
+  return context.state["featureFlags"] as FeatureFlags | undefined;
+}
 
 const DOCKER_URI_PREFIX = "docker://";
 
@@ -15,6 +20,11 @@ export function convertToJobContainer(
   container: TemplateToken,
   isServiceContainer = false
 ): Container | undefined {
+  // Feature flag guard — use legacy implementation when flag is off
+  if (!getFeatureFlags(context)?.isEnabled("containerImageValidation")) {
+    return convertToJobContainerLegacy(context, container);
+  }
+
   if (container.isExpression) {
     return;
   }
@@ -114,6 +124,11 @@ export function convertToJobContainer(
 }
 
 export function convertToJobServices(context: TemplateContext, services: TemplateToken): Container[] | undefined {
+  // Feature flag guard — use legacy implementation when flag is off
+  if (!getFeatureFlags(context)?.isEnabled("containerImageValidation")) {
+    return convertToJobServicesLegacy(context, services);
+  }
+
   if (services.isExpression) {
     return;
   }
@@ -161,6 +176,111 @@ function convertCredentials(context: TemplateContext, value: TemplateToken): Cre
         break;
       case "password":
         password = item.value.assertString("credentials password");
+        break;
+      default:
+        context.error(key, `credentials key ${key.value}`);
+    }
+  }
+
+  return {username, password};
+}
+
+// ===== Legacy implementations (remove when containerImageValidation graduates) =====
+
+function convertToJobContainerLegacy(context: TemplateContext, container: TemplateToken): Container | undefined {
+  let image: StringToken | undefined;
+  let env: MappingToken | undefined;
+  let ports: SequenceToken | undefined;
+  let volumes: SequenceToken | undefined;
+  let options: StringToken | undefined;
+
+  for (const [, token] of TemplateToken.traverse(container)) {
+    if (token.isExpression) {
+      return;
+    }
+  }
+
+  if (isString(container)) {
+    image = container.assertString("container item");
+    return {image: image};
+  }
+
+  const mapping = container.assertMapping("container item");
+  if (mapping)
+    for (const item of mapping) {
+      const key = item.key.assertString("container item key");
+      const value = item.value;
+
+      switch (key.value) {
+        case "image":
+          image = value.assertString("container image");
+          break;
+        case "credentials":
+          convertToJobCredentialsLegacy(context, value);
+          break;
+        case "env":
+          env = value.assertMapping("container env");
+          for (const envItem of env) {
+            envItem.key.assertString("container env value");
+          }
+          break;
+        case "ports":
+          ports = value.assertSequence("container ports");
+          for (const port of ports) {
+            port.assertString("container port");
+          }
+          break;
+        case "volumes":
+          volumes = value.assertSequence("container volumes");
+          for (const volume of volumes) {
+            volume.assertString("container volume");
+          }
+          break;
+        case "options":
+          options = value.assertString("container options");
+          break;
+        default:
+          context.error(key, `Unexpected container item key: ${key.value}`);
+      }
+    }
+
+  if (!image) {
+    context.error(container, "Container image cannot be empty");
+  } else {
+    return {image, env, ports, volumes, options};
+  }
+}
+
+function convertToJobServicesLegacy(context: TemplateContext, services: TemplateToken): Container[] | undefined {
+  const serviceList: Container[] = [];
+
+  const mapping = services.assertMapping("services");
+  for (const service of mapping) {
+    service.key.assertString("service key");
+    const container = convertToJobContainerLegacy(context, service.value);
+    if (container) {
+      serviceList.push(container);
+    }
+  }
+  return serviceList;
+}
+
+function convertToJobCredentialsLegacy(context: TemplateContext, value: TemplateToken): Credential | undefined {
+  const mapping = value.assertMapping("credentials");
+
+  let username: StringToken | undefined;
+  let password: StringToken | undefined;
+
+  for (const item of mapping) {
+    const key = item.key.assertString("credentials item");
+    const value = item.value;
+
+    switch (key.value) {
+      case "username":
+        username = value.assertString("credentials username");
+        break;
+      case "password":
+        password = value.assertString("credentials password");
         break;
       default:
         context.error(key, `credentials key ${key.value}`);
