@@ -19,8 +19,8 @@ describe("completion", () => {
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    // 12 runner labels + 2 escape hatches (switch to list, switch to full syntax)
-    expect(result.length).toEqual(14);
+    // 28 runner labels + 2 escape hatches (switch to list, switch to full syntax)
+    expect(result.length).toEqual(30);
     const labels = result.map(x => x.label);
     expect(labels).toContain("macos-latest");
     expect(labels).toContain("(switch to list)");
@@ -59,7 +59,7 @@ jobs:
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(11);
+    expect(result.length).toEqual(27);
 
     const labels = result.map(x => x.label);
     expect(labels).toContain("macos-latest");
