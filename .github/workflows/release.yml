@@ -70,7 +70,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: "npm"
           registry-url: 'https://registry.npmjs.org'
           scope: '@actions'
@@ -102,3 +102,5 @@ jobs:
       - name: Publish packages
         run: |
           lerna publish ${{ env.PKG_VERSION }} --yes --no-git-reset --no-git-tag-version
+        env:
+          NPM_CONFIG_PROVENANCE: 'true'
