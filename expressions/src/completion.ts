@@ -35,7 +35,6 @@ export function complete(
   context: Dictionary,
   extensionFunctions: FunctionInfo[],
   functions?: Map<string, FunctionDefinition>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   featureFlags?: FeatureFlags
 ): CompletionItem[] {
   // Lex
@@ -67,7 +66,7 @@ export function complete(
     const result = contextKeys(context);
 
     // Merge with functions
-    result.push(...functionItems(extensionFunctions));
+    result.push(...functionItems(extensionFunctions, featureFlags));
 
     return result;
   }
@@ -92,10 +91,15 @@ export function complete(
   return contextKeys(result);
 }
 
-function functionItems(extensionFunctions: FunctionInfo[]): CompletionItem[] {
+function functionItems(extensionFunctions: FunctionInfo[], featureFlags?: FeatureFlags): CompletionItem[] {
   const result: CompletionItem[] = [];
+  const flags = featureFlags ?? new FeatureFlags();
 
   for (const fdef of [...Object.values(wellKnownFunctions), ...extensionFunctions]) {
+    // Filter out case function if feature is disabled
+    if (fdef.name === "case" && !flags.isEnabled("allowCaseFunction")) {
+      continue;
+    }
     result.push({
       label: fdef.name,
       description: fdef.description,
