@@ -1,10 +1,10 @@
-import { FeatureFlags } from "@actions/expressions/features";
-import { TemplateContext } from "../../templates/template-context.js";
-import { MappingToken } from "../../templates/tokens/mapping-token.js";
-import { SequenceToken } from "../../templates/tokens/sequence-token.js";
-import { TemplateToken } from "../../templates/tokens/template-token.js";
-import { isLiteral, isMapping, isSequence, isString } from "../../templates/tokens/type-guards.js";
-import { TokenType } from "../../templates/tokens/types.js";
+import {FeatureFlags} from "@actions/expressions/features";
+import {TemplateContext} from "../../templates/template-context.js";
+import {MappingToken} from "../../templates/tokens/mapping-token.js";
+import {SequenceToken} from "../../templates/tokens/sequence-token.js";
+import {TemplateToken} from "../../templates/tokens/template-token.js";
+import {isLiteral, isMapping, isSequence, isString} from "../../templates/tokens/type-guards.js";
+import {TokenType} from "../../templates/tokens/types.js";
 import {
   BranchFilterConfig,
   EventsConfig,
@@ -16,10 +16,10 @@ import {
   VersionsFilterConfig,
   WorkflowFilterConfig
 } from "../workflow-template.js";
-import { isValidCron } from "./cron.js";
-import { convertStringList } from "./string-list.js";
-import { convertEventWorkflowCall } from "./workflow-call.js";
-import { convertEventWorkflowDispatchInputs } from "./workflow-dispatch.js";
+import {isValidCron} from "./cron.js";
+import {convertStringList} from "./string-list.js";
+import {convertEventWorkflowCall} from "./workflow-call.js";
+import {convertEventWorkflowDispatchInputs} from "./workflow-dispatch.js";
 
 export function convertOn(context: TemplateContext, token: TemplateToken): EventsConfig {
   if (isLiteral(token)) {
@@ -163,7 +163,7 @@ function convertSchedule(
     const maxKeys = allowTimezone ? 2 : 1;
 
     if (mappingToken.count >= 1 && mappingToken.count <= maxKeys) {
-      const config: ScheduleConfig = { cron: "" };
+      const config: ScheduleConfig = {cron: ""};
       let valid = true;
 
       for (const entry of mappingToken) {
@@ -172,12 +172,15 @@ function convertSchedule(
         if (key.value === "cron") {
           const cron = entry.value.assertString(`schedule cron`);
           if (!isValidCron(cron.value)) {
-            context.error(cron, "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)");
+            context.error(
+              cron,
+              "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)"
+            );
           }
           config.cron = cron.value;
         } else if (key.value === "timezone" && allowTimezone) {
           const timezone = entry.value.assertString(`schedule timezone`);
-          
+
           config.timezone = timezone.value;
         } else {
           context.error(key, `Invalid schedule key`);

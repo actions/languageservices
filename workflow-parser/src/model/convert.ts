@@ -1,16 +1,16 @@
-import { FeatureFlags } from "@actions/expressions/features";
-import { TemplateContext } from "../templates/template-context.js";
-import { TemplateToken, TemplateTokenError } from "../templates/tokens/template-token.js";
-import { FileProvider } from "../workflows/file-provider.js";
-import { parseFileReference } from "../workflows/file-reference.js";
-import { parseWorkflow } from "../workflows/workflow-parser.js";
-import { convertConcurrency } from "./converter/concurrency.js";
-import { convertOn } from "./converter/events.js";
-import { handleTemplateTokenErrors } from "./converter/handle-errors.js";
-import { convertJobs } from "./converter/jobs.js";
-import { convertReferencedWorkflow } from "./converter/referencedWorkflow.js";
-import { isReusableWorkflowJob } from "./type-guards.js";
-import { WorkflowTemplate } from "./workflow-template.js";
+import {FeatureFlags} from "@actions/expressions/features";
+import {TemplateContext} from "../templates/template-context.js";
+import {TemplateToken, TemplateTokenError} from "../templates/tokens/template-token.js";
+import {FileProvider} from "../workflows/file-provider.js";
+import {parseFileReference} from "../workflows/file-reference.js";
+import {parseWorkflow} from "../workflows/workflow-parser.js";
+import {convertConcurrency} from "./converter/concurrency.js";
+import {convertOn} from "./converter/events.js";
+import {handleTemplateTokenErrors} from "./converter/handle-errors.js";
+import {convertJobs} from "./converter/jobs.js";
+import {convertReferencedWorkflow} from "./converter/referencedWorkflow.js";
+import {isReusableWorkflowJob} from "./type-guards.js";
+import {WorkflowTemplate} from "./workflow-template.js";
 
 export enum ErrorPolicy {
   ReturnErrorsOnly,
