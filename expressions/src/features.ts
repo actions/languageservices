@@ -34,6 +34,12 @@ export interface ExperimentalFeatures {
    * @default false
    */
   allowCaseFunction?: boolean;
+
+  /**
+   * Enable the timezone input in cron schedule mappings.
+   * @default false
+   */
+  allowCronTimezone?: boolean;
 }
 
 /**
@@ -48,7 +54,8 @@ export type ExperimentalFeatureKey = Exclude<keyof ExperimentalFeatures, "all">;
 const allFeatureKeys: ExperimentalFeatureKey[] = [
   "missingInputsQuickfix",
   "blockScalarChompingWarning",
-  "allowCaseFunction"
+  "allowCaseFunction",
+  "allowCronTimezone"
 ];
 
 export class FeatureFlags {

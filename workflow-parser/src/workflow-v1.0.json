@@ -2620,11 +2620,17 @@
     "cron-mapping": {
       "mapping": {
         "properties": {
-          "cron": "cron-pattern"
+          "cron": "cron-pattern",
+          "timezone": "timezone-string"
         }
       }
     },
     "cron-pattern": {
+      "string": {
+        "require-non-empty": true
+      }
+    },
+    "timezone-string": {
       "string": {
         "require-non-empty": true
       }

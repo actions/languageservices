@@ -1,37 +1,37 @@
-import {FeatureFlags, Lexer, Parser} from "@actions/expressions";
-import {Expr} from "@actions/expressions/ast";
-import {TemplateParseResult, WorkflowTemplate, isBasicExpression, isMapping, isString} from "@actions/workflow-parser";
-import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
-import {getCronDescription, hasCronIntervalLessThan5Minutes} from "@actions/workflow-parser/model/converter/cron";
-import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
-import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
-import {BasicExpressionToken} from "@actions/workflow-parser/templates/tokens/basic-expression-token";
-import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
-import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
-import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
-import {File} from "@actions/workflow-parser/workflows/file";
-import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
-import {TextDocument} from "vscode-languageserver-textdocument";
-import {Diagnostic, DiagnosticSeverity, URI} from "vscode-languageserver-types";
-import {ActionMetadata, ActionReference} from "./action.js";
-import {ContextProviderConfig} from "./context-providers/config.js";
-import {Mode, getWorkflowExpressionContext} from "./context-providers/default.js";
-import {WorkflowContext, getWorkflowContext} from "./context/workflow-context.js";
-import {wrapDictionary} from "./expression-validation/error-dictionary.js";
-import {ValidationEvaluator} from "./expression-validation/evaluator.js";
-import {validatorFunctions} from "./expression-validation/functions.js";
-import {error} from "./log.js";
-import {isActionDocument} from "./utils/document-type.js";
-import {findToken} from "./utils/find-token.js";
-import {mapRange} from "./utils/range.js";
-import {hasFormatWithLiteralText} from "./utils/validate-if.js";
-import {validateStepUsesFormat, warnIfShortSha} from "./utils/validate-uses.js";
-import {getOrConvertWorkflowTemplate, getOrParseWorkflow} from "./utils/workflow-cache.js";
-import {validateActionReference} from "./validate-action-reference.js";
-import {validateAction} from "./validate-action.js";
-import {validateFormatCalls} from "./validate-format-string.js";
-import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
-import {defaultValueProviders} from "./value-providers/default.js";
+import { FeatureFlags, Lexer, Parser } from "@actions/expressions";
+import { Expr } from "@actions/expressions/ast";
+import { TemplateParseResult, WorkflowTemplate, isBasicExpression, isMapping, isString } from "@actions/workflow-parser";
+import { ErrorPolicy } from "@actions/workflow-parser/model/convert";
+import { getCronDescription, hasCronIntervalLessThan5Minutes } from "@actions/workflow-parser/model/converter/cron";
+import { ensureStatusFunction } from "@actions/workflow-parser/model/converter/if-condition";
+import { splitAllowedContext } from "@actions/workflow-parser/templates/allowed-context";
+import { BasicExpressionToken } from "@actions/workflow-parser/templates/tokens/basic-expression-token";
+import { StringToken } from "@actions/workflow-parser/templates/tokens/string-token";
+import { TemplateToken } from "@actions/workflow-parser/templates/tokens/template-token";
+import { TokenRange } from "@actions/workflow-parser/templates/tokens/token-range";
+import { File } from "@actions/workflow-parser/workflows/file";
+import { FileProvider } from "@actions/workflow-parser/workflows/file-provider";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { Diagnostic, DiagnosticSeverity, URI } from "vscode-languageserver-types";
+import { ActionMetadata, ActionReference } from "./action.js";
+import { ContextProviderConfig } from "./context-providers/config.js";
+import { Mode, getWorkflowExpressionContext } from "./context-providers/default.js";
+import { WorkflowContext, getWorkflowContext } from "./context/workflow-context.js";
+import { wrapDictionary } from "./expression-validation/error-dictionary.js";
+import { ValidationEvaluator } from "./expression-validation/evaluator.js";
+import { validatorFunctions } from "./expression-validation/functions.js";
+import { error } from "./log.js";
+import { isActionDocument } from "./utils/document-type.js";
+import { findToken } from "./utils/find-token.js";
+import { mapRange } from "./utils/range.js";
+import { hasFormatWithLiteralText } from "./utils/validate-if.js";
+import { validateStepUsesFormat, warnIfShortSha } from "./utils/validate-uses.js";
+import { getOrConvertWorkflowTemplate, getOrParseWorkflow } from "./utils/workflow-cache.js";
+import { validateActionReference } from "./validate-action-reference.js";
+import { validateAction } from "./validate-action.js";
+import { validateFormatCalls } from "./validate-format-string.js";
+import { ValueProviderConfig, ValueProviderKind } from "./value-providers/config.js";
+import { defaultValueProviders } from "./value-providers/default.js";
 
 const CRON_SCHEDULE_DOCS_URL =
   "https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule";
@@ -84,7 +84,8 @@ async function validateWorkflow(textDocument: TextDocument, config?: ValidationC
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
       const template = await getOrConvertWorkflowTemplate(result.context, result.value, textDocument.uri, config, {
         fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
-        errorPolicy: ErrorPolicy.TryConversion
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: config?.featureFlags
       });
 
       // Validate expressions and value providers
@@ -521,7 +522,7 @@ function getProviderContext(
   root: TemplateToken,
   tokenRange: TokenRange
 ): WorkflowContext {
-  const {path} = findToken(
+  const { path } = findToken(
     {
       line: tokenRange.start.line - 1,
       character: tokenRange.start.column - 1
@@ -539,7 +540,7 @@ async function validateExpression(
   workflowContext: WorkflowContext,
   keyDefinitionKey?: string
 ) {
-  const {namedContexts, functions} = splitAllowedContext(allowedContext);
+  const { namedContexts, functions } = splitAllowedContext(allowedContext);
 
   // Check for literal text in if condition
   const definitionKey = keyDefinitionKey || token.definitionInfo?.definition?.key;
@@ -591,9 +592,8 @@ async function validateExpression(
         });
       } else if (formatError.type === "arg-count-mismatch") {
         diagnostics.push({
-          message: `Format string references argument {${formatError.expected - 1}} but only ${
-            formatError.provided
-          } argument(s) provided`,
+          message: `Format string references argument {${formatError.expected - 1}} but only ${formatError.provided
+            } argument(s) provided`,
           range: mapRange(expression.range),
           severity: DiagnosticSeverity.Error,
           code: "format-arg-count-mismatch"

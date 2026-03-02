@@ -164,12 +164,12 @@ export type PathFilterConfig = {
 };
 
 export type WorkflowDispatchConfig = {
-  inputs?: {[inputName: string]: InputConfig};
+  inputs?: { [inputName: string]: InputConfig };
 };
 
 export type WorkflowCallConfig = {
-  inputs?: {[inputName: string]: InputConfig & {default?: string | boolean | number | ScalarToken}};
-  secrets?: {[secretName: string]: SecretConfig};
+  inputs?: { [inputName: string]: InputConfig & { default?: string | boolean | number | ScalarToken } };
+  secrets?: { [secretName: string]: SecretConfig };
   // TODO - these are supported in C# and Go but not in TS yet
   // outputs: { [outputName: string]: OutputConfig }
 };
@@ -196,6 +196,7 @@ export type SecretConfig = {
 
 export type ScheduleConfig = {
   cron: string;
+  timezone?: string;
 };
 
 export type WorkflowFilterConfig = {
