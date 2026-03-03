@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {MarkupContent, TextEdit} from "vscode-languageserver-types";
-import {complete} from "./complete.js";
-import {registerLogger} from "./log.js";
-import {getPositionFromCursor} from "./test-utils/cursor-position.js";
-import {TestLogger} from "./test-utils/logger.js";
-import {clearCache} from "./utils/workflow-cache.js";
-import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
-import {FeatureFlags} from "@actions/expressions/features";
+import { MarkupContent, TextEdit } from "vscode-languageserver-types";
+import { complete } from "./complete.js";
+import { registerLogger } from "./log.js";
+import { getPositionFromCursor } from "./test-utils/cursor-position.js";
+import { TestLogger } from "./test-utils/logger.js";
+import { clearCache } from "./utils/workflow-cache.js";
+import { ValueProviderConfig, ValueProviderKind } from "./value-providers/config.js";
+import { FeatureFlags } from "@actions/expressions/features";
 
 registerLogger(new TestLogger());
 
@@ -189,11 +189,11 @@ jobs:
       "runs-on": {
         kind: ValueProviderKind.SuggestedValues,
         get: () => {
-          return Promise.resolve([{label: "my-custom-label"}]);
+          return Promise.resolve([{ label: "my-custom-label" }]);
         }
       }
     };
-    const result = await complete(...getPositionFromCursor(input), {valueProviderConfig: config});
+    const result = await complete(...getPositionFromCursor(input), { valueProviderConfig: config });
 
     expect(result).not.toBeUndefined();
     // Custom value plus escape hatches for list and full syntax
@@ -210,11 +210,11 @@ jobs:
       "runs-on": {
         kind: ValueProviderKind.SuggestedValues,
         get: () => {
-          return Promise.resolve([{label: "my-custom-label"}]);
+          return Promise.resolve([{ label: "my-custom-label" }]);
         }
       }
     };
-    const result = await complete(...getPositionFromCursor(input), {valueProviderConfig: config});
+    const result = await complete(...getPositionFromCursor(input), { valueProviderConfig: config });
 
     expect(result).not.toBeUndefined();
     expect(result.length).toEqual(1);
@@ -369,8 +369,8 @@ jobs:
     expect(result.length).toBeGreaterThan(20);
     const textEdit = result[0].textEdit as TextEdit;
     expect(textEdit.range).toEqual({
-      start: {line: 5, character: 4},
-      end: {line: 5, character: 5}
+      start: { line: 5, character: 4 },
+      end: { line: 5, character: 5 }
     });
   });
 
@@ -411,8 +411,8 @@ jobs:
     const textEdit = result[0].textEdit as TextEdit;
     expect(textEdit.newText).toEqual("pre-build");
     expect(textEdit.range).toEqual({
-      start: {line: 6, character: 11},
-      end: {line: 6, character: 17}
+      start: { line: 6, character: 11 },
+      end: { line: 6, character: 17 }
     });
   });
 
@@ -426,8 +426,8 @@ jobs:
     const textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
     expect(textEdit.newText).toEqual("runs-on: ");
     expect(textEdit.range).toEqual({
-      start: {line: 3, character: 4},
-      end: {line: 3, character: 10}
+      start: { line: 3, character: 4 },
+      end: { line: 3, character: 10 }
     });
   });
 
@@ -441,8 +441,8 @@ jobs:
     const textEdit = result.filter(e => e.label === "runs-on")[0].textEdit as TextEdit;
     expect(textEdit.newText).toEqual("runs-on: ");
     expect(textEdit.range).toEqual({
-      start: {line: 3, character: 4},
-      end: {line: 3, character: 4}
+      start: { line: 3, character: 4 },
+      end: { line: 3, character: 4 }
     });
   });
 
@@ -733,15 +733,15 @@ jobs:
       expect(fullEdit.newText).toEqual("\n  ");
 
       // TextEdit range should be at cursor position (empty range)
-      expect(listEdit.range.start).toEqual({line: 3, character: 13});
-      expect(listEdit.range.end).toEqual({line: 3, character: 13});
-      expect(fullEdit.range.start).toEqual({line: 3, character: 13});
-      expect(fullEdit.range.end).toEqual({line: 3, character: 13});
+      expect(listEdit.range.start).toEqual({ line: 3, character: 13 });
+      expect(listEdit.range.end).toEqual({ line: 3, character: 13 });
+      expect(fullEdit.range.start).toEqual({ line: 3, character: 13 });
+      expect(fullEdit.range.end).toEqual({ line: 3, character: 13 });
 
       // additionalTextEdits should clean up the key portion
       expect(switchToList!.additionalTextEdits).toHaveLength(1);
-      expect(switchToList!.additionalTextEdits![0].range.start).toEqual({line: 3, character: 4});
-      expect(switchToList!.additionalTextEdits![0].range.end).toEqual({line: 3, character: 13});
+      expect(switchToList!.additionalTextEdits![0].range.start).toEqual({ line: 3, character: 4 });
+      expect(switchToList!.additionalTextEdits![0].range.end).toEqual({ line: 3, character: 13 });
       expect(switchToList!.additionalTextEdits![0].newText).toEqual("runs-on:");
 
       expect(switchToFull!.additionalTextEdits).toHaveLength(1);
@@ -901,7 +901,7 @@ jobs:
     it("include case function when enabled", async () => {
       const input = "on: push\njobs:\n  build:\n    runs-on: ${{ c|";
       const result = await complete(...getPositionFromCursor(input), {
-        featureFlags: new FeatureFlags({allowCaseFunction: true})
+        featureFlags: new FeatureFlags({ allowCaseFunction: true })
       });
 
       expect(result).not.toBeUndefined();
@@ -914,7 +914,7 @@ jobs:
     it("exclude case function when disabled", async () => {
       const input = "on: push\njobs:\n  build:\n    runs-on: ${{ c|";
       const result = await complete(...getPositionFromCursor(input), {
-        featureFlags: new FeatureFlags({allowCaseFunction: false})
+        featureFlags: new FeatureFlags({ allowCaseFunction: false })
       });
 
       expect(result).not.toBeUndefined();
@@ -923,5 +923,48 @@ jobs:
       expect(labels).not.toContain("case");
       expect(labels).toContain("contains");
     });
+  });
+});
+
+
+describe("schedule timezone completion", () => {
+  it("includes timezone when allowCronTimezone is enabled", async () => {
+    const input = `on:
+  schedule:
+    - |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({ allowCronTimezone: true })
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("cron");
+    expect(labels).toContain("timezone");
+  });
+
+  it("excludes timezone when allowCronTimezone is disabled", async () => {
+    const input = `on:
+  schedule:
+    - |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({ allowCronTimezone: false })
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("cron");
+    expect(labels).not.toContain("timezone");
+  });
+
+  it("excludes timezone when no feature flags are provided", async () => {
+    const input = `on:
+  schedule:
+    - |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("cron");
+    expect(labels).not.toContain("timezone");
   });
 });
