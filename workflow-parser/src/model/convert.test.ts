@@ -651,7 +651,7 @@ jobs:
         nullTrace
       );
 
-      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      await convertWorkflowTemplate(result.context, result.value!, undefined, {
         errorPolicy: ErrorPolicy.TryConversion
       });
 
