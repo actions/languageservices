@@ -1,8 +1,8 @@
-import { isString } from "@actions/workflow-parser";
-import { DescriptionProvider, hover, HoverConfig } from "./hover.js";
-import { getPositionFromCursor } from "./test-utils/cursor-position.js";
-import { testFileProvider } from "./test-utils/test-file-provider.js";
-import { clearCache } from "./utils/workflow-cache.js";
+import {isString} from "@actions/workflow-parser";
+import {DescriptionProvider, hover, HoverConfig} from "./hover.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 export function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
   return {
@@ -57,7 +57,7 @@ jobs:
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
       "Prevents a workflow run from failing when a job fails. Set to true to allow a workflow run to pass when this job fails.\n\n" +
-      "Available expression contexts: `github`, `inputs`, `vars`, `needs`, `strategy`, `matrix`"
+        "Available expression contexts: `github`, `inputs`, `vars`, `needs`, `strategy`, `matrix`"
     );
   });
 
