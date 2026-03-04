@@ -2637,7 +2637,7 @@
     "timezone-string": {
       "string": {
         "require-non-empty": true,
-        "description": "A timezone string is a string that represents a specific time zone. It is typically in the format of 'Area/Location', such as 'America/New_York' or 'Europe/London'. Timezone strings are used to specify the time zone for scheduling workflows or for displaying timestamps in a specific time zone.",
+        "description": "A timezone string is a string that represents a specific time zone. It is typically in the format of 'Area/Location', such as 'America/New_York' or 'Europe/London'. Timezone strings are used to specify the time zone for scheduling workflows or for displaying timestamps in a specific time zone."
       }
     }
   }
