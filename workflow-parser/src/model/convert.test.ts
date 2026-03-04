@@ -681,7 +681,10 @@ jobs:
 
       // Both schema validation and converter report the missing cron
       expect(result.context.errors.getErrors().length).toBeGreaterThanOrEqual(1);
-      const errorMessages = result.context.errors.getErrors().map(e => e.message).join(", ");
+      const errorMessages = result.context.errors
+        .getErrors()
+        .map(e => e.message)
+        .join(", ");
       expect(errorMessages).toMatch(/Required property is missing: cron|Missing required key 'cron'/);
       expect(template.events?.schedule).toHaveLength(0);
     });
