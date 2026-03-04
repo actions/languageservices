@@ -190,6 +190,8 @@ function convertSchedule(
 
       if (valid && config.cron) {
         result.push(config);
+      } else if (valid && !config.cron) {
+        context.error(mappingToken, "Missing required key 'cron' in schedule entry");
       }
     } else {
       context.error(mappingToken, "Invalid format for 'schedule'");

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import {FeatureFlags} from "@actions/expressions/features";
 import {nullTrace} from "../test-utils/null-trace.js";
 import {parseWorkflow} from "../workflows/workflow-parser.js";
 import {convertWorkflowTemplate, ErrorPolicy} from "./convert.js";
@@ -576,6 +577,139 @@ jobs:
         expect(job.steps[1].if?.expression).toBe("failure().outputs.value");
         expect(job.steps[2].if?.expression).toBe("always() && steps.test.outcome");
       }
+    });
+  });
+
+  describe("schedule timezone with feature flags", () => {
+    it("allows timezone when allowCronTimezone is enabled", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on:
+  schedule:
+    - cron: '0 0 * * *'
+      timezone: America/New_York
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowCronTimezone: true})
+      });
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.events?.schedule).toHaveLength(1);
+      expect(template.events?.schedule?.[0]).toEqual({
+        cron: "0 0 * * *",
+        timezone: "America/New_York"
+      });
+    });
+
+    it("reports error when timezone is present but allowCronTimezone is disabled", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on:
+  schedule:
+    - cron: '0 0 * * *'
+      timezone: America/New_York
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowCronTimezone: false})
+      });
+
+      // When timezone feature is disabled, having 2 keys triggers format error
+      expect(result.context.errors.getErrors()).toHaveLength(1);
+      expect(result.context.errors.getErrors()[0].message).toContain("Invalid format for 'schedule'");
+      // Schedule entry is dropped due to invalid format
+      expect(template.events?.schedule).toHaveLength(0);
+    });
+
+    it("reports error when timezone is present with no feature flags provided", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on:
+  schedule:
+    - cron: '0 0 * * *'
+      timezone: America/New_York
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      // Default is timezone disabled, so having 2 keys triggers format error
+      expect(result.context.errors.getErrors()).toHaveLength(1);
+      expect(result.context.errors.getErrors()[0].message).toContain("Invalid format for 'schedule'");
+    });
+
+    it("reports error when cron is missing from schedule entry", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on:
+  schedule:
+    - timezone: America/New_York
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowCronTimezone: true})
+      });
+
+      // Both schema validation and converter report the missing cron
+      expect(result.context.errors.getErrors().length).toBeGreaterThanOrEqual(1);
+      const errorMessages = result.context.errors.getErrors().map(e => e.message).join(", ");
+      expect(errorMessages).toMatch(/Required property is missing: cron|Missing required key 'cron'/);
+      expect(template.events?.schedule).toHaveLength(0);
+    });
+
+    it("converts schedule without timezone when allowCronTimezone is enabled", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowCronTimezone: true})
+      });
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.events?.schedule).toHaveLength(1);
+      expect(template.events?.schedule?.[0]).toEqual({
+        cron: "0 0 * * *"
+      });
     });
   });
 });

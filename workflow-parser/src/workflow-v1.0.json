@@ -2620,19 +2620,24 @@
     "cron-mapping": {
       "mapping": {
         "properties": {
-          "cron": "cron-pattern",
+          "cron": {
+            "type": "cron-pattern",
+            "required": true
+          },
           "timezone": "timezone-string"
         }
       }
     },
     "cron-pattern": {
       "string": {
-        "require-non-empty": true
+        "require-non-empty": true,
+        "description": "A cron pattern is a string that represents a schedule in cron syntax. The pattern consists of five fields separated by spaces: minute, hour, day of month, month, and day of week. Each field can contain specific values, ranges, lists, or wildcards to define the schedule for the workflow."
       }
     },
     "timezone-string": {
       "string": {
-        "require-non-empty": true
+        "require-non-empty": true,
+        "description": "A timezone string is a string that represents a specific time zone. It is typically in the format of 'Area/Location', such as 'America/New_York' or 'Europe/London'. Timezone strings are used to specify the time zone for scheduling workflows or for displaying timestamps in a specific time zone.",
       }
     }
   }
