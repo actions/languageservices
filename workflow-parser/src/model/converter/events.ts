@@ -169,10 +169,7 @@ function convertSchedule(
       if (key.value === "cron") {
         const cron = entry.value.assertString(`schedule cron`);
         if (!isValidCron(cron.value)) {
-          context.error(
-            cron,
-            "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)"
-          );
+          context.error(cron, "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)");
         }
         config.cron = cron.value;
       } else if (key.value === "timezone") {
