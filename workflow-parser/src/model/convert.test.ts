@@ -629,10 +629,10 @@ jobs:
         featureFlags: new FeatureFlags({allowCronTimezone: false})
       });
 
-      // When timezone feature is disabled, having 2 keys triggers format error
+      // When timezone feature is disabled, error points at the timezone key
       expect(result.context.errors.getErrors()).toHaveLength(1);
-      expect(result.context.errors.getErrors()[0].message).toContain("Invalid format for 'schedule'");
-      // Schedule entry is dropped due to invalid format
+      expect(result.context.errors.getErrors()[0].message).toContain("Key 'timezone' is not supported");
+      // Schedule entry is dropped due to unsupported key
       expect(template.events?.schedule).toHaveLength(0);
     });
 
@@ -655,9 +655,9 @@ jobs:
         errorPolicy: ErrorPolicy.TryConversion
       });
 
-      // Default is timezone disabled, so having 2 keys triggers format error
+      // Default is timezone disabled, so error points at the timezone key
       expect(result.context.errors.getErrors()).toHaveLength(1);
-      expect(result.context.errors.getErrors()[0].message).toContain("Invalid format for 'schedule'");
+      expect(result.context.errors.getErrors()[0].message).toContain("Key 'timezone' is not supported");
     });
 
     it("reports error when cron is missing from schedule entry", async () => {

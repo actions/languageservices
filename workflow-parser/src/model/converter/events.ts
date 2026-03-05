@@ -160,41 +160,39 @@ function convertSchedule(
 
   for (const item of token) {
     const mappingToken = item.assertMapping(`event schedule`);
-    const maxKeys = allowTimezone ? 2 : 1;
+    const config: ScheduleConfig = {cron: ""};
+    let valid = true;
 
-    if (mappingToken.count >= 1 && mappingToken.count <= maxKeys) {
-      const config: ScheduleConfig = {cron: ""};
-      let valid = true;
+    for (const entry of mappingToken) {
+      const key = entry.key.assertString(`schedule key`);
 
-      for (const entry of mappingToken) {
-        const key = entry.key.assertString(`schedule key`);
-
-        if (key.value === "cron") {
-          const cron = entry.value.assertString(`schedule cron`);
-          if (!isValidCron(cron.value)) {
-            context.error(
-              cron,
-              "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)"
-            );
-          }
-          config.cron = cron.value;
-        } else if (key.value === "timezone" && allowTimezone) {
+      if (key.value === "cron") {
+        const cron = entry.value.assertString(`schedule cron`);
+        if (!isValidCron(cron.value)) {
+          context.error(
+            cron,
+            "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)"
+          );
+        }
+        config.cron = cron.value;
+      } else if (key.value === "timezone") {
+        if (allowTimezone) {
           const timezone = entry.value.assertString(`schedule timezone`);
-
           config.timezone = timezone.value;
         } else {
-          context.error(key, `Invalid schedule key`);
+          context.error(key, `Key 'timezone' is not supported`);
           valid = false;
         }
+      } else {
+        context.error(key, `Invalid schedule key`);
+        valid = false;
       }
+    }
 
-      if (valid && config.cron) {
-        result.push(config);
-      } else if (valid && !config.cron) {
-        context.error(mappingToken, "Missing required key 'cron' in schedule entry");
-      }
-    } else {
-      context.error(mappingToken, "Invalid format for 'schedule'");
+    if (valid && config.cron) {
+      result.push(config);
+    } else if (valid && !config.cron) {
+      context.error(mappingToken, "Missing required key 'cron' in schedule entry");
     }
   }
 
