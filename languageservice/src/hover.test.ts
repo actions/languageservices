@@ -121,7 +121,7 @@ jobs:
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
-      "A cron pattern is a string that represents a schedule in cron syntax. The pattern consists of five fields separated by spaces: minute, hour, day of month, month, and day of week. Each field can contain specific values, ranges, lists, or wildcards to define the schedule for the workflow."
+      "A cron expression that represents a schedule. A scheduled workflow will run at most once every 5 minutes."
     );
   });
 
@@ -133,7 +133,7 @@ jobs:
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
-      "A cron pattern is a string that represents a schedule in cron syntax. The pattern consists of five fields separated by spaces: minute, hour, day of month, month, and day of week. Each field can contain specific values, ranges, lists, or wildcards to define the schedule for the workflow."
+      "A cron expression that represents a schedule. A scheduled workflow will run at most once every 5 minutes."
     );
   });
 
