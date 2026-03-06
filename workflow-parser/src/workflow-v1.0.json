@@ -2620,11 +2620,22 @@
     "cron-mapping": {
       "mapping": {
         "properties": {
-          "cron": "cron-pattern"
+          "cron": {
+            "type": "cron-pattern",
+            "required": true
+          },
+          "timezone": "timezone-string"
         }
       }
     },
     "cron-pattern": {
+      "description": "A cron expression that represents a schedule. A scheduled workflow will run at most once every 5 minutes.",
+      "string": {
+        "require-non-empty": true
+      }
+    },
+    "timezone-string": {
+      "description": "A string that represents the time zone a scheduled workflow will run relative to in IANA format (e.g. 'America/New_York' or 'Europe/London'). If omitted, the workflow will run relative to midnight UTC.",
       "string": {
         "require-non-empty": true
       }

@@ -196,6 +196,7 @@ export type SecretConfig = {
 
 export type ScheduleConfig = {
   cron: string;
+  timezone?: string;
 };
 
 export type WorkflowFilterConfig = {

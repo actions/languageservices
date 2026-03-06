@@ -1,3 +1,4 @@
+import {FeatureFlags} from "@actions/expressions/features";
 import {TemplateContext} from "../../templates/template-context.js";
 import {MappingToken} from "../../templates/tokens/mapping-token.js";
 import {SequenceToken} from "../../templates/tokens/sequence-token.js";
@@ -55,7 +56,8 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
       // Schedule is the only event that can be a sequence, handle that separately
       if (eventName === "schedule") {
         const scheduleToken = item.value.assertSequence(`event ${eventName}`);
-        result.schedule = convertSchedule(context, scheduleToken);
+        const featureFlags = context.state["featureFlags"] as FeatureFlags | undefined;
+        result.schedule = convertSchedule(context, scheduleToken, featureFlags);
         continue;
       }
 
@@ -147,25 +149,47 @@ function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig & Vers
   return result;
 }
 
-function convertSchedule(context: TemplateContext, token: SequenceToken): ScheduleConfig[] | undefined {
+function convertSchedule(
+  context: TemplateContext,
+  token: SequenceToken,
+  featureFlags?: FeatureFlags
+): ScheduleConfig[] | undefined {
+  const flags = featureFlags ?? new FeatureFlags();
+  const allowTimezone = flags.isEnabled("allowCronTimezone");
   const result = [] as ScheduleConfig[];
+
   for (const item of token) {
     const mappingToken = item.assertMapping(`event schedule`);
-    if (mappingToken.count == 1) {
-      const schedule = mappingToken.get(0);
-      const scheduleKey = schedule.key.assertString(`schedule key`);
-      if (scheduleKey.value == "cron") {
-        const cron = schedule.value.assertString(`schedule cron`);
-        // Validate the cron string
+    const config: ScheduleConfig = {cron: ""};
+    let valid = true;
+
+    for (const entry of mappingToken) {
+      const key = entry.key.assertString(`schedule key`);
+
+      if (key.value === "cron") {
+        const cron = entry.value.assertString(`schedule cron`);
         if (!isValidCron(cron.value)) {
           context.error(cron, "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)");
         }
-        result.push({cron: cron.value});
+        config.cron = cron.value;
+      } else if (key.value === "timezone") {
+        if (allowTimezone) {
+          const timezone = entry.value.assertString(`schedule timezone`);
+          config.timezone = timezone.value;
+        } else {
+          context.error(key, `Key 'timezone' is not supported`);
+          valid = false;
+        }
       } else {
-        context.error(scheduleKey, `Invalid schedule key`);
+        context.error(key, `Invalid schedule key`);
+        valid = false;
       }
-    } else {
-      context.error(mappingToken, "Invalid format for 'schedule'");
+    }
+
+    if (valid && config.cron) {
+      result.push(config);
+    } else if (valid && !config.cron) {
+      context.error(mappingToken, "Missing required key 'cron' in schedule entry");
     }
   }
 

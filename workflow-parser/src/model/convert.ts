@@ -1,3 +1,4 @@
+import {FeatureFlags} from "@actions/expressions/features";
 import {TemplateContext} from "../templates/template-context.js";
 import {TemplateToken, TemplateTokenError} from "../templates/tokens/template-token.js";
 import {FileProvider} from "../workflows/file-provider.js";
@@ -37,12 +38,18 @@ export type WorkflowTemplateConverterOptions = {
    * By default, conversion will be skipped if there are errors in the {@link TemplateContext}.
    */
   errorPolicy?: ErrorPolicy;
+
+  /**
+   * Optional feature flags to control which experimental features are enabled.
+   */
+  featureFlags?: FeatureFlags;
 };
 
 const defaultOptions: Required<WorkflowTemplateConverterOptions> = {
   maxReusableWorkflowDepth: 4,
   fetchReusableWorkflowDepth: 0,
-  errorPolicy: ErrorPolicy.ReturnErrorsOnly
+  errorPolicy: ErrorPolicy.ReturnErrorsOnly,
+  featureFlags: new FeatureFlags()
 };
 
 export async function convertWorkflowTemplate(
@@ -53,6 +60,11 @@ export async function convertWorkflowTemplate(
 ): Promise<WorkflowTemplate> {
   const result = {} as WorkflowTemplate;
   const opts = getOptionsWithDefaults(options);
+
+  // Store feature flags in context state so converters can access them
+  if (opts.featureFlags) {
+    context.state["featureFlags"] = opts.featureFlags;
+  }
 
   if (context.errors.getErrors().length > 0 && opts.errorPolicy === ErrorPolicy.ReturnErrorsOnly) {
     result.errors = context.errors.getErrors().map(x => ({
@@ -142,6 +154,7 @@ function getOptionsWithDefaults(options: WorkflowTemplateConverterOptions): Requ
       options.fetchReusableWorkflowDepth !== undefined
         ? options.fetchReusableWorkflowDepth
         : defaultOptions.fetchReusableWorkflowDepth,
-    errorPolicy: options.errorPolicy !== undefined ? options.errorPolicy : defaultOptions.errorPolicy
+    errorPolicy: options.errorPolicy !== undefined ? options.errorPolicy : defaultOptions.errorPolicy,
+    featureFlags: options.featureFlags ?? defaultOptions.featureFlags
   };
 }

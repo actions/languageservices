@@ -120,7 +120,9 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual("");
+    expect(result?.contents).toEqual(
+      "A cron expression that represents a schedule. A scheduled workflow will run at most once every 5 minutes."
+    );
   });
 
   it("on an invalid cron schedule", async () => {
@@ -130,7 +132,9 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual("");
+    expect(result?.contents).toEqual(
+      "A cron expression that represents a schedule. A scheduled workflow will run at most once every 5 minutes."
+    );
   });
 
   it("shows context inherited from parent nodes", async () => {

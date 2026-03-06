@@ -925,3 +925,45 @@ jobs:
     });
   });
 });
+
+describe("schedule timezone completion", () => {
+  it("includes timezone when allowCronTimezone is enabled", async () => {
+    const input = `on:
+  schedule:
+    - |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowCronTimezone: true})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("cron");
+    expect(labels).toContain("timezone");
+  });
+
+  it("excludes timezone when allowCronTimezone is disabled", async () => {
+    const input = `on:
+  schedule:
+    - |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowCronTimezone: false})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("cron");
+    expect(labels).not.toContain("timezone");
+  });
+
+  it("excludes timezone when no feature flags are provided", async () => {
+    const input = `on:
+  schedule:
+    - |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("cron");
+    expect(labels).not.toContain("timezone");
+  });
+});
