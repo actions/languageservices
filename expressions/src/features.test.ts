@@ -55,7 +55,8 @@ describe("FeatureFlags", () => {
         "missingInputsQuickfix",
         "blockScalarChompingWarning",
         "allowCaseFunction",
-        "allowCronTimezone"
+        "allowCronTimezone",
+        "allowCopilotRequestsPermission"
       ]);
     });
   });

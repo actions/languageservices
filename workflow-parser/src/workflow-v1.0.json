@@ -1602,6 +1602,10 @@
             "type": "permission-level-any",
             "description": "Repository contents, commits, branches, downloads, releases, and merges."
           },
+          "copilot-requests": {
+            "type": "permission-level-any",
+            "description": "GitHub Copilot requests."
+          },
           "deployments": {
             "type": "permission-level-any",
             "description": "Deployments and deployment statuses."
