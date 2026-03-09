@@ -1603,7 +1603,7 @@
             "description": "Repository contents, commits, branches, downloads, releases, and merges."
           },
           "copilot-requests": {
-            "type": "permission-level-any",
+            "type": "permission-level-write-or-no-access",
             "description": "GitHub Copilot requests."
           },
           "deployments": {
