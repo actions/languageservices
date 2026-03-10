@@ -169,7 +169,10 @@ export async function complete(
   }
 
   // Filter `copilot-requests` from permissions completions when the feature flag is disabled
-  if (!config?.featureFlags?.isEnabled("allowCopilotRequestsPermission") && parent?.definition?.key === "permissions-mapping") {
+  if (
+    !config?.featureFlags?.isEnabled("allowCopilotRequestsPermission") &&
+    parent?.definition?.key === "permissions-mapping"
+  ) {
     values = values.filter(v => v.label !== "copilot-requests");
   }
 
