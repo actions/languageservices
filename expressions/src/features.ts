@@ -40,6 +40,12 @@ export interface ExperimentalFeatures {
    * @default false
    */
   allowCronTimezone?: boolean;
+
+  /**
+   * Enable the copilot-requests permission in workflow permissions.
+   * @default false
+   */
+  allowCopilotRequestsPermission?: boolean;
 }
 
 /**
@@ -55,7 +61,8 @@ const allFeatureKeys: ExperimentalFeatureKey[] = [
   "missingInputsQuickfix",
   "blockScalarChompingWarning",
   "allowCaseFunction",
-  "allowCronTimezone"
+  "allowCronTimezone",
+  "allowCopilotRequestsPermission"
 ];
 
 export class FeatureFlags {

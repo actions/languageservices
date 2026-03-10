@@ -967,3 +967,79 @@ describe("schedule timezone completion", () => {
     expect(labels).not.toContain("timezone");
   });
 });
+
+describe("permissions copilot-requests completion", () => {
+  it("includes copilot-requests when allowCopilotRequestsPermission is enabled", async () => {
+    const input = `on: push
+permissions:
+  |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowCopilotRequestsPermission: true})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).toContain("copilot-requests");
+  });
+
+  it("excludes copilot-requests when allowCopilotRequestsPermission is disabled", async () => {
+    const input = `on: push
+permissions:
+  |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowCopilotRequestsPermission: false})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).not.toContain("copilot-requests");
+  });
+
+  it("excludes copilot-requests when no feature flags are provided", async () => {
+    const input = `on: push
+permissions:
+  |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).not.toContain("copilot-requests");
+  });
+
+  it("includes copilot-requests in job-level permissions when allowCopilotRequestsPermission is enabled", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowCopilotRequestsPermission: true})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).toContain("copilot-requests");
+  });
+
+  it("excludes copilot-requests from job-level permissions when allowCopilotRequestsPermission is disabled", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowCopilotRequestsPermission: false})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).not.toContain("copilot-requests");
+  });
+});

@@ -168,6 +168,14 @@ export async function complete(
     values = values.filter(v => v.label !== "timezone");
   }
 
+  // Filter `copilot-requests` from permissions completions when the feature flag is disabled
+  if (
+    !config?.featureFlags?.isEnabled("allowCopilotRequestsPermission") &&
+    parent?.definition?.key === "permissions-mapping"
+  ) {
+    values = values.filter(v => v.label !== "copilot-requests");
+  }
+
   // Offer "(switch to list)" / "(switch to mapping)" when the schema allows alternative forms
   const escapeHatches = getEscapeHatchCompletions(token, keyToken, indentString, newPos, schema);
   values.push(...escapeHatches);
