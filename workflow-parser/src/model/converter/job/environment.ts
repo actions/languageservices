@@ -34,6 +34,14 @@ export function convertToActionsEnvironmentRef(
       case "url":
         result.url = property.value;
         break;
+
+      case "deployment": {
+        const deploymentValue = property.value.assertBoolean("job environment deployment");
+        if (deploymentValue.value === false) {
+          result.skipDeployment = true;
+        }
+        break;
+      }
     }
   }
 
