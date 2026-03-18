@@ -50,7 +50,9 @@ jobs:
             return true;
 
   release:
-    environment: publish
+    environment:
+      name: publish
+      deployment: false
 
     needs: check-version-change
     if: ${{ needs.check-version-change.outputs.changed == 'true' }}
