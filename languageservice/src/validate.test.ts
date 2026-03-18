@@ -368,6 +368,24 @@ jobs:
     });
   });
 
+  describe("environment deployment", () => {
+    it("allows deployment boolean under environment mapping", async () => {
+      const workflow = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      deployment: false
+    steps:
+    - run: echo
+`;
+      const result = await validate(createDocument("wf.yaml", workflow));
+      expect(result).toEqual([]);
+    });
+  });
+
   describe("workflow_dispatch", () => {
     it("allows empty string in choice options", async () => {
       const result = await validate(
