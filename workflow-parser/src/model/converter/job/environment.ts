@@ -1,3 +1,4 @@
+import {FeatureFlags} from "@actions/expressions/features";
 import {TemplateContext} from "../../../templates/template-context.js";
 import {TemplateToken} from "../../../templates/tokens/template-token.js";
 import {isScalar} from "../../../templates/tokens/type-guards.js";
@@ -34,6 +35,17 @@ export function convertToActionsEnvironmentRef(
       case "url":
         result.url = property.value;
         break;
+
+      case "deployment": {
+        const featureFlags = context.state["featureFlags"] as FeatureFlags | undefined;
+        const flags = featureFlags ?? new FeatureFlags();
+        if (flags.isEnabled("allowDeploymentKeyword")) {
+          result.deployment = property.value;
+        } else {
+          context.error(property.key, `The key 'deployment' is not allowed`);
+        }
+        break;
+      }
     }
   }
 

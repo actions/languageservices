@@ -56,7 +56,8 @@ describe("FeatureFlags", () => {
         "blockScalarChompingWarning",
         "allowCaseFunction",
         "allowCronTimezone",
-        "allowCopilotRequestsPermission"
+        "allowCopilotRequestsPermission",
+        "allowDeploymentKeyword"
       ]);
     });
   });

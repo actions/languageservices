@@ -1,0 +1,21 @@
+include-source: false # Drop file/line/col from output
+skip:
+  - C#
+---
+on: push
+jobs:
+  build:
+    environment:
+      name: production
+      deployment: false
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi
+---
+{
+  "errors": [
+    {
+      "Message": ".github/workflows/errors-job-environment-deployment-disabled-feature-default-go.yml (Line: 6, Col: 7): The key 'deployment' is not allowed"
+    }
+  ]
+}

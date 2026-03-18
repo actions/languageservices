@@ -26,6 +26,7 @@ export type ConcurrencySetting = {
 export type ActionsEnvironmentReference = {
   name?: TemplateToken;
   url?: TemplateToken;
+  deployment?: TemplateToken;
 };
 
 export type WorkflowJob = Job | ReusableWorkflowJob;

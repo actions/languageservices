@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as YAML from "yaml";
+import {FeatureFlags} from "@actions/expressions/features";
 import {convertWorkflowTemplate} from "./model/convert.js";
 import {NoOperationTraceWriter} from "./templates/trace-writer.js";
 import {File} from "./workflows/file.js";
@@ -10,6 +11,7 @@ import {parseWorkflow} from "./workflows/workflow-parser.js";
 
 interface TestOptions {
   "include-source"?: boolean;
+  "allow-deployment-keyword"?: boolean;
   skip?: string[];
 }
 
@@ -85,7 +87,10 @@ describe("x-lang tests", () => {
         parseResult.value!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
         testFileProvider,
         {
-          fetchReusableWorkflowDepth: 1
+          fetchReusableWorkflowDepth: 1,
+          featureFlags: new FeatureFlags({
+            allowDeploymentKeyword: testOptions["allow-deployment-keyword"]
+          })
         }
       );
 

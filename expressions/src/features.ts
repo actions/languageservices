@@ -46,6 +46,12 @@ export interface ExperimentalFeatures {
    * @default false
    */
   allowCopilotRequestsPermission?: boolean;
+
+  /**
+   * Enable the deployment keyword in workflow job environment.
+   * @default false
+   */
+  allowDeploymentKeyword?: boolean;
 }
 
 /**
@@ -62,7 +68,8 @@ const allFeatureKeys: ExperimentalFeatureKey[] = [
   "blockScalarChompingWarning",
   "allowCaseFunction",
   "allowCronTimezone",
-  "allowCopilotRequestsPermission"
+  "allowCopilotRequestsPermission",
+  "allowDeploymentKeyword"
 ];
 
 export class FeatureFlags {
