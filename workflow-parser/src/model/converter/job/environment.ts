@@ -23,6 +23,18 @@ export function convertToActionsEnvironmentRef(
 
   for (const property of environmentMapping) {
     const propertyName = property.key.assertString("job environment key");
+
+    // Check deployment feature flag before skipping expressions,
+    // so deployment: ${{ ... }} is still gated by the flag
+    if (propertyName.value === "deployment") {
+      const featureFlags = context.state["featureFlags"] as FeatureFlags | undefined;
+      const flags = featureFlags ?? new FeatureFlags();
+      if (!flags.isEnabled("allowDeploymentKeyword")) {
+        context.error(property.key, `The key 'deployment' is not allowed`);
+        continue;
+      }
+    }
+
     if (property.key.isExpression || property.value.isExpression) {
       continue;
     }
@@ -36,16 +48,9 @@ export function convertToActionsEnvironmentRef(
         result.url = property.value;
         break;
 
-      case "deployment": {
-        const featureFlags = context.state["featureFlags"] as FeatureFlags | undefined;
-        const flags = featureFlags ?? new FeatureFlags();
-        if (flags.isEnabled("allowDeploymentKeyword")) {
-          result.deployment = property.value;
-        } else {
-          context.error(property.key, `The key 'deployment' is not allowed`);
-        }
+      case "deployment":
+        result.deployment = property.value;
         break;
-      }
     }
   }
 
