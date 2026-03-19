@@ -163,11 +163,6 @@ export async function complete(
     values = filterActionRunsCompletions(values, path, parsedTemplate.value);
   }
 
-  // Filter `timezone` from schedule completions when the feature flag is disabled
-  if (!config?.featureFlags?.isEnabled("allowCronTimezone") && parent?.definition?.key === "schedule") {
-    values = values.filter(v => v.label !== "timezone");
-  }
-
   // Filter `copilot-requests` from permissions completions when the feature flag is disabled
   if (
     !config?.featureFlags?.isEnabled("allowCopilotRequestsPermission") &&

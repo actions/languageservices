@@ -36,12 +36,6 @@ export interface ExperimentalFeatures {
   allowCaseFunction?: boolean;
 
   /**
-   * Enable the timezone input in cron schedule mappings.
-   * @default false
-   */
-  allowCronTimezone?: boolean;
-
-  /**
    * Enable the copilot-requests permission in workflow permissions.
    * @default false
    */
@@ -61,7 +55,6 @@ const allFeatureKeys: ExperimentalFeatureKey[] = [
   "missingInputsQuickfix",
   "blockScalarChompingWarning",
   "allowCaseFunction",
-  "allowCronTimezone",
   "allowCopilotRequestsPermission"
 ];
 

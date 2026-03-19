@@ -1,4 +1,3 @@
-import {FeatureFlags} from "@actions/expressions/features";
 import {TemplateContext} from "../../templates/template-context.js";
 import {MappingToken} from "../../templates/tokens/mapping-token.js";
 import {SequenceToken} from "../../templates/tokens/sequence-token.js";
@@ -56,8 +55,7 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
       // Schedule is the only event that can be a sequence, handle that separately
       if (eventName === "schedule") {
         const scheduleToken = item.value.assertSequence(`event ${eventName}`);
-        const featureFlags = context.state["featureFlags"] as FeatureFlags | undefined;
-        result.schedule = convertSchedule(context, scheduleToken, featureFlags);
+        result.schedule = convertSchedule(context, scheduleToken);
         continue;
       }
 
@@ -151,11 +149,8 @@ function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig & Vers
 
 function convertSchedule(
   context: TemplateContext,
-  token: SequenceToken,
-  featureFlags?: FeatureFlags
+  token: SequenceToken
 ): ScheduleConfig[] | undefined {
-  const flags = featureFlags ?? new FeatureFlags();
-  const allowTimezone = flags.isEnabled("allowCronTimezone");
   const result = [] as ScheduleConfig[];
 
   for (const item of token) {
@@ -173,13 +168,8 @@ function convertSchedule(
         }
         config.cron = cron.value;
       } else if (key.value === "timezone") {
-        if (allowTimezone) {
-          const timezone = entry.value.assertString(`schedule timezone`);
-          config.timezone = timezone.value;
-        } else {
-          context.error(key, `Key 'timezone' is not supported`);
-          valid = false;
-        }
+        const timezone = entry.value.assertString(`schedule timezone`);
+        config.timezone = timezone.value;
       } else {
         context.error(key, `Invalid schedule key`);
         valid = false;
