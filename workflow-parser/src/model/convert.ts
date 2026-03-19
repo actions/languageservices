@@ -1,4 +1,4 @@
-import {TemplateContext} from "../templates/template-context.js"
+import {TemplateContext} from "../templates/template-context.js";
 import {TemplateToken, TemplateTokenError} from "../templates/tokens/template-token.js";
 import {FileProvider} from "../workflows/file-provider.js";
 import {parseFileReference} from "../workflows/file-reference.js";

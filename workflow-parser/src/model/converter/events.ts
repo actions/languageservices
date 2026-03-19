@@ -147,10 +147,7 @@ function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig & Vers
   return result;
 }
 
-function convertSchedule(
-  context: TemplateContext,
-  token: SequenceToken
-): ScheduleConfig[] | undefined {
+function convertSchedule(context: TemplateContext, token: SequenceToken): ScheduleConfig[] | undefined {
   const result = [] as ScheduleConfig[];
 
   for (const item of token) {
