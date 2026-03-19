@@ -1,3 +1,4 @@
+import {FeatureFlags} from "@actions/expressions/features";
 import {TemplateContext} from "../templates/template-context.js";
 import {TemplateToken, TemplateTokenError} from "../templates/tokens/template-token.js";
 import {FileProvider} from "../workflows/file-provider.js";
@@ -37,12 +38,19 @@ export type WorkflowTemplateConverterOptions = {
    * By default, conversion will be skipped if there are errors in the {@link TemplateContext}.
    */
   errorPolicy?: ErrorPolicy;
+
+  /**
+   * Feature flags for experimental features.
+   * This option is not currently used but keeping it for future use.
+   */
+  featureFlags?: FeatureFlags;
 };
 
 const defaultOptions: Required<WorkflowTemplateConverterOptions> = {
   maxReusableWorkflowDepth: 4,
   fetchReusableWorkflowDepth: 0,
-  errorPolicy: ErrorPolicy.ReturnErrorsOnly
+  errorPolicy: ErrorPolicy.ReturnErrorsOnly,
+  featureFlags: new FeatureFlags()
 };
 
 export async function convertWorkflowTemplate(
@@ -142,6 +150,7 @@ function getOptionsWithDefaults(options: WorkflowTemplateConverterOptions): Requ
       options.fetchReusableWorkflowDepth !== undefined
         ? options.fetchReusableWorkflowDepth
         : defaultOptions.fetchReusableWorkflowDepth,
-    errorPolicy: options.errorPolicy !== undefined ? options.errorPolicy : defaultOptions.errorPolicy
+    errorPolicy: options.errorPolicy !== undefined ? options.errorPolicy : defaultOptions.errorPolicy,
+    featureFlags: options.featureFlags ?? defaultOptions.featureFlags
   };
 }
