@@ -70,13 +70,91 @@ export function convertToJobContainer(context: TemplateContext, container: Templ
   }
 }
 
+export function convertToServiceContainer(context: TemplateContext, container: TemplateToken): Container | undefined {
+  let image: StringToken | undefined;
+  let env: MappingToken | undefined;
+  let ports: SequenceToken | undefined;
+  let volumes: SequenceToken | undefined;
+  let options: StringToken | undefined;
+  let entrypoint: StringToken | undefined;
+  let command: StringToken | undefined;
+
+  // Skip validation for expressions for now to match
+  // behavior of the other parsers
+  for (const [, token] of TemplateToken.traverse(container)) {
+    if (token.isExpression) {
+      return;
+    }
+  }
+
+  if (isString(container)) {
+    image = container.assertString("container item");
+    return {image: image};
+  }
+
+  const mapping = container.assertMapping("container item");
+  if (mapping)
+    for (const item of mapping) {
+      const key = item.key.assertString("container item key");
+      const value = item.value;
+
+      switch (key.value) {
+        case "image":
+          image = value.assertString("container image");
+          break;
+        case "credentials":
+          convertToJobCredentials(context, value);
+          break;
+        case "env":
+          env = value.assertMapping("container env");
+          for (const envItem of env) {
+            envItem.key.assertString("container env value");
+          }
+          break;
+        case "ports":
+          ports = value.assertSequence("container ports");
+          for (const port of ports) {
+            port.assertString("container port");
+          }
+          break;
+        case "volumes":
+          volumes = value.assertSequence("container volumes");
+          for (const volume of volumes) {
+            volume.assertString("container volume");
+          }
+          break;
+        case "options":
+          options = value.assertString("container options");
+          break;
+        case "entrypoint":
+          entrypoint = value.assertString("container entrypoint");
+          break;
+        case "command":
+          command = value.assertString("container command");
+          break;
+        default:
+          context.error(key, `Unexpected container item key: ${key.value}`);
+      }
+    }
+
+  if (!image) {
+    context.error(container, "Container image cannot be empty");
+  } else {
+    return {image, env, ports, volumes, options, entrypoint, command};
+  }
+}
+
 export function convertToJobServices(context: TemplateContext, services: TemplateToken): Container[] | undefined {
   const serviceList: Container[] = [];
+  const flags = context.state.featureFlags as import("@actions/expressions/features").FeatureFlags | undefined;
+  const useServiceContainer = flags?.isEnabled("allowServiceContainerCommand") ?? false;
 
   const mapping = services.assertMapping("services");
   for (const service of mapping) {
     service.key.assertString("service key");
-    const container = convertToJobContainer(context, service.value);
+    const container = useServiceContainer
+      ? convertToServiceContainer(context, service.value)
+      : convertToJobContainer(context, service.value);
     if (container) {
       serviceList.push(container);
     }

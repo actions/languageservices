@@ -116,7 +116,8 @@ export async function complete(
       config,
       {
         fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
-        errorPolicy: ErrorPolicy.TryConversion
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: config?.featureFlags
       },
       true
     );

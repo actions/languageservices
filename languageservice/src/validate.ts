@@ -84,7 +84,8 @@ async function validateWorkflow(textDocument: TextDocument, config?: ValidationC
       // Errors will be updated in the context. Attempt to do the conversion anyway in order to give the user more information
       const template = await getOrConvertWorkflowTemplate(result.context, result.value, textDocument.uri, config, {
         fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0,
-        errorPolicy: ErrorPolicy.TryConversion
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: config?.featureFlags
       });
 
       // Validate expressions and value providers

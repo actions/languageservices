@@ -41,7 +41,6 @@ export type WorkflowTemplateConverterOptions = {
 
   /**
    * Feature flags for experimental features.
-   * This option is not currently used but keeping it for future use.
    */
   featureFlags?: FeatureFlags;
 };
@@ -61,6 +60,8 @@ export async function convertWorkflowTemplate(
 ): Promise<WorkflowTemplate> {
   const result = {} as WorkflowTemplate;
   const opts = getOptionsWithDefaults(options);
+
+  context.state.featureFlags = opts.featureFlags;
 
   if (context.errors.getErrors().length > 0 && opts.errorPolicy === ErrorPolicy.ReturnErrorsOnly) {
     result.errors = context.errors.getErrors().map(x => ({
