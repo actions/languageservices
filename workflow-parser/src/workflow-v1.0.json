@@ -2399,7 +2399,7 @@
       ],
       "one-of": [
         "non-empty-string",
-        "container-mapping"
+        "service-container-mapping"
       ]
     },
     "container-registry-credentials": {
@@ -2646,6 +2646,38 @@
       "description": "A string that represents the time zone a scheduled workflow will run relative to in IANA format (e.g. 'America/New_York' or 'Europe/London'). If omitted, the workflow will run relative to midnight UTC.",
       "string": {
         "require-non-empty": true
+      }
+    },
+    "service-container-mapping": {
+      "mapping": {
+        "properties": {
+          "image": {
+            "type": "non-empty-string",
+            "description": "The Docker image to use as the container. The value can be the Docker Hub image or a registry name."
+          },
+          "options": {
+            "type": "string",
+            "description": "Additional Docker container resource options."
+          },
+          "env": "container-env",
+          "ports": {
+            "type": "sequence-of-non-empty-string",
+            "description": "An array of ports to expose on the container."
+          },
+          "volumes": {
+            "type": "sequence-of-non-empty-string",
+            "description": "An array of volumes for the container to use. You can use volumes to share data between services or other steps in a job. You can specify named Docker volumes, anonymous Docker volumes, or bind mounts on the host."
+          },
+          "credentials": "container-registry-credentials",
+          "entrypoint": {
+            "type": "string",
+            "description": "Override the default ENTRYPOINT in the service container image."
+          },
+          "command": {
+            "type": "string",
+            "description": "Override the default CMD in the service container image."
+          }
+        }
       }
     }
   }

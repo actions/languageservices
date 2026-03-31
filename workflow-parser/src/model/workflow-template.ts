@@ -75,6 +75,8 @@ export type Container = {
   ports?: SequenceToken;
   volumes?: SequenceToken;
   options?: StringToken;
+  entrypoint?: StringToken;
+  command?: StringToken;
 };
 
 export type Credential = {

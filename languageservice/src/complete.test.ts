@@ -1015,3 +1015,38 @@ jobs:
     expect(labels).not.toContain("copilot-requests");
   });
 });
+
+describe("service container command/entrypoint completion", () => {
+  it("suggests entrypoint and command in service container", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
+        |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("entrypoint");
+    expect(labels).toContain("command");
+  });
+
+  it("does not suggest entrypoint and command in job container", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: node:20
+      |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).not.toContain("entrypoint");
+    expect(labels).not.toContain("command");
+  });
+});
