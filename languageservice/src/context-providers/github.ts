@@ -29,7 +29,6 @@ export function getGithubContext(workflowContext: WorkflowContext | undefined, m
     "graphql_url",
     "head_ref",
     "job",
-    "job_workflow_sha",
     "path",
     "ref",
     "ref_name",
