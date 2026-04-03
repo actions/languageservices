@@ -55,8 +55,7 @@ describe("FeatureFlags", () => {
         "missingInputsQuickfix",
         "blockScalarChompingWarning",
         "allowCaseFunction",
-        "allowCopilotRequestsPermission",
-        "allowServiceContainerCommand"
+        "allowCopilotRequestsPermission"
       ]);
     });
   });

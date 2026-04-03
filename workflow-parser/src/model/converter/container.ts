@@ -146,15 +146,11 @@ export function convertToServiceContainer(context: TemplateContext, container: T
 
 export function convertToJobServices(context: TemplateContext, services: TemplateToken): Container[] | undefined {
   const serviceList: Container[] = [];
-  const flags = context.state.featureFlags as import("@actions/expressions/features").FeatureFlags | undefined;
-  const useServiceContainer = flags?.isEnabled("allowServiceContainerCommand") ?? false;
 
   const mapping = services.assertMapping("services");
   for (const service of mapping) {
     service.key.assertString("service key");
-    const container = useServiceContainer
-      ? convertToServiceContainer(context, service.value)
-      : convertToJobContainer(context, service.value);
+    const container = convertToServiceContainer(context, service.value);
     if (container) {
       serviceList.push(container);
     }

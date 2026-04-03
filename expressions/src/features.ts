@@ -40,12 +40,6 @@ export interface ExperimentalFeatures {
    * @default false
    */
   allowCopilotRequestsPermission?: boolean;
-
-  /**
-   * Enable `entrypoint` and `command` keys in service containers (`jobs.<job_id>.services.*`).
-   * @default false
-   */
-  allowServiceContainerCommand?: boolean;
 }
 
 /**
@@ -61,8 +55,7 @@ const allFeatureKeys: ExperimentalFeatureKey[] = [
   "missingInputsQuickfix",
   "blockScalarChompingWarning",
   "allowCaseFunction",
-  "allowCopilotRequestsPermission",
-  "allowServiceContainerCommand"
+  "allowCopilotRequestsPermission"
 ];
 
 export class FeatureFlags {
