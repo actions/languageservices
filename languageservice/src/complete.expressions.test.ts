@@ -1164,7 +1164,16 @@ jobs:
 `;
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
-      expect(result.map(x => x.label)).toEqual(["check_run_id", "container", "services", "status"]);
+      expect(result.map(x => x.label)).toEqual([
+        "check_run_id",
+        "container",
+        "services",
+        "status",
+        "workflow_file_path",
+        "workflow_ref",
+        "workflow_repository",
+        "workflow_sha"
+      ]);
     });
 
     it("job context is suggested within a job output", async () => {

@@ -42,6 +42,12 @@ export function getJobContext(workflowContext: WorkflowContext): DescriptionDict
   // Check run ID
   jobContext.add("check_run_id", new data.StringData(""), getDescription("job", "check_run_id"));
 
+  // Workflow context fields (populated at runtime for reusable workflow jobs)
+  jobContext.add("workflow_file_path", new data.StringData(""), getDescription("job", "workflow_file_path"));
+  jobContext.add("workflow_ref", new data.StringData(""), getDescription("job", "workflow_ref"));
+  jobContext.add("workflow_repository", new data.StringData(""), getDescription("job", "workflow_repository"));
+  jobContext.add("workflow_sha", new data.StringData(""), getDescription("job", "workflow_sha"));
+
   return jobContext;
 }
 

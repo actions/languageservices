@@ -24,6 +24,10 @@ describe("job context", () => {
 
     expect(context.get("status")).toBeDefined();
     expect(context.get("check_run_id")).toBeDefined();
+    expect(context.get("workflow_ref")).toBeDefined();
+    expect(context.get("workflow_sha")).toBeDefined();
+    expect(context.get("workflow_repository")).toBeDefined();
+    expect(context.get("workflow_file_path")).toBeDefined();
     expect(context.get("container")).toBeUndefined();
     expect(context.get("services")).toBeUndefined();
   });
@@ -171,6 +175,23 @@ describe("job context", () => {
       expect(redis.getDescription("id")).toBeDefined();
       expect(redis.getDescription("network")).toBeDefined();
       expect(redis.getDescription("ports")).toBeDefined();
+    });
+  });
+
+  describe("workflow context fields", () => {
+    it("includes workflow context fields with descriptions", () => {
+      const workflowContext = {job: {}} as WorkflowContext;
+      const context = getJobContext(workflowContext);
+
+      expect(context.get("workflow_ref")).toBeDefined();
+      expect(context.get("workflow_sha")).toBeDefined();
+      expect(context.get("workflow_repository")).toBeDefined();
+      expect(context.get("workflow_file_path")).toBeDefined();
+
+      expect(context.getDescription("workflow_ref")).toBeDefined();
+      expect(context.getDescription("workflow_sha")).toBeDefined();
+      expect(context.getDescription("workflow_repository")).toBeDefined();
+      expect(context.getDescription("workflow_file_path")).toBeDefined();
     });
   });
 });
