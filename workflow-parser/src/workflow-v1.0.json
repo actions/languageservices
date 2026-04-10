@@ -1649,6 +1649,10 @@
           "statuses": {
             "type": "permission-level-any",
             "description": "Commit statuses."
+          },
+          "workflows": {
+            "type": "permission-level-write-or-no-access",
+            "description": "Update GitHub Actions workflow files."
           }
         }
       }
