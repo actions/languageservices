@@ -13,6 +13,8 @@ describe("eventPayloads", () => {
       expect(types.length).toBeGreaterThan(1);
       expect(types).toContain("opened");
       expect(types).toContain("closed");
+      expect(types).toContain("field_added");
+      expect(types).toContain("field_removed");
     });
   });
 

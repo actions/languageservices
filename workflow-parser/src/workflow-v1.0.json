@@ -539,7 +539,7 @@
       }
     },
     "issues-activity": {
-      "description": "The types of issue activity that trigger the workflow. Supported activity types: `opened`, `edited`, `deleted`, `transferred`, `pinned`, `unpinned`, `closed`, `reopened`, `assigned`, `unassigned`, `labeled`, `unlabeled`, `locked`, `unlocked`, `milestoned`, `demilestoned`.",
+      "description": "The types of issue activity that trigger the workflow. Supported activity types: `opened`, `edited`, `deleted`, `transferred`, `pinned`, `unpinned`, `closed`, `reopened`, `assigned`, `unassigned`, `labeled`, `unlabeled`, `locked`, `unlocked`, `milestoned`, `demilestoned`, `field_added`, `field_removed`.",
       "one-of": [
         "issues-activity-type",
         "issues-activity-types"
@@ -567,7 +567,9 @@
         "locked",
         "unlocked",
         "milestoned",
-        "demilestoned"
+        "demilestoned",
+        "field_added",
+        "field_removed"
       ]
     },
     "label-string": {
