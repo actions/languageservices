@@ -26,6 +26,9 @@ export function convertConcurrency(context: TemplateContext, token: TemplateToke
       case "cancel-in-progress":
         result.cancelInProgress = property.value.assertBoolean("cancel-in-progress").value;
         break;
+      case "queue":
+        result.queue = property.value.assertString("queue").value;
+        break;
       default:
         context.error(propertyName, `Invalid property name: ${propertyName.value}`);
     }

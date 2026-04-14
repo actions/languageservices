@@ -21,6 +21,7 @@ export type WorkflowTemplate = {
 export type ConcurrencySetting = {
   group?: StringToken;
   cancelInProgress?: boolean;
+  queue?: string;
 };
 
 export type ActionsEnvironmentReference = {

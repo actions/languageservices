@@ -243,3 +243,168 @@ jobs:
     });
   });
 });
+
+describe("validate concurrency queue + cancel-in-progress conflict", () => {
+  describe("should error", () => {
+    it("workflow-level queue: max with cancel-in-progress: true", async () => {
+      const input = `
+on: push
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+  queue: max
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      const queueErrors = result.filter(d => d.message.includes("queue: max"));
+      expect(queueErrors).toHaveLength(1);
+      expect(queueErrors[0]).toMatchObject({
+        message:
+          "'queue: max' cannot be combined with 'cancel-in-progress: true'.",
+        severity: DiagnosticSeverity.Error
+      });
+    });
+
+    it("job-level queue: max with cancel-in-progress: true", async () => {
+      const input = `
+on: push
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy
+      cancel-in-progress: true
+      queue: max
+    steps:
+      - run: echo hi`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      const queueErrors = result.filter(d => d.message.includes("queue: max"));
+      expect(queueErrors).toHaveLength(1);
+      expect(queueErrors[0]).toMatchObject({
+        severity: DiagnosticSeverity.Error
+      });
+    });
+
+    it("both workflow and job level have the conflict", async () => {
+      const input = `
+on: push
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+  queue: max
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: build
+      cancel-in-progress: true
+      queue: max
+    steps:
+      - run: echo hi`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      const queueErrors = result.filter(d => d.message.includes("queue: max"));
+      expect(queueErrors).toHaveLength(2);
+    });
+  });
+
+  describe("should not error", () => {
+    it("queue: max without cancel-in-progress", async () => {
+      const input = `
+on: push
+concurrency:
+  group: deploy
+  queue: max
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      const queueErrors = result.filter(d => d.message.includes("queue: max"));
+      expect(queueErrors).toHaveLength(0);
+    });
+
+    it("queue: single with cancel-in-progress: true", async () => {
+      const input = `
+on: push
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+  queue: single
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      const queueErrors = result.filter(d => d.message.includes("queue: max"));
+      expect(queueErrors).toHaveLength(0);
+    });
+
+    it("cancel-in-progress: false with queue: max", async () => {
+      const input = `
+on: push
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+  queue: max
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      const queueErrors = result.filter(d => d.message.includes("queue: max"));
+      expect(queueErrors).toHaveLength(0);
+    });
+
+    it("no queue property", async () => {
+      const input = `
+on: push
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      const queueErrors = result.filter(d => d.message.includes("queue: max"));
+      expect(queueErrors).toHaveLength(0);
+    });
+
+    it("string form concurrency (no mapping)", async () => {
+      const input = `
+on: push
+concurrency: deploy
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi`;
+
+      const result = await validate(createDocument("wf.yaml", input));
+
+      const queueErrors = result.filter(d => d.message.includes("queue: max"));
+      expect(queueErrors).toHaveLength(0);
+    });
+  });
+});
