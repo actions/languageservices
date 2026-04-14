@@ -218,6 +218,18 @@
     },
     "check_run_id": {
       "description": "The unique identifier of the check run for this job."
+    },
+    "workflow_file_path": {
+      "description": "The path of the workflow file that contains the job. For example, `.github/workflows/my-workflow.yml`."
+    },
+    "workflow_ref": {
+      "description": "The ref path to the workflow file that contains the job. For example, `octocat/hello-world/.github/workflows/my-workflow.yml@refs/heads/my_branch`."
+    },
+    "workflow_repository": {
+      "description": "The owner and repository name of the workflow file that contains the job. For example, `octocat/Hello-World`."
+    },
+    "workflow_sha": {
+      "description": "The commit SHA of the workflow file that contains the job."
     }
   },
   "secrets": {
