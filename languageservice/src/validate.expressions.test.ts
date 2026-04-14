@@ -432,7 +432,7 @@ jobs:
       expect(result).toEqual([]);
     });
 
-    it("job.workflow_ref", async () => {
+    it("job.workflow_* fields", async () => {
       const input = `
 on: push
 

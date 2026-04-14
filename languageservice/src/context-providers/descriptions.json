@@ -223,7 +223,7 @@
       "description": "The path of the workflow file that contains the job. For example, `.github/workflows/my-workflow.yml`."
     },
     "workflow_ref": {
-      "description": "The ref of the workflow file that contains the job. For example, `octocat/hello-world/.github/workflows/my-workflow.yml@refs/heads/my_branch`."
+      "description": "The ref path to the workflow file that contains the job. For example, `octocat/hello-world/.github/workflows/my-workflow.yml@refs/heads/my_branch`."
     },
     "workflow_repository": {
       "description": "The owner and repository name of the workflow file that contains the job. For example, `octocat/Hello-World`."

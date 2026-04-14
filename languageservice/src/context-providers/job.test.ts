@@ -18,7 +18,7 @@ describe("job context", () => {
     expect(context.pairs().length).toBe(0);
   });
 
-  it("returns status and check_run_id when job has no container or services", () => {
+  it("returns status, check_run_id, and workflow fields when job has no container or services", () => {
     const workflowContext = {job: {}} as WorkflowContext;
     const context = getJobContext(workflowContext);
 

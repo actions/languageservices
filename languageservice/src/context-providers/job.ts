@@ -5,7 +5,7 @@ import {WorkflowContext} from "../context/workflow-context.js";
 import {getDescription} from "./descriptions.js";
 
 /**
- * Returns the job context with container, services, status, and check_run_id.
+ * Returns the job context with container, services, status, check_run_id, and workflow identity fields.
  */
 export function getJobContext(workflowContext: WorkflowContext): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
