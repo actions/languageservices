@@ -716,8 +716,7 @@ function checkConcurrencyQueueConflict(diagnostics: Diagnostic[], token: Templat
 
   if (hasQueueMax && hasCancelInProgressTrue && queueRange) {
     diagnostics.push({
-      message:
-        "'queue: max' cannot be combined with 'cancel-in-progress: true'.",
+      message: "'queue: max' cannot be combined with 'cancel-in-progress: true'.",
       range: mapRange(queueRange),
       severity: DiagnosticSeverity.Error
     });

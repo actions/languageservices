@@ -264,8 +264,7 @@ jobs:
       const queueErrors = result.filter(d => d.message.includes("queue: max"));
       expect(queueErrors).toHaveLength(1);
       expect(queueErrors[0]).toMatchObject({
-        message:
-          "'queue: max' cannot be combined with 'cancel-in-progress: true'.",
+        message: "'queue: max' cannot be combined with 'cancel-in-progress: true'.",
         severity: DiagnosticSeverity.Error
       });
     });
