@@ -40,6 +40,12 @@ export interface ExperimentalFeatures {
    * @default false
    */
   allowCopilotRequestsPermission?: boolean;
+
+  /**
+   * Enable the queue property in workflow concurrency settings.
+   * @default false
+   */
+  allowConcurrencyQueue?: boolean;
 }
 
 /**
@@ -55,7 +61,8 @@ const allFeatureKeys: ExperimentalFeatureKey[] = [
   "missingInputsQuickfix",
   "blockScalarChompingWarning",
   "allowCaseFunction",
-  "allowCopilotRequestsPermission"
+  "allowCopilotRequestsPermission",
+  "allowConcurrencyQueue"
 ];
 
 export class FeatureFlags {

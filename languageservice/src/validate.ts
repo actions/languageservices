@@ -1,6 +1,13 @@
 import {FeatureFlags, Lexer, Parser} from "@actions/expressions";
 import {Expr} from "@actions/expressions/ast";
-import {TemplateParseResult, WorkflowTemplate, isBasicExpression, isMapping, isString} from "@actions/workflow-parser";
+import {
+  TemplateParseResult,
+  WorkflowTemplate,
+  isBasicExpression,
+  isBoolean,
+  isMapping,
+  isString
+} from "@actions/workflow-parser";
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {getCronDescription, hasCronIntervalLessThan5Minutes} from "@actions/workflow-parser/model/converter/cron";
 import {ensureStatusFunction} from "@actions/workflow-parser/model/converter/if-condition";
@@ -239,6 +246,11 @@ async function additionalValidations(
 
   // Validate concurrency deadlock between workflow and job levels
   validateConcurrencyDeadlock(diagnostics, template);
+
+  // Validate incompatible concurrency options
+  if (featureFlags?.isEnabled("allowConcurrencyQueue")) {
+    validateConcurrencyQueueCancelInProgress(diagnostics, template);
+  }
 }
 
 function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: ValueProviderKind) {
@@ -661,6 +673,55 @@ function validateConcurrencyDeadlock(diagnostics: Diagnostic[], template: Workfl
         });
       }
     }
+  }
+}
+
+/**
+ * Validates that `queue: max` and `cancel-in-progress: true` are not both set
+ * in a concurrency mapping, as this combination is invalid.
+ */
+function validateConcurrencyQueueCancelInProgress(diagnostics: Diagnostic[], template: WorkflowTemplate): void {
+  // Check workflow-level concurrency
+  if (template.concurrency) {
+    checkConcurrencyQueueConflict(diagnostics, template.concurrency);
+  }
+
+  // Check job-level concurrency
+  for (const job of template.jobs || []) {
+    if (job.concurrency) {
+      checkConcurrencyQueueConflict(diagnostics, job.concurrency);
+    }
+  }
+}
+
+function checkConcurrencyQueueConflict(diagnostics: Diagnostic[], token: TemplateToken): void {
+  if (!isMapping(token)) {
+    return;
+  }
+
+  let hasQueueMax = false;
+  let hasCancelInProgressTrue = false;
+  let queueRange: TokenRange | undefined;
+
+  for (const pair of token) {
+    if (!isString(pair.key) || pair.key.isExpression || pair.value.isExpression) {
+      continue;
+    }
+    if (pair.key.value === "queue" && isString(pair.value) && pair.value.value === "max") {
+      hasQueueMax = true;
+      queueRange = pair.key.range;
+    }
+    if (pair.key.value === "cancel-in-progress" && isBoolean(pair.value) && pair.value.value) {
+      hasCancelInProgressTrue = true;
+    }
+  }
+
+  if (hasQueueMax && hasCancelInProgressTrue && queueRange) {
+    diagnostics.push({
+      message: "'queue: max' cannot be combined with 'cancel-in-progress: true'.",
+      range: mapRange(queueRange),
+      severity: DiagnosticSeverity.Error
+    });
   }
 }
 
