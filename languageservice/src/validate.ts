@@ -248,7 +248,9 @@ async function additionalValidations(
   validateConcurrencyDeadlock(diagnostics, template);
 
   // Validate incompatible concurrency options
-  validateConcurrencyQueueCancelInProgress(diagnostics, template);
+  if (featureFlags?.isEnabled("allowConcurrencyQueue")) {
+    validateConcurrencyQueueCancelInProgress(diagnostics, template);
+  }
 }
 
 function invalidValue(diagnostics: Diagnostic[], token: StringToken, kind: ValueProviderKind) {
