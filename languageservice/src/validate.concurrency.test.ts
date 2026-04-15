@@ -25,7 +25,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(2);
@@ -56,7 +56,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(2);
@@ -77,7 +77,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(2);
@@ -97,7 +97,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(2);
@@ -119,7 +119,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       // Should have 2 warnings per job (workflow + job) = 4 total, but workflow is only warned once per match
       // Actually: 1 workflow warning per matching job + 1 job warning per matching job = 4 total
@@ -140,7 +140,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(0);
@@ -157,7 +157,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(0);
@@ -174,7 +174,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(0);
@@ -190,7 +190,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(0);
@@ -206,7 +206,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(0);
@@ -223,7 +223,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(0);
@@ -241,7 +241,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const concurrencyErrors = result.filter(d => d.message.includes("deadlock"));
       expect(concurrencyErrors).toHaveLength(0);
