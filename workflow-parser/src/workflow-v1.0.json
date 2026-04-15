@@ -1644,11 +1644,15 @@
           },
           "security-events": {
             "type": "permission-level-any",
-            "description": "Code scanning and Dependabot alerts."
+            "description": "Code scanning alerts."
           },
           "statuses": {
             "type": "permission-level-any",
             "description": "Commit statuses."
+          },
+          "vulnerability-alerts": {
+            "type": "permission-level-read-or-no-access",
+            "description": "Dependabot alerts."
           }
         }
       }
