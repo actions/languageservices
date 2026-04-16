@@ -318,7 +318,9 @@ jobs:
         "locked",
         "unlocked",
         "milestoned",
-        "demilestoned"
+        "demilestoned",
+        "field_added",
+        "field_removed"
       ]
     },
     "label": {
