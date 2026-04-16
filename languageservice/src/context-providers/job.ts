@@ -5,7 +5,7 @@ import {WorkflowContext} from "../context/workflow-context.js";
 import {getDescription} from "./descriptions.js";
 
 /**
- * Returns the job context with container, services, status, and check_run_id.
+ * Returns the job context with container, services, status, check_run_id, and workflow identity fields.
  */
 export function getJobContext(workflowContext: WorkflowContext): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#job-context
@@ -41,6 +41,12 @@ export function getJobContext(workflowContext: WorkflowContext): DescriptionDict
 
   // Check run ID
   jobContext.add("check_run_id", new data.StringData(""), getDescription("job", "check_run_id"));
+
+  // Workflow context fields (populated at runtime for reusable workflow jobs)
+  jobContext.add("workflow_file_path", new data.StringData(""), getDescription("job", "workflow_file_path"));
+  jobContext.add("workflow_ref", new data.StringData(""), getDescription("job", "workflow_ref"));
+  jobContext.add("workflow_repository", new data.StringData(""), getDescription("job", "workflow_repository"));
+  jobContext.add("workflow_sha", new data.StringData(""), getDescription("job", "workflow_sha"));
 
   return jobContext;
 }

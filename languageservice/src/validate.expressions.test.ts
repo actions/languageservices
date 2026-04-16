@@ -432,6 +432,24 @@ jobs:
       expect(result).toEqual([]);
     });
 
+    it("job.workflow_* fields", async () => {
+      const input = `
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo \${{ job.workflow_ref }}
+      - run: echo \${{ job.workflow_sha }}
+      - run: echo \${{ job.workflow_repository }}
+      - run: echo \${{ job.workflow_file_path }}
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+
+      expect(result).toEqual([]);
+    });
+
     it("job.services.<service_id>", async () => {
       const input = `
 on: push

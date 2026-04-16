@@ -2052,9 +2052,19 @@
           "cancel-in-progress": {
             "type": "boolean",
             "description": "To cancel any currently running job or workflow in the same concurrency group, specify cancel-in-progress: true."
+          },
+          "queue": {
+            "type": "concurrency-queue",
+            "description": "The queuing mode for the concurrency group. When set to `max`, workflows or jobs will wait in a queue for the concurrency group up to the maximum queue length. Default: `single` meaning at most one item can be pending."
           }
         }
       }
+    },
+    "concurrency-queue": {
+      "allowed-values": [
+        "single",
+        "max"
+      ]
     },
     "job-environment": {
       "description": "The environment that the job references. All environment protection rules must pass before a job referencing the environment is sent to a runner.",

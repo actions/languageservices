@@ -18,9 +18,12 @@ export type WorkflowTemplate = {
   }[];
 };
 
+export type ConcurrencyQueue = "single" | "max";
+
 export type ConcurrencySetting = {
   group?: StringToken;
   cancelInProgress?: boolean;
+  queue?: ConcurrencyQueue;
 };
 
 export type ActionsEnvironmentReference = {
