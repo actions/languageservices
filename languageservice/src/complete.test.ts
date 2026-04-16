@@ -1029,6 +1029,45 @@ jobs:
   });
 });
 
+describe("permissions workflows completion", () => {
+  it("includes workflows in top-level permissions", async () => {
+    const input = `on: push
+permissions:
+  |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("workflows");
+  });
+
+  it("offers only write and none for workflows", async () => {
+    const input = `on: push
+permissions:
+  workflows: |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("write");
+    expect(labels).not.toContain("read");
+  });
+
+  it("includes workflows in job-level permissions", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("workflows");
+  });
+});
+
 describe("service container command/entrypoint completion", () => {
   it("suggests entrypoint and command in service container", async () => {
     const input = `on: push
