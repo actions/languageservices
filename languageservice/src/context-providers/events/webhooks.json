@@ -6209,30 +6209,6 @@
         6
       ],
       "action": "unpinned"
-    },
-    "field_added": {
-      "bodyParameters": [
-        0,
-        1,
-        2,
-        23,
-        3,
-        4,
-        6
-      ],
-      "action": "field_added"
-    },
-    "field_removed": {
-      "bodyParameters": [
-        0,
-        1,
-        2,
-        23,
-        3,
-        4,
-        6
-      ],
-      "action": "field_removed"
     }
   },
   "label": {
