@@ -66,8 +66,6 @@ on:
       - unlocked
       - milestoned
       - demilestoned
-      - field_added
-      - field_removed
   label:
     types:
       - created
@@ -318,9 +316,7 @@ jobs:
         "locked",
         "unlocked",
         "milestoned",
-        "demilestoned",
-        "field_added",
-        "field_removed"
+        "demilestoned"
       ]
     },
     "label": {

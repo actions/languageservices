@@ -112,19 +112,6 @@ jobs:
     ]);
   });
 
-  it("issues activity type completion includes field_added and field_removed", async () => {
-    const input = `on:
-  issues:
-    types:
-      - |`;
-    const result = await complete(...getPositionFromCursor(input));
-    const labels = result.map(x => x.label);
-    expect(labels).toContain("field_added");
-    expect(labels).toContain("field_removed");
-    expect(labels).toContain("opened");
-    expect(labels).toContain("closed");
-  });
-
   it("map keys filter out existing values", async () => {
     const input = `on: push
 jobs:
