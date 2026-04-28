@@ -259,6 +259,43 @@ jobs:
     } as Diagnostic);
   });
 
+  it("issues event with field_added activity type", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  issues:
+    types: [field_added, field_removed]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`
+      )
+    );
+
+    expect(result.length).toBe(0);
+  });
+
+  it("issues event with invalid activity type", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  issues:
+    types: [opened, not_a_real_type]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`
+      )
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]?.message).toBe("Unexpected value 'not_a_real_type'");
+  });
+
   it("invalid cron string", async () => {
     const result = await validate(
       createDocument(
