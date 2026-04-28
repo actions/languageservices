@@ -67,7 +67,10 @@ export function getWorkflowContext(
         break;
       }
       case "regular-step":
-      case "run-step": {
+      case "run-step":
+      case "wait-step":
+      case "wait-all-step":
+      case "cancel-step": {
         if (isMapping(token)) {
           stepToken = token;
         }

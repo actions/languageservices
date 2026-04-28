@@ -87,22 +87,40 @@ export type Credential = {
   password: StringToken | undefined;
 };
 
-export type Step = ActionStep | RunStep;
+export type Step = ActionStep | RunStep | WaitStep | WaitAllStep | CancelStep;
 
 type BaseStep = {
   id: string;
   name?: ScalarToken;
-  if: BasicExpressionToken;
+  if?: BasicExpressionToken;
   "continue-on-error"?: boolean | ScalarToken;
+};
+
+type ExecutionStep = BaseStep & {
+  if: BasicExpressionToken;
   env?: MappingToken;
 };
 
-export type RunStep = BaseStep & {
+export type RunStep = ExecutionStep & {
   run: ScalarToken;
+  background?: boolean;
 };
 
-export type ActionStep = BaseStep & {
+export type ActionStep = ExecutionStep & {
   uses: StringToken;
+  background?: boolean;
+};
+
+export type WaitStep = BaseStep & {
+  wait: StringToken[];
+};
+
+export type WaitAllStep = BaseStep & {
+  "wait-all": boolean;
+};
+
+export type CancelStep = BaseStep & {
+  cancel: StringToken;
 };
 
 export type EventsConfig = {

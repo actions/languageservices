@@ -1,4 +1,4 @@
-import {data, DescriptionDictionary, Parser} from "@actions/expressions";
+import {data, DescriptionDictionary, FeatureFlags, Parser} from "@actions/expressions";
 import {FunctionDefinition, FunctionInfo} from "@actions/expressions/funcs/info";
 import {Lexer} from "@actions/expressions/lexer";
 import {parseAction} from "@actions/workflow-parser/actions/action-parser";
@@ -35,6 +35,7 @@ export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
   contextProviderConfig?: ContextProviderConfig;
   fileProvider?: FileProvider;
+  featureFlags?: FeatureFlags;
 };
 
 export type DescriptionProvider = {
@@ -58,7 +59,9 @@ export async function hover(document: TextDocument, position: Position, config?:
   const isAction = isActionDocument(document.uri);
 
   // Parse document
-  const parsedTemplate = isAction ? parseAction(file, nullTrace) : getOrParseWorkflow(file, document.uri);
+  const parsedTemplate = isAction
+    ? parseAction(file, nullTrace)
+    : getOrParseWorkflow(file, document.uri, false, config?.featureFlags);
   if (!parsedTemplate?.value) {
     return null;
   }

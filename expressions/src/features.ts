@@ -46,6 +46,12 @@ export interface ExperimentalFeatures {
    * @default false
    */
   allowConcurrencyQueue?: boolean;
+
+  /**
+   * Enable background workflow steps and related wait/cancel steps.
+   * @default false
+   */
+  allowBackgroundSteps?: boolean;
 }
 
 /**
@@ -62,7 +68,8 @@ const allFeatureKeys: ExperimentalFeatureKey[] = [
   "blockScalarChompingWarning",
   "allowCaseFunction",
   "allowCopilotRequestsPermission",
-  "allowConcurrencyQueue"
+  "allowConcurrencyQueue",
+  "allowBackgroundSteps"
 ];
 
 export class FeatureFlags {

@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import {FeatureFlags} from "@actions/expressions";
 import {nullTrace} from "../test-utils/null-trace.js";
+import {TemplateContext, TemplateValidationErrors} from "../templates/template-context.js";
 import {parseWorkflow} from "../workflows/workflow-parser.js";
+import {getWorkflowSchema} from "../workflows/workflow-schema.js";
 import {convertWorkflowTemplate, ErrorPolicy} from "./convert.js";
 
 function serializeTemplate(template: unknown): unknown {
@@ -8,6 +11,84 @@ function serializeTemplate(template: unknown): unknown {
 }
 
 describe("convertWorkflowTemplate", () => {
+  it("rejects background steps when feature flag is disabled", async () => {
+    const result = parseWorkflow(
+      {
+        name: "wf.yaml",
+        content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: npm start
+        background: true
+      - wait-all:`
+      },
+      nullTrace
+    );
+
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.ReturnErrorsOnly
+    });
+
+    expect(serializeTemplate(template)).toMatchObject({
+      errors: [
+        {
+          Message: "wf.yaml (Line: 8, Col: 9): Unexpected value 'background'"
+        },
+        {
+          Message: "wf.yaml (Line: 9, Col: 9): Unexpected value 'wait-all'"
+        }
+      ]
+    });
+  });
+
+  it("accepts background steps when feature flag is enabled", async () => {
+    const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+    context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+    const result = parseWorkflow(
+      {
+        name: "wf.yaml",
+        content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: npm start
+        background: true
+      - wait-all:`
+      },
+      context
+    );
+
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion,
+      featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+    });
+
+    expect(serializeTemplate(template)).toMatchObject({
+      jobs: [
+        {
+          steps: [
+            {
+              id: "server",
+              background: true,
+              run: "npm start"
+            },
+            {
+              id: "__wait-all",
+              "wait-all": true
+            }
+          ]
+        }
+      ]
+    });
+    expect(template.errors).toBeUndefined();
+  });
+
   it("converts workflow with one job", async () => {
     const result = parseWorkflow(
       {

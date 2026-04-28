@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import {ObjectReader} from "./object-reader.js";
+import {FeatureFlags} from "@actions/expressions/features";
 import {TemplateSchema} from "./schema/index.js";
 import {DefinitionInfo} from "./schema/definition-info.js";
 import {DefinitionType} from "./schema/definition-type.js";
@@ -25,6 +26,8 @@ import {isString} from "./tokens/type-guards.js";
 import {TokenType} from "./tokens/types.js";
 
 const WHITESPACE_PATTERN = /\s/;
+const backgroundStepProperties = new Set(["background", "wait", "wait-all", "cancel"]);
+const backgroundStepOnlyProperties = new Set(["wait", "wait-all", "cancel"]);
 
 export function readTemplate(
   context: TemplateContext,
@@ -215,6 +218,12 @@ class TemplateReader {
       // Well known
       const nextPropertyDef = this._schema.matchPropertyAndFilter(mappingDefinitions, nextKey.value);
       if (nextPropertyDef) {
+        if (!this.backgroundStepsEnabled() && backgroundStepProperties.has(nextKey.value)) {
+          this._context.error(nextKey, `Unexpected value '${nextKey.value}'`);
+          this.skipValue();
+          continue;
+        }
+
         const nextDefinition = new DefinitionInfo(definition, nextPropertyDef.type);
 
         // Store the definition on the key, the value may have its own definition
@@ -277,9 +286,13 @@ class TemplateReader {
         }
       }
 
+      const properties = this.backgroundStepsEnabled()
+        ? nonDuplicates
+        : nonDuplicates.filter(property => !backgroundStepOnlyProperties.has(property));
+
       this._context.error(
         mapping,
-        `There's not enough info to determine what you meant. Add one of these properties: ${nonDuplicates
+        `There's not enough info to determine what you meant. Add one of these properties: ${properties
           .sort()
           .join(", ")}`
       );
@@ -792,6 +805,10 @@ class TemplateReader {
     }
 
     return result.join("");
+  }
+
+  private backgroundStepsEnabled(): boolean {
+    return (this._context.state.featureFlags as FeatureFlags | undefined)?.isEnabled("allowBackgroundSteps") ?? false;
   }
 }
 

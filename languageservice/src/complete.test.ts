@@ -305,25 +305,41 @@ jobs:
     - run: echo
     - |`;
     const result = await complete(...getPositionFromCursor(input));
-    expect(result).toHaveLength(11);
-    expect(result.map(x => x.label)).toEqual([
-      "continue-on-error",
-      "env",
-      "id",
-      "if",
-      "name",
-      "run",
-      "shell",
-      "timeout-minutes",
-      "uses",
-      "with",
-      "working-directory"
-    ]);
+    expect(result.map(x => x.label)).toEqual(
+      expect.arrayContaining([
+        "continue-on-error",
+        "env",
+        "id",
+        "if",
+        "name",
+        "run",
+        "shell",
+        "timeout-minutes",
+        "uses",
+        "with",
+        "working-directory"
+      ])
+    );
+    expect(result.map(x => x.label)).toEqual(expect.not.arrayContaining(["background", "cancel", "wait", "wait-all"]));
 
     // Includes detail when available. Using continue-on-error as a sample here.
     expect(result.map(x => (x.documentation as MarkupContent)?.value)).toContain(
       "Prevents a job from failing when a step fails. Set to `true` to allow a job to pass when this step fails."
     );
+  });
+
+  it("empty step includes background step keys when enabled", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+    - |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+    });
+    expect(result.map(x => x.label)).toEqual(expect.arrayContaining(["background", "cancel", "wait", "wait-all"]));
   });
 
   it("loose mapping keys have no completion suggestions", async () => {

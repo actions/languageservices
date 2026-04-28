@@ -7,7 +7,7 @@ export function getEnvContext(workflowContext: WorkflowContext): DescriptionDict
   const d = new DescriptionDictionary();
 
   //step env
-  if (workflowContext.step?.env) {
+  if (workflowContext.step && "env" in workflowContext.step && workflowContext.step.env) {
     envContext(workflowContext.step.env, d);
   }
 

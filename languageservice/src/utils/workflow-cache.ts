@@ -1,3 +1,4 @@
+import {FeatureFlags} from "@actions/expressions";
 import {convertWorkflowTemplate, parseWorkflow, TemplateParseResult, WorkflowTemplate} from "@actions/workflow-parser";
 import {parseAction} from "@actions/workflow-parser/actions/action-parser";
 import {
@@ -6,9 +7,10 @@ import {
   convertActionTemplate
 } from "@actions/workflow-parser/actions/action-template";
 import {WorkflowTemplateConverterOptions} from "@actions/workflow-parser/model/convert";
-import {TemplateContext} from "@actions/workflow-parser/templates/template-context";
+import {TemplateContext, TemplateValidationErrors} from "@actions/workflow-parser/templates/template-context";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {File} from "@actions/workflow-parser/workflows/file";
+import {getWorkflowSchema} from "@actions/workflow-parser/workflows/workflow-schema";
 
 import {CompletionConfig} from "../complete.js";
 import {nullTrace} from "../nulltrace.js";
@@ -41,13 +43,20 @@ export function clearCache() {
  * @param transformed Indicates whether the workflow has been transformed before parsing
  * @returns the {@link TemplateParseResult}
  */
-export function getOrParseWorkflow(file: File, uri: string, transformed = false): TemplateParseResult {
+export function getOrParseWorkflow(
+  file: File,
+  uri: string,
+  transformed = false,
+  featureFlags?: FeatureFlags
+): TemplateParseResult {
   const key = cacheKey(uri, transformed);
   const cachedResult = parsedWorkflowCache.get(key);
   if (cachedResult) {
     return cachedResult;
   }
-  const result = parseWorkflow(file, nullTrace);
+  const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+  context.state.featureFlags = featureFlags;
+  const result = parseWorkflow(file, context);
   parsedWorkflowCache.set(key, result);
   return result;
 }

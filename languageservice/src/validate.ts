@@ -82,7 +82,12 @@ async function validateWorkflow(textDocument: TextDocument, config?: ValidationC
   const diagnostics: Diagnostic[] = [];
 
   try {
-    const result: TemplateParseResult | undefined = getOrParseWorkflow(file, textDocument.uri);
+    const result: TemplateParseResult | undefined = getOrParseWorkflow(
+      file,
+      textDocument.uri,
+      false,
+      config?.featureFlags
+    );
     if (!result) {
       return [];
     }

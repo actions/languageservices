@@ -168,7 +168,8 @@ export function initConnection(connection: Connection) {
         contextProviderConfig: repoContext && contextProviders(client, repoContext, cache),
         fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
           return await connection.sendRequest(Requests.ReadFile, {path});
-        })
+        }),
+        featureFlags
       });
     });
   });
