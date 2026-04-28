@@ -13,6 +13,7 @@ import {convertToIfCondition} from "./if-condition.js";
 import {ActionStep, Step} from "../workflow-template.js";
 import {handleTemplateTokenErrors} from "./handle-errors.js";
 import {IdBuilder} from "./id-builder.js";
+import {FeatureFlags} from "@actions/expressions/features";
 
 export function convertSteps(context: TemplateContext, steps: TemplateToken): Step[] {
   if (!isSequence(steps)) {
@@ -180,7 +181,12 @@ function convertStep(
       cancel
     };
   }
-  context.error(step, "Expected one of uses, run, wait, wait-all, or cancel to be defined");
+  context.error(
+    step,
+    (context.state.featureFlags as FeatureFlags | undefined)?.isEnabled("allowBackgroundSteps")
+      ? "Expected one of uses, run, wait, wait-all, or cancel to be defined"
+      : "Expected one of uses or run to be defined"
+  );
 }
 
 function createActionStepId(step: ActionStep): string {

@@ -64,9 +64,9 @@ jobs:
       "Unexpected value 'wait'",
       "Unexpected value 'wait-all'",
       "Unexpected value 'cancel'",
-      "Expected one of uses, run, wait, wait-all, or cancel to be defined",
-      "Expected one of uses, run, wait, wait-all, or cancel to be defined",
-      "Expected one of uses, run, wait, wait-all, or cancel to be defined"
+      "Expected one of uses or run to be defined",
+      "Expected one of uses or run to be defined",
+      "Expected one of uses or run to be defined"
     ]);
   });
 
