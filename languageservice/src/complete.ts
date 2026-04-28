@@ -42,6 +42,8 @@ import {Value, ValueProviderConfig} from "./value-providers/config.js";
 import {defaultValueProviders} from "./value-providers/default.js";
 import {DefinitionValueMode, definitionValues, TokenStructure} from "./value-providers/definition.js";
 
+const backgroundStepCompletionLabels = new Set(["background", "wait", "wait-all", "cancel"]);
+
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position
   let startPos = input.lastIndexOf(OPEN_EXPRESSION, pos);
@@ -88,7 +90,7 @@ export async function complete(
   // Parse the document
   const parsedTemplate = isAction
     ? getOrParseAction(file, textDocument.uri, true)
-    : getOrParseWorkflow(file, textDocument.uri, true);
+    : getOrParseWorkflow(file, textDocument.uri, true, config?.featureFlags);
   if (!parsedTemplate.value) {
     return [];
   }
@@ -170,6 +172,10 @@ export async function complete(
     parent?.definition?.key === "permissions-mapping"
   ) {
     values = values.filter(v => v.label !== "copilot-requests");
+  }
+
+  if (!isAction && !config?.featureFlags?.isEnabled("allowBackgroundSteps")) {
+    values = values.filter(v => !backgroundStepCompletionLabels.has(v.label));
   }
 
   // Offer "(switch to list)" / "(switch to mapping)" when the schema allows alternative forms

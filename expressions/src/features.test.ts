@@ -57,7 +57,8 @@ describe("FeatureFlags", () => {
         "blockScalarChompingWarning",
         "allowCaseFunction",
         "allowCopilotRequestsPermission",
-        "allowConcurrencyQueue"
+        "allowConcurrencyQueue",
+        "allowBackgroundSteps"
       ]);
     });
   });

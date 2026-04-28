@@ -1,15 +1,19 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as YAML from "yaml";
+import {ExperimentalFeatures, FeatureFlags} from "@actions/expressions";
 import {convertWorkflowTemplate} from "./model/convert.js";
+import {TemplateContext, TemplateValidationErrors} from "./templates/template-context.js";
 import {NoOperationTraceWriter} from "./templates/trace-writer.js";
 import {File} from "./workflows/file.js";
 import {FileProvider} from "./workflows/file-provider.js";
 import {fileIdentifier, FileReference} from "./workflows/file-reference.js";
+import {getWorkflowSchema} from "./workflows/workflow-schema.js";
 import {parseWorkflow} from "./workflows/workflow-parser.js";
 
 interface TestOptions {
   "include-source"?: boolean;
+  "experimental-features"?: ExperimentalFeatures;
   skip?: string[];
 }
 
@@ -70,12 +74,16 @@ describe("x-lang tests", () => {
         }
       };
 
+      const featureFlags = new FeatureFlags(testOptions["experimental-features"]);
+      const parseContext = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      parseContext.state.featureFlags = featureFlags;
+
       const parseResult = parseWorkflow(
         {
           name: testFileName,
           content: testInput
         },
-        nullTrace
+        parseContext
       );
 
       expect(parseResult.value).not.toBeUndefined();
@@ -85,7 +93,8 @@ describe("x-lang tests", () => {
         parseResult.value!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
         testFileProvider,
         {
-          fetchReusableWorkflowDepth: 1
+          fetchReusableWorkflowDepth: 1,
+          featureFlags
         }
       );
 

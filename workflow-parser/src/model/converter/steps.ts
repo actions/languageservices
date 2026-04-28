@@ -2,6 +2,7 @@ import {TemplateContext} from "../../templates/template-context.js";
 import {
   BasicExpressionToken,
   MappingToken,
+  NullToken,
   ScalarToken,
   StringToken,
   TemplateToken
@@ -20,10 +21,13 @@ export function convertSteps(context: TemplateContext, steps: TemplateToken): St
   }
 
   const idBuilder = new IdBuilder();
+  const knownStepIds = new Set<string>();
 
   const result: Step[] = [];
   for (const item of steps) {
-    const step = handleTemplateTokenErrors(steps, context, undefined, () => convertStep(context, idBuilder, item));
+    const step = handleTemplateTokenErrors(steps, context, undefined, () =>
+      convertStep(context, idBuilder, knownStepIds, item)
+    );
     if (step) {
       result.push(step);
     }
@@ -37,6 +41,12 @@ export function convertSteps(context: TemplateContext, steps: TemplateToken): St
     let id = "";
     if (isActionStep(step)) {
       id = createActionStepId(step);
+    } else if ("wait" in step) {
+      id = "wait";
+    } else if ("wait-all" in step) {
+      id = "wait-all";
+    } else if ("cancel" in step) {
+      id = "cancel";
     }
 
     if (!id) {
@@ -50,13 +60,22 @@ export function convertSteps(context: TemplateContext, steps: TemplateToken): St
   return result;
 }
 
-function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: TemplateToken): Step | undefined {
+function convertStep(
+  context: TemplateContext,
+  idBuilder: IdBuilder,
+  knownStepIds: Set<string>,
+  step: TemplateToken
+): Step | undefined {
   const mapping = step.assertMapping("steps item");
 
   let run: ScalarToken | undefined;
   let id: StringToken | undefined;
   let name: ScalarToken | undefined;
   let uses: StringToken | undefined;
+  let background: boolean | undefined;
+  let wait: StringToken[] | undefined;
+  let waitAll: boolean | undefined;
+  let cancel: StringToken | undefined;
   let continueOnError: boolean | ScalarToken | undefined;
   let env: MappingToken | undefined;
   let ifCondition: BasicExpressionToken | undefined;
@@ -69,6 +88,8 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
           const error = idBuilder.tryAddKnownId(id.value);
           if (error) {
             context.error(id, error);
+          } else {
+            knownStepIds.add(id.value);
           }
         }
         break;
@@ -80,6 +101,19 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
         break;
       case "uses":
         uses = item.value.assertString("steps item uses");
+        break;
+      case "background":
+        background = item.value.assertBoolean("steps item background").value;
+        break;
+      case "wait":
+        wait = convertWaitTargets(context, knownStepIds, item.value, id);
+        break;
+      case "wait-all":
+        waitAll = convertWaitAllValue(context, item.value);
+        break;
+      case "cancel":
+        cancel = item.value.assertString("steps item cancel");
+        validateTargetStepId(context, knownStepIds, cancel, id);
         break;
       case "env":
         env = item.value.assertMapping("step env");
@@ -103,7 +137,8 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
       if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       "continue-on-error": continueOnError,
       env,
-      run
+      run,
+      background
     };
   }
 
@@ -114,10 +149,38 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
       if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       "continue-on-error": continueOnError,
       env,
-      uses
+      uses,
+      background
     };
   }
-  context.error(step, "Expected uses or run to be defined");
+
+  if (wait) {
+    return {
+      id: id?.value || "",
+      name: name || createSyntheticStepName("Wait"),
+      "continue-on-error": continueOnError,
+      wait
+    };
+  }
+
+  if (waitAll !== undefined) {
+    return {
+      id: id?.value || "",
+      name: name || createSyntheticStepName("Wait for all"),
+      "continue-on-error": continueOnError,
+      "wait-all": waitAll
+    };
+  }
+
+  if (cancel) {
+    return {
+      id: id?.value || "",
+      name: name || createSyntheticStepName("Cancel"),
+      "continue-on-error": continueOnError,
+      cancel
+    };
+  }
+  context.error(step, "Expected one of uses, run, wait, wait-all, or cancel to be defined");
 }
 
 function createActionStepId(step: ActionStep): string {
@@ -143,4 +206,58 @@ function createActionStepId(step: ActionStep): string {
   }
 
   return "";
+}
+
+function createSyntheticStepName(value: string): ScalarToken {
+  return new StringToken(undefined, undefined, value, undefined, undefined, undefined);
+}
+
+function convertWaitTargets(
+  context: TemplateContext,
+  knownStepIds: Set<string>,
+  token: TemplateToken,
+  ownStepId?: StringToken
+): StringToken[] {
+  if (token instanceof StringToken) {
+    validateTargetStepId(context, knownStepIds, token, ownStepId);
+    return [token];
+  }
+
+  const sequence = token.assertSequence("steps item wait");
+  const targets: StringToken[] = [];
+  for (let i = 0; i < sequence.count; i++) {
+    const target = sequence.get(i).assertString("steps item wait item");
+    validateTargetStepId(context, knownStepIds, target, ownStepId);
+    targets.push(target);
+  }
+
+  return targets;
+}
+
+function convertWaitAllValue(context: TemplateContext, token: TemplateToken): boolean {
+  if (token instanceof NullToken) {
+    return true;
+  }
+
+  const value = token.assertBoolean("steps item wait-all").value;
+  if (!value) {
+    context.error(token, "The value of 'wait-all' must be true or omitted");
+  }
+
+  return true;
+}
+
+function validateTargetStepId(
+  context: TemplateContext,
+  knownStepIds: Set<string>,
+  target: StringToken,
+  ownStepId?: StringToken
+) {
+  if (target.value.startsWith("__")) {
+    context.error(target, `The identifier '${target.value}' is invalid. IDs starting with '__' are reserved.`);
+  } else if (ownStepId && target.value.toLowerCase() === ownStepId.value.toLowerCase()) {
+    context.error(target, `Step '${ownStepId.value}' cannot reference itself`);
+  } else if (!knownStepIds.has(target.value)) {
+    context.error(target, `Step references unknown step ID '${target.value}'`);
+  }
 }

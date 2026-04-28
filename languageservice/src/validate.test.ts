@@ -1,3 +1,4 @@
+import {FeatureFlags} from "@actions/expressions";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
 import {createDocument} from "./test-utils/document.js";
 import {validate} from "./validate.js";
@@ -14,6 +15,99 @@ describe("validation", () => {
     const result = await validate(createDocument("wf.yaml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest"));
 
     expect(result.length).toBe(0);
+  });
+
+  it("background step keywords are accepted when enabled", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: npm start
+        background: true
+      - wait: server
+        continue-on-error: true
+      - wait-all:
+        continue-on-error: false
+      - cancel: server`
+      ),
+      {featureFlags: new FeatureFlags({allowBackgroundSteps: true})}
+    );
+
+    expect(result.length).toBe(0);
+  });
+
+  it("background step keywords are rejected when disabled", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: npm start
+        background: true
+      - wait: server
+      - wait-all:
+      - cancel: server`
+      )
+    );
+
+    expect(result.map(x => x.message)).toEqual([
+      "Unexpected value 'background'",
+      "Unexpected value 'wait'",
+      "Unexpected value 'wait-all'",
+      "Unexpected value 'cancel'",
+      "Expected one of uses, run, wait, wait-all, or cancel to be defined",
+      "Expected one of uses, run, wait, wait-all, or cancel to be defined",
+      "Expected one of uses, run, wait, wait-all, or cancel to be defined"
+    ]);
+  });
+
+  it("background step keywords are included in ambiguity errors when enabled", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - runn: echo hi`
+      ),
+      {featureFlags: new FeatureFlags({allowBackgroundSteps: true})}
+    );
+
+    expect(result.map(x => x.message)).toContain(
+      "There's not enough info to determine what you meant. Add one of these properties: cancel, run, shell, uses, wait, wait-all, with, working-directory"
+    );
+  });
+
+  it("wait-all false is rejected", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - wait-all: false`
+      ),
+      {featureFlags: new FeatureFlags({allowBackgroundSteps: true})}
+    );
+
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        message: "The value of 'wait-all' must be true or omitted"
+      })
+    );
   });
 
   it("missing jobs key", async () => {

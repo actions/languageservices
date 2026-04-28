@@ -2146,7 +2146,7 @@
       }
     },
     "steps": {
-      "description": "A job contains a sequence of tasks called `steps`. Steps can run commands, run setup tasks, or run an action in your repository, a public repository, or an action published in a Docker registry. Not all steps run actions, but all actions run as a step. Each step runs in its own process in the runner environment and has access to the workspace and filesystem. Because steps run in their own process, changes to environment variables are not preserved between steps. GitHub provides built-in steps to set up and complete a job. Must contain either `uses` or `run`.",
+      "description": "A job contains a sequence of tasks called `steps`. Steps can run commands, run setup tasks, run an action in your repository, a public repository, or an action published in a Docker registry, wait for background steps to complete, or cancel a background step. Not all steps run actions, but all actions run as a step. Each step runs in its own process in the runner environment and has access to the workspace and filesystem. Because steps run in their own process, changes to environment variables are not preserved between steps. GitHub provides built-in steps to set up and complete a job.",
       "sequence": {
         "item-type": "steps-item"
       }
@@ -2154,7 +2154,10 @@
     "steps-item": {
       "one-of": [
         "run-step",
-        "regular-step"
+        "regular-step",
+        "wait-step",
+        "wait-all-step",
+        "cancel-step"
       ]
     },
     "run-step": {
@@ -2172,7 +2175,8 @@
           "continue-on-error": "step-continue-on-error",
           "env": "step-env",
           "working-directory": "string-steps-context",
-          "shell": "shell"
+          "shell": "shell",
+          "background": "step-background"
         }
       }
     },
@@ -2189,12 +2193,76 @@
             "required": true
           },
           "with": "step-with",
-          "env": "step-env"
+          "env": "step-env",
+          "background": "step-background"
+        }
+      }
+    },
+    "wait-step": {
+      "mapping": {
+        "properties": {
+          "name": "step-name",
+          "id": "step-id",
+          "continue-on-error": "step-continue-on-error",
+          "wait": {
+            "type": "step-wait-target",
+            "required": true
+          }
+        }
+      }
+    },
+    "wait-all-step": {
+      "mapping": {
+        "properties": {
+          "name": "step-name",
+          "id": "step-id",
+          "continue-on-error": "step-continue-on-error",
+          "wait-all": {
+            "type": "step-wait-all-value",
+            "required": true
+          }
+        }
+      }
+    },
+    "cancel-step": {
+      "mapping": {
+        "properties": {
+          "name": "step-name",
+          "id": "step-id",
+          "continue-on-error": "step-continue-on-error",
+          "cancel": {
+            "type": "step-cancel-target",
+            "required": true
+          }
         }
       }
     },
     "step-uses": {
       "description": "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, a [private repository with access enabled](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#allowing-access-to-components-in-a-private-repository), or in a published Docker container image.",
+      "string": {
+        "require-non-empty": true
+      }
+    },
+    "step-background": {
+      "boolean": {},
+      "description": "When set to true, runs this step in the background. The workflow continues to the next step immediately without waiting for the background step to finish."
+    },
+    "step-wait-target": {
+      "description": "The step ID or IDs of background steps to wait for.",
+      "one-of": [
+        "non-empty-string",
+        "sequence-of-non-empty-string"
+      ]
+    },
+    "step-wait-all-value": {
+      "description": "Wait for all prior background steps to complete. Use as a bare key (`wait-all:`) or with a boolean value.",
+      "one-of": [
+        "null",
+        "boolean"
+      ]
+    },
+    "step-cancel-target": {
+      "description": "The step ID of a background step to cancel.",
       "string": {
         "require-non-empty": true
       }
