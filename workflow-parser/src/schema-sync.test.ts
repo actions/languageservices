@@ -30,7 +30,15 @@ describe("schema-sync", () => {
     check_suite: ["requested", "rerequested"],
 
     // registry_package: "default" is a webhook concept, not a workflow trigger type
-    registry_package: ["default"]
+    registry_package: ["default"],
+
+    // discussion: closed and reopened are webhook-only, not listed as workflow trigger activity types
+    // See: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#discussion
+    discussion: ["closed", "reopened"],
+
+    // issue_comment: pinned and unpinned are webhook-only, not listed as workflow trigger activity types
+    // See: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#issue_comment
+    issue_comment: ["pinned", "unpinned"]
   };
 
   // Activity types that exist in workflow schema but are intentionally NOT
