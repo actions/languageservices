@@ -250,12 +250,54 @@ end
 return {
   cmd = { "actions-languageserver", "--stdio" },
   filetypes = { "yaml.ghactions" },
-  root_markers = { ".git" },
+
+  -- `root_dir` ensures that the LSP does not attach to all yaml files
+  root_dir = function(bufnr, on_dir)
+    local parent = vim.fs.dirname(vim.api.nvim_buf_get_name(bufnr))
+    if
+      vim.endswith(parent, '/.github/workflows')
+      or vim.endswith(parent, '/.forgejo/workflows')
+      or vim.endswith(parent, '/.gitea/workflows')
+    then
+      on_dir(parent)
+    end
+  end,
+
   init_options = {
     -- Optional: provide a GitHub token and repo context for added functionality
     -- (e.g., repository-specific completions)
     sessionToken = get_github_token(),
     repos = get_repos_config(),
+  },
+
+  -- allow the lsp to register capabilities on demand
+  capabilities = {
+    workspace = {
+      didChangeWorkspaceFolders = {
+        dynamicRegistration = true,
+      },
+    },
+  },
+
+  -- given a file:// protocol path as built using the workspaceUri above,
+  -- resolve path to disk path and provide filecontents when lsp requests this
+  -- action https://github.com/actions/languageservices/blob/main/languageserver/src/request.ts#L2
+  -- taken from https://github.com/neovim/nvim-lspconfig/blob/75e49cfa588a89ca667d767c0afef3ceac205faa/lsp/gh_actions_ls.lua#L33-L48
+  handlers = {
+    ["actions/readFile"] = function(_, result)
+      if type(result.path) ~= "string" then
+        return nil, nil
+      end
+      local file_path = vim.uri_to_fname(result.path)
+      if vim.fn.filereadable(file_path) == 1 then
+        local f = assert(io.open(file_path, "r"))
+        local text = f:read("*a")
+        f:close()
+
+        return text, nil
+      end
+      return nil, nil
+    end,
   },
 }
 ```
