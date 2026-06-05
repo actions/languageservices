@@ -2165,7 +2165,8 @@
         "regular-step",
         "wait-step",
         "wait-all-step",
-        "cancel-step"
+        "cancel-step",
+        "parallel-step"
       ]
     },
     "run-step": {
@@ -2243,6 +2244,22 @@
             "required": true
           }
         }
+      }
+    },
+    "parallel-step": {
+      "mapping": {
+        "properties": {
+          "parallel": {
+            "type": "parallel-steps",
+            "required": true,
+            "description": "Run a group of steps concurrently. All steps in the parallel block run as background steps and the workflow waits for all of them to complete before continuing."
+          }
+        }
+      }
+    },
+    "parallel-steps": {
+      "sequence": {
+        "item-type": "steps-item"
       }
     },
     "step-uses": {

@@ -42,7 +42,7 @@ import {Value, ValueProviderConfig} from "./value-providers/config.js";
 import {defaultValueProviders} from "./value-providers/default.js";
 import {DefinitionValueMode, definitionValues, TokenStructure} from "./value-providers/definition.js";
 
-const backgroundStepCompletionLabels = new Set(["background", "wait", "wait-all", "cancel"]);
+const backgroundStepCompletionLabels = new Set(["background", "wait", "wait-all", "cancel", "parallel"]);
 
 export function getExpressionInput(input: string, pos: number): string {
   // Find start marker around the cursor position

@@ -48,6 +48,8 @@ export function convertSteps(context: TemplateContext, steps: TemplateToken): St
       id = "wait-all";
     } else if ("cancel" in step) {
       id = "cancel";
+    } else if ("parallel" in step) {
+      id = "parallel";
     }
 
     if (!id) {
@@ -77,6 +79,7 @@ function convertStep(
   let wait: StringToken[] | undefined;
   let waitAll: boolean | undefined;
   let cancel: StringToken | undefined;
+  let parallel: TemplateToken | undefined;
   let continueOnError: boolean | ScalarToken | undefined;
   let env: MappingToken | undefined;
   let ifCondition: BasicExpressionToken | undefined;
@@ -115,6 +118,9 @@ function convertStep(
       case "cancel":
         cancel = item.value.assertString("steps item cancel");
         validateTargetStepId(context, knownStepIds, cancel, id);
+        break;
+      case "parallel":
+        parallel = item.value;
         break;
       case "env":
         env = item.value.assertMapping("step env");
@@ -181,10 +187,38 @@ function convertStep(
       cancel
     };
   }
+
+  if (parallel) {
+    const parallelSteps = convertSteps(context, parallel);
+    // Validate: parallel blocks only allow run and uses steps
+    for (const ps of parallelSteps) {
+      if ("background" in ps && ps.background) {
+        context.error(step, "'background: true' is not allowed inside a parallel block. Steps in a parallel block are automatically run as background steps.");
+      }
+      if ("wait" in ps) {
+        context.error(step, "'wait' is not allowed inside a parallel block.");
+      }
+      if ("wait-all" in ps) {
+        context.error(step, "'wait-all' is not allowed inside a parallel block.");
+      }
+      if ("cancel" in ps) {
+        context.error(step, "'cancel' is not allowed inside a parallel block.");
+      }
+      if ("parallel" in ps) {
+        context.error(step, "Nested 'parallel' blocks are not allowed.");
+      }
+    }
+    return {
+      id: id?.value || "",
+      name: name || createSyntheticStepName("Parallel group"),
+      parallel: parallelSteps
+    };
+  }
+
   context.error(
     step,
     (context.state.featureFlags as FeatureFlags | undefined)?.isEnabled("allowBackgroundSteps")
-      ? "Expected one of uses, run, wait, wait-all, or cancel to be defined"
+      ? "Expected one of uses, run, wait, wait-all, cancel, or parallel to be defined"
       : "Expected one of uses or run to be defined"
   );
 }

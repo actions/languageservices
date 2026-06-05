@@ -14,7 +14,7 @@ jobs:
       "Message": ".github/workflows/error.yml (Line: 7, Col: 9): Unexpected value 'runn'"
     },
     {
-      "Message": ".github/workflows/error.yml (Line: 7, Col: 9): There's not enough info to determine what you meant. Add one of these properties: run, shell, uses, with, working-directory"
+      "Message": ".github/workflows/error.yml (Line: 7, Col: 9): There's not enough info to determine what you meant. Add one of these properties: parallel, run, shell, uses, with, working-directory"
     }
   ]
 }

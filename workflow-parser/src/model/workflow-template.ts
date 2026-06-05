@@ -87,7 +87,7 @@ export type Credential = {
   password: StringToken | undefined;
 };
 
-export type Step = ActionStep | RunStep | WaitStep | WaitAllStep | CancelStep;
+export type Step = ActionStep | RunStep | WaitStep | WaitAllStep | CancelStep | ParallelStep;
 
 type BaseStep = {
   id: string;
@@ -121,6 +121,10 @@ export type WaitAllStep = BaseStep & {
 
 export type CancelStep = BaseStep & {
   cancel: StringToken;
+};
+
+export type ParallelStep = BaseStep & {
+  parallel: Step[];
 };
 
 export type EventsConfig = {
