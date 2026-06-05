@@ -768,7 +768,9 @@ jobs:
       });
 
       expect(template.errors).toBeUndefined();
-      const job = template.jobs![0] as {steps: unknown[]};
+      const job = template.jobs![0];
+      expect("steps" in job).toBe(true);
+      if (!("steps" in job)) return;
       expect(job.steps).toHaveLength(1);
       expect(job.steps[0]).toHaveProperty("parallel");
       const parallelStep = job.steps[0] as {parallel: unknown[]};
