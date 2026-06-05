@@ -31,7 +31,7 @@ it("omits background step properties from ambiguity errors when disabled", () =>
   const result = parseWorkflow({name: "main.yaml", content: ambiguousStep}, nullTrace);
 
   expect(result.context.errors.getErrors().map(x => x.rawMessage)).toContain(
-    "There's not enough info to determine what you meant. Add one of these properties: run, shell, uses, with, working-directory"
+    "There's not enough info to determine what you meant. Add one of these properties: parallel, run, shell, uses, with, working-directory"
   );
 });
 
@@ -42,6 +42,6 @@ it("includes background step properties in ambiguity errors when enabled", () =>
   const result = parseWorkflow({name: "main.yaml", content: ambiguousStep}, context);
 
   expect(result.context.errors.getErrors().map(x => x.rawMessage)).toContain(
-    "There's not enough info to determine what you meant. Add one of these properties: cancel, run, shell, uses, wait, wait-all, with, working-directory"
+    "There's not enough info to determine what you meant. Add one of these properties: cancel, parallel, run, shell, uses, wait, wait-all, with, working-directory"
   );
 });

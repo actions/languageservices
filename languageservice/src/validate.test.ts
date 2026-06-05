@@ -85,7 +85,7 @@ jobs:
     );
 
     expect(result.map(x => x.message)).toContain(
-      "There's not enough info to determine what you meant. Add one of these properties: cancel, run, shell, uses, wait, wait-all, with, working-directory"
+      "There's not enough info to determine what you meant. Add one of these properties: cancel, parallel, run, shell, uses, wait, wait-all, with, working-directory"
     );
   });
 
