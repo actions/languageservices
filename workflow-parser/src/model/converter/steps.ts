@@ -192,8 +192,11 @@ function convertStep(
     const parallelSteps = convertSteps(context, parallel);
     // Validate: parallel blocks only allow run and uses steps
     for (const ps of parallelSteps) {
-      if ("background" in ps && ps.background) {
-        context.error(step, "'background: true' is not allowed inside a parallel block. Steps in a parallel block are automatically run as background steps.");
+      if ("background" in ps && ps.background !== undefined) {
+        context.error(
+          step,
+          "'background' is not allowed inside a parallel block. Steps in a parallel block are automatically run as background steps."
+        );
       }
       if ("wait" in ps) {
         context.error(step, "'wait' is not allowed inside a parallel block.");

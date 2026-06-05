@@ -741,4 +741,129 @@ jobs:
       });
     });
   });
+
+  describe("parallel steps", () => {
+    it("converts a valid parallel block", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - parallel:
+          - run: echo "step 1"
+          - run: echo "step 2"`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeUndefined();
+      const job = template.jobs![0] as {steps: unknown[]};
+      expect(job.steps).toHaveLength(1);
+      expect(job.steps[0]).toHaveProperty("parallel");
+      const parallelStep = job.steps[0] as {parallel: unknown[]};
+      expect(parallelStep.parallel).toHaveLength(2);
+    });
+
+    it("rejects wait inside parallel block", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: bg
+        run: echo hi
+        background: true
+      - parallel:
+          - wait: bg
+          - run: echo "step 1"`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeDefined();
+      expect(template.errors!.some(e => e.Message.includes("'wait' is not allowed inside a parallel block"))).toBe(
+        true
+      );
+    });
+
+    it("rejects background inside parallel block", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - parallel:
+          - run: echo hi
+            background: true`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeDefined();
+      expect(
+        template.errors!.some(e => e.Message.includes("'background' is not allowed inside a parallel block"))
+      ).toBe(true);
+    });
+
+    it("rejects nested parallel blocks", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - parallel:
+          - parallel:
+              - run: echo nested`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeDefined();
+      expect(template.errors!.some(e => e.Message.includes("Nested 'parallel' blocks are not allowed"))).toBe(true);
+    });
+  });
 });
