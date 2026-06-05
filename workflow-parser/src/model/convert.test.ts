@@ -768,7 +768,7 @@ jobs:
       });
 
       expect(template.errors).toBeUndefined();
-      const job = template.jobs![0];
+      const job = template.jobs[0];
       expect("steps" in job).toBe(true);
       if (!("steps" in job)) return;
       expect(job.steps).toHaveLength(1);
