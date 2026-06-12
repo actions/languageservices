@@ -66,9 +66,8 @@ export function actionIdentifier(ref: ActionReference): string {
   return `${ref.owner}/${ref.name}/${ref.ref}`;
 }
 
-export function actionUrl(actionRef: ActionReference): string {
-  // TODO: Support base uri for GHES
-  const gitHubBaseUri = "https://www.github.com/";
+export function actionUrl(actionRef: ActionReference, baseUri: string = "https://www.github.com/"): string {
+  const gitHubBaseUri = baseUri.endsWith("/") ? baseUri : `${baseUri}/`;
 
   return `${gitHubBaseUri}${actionRef.owner}/${actionRef.name}/tree/${actionRef.ref}/${actionRef.path || ""}`;
 }
