@@ -7,7 +7,7 @@ import {getCronDescription} from "@actions/workflow-parser/model/converter/cron"
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
-import {isBasicExpression} from "@actions/workflow-parser/templates/tokens/type-guards";
+import {isBasicExpression, isSequence} from "@actions/workflow-parser/templates/tokens/type-guards";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
@@ -27,7 +27,7 @@ import {info} from "./log.js";
 import {nullTrace} from "./nulltrace.js";
 import {isActionDocument} from "./utils/document-type.js";
 import {isPotentiallyExpression} from "./utils/expression-detection.js";
-import {findToken} from "./utils/find-token.js";
+import {findToken, TokenResult} from "./utils/find-token.js";
 import {mapRange} from "./utils/range.js";
 import {getOrConvertActionTemplate, getOrConvertWorkflowTemplate, getOrParseWorkflow} from "./utils/workflow-cache.js";
 
@@ -68,6 +68,15 @@ export async function hover(document: TextDocument, position: Position, config?:
 
   // Find the token at the cursor position
   const tokenResult = findToken(position, parsedTemplate.value);
+
+  // Early exit if the cursor position is within the value of a
+  // `step.run` property. Those values are scripts, and showing
+  // hover information over them can make editing the script
+  // difficult because the hover information can obscure the script.
+  if (isStepRunValue(tokenResult)) {
+    return null;
+  }
+
   const {token, keyToken, parent} = tokenResult;
   const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
 
@@ -75,8 +84,17 @@ export async function hover(document: TextDocument, position: Position, config?:
   const hoverToken = token || keyToken;
   const isExpressionHover =
     token && tokenDefinitionInfo && (isBasicExpression(token) || isPotentiallyExpression(token, isAction));
-  if (!isExpressionHover && !hoverToken?.definition) {
-    return null;
+  if (!isExpressionHover) {
+    if (!hoverToken?.definition) {
+      return null;
+    }
+    // Do not show hover information for the value of a `step.run`
+    // property. The value is a script, and showing hover
+    // information over the script can make editing the script
+    // difficult because the hover information can obscure the script.
+    if (isStepRunValue(tokenResult)) {
+      return null;
+    }
   }
 
   // Build document context (jobs, steps, inputs, etc.) from the parsed template
@@ -165,6 +183,37 @@ export async function hover(document: TextDocument, position: Position, config?:
     contents: appendContext(description, hoverToken.definitionInfo?.allowedContext),
     range: mapRange(hoverToken.range)
   } satisfies Hover;
+}
+
+/**
+ * Determines whether the result from `findToken` refers
+ * to the value of a `steps[*].run` property.
+ */
+function isStepRunValue(result: TokenResult) {
+  // When the result refers to a value, `token` is
+  // the value token and `keyToken` is non-null.
+  if (result.keyToken && isString(result.keyToken) && result.keyToken.value === "run") {
+    // Make sure this `run` key belongs to a step and is not an
+    // input under a `with` token. The parent should be a mapping
+    // token that immediately follow the `with` token in the path.
+    if (result.parent) {
+      // Search for the parent token from the end of the path.
+      // Depending on where the cursor is, the parent
+      // should be either the last or second last token.
+      const parentIndex = result.path.lastIndexOf(result.parent);
+      // If the `run` token belongs to a step, then we should
+      // find a sequence token immediately before the parent,
+      // and then a string token called "steps" before that.
+      if (parentIndex > 1) {
+        const sequence = result.path[parentIndex - 1];
+        if (isSequence(sequence)) {
+          const steps = result.path[parentIndex - 2];
+          return isString(steps) && steps.value === "steps";
+        }
+      }
+    }
+  }
+  return false;
 }
 
 /**
