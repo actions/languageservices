@@ -168,8 +168,8 @@ function convertStep(
   }
 
   if (wait) {
-    if (ifCondition) {
-      context.error(ifKeyToken ?? mapping, CONTROL_FLOW_CONDITION_ERROR);
+    if (ifKeyToken) {
+      context.error(ifKeyToken, CONTROL_FLOW_CONDITION_ERROR);
     }
     return {
       id: id?.value || "",
@@ -180,8 +180,8 @@ function convertStep(
   }
 
   if (waitAll !== undefined) {
-    if (ifCondition) {
-      context.error(ifKeyToken ?? mapping, CONTROL_FLOW_CONDITION_ERROR);
+    if (ifKeyToken) {
+      context.error(ifKeyToken, CONTROL_FLOW_CONDITION_ERROR);
     }
     return {
       id: id?.value || "",
@@ -192,8 +192,8 @@ function convertStep(
   }
 
   if (cancel) {
-    if (ifCondition) {
-      context.error(ifKeyToken ?? mapping, CONTROL_FLOW_CONDITION_ERROR);
+    if (ifKeyToken) {
+      context.error(ifKeyToken, CONTROL_FLOW_CONDITION_ERROR);
     }
     return {
       id: id?.value || "",

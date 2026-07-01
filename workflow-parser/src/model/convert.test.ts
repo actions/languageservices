@@ -911,5 +911,35 @@ ${stepsYaml}`
       expect(template.errors).toBeDefined();
       expect(template.errors!.some(e => e.Message.includes(conditionError))).toBe(true);
     });
+
+    it("rejects 'if' on a cancel step even when the if expression is invalid", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: bg
+        run: echo hi
+        background: true
+      - if: \${{ not-a-real-function() }}
+        cancel: bg`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeDefined();
+      expect(template.errors!.some(e => e.Message.includes(conditionError))).toBe(true);
+    });
   });
 });
