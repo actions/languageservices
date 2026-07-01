@@ -15,6 +15,10 @@ import {handleTemplateTokenErrors} from "./handle-errors.js";
 import {IdBuilder} from "./id-builder.js";
 import {FeatureFlags} from "@actions/expressions/features";
 
+// wait, wait-all, and cancel steps always run and cannot be made conditional.
+const CONTROL_FLOW_CONDITION_ERROR =
+  "'if' is not supported on 'wait', 'wait-all', and 'cancel' steps. These steps always run and cannot be conditional.";
+
 export function convertSteps(context: TemplateContext, steps: TemplateToken): Step[] {
   if (!isSequence(steps)) {
     context.error(steps, "Invalid format for steps");
@@ -83,6 +87,7 @@ function convertStep(
   let continueOnError: boolean | ScalarToken | undefined;
   let env: MappingToken | undefined;
   let ifCondition: BasicExpressionToken | undefined;
+  let ifKeyToken: StringToken | undefined;
   for (const item of mapping) {
     const key = item.key.assertString("steps item key");
     switch (key.value) {
@@ -126,6 +131,7 @@ function convertStep(
         env = item.value.assertMapping("step env");
         break;
       case "if":
+        ifKeyToken = key;
         ifCondition = convertToIfCondition(context, item.value);
         break;
       case "continue-on-error":
@@ -162,6 +168,9 @@ function convertStep(
   }
 
   if (wait) {
+    if (ifCondition) {
+      context.error(ifKeyToken ?? mapping, CONTROL_FLOW_CONDITION_ERROR);
+    }
     return {
       id: id?.value || "",
       name: name || createSyntheticStepName("Wait"),
@@ -171,6 +180,9 @@ function convertStep(
   }
 
   if (waitAll !== undefined) {
+    if (ifCondition) {
+      context.error(ifKeyToken ?? mapping, CONTROL_FLOW_CONDITION_ERROR);
+    }
     return {
       id: id?.value || "",
       name: name || createSyntheticStepName("Wait for all"),
@@ -180,6 +192,9 @@ function convertStep(
   }
 
   if (cancel) {
+    if (ifCondition) {
+      context.error(ifKeyToken ?? mapping, CONTROL_FLOW_CONDITION_ERROR);
+    }
     return {
       id: id?.value || "",
       name: name || createSyntheticStepName("Cancel"),
