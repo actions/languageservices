@@ -68,8 +68,8 @@ export function validateStepUsesFormat(diagnostics: Diagnostic[], token: StringT
   }
 
   // Self-reference ($/path): an action resolved from the same repository as the
-  // currently-executing workflow/action. No version (@ref) is allowed since the ref is
-  // implicitly the same as the executing workflow/action.
+  // currently-executing workflow/action. A trailing @ref is accepted (and ignored), matching
+  // the runtime parser and the rest of the tooling fleet.
   if (uses.startsWith("$/")) {
     validateSelfUsesFormat(diagnostics, token, uses);
     return;
