@@ -130,16 +130,17 @@ function addStepUsesFormatError(diagnostics: Diagnostic[], token: StringToken): 
  * Validates the format of a self-reference (`$/path`) step `uses` value.
  *
  * Self-references resolve an action from the same repository as the executing
- * workflow/action. The path after `$/` must be non-empty and must not include a version
- * (`@ref`), since the ref is implicitly the same as the executing workflow/action.
+ * workflow/action. The path after `$/` must be non-empty. An optional `@ref` is allowed; if
+ * present, the ref must be non-empty.
  */
 function validateSelfUsesFormat(diagnostics: Diagnostic[], token: StringToken, uses: string): void {
-  const path = uses.substring("$/".length);
+  const withoutPrefix = uses.substring("$/".length);
+  const atSegments = withoutPrefix.split("@");
 
-  // Must reference a non-empty path within the repository
-  if (!path) {
+  // At most one @ separating the path from an optional ref
+  if (atSegments.length > 2) {
     diagnostics.push({
-      message: `Expected format $/{path}. Actual '${uses}'`,
+      message: `Expected format $/{path}[@{ref}]. Actual '${uses}'`,
       severity: DiagnosticSeverity.Error,
       range: mapRange(token.range),
       code: "invalid-uses-format"
@@ -147,10 +148,23 @@ function validateSelfUsesFormat(diagnostics: Diagnostic[], token: StringToken, u
     return;
   }
 
-  // A version cannot be specified for self-references
-  if (uses.includes("@")) {
+  const path = atSegments[0];
+
+  // Must reference a non-empty path within the repository
+  if (!path) {
     diagnostics.push({
-      message: `A version cannot be specified for self-references. Expected format $/{path}. Actual '${uses}'`,
+      message: `Expected format $/{path}[@{ref}]. Actual '${uses}'`,
+      severity: DiagnosticSeverity.Error,
+      range: mapRange(token.range),
+      code: "invalid-uses-format"
+    });
+    return;
+  }
+
+  // If a ref is specified (@...), it cannot be empty
+  if (atSegments.length === 2 && !atSegments[1]) {
+    diagnostics.push({
+      message: `Expected format $/{path}[@{ref}]. Actual '${uses}'`,
       severity: DiagnosticSeverity.Error,
       range: mapRange(token.range),
       code: "invalid-uses-format"

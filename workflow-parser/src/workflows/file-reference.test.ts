@@ -15,13 +15,6 @@ describe("parseFileReference", () => {
     });
   });
 
-  it("parses self-reference file reference", () => {
-    const ref = parseFileReference("$/.github/workflows/test.yml");
-    expect(ref).toEqual({
-      path: ".github/workflows/test.yml"
-    });
-  });
-
   it("parses remote file reference", () => {
     const ref = parseFileReference("owner/repo/path@version");
     expect(ref).toEqual({

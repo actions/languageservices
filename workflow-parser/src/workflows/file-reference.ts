@@ -18,14 +18,6 @@ export function parseFileReference(ref: string): FileReference {
     };
   }
 
-  // Self-reference ($/path): a file resolved from the same repository as the executing
-  // workflow/action. Treated as a repo-root-relative local path.
-  if (ref.startsWith("$/")) {
-    return {
-      path: ref.substring(2)
-    };
-  }
-
   const [remotePath, version] = ref.split("@");
   const [owner, repository, ...pathSegments] = remotePath.split("/").filter(s => s.length > 0);
 

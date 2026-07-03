@@ -316,56 +316,6 @@ function validateCronExpression(diagnostics: Diagnostic[], token: StringToken): 
 function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToken): void {
   const uses = token.value;
 
-  // Self-reference ($/path): a reusable workflow resolved from the same repository as the
-  // executing workflow. Must be rooted in .github/workflows(-lab)/, at the top level, with a
-  // .yml/.yaml extension, and cannot specify a version (@ref).
-  if (uses.startsWith("$/")) {
-    // Cannot have @ version for self-references
-    if (uses.includes("@")) {
-      addWorkflowUsesFormatError(diagnostics, token, "cannot specify version when calling self-referenced workflows");
-      return;
-    }
-
-    const path = uses.substring("$/".length);
-
-    // Must be rooted in .github/workflows/ or .github/workflows-lab/
-    if (!path.startsWith(".github/workflows/") && !path.startsWith(".github/workflows-lab/")) {
-      addWorkflowUsesFormatError(diagnostics, token, "self-referenced workflows must be rooted in '.github/workflows'");
-      return;
-    }
-
-    // Must have .yml or .yaml extension
-    if (!path.endsWith(".yml") && !path.endsWith(".yaml")) {
-      addWorkflowUsesFormatError(
-        diagnostics,
-        token,
-        "workflow file should have either a '.yml' or '.yaml' file extension"
-      );
-      return;
-    }
-
-    // Must be at the top level of .github/workflows(-lab)/ (no subdirectories)
-    const pathParts = path.split("/");
-    if (pathParts.length !== 3) {
-      // Expected: ".github", "workflows" or "workflows-lab", "filename.yml"
-      addWorkflowUsesFormatError(
-        diagnostics,
-        token,
-        "workflows must be defined at the top level of the .github/workflows/ directory"
-      );
-      return;
-    }
-
-    // Filename cannot be just the extension
-    const filename = pathParts[2];
-    if (filename === ".yml" || filename === ".yaml") {
-      addWorkflowUsesFormatError(diagnostics, token, "invalid workflow file name");
-      return;
-    }
-
-    return;
-  }
-
   // Local workflow reference
   if (uses.startsWith("./.github/workflows/") || uses.startsWith("./.github/workflows-lab/")) {
     // Cannot have @ version for local workflows
