@@ -39,6 +39,7 @@ export function warnIfShortSha(diagnostics: Diagnostic[], token: StringToken, re
  * - docker://image:tag
  * - ./local/path
  * - .\local\path (Windows)
+ * - $/path (self-reference: an action in the same repository as the executing workflow/action)
  * - {owner}/{repo}@{ref}
  * - {owner}/{repo}/{path}@{ref}
  */
@@ -63,6 +64,14 @@ export function validateStepUsesFormat(diagnostics: Diagnostic[], token: StringT
 
   // Local action path - always valid format
   if (uses.startsWith("./") || uses.startsWith(".\\")) {
+    return;
+  }
+
+  // Self-reference ($/path): an action resolved from the same repository as the
+  // currently-executing workflow/action. No version (@ref) is allowed since the ref is
+  // implicitly the same as the executing workflow/action.
+  if (uses.startsWith("$/")) {
+    validateSelfUsesFormat(diagnostics, token, uses);
     return;
   }
 
@@ -115,4 +124,49 @@ function addStepUsesFormatError(diagnostics: Diagnostic[], token: StringToken): 
     range: mapRange(token.range),
     code: "invalid-uses-format"
   });
+}
+
+/**
+ * Validates the format of a self-reference (`$/path`) step `uses` value.
+ *
+ * Self-references resolve an action from the same repository as the executing
+ * workflow/action. The path after `$/` must be non-empty and must not include a version
+ * (`@ref`), since the ref is implicitly the same as the executing workflow/action.
+ */
+function validateSelfUsesFormat(diagnostics: Diagnostic[], token: StringToken, uses: string): void {
+  const path = uses.substring("$/".length);
+
+  // Must reference a non-empty path within the repository
+  if (!path) {
+    diagnostics.push({
+      message: `Expected format $/{path}. Actual '${uses}'`,
+      severity: DiagnosticSeverity.Error,
+      range: mapRange(token.range),
+      code: "invalid-uses-format"
+    });
+    return;
+  }
+
+  // A version cannot be specified for self-references
+  if (uses.includes("@")) {
+    diagnostics.push({
+      message: `A version cannot be specified for self-references. Expected format $/{path}. Actual '${uses}'`,
+      severity: DiagnosticSeverity.Error,
+      range: mapRange(token.range),
+      code: "invalid-uses-format"
+    });
+    return;
+  }
+
+  // Reusable workflows must be referenced at the job level, not within steps
+  const pathSegments = path.split(/[\\/]/);
+  if (pathSegments.length >= 3 && pathSegments[0] === ".github" && pathSegments[1] === "workflows") {
+    diagnostics.push({
+      message: "Reusable workflows should be referenced at the top-level `jobs.<job_id>.uses` key, not within steps",
+      severity: DiagnosticSeverity.Error,
+      range: mapRange(token.range),
+      code: "invalid-uses-format"
+    });
+    return;
+  }
 }

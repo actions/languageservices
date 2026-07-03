@@ -33,7 +33,13 @@ export type ActionReference = {
 
 // https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsuses
 export function parseActionReference(uses: string): ActionReference | undefined {
-  if (!uses || uses.startsWith("docker://") || uses.startsWith("./") || uses.startsWith(".\\")) {
+  if (
+    !uses ||
+    uses.startsWith("docker://") ||
+    uses.startsWith("./") ||
+    uses.startsWith(".\\") ||
+    uses.startsWith("$/")
+  ) {
     return undefined;
   }
 

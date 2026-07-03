@@ -3,6 +3,7 @@ import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {ScalarToken} from "@actions/workflow-parser/templates/tokens/scalar-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
 import {ActionReference, parseActionReference} from "./action.js";
 import {mapRange} from "./utils/range.js";
@@ -29,7 +30,20 @@ export async function validateActionReference(
   step: Step | undefined,
   config: ValidationConfig | undefined
 ): Promise<void> {
-  if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.actionsMetadataProvider) {
+  if (!isMapping(stepToken) || !step || !isActionStep(step)) {
+    return;
+  }
+
+  const uses = step.uses.value;
+
+  // Self-reference ($/path): resolve the action from the same repository as the executing
+  // workflow/action. The target directory must contain an `action.yml` or `action.yaml`.
+  if (uses.startsWith("$/")) {
+    await validateSelfActionReference(diagnostics, step.uses.value, step.uses.range, config);
+    return;
+  }
+
+  if (!config?.actionsMetadataProvider) {
     return;
   }
 
@@ -124,4 +138,49 @@ export async function validateActionReference(
       data: diagnosticData
     });
   }
+}
+
+/**
+ * Validates a self-reference (`$/path`) action `uses` value by resolving the referenced
+ * action within the same repository. The target directory must contain an `action.yml` or
+ * `action.yaml` manifest.
+ *
+ * The existence check requires a `FileProvider` (the same mechanism used to resolve reusable
+ * workflows). When no `FileProvider` is configured, the check is skipped so we don't emit a
+ * false error. Format-level problems (empty path, `@ref`) are reported by
+ * `validateStepUsesFormat`, so this only runs for well-formed self-references.
+ */
+async function validateSelfActionReference(
+  diagnostics: Diagnostic[],
+  uses: string,
+  range: TokenRange | undefined,
+  config: ValidationConfig | undefined
+): Promise<void> {
+  const fileProvider = config?.fileProvider;
+  if (!fileProvider) {
+    return;
+  }
+
+  const path = uses.substring("$/".length);
+
+  // Skip malformed self-references; those are reported by validateStepUsesFormat.
+  if (!path || uses.includes("@")) {
+    return;
+  }
+
+  for (const manifest of ["action.yml", "action.yaml"]) {
+    try {
+      await fileProvider.getFileContent({path: `${path}/${manifest}`});
+      return; // Found a valid action manifest
+    } catch {
+      // Try the next manifest filename
+    }
+  }
+
+  diagnostics.push({
+    severity: DiagnosticSeverity.Error,
+    range: mapRange(range),
+    message: `Unable to resolve action \`${uses}\`, no 'action.yml' or 'action.yaml' found in '${path}'`,
+    code: "invalid-uses-format"
+  });
 }

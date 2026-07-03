@@ -59,6 +59,10 @@ describe("parseActionReference", () => {
     expect(parse("./directory/")).toBeUndefined();
   });
 
+  it("self-reference action", () => {
+    expect(parse("$/actions/composite")).toBeUndefined();
+  });
+
   it("Docker Hub action", () => {
     expect(parse("docker://alpine:3.8")).toBeUndefined();
   });

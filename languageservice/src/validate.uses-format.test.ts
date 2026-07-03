@@ -128,6 +128,30 @@ jobs:
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toEqual([]);
     });
+
+    it("self-reference with $/", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/actions/composite
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self-reference with $/ and subdirectories", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/.github/actions/nested/my-action
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
   });
 
   describe("invalid formats", () => {
@@ -327,6 +351,74 @@ jobs:
         }
       ]);
     });
+
+    it("self-reference with empty path", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message: "Expected format $/{path}. Actual '$/'",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 5, character: 12},
+            end: {line: 5, character: 14}
+          },
+          code: "invalid-uses-format"
+        }
+      ]);
+    });
+
+    it("self-reference with version", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/actions/composite@v1
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message:
+            "A version cannot be specified for self-references. Expected format $/{path}. Actual '$/actions/composite@v1'",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 5, character: 12},
+            end: {line: 5, character: 34}
+          },
+          code: "invalid-uses-format"
+        }
+      ]);
+    });
+
+    it("self-reference to reusable workflow in step", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/.github/workflows/test.yml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message:
+            "Reusable workflows should be referenced at the top-level `jobs.<job_id>.uses` key, not within steps",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 5, character: 12},
+            end: {line: 5, character: 40}
+          },
+          code: "invalid-uses-format"
+        }
+      ]);
+    });
   });
 });
 
@@ -421,6 +513,36 @@ jobs:
 jobs:
   test:
     uses: owner/repo/.github/workflows-lab/test.yml@v1
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self-reference workflow path", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.yml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self-reference workflow path with yaml extension", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.yaml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self-reference workflows-lab path", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows-lab/test.yml
 `;
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toEqual([]);
@@ -589,6 +711,69 @@ jobs:
           range: {
             start: {line: 3, character: 10},
             end: {line: 3, character: 30}
+          },
+          code: "invalid-workflow-uses-format"
+        }
+      ]);
+    });
+
+    it("self-reference workflow with version", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.yml@main
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message:
+            "Invalid workflow reference '$/.github/workflows/test.yml@main': cannot specify version when calling self-referenced workflows",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 3, character: 10},
+            end: {line: 3, character: 43}
+          },
+          code: "invalid-workflow-uses-format"
+        }
+      ]);
+    });
+
+    it("self-reference workflow not rooted in .github/workflows", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/workflows/test.yml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message:
+            "Invalid workflow reference '$/workflows/test.yml': self-referenced workflows must be rooted in '.github/workflows'",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 3, character: 10},
+            end: {line: 3, character: 30}
+          },
+          code: "invalid-workflow-uses-format"
+        }
+      ]);
+    });
+
+    it("self-reference workflow with invalid extension", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.txt
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message:
+            "Invalid workflow reference '$/.github/workflows/test.txt': workflow file should have either a '.yml' or '.yaml' file extension",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 3, character: 10},
+            end: {line: 3, character: 38}
           },
           code: "invalid-workflow-uses-format"
         }
