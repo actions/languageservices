@@ -161,10 +161,11 @@ async function validateSelfActionReference(
     return;
   }
 
-  const path = uses.substring("$/".length).split("@")[0];
+  const path = uses.substring("$/".length);
 
-  // Skip malformed self-references; those are reported by validateStepUsesFormat.
-  if (!path) {
+  // Skip malformed self-references (empty path or a trailing @ref); those are reported by
+  // validateStepUsesFormat.
+  if (!path || uses.includes("@")) {
     return;
   }
 

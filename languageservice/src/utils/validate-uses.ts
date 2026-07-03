@@ -68,8 +68,8 @@ export function validateStepUsesFormat(diagnostics: Diagnostic[], token: StringT
   }
 
   // Self-reference ($/path): an action resolved from the same repository as the
-  // currently-executing workflow/action. A trailing @ref is accepted (and ignored), matching
-  // the runtime parser and the rest of the tooling fleet.
+  // currently-executing workflow/action. A trailing @ref is not allowed; the ref is
+  // implicitly the same as the executing workflow/action.
   if (uses.startsWith("$/")) {
     validateSelfUsesFormat(diagnostics, token, uses);
     return;
@@ -130,30 +130,16 @@ function addStepUsesFormatError(diagnostics: Diagnostic[], token: StringToken): 
  * Validates the format of a self-reference (`$/path`) step `uses` value.
  *
  * Self-references resolve an action from the same repository as the executing
- * workflow/action. The path after `$/` must be non-empty. An optional `@ref` is allowed; if
- * present, the ref must be non-empty.
+ * workflow/action. The path after `$/` must be non-empty and must NOT include a version
+ * (`@ref`), since the ref is implicitly the same as the executing workflow/action.
  */
 function validateSelfUsesFormat(diagnostics: Diagnostic[], token: StringToken, uses: string): void {
-  const withoutPrefix = uses.substring("$/".length);
-  const atSegments = withoutPrefix.split("@");
-
-  // At most one @ separating the path from an optional ref
-  if (atSegments.length > 2) {
-    diagnostics.push({
-      message: `Expected format $/{path}[@{ref}]. Actual '${uses}'`,
-      severity: DiagnosticSeverity.Error,
-      range: mapRange(token.range),
-      code: "invalid-uses-format"
-    });
-    return;
-  }
-
-  const path = atSegments[0];
+  const path = uses.substring("$/".length);
 
   // Must reference a non-empty path within the repository
   if (!path) {
     diagnostics.push({
-      message: `Expected format $/{path}[@{ref}]. Actual '${uses}'`,
+      message: `Expected format $/{path}. Actual '${uses}'`,
       severity: DiagnosticSeverity.Error,
       range: mapRange(token.range),
       code: "invalid-uses-format"
@@ -161,10 +147,10 @@ function validateSelfUsesFormat(diagnostics: Diagnostic[], token: StringToken, u
     return;
   }
 
-  // If a ref is specified (@...), it cannot be empty
-  if (atSegments.length === 2 && !atSegments[1]) {
+  // A version (@ref) cannot be specified for self-references
+  if (uses.includes("@")) {
     diagnostics.push({
-      message: `Expected format $/{path}[@{ref}]. Actual '${uses}'`,
+      message: `A version cannot be specified for self-references. Expected format $/{path}. Actual '${uses}'`,
       severity: DiagnosticSeverity.Error,
       range: mapRange(token.range),
       code: "invalid-uses-format"

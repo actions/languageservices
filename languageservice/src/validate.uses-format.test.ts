@@ -152,18 +152,6 @@ jobs:
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toEqual([]);
     });
-
-    it("self-reference with $/ and a ref", async () => {
-      const input = `on: push
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: $/actions/composite@v1
-`;
-      const result = await validate(createDocument("wf.yaml", input));
-      expect(result).toEqual([]);
-    });
   });
 
   describe("invalid formats", () => {
@@ -375,11 +363,34 @@ jobs:
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toEqual([
         {
-          message: "Expected format $/{path}[@{ref}]. Actual '$/'",
+          message: "Expected format $/{path}. Actual '$/'",
           severity: DiagnosticSeverity.Error,
           range: {
             start: {line: 5, character: 12},
             end: {line: 5, character: 14}
+          },
+          code: "invalid-uses-format"
+        }
+      ]);
+    });
+
+    it("self-reference with a ref", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/actions/composite@v1
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message:
+            "A version cannot be specified for self-references. Expected format $/{path}. Actual '$/actions/composite@v1'",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 5, character: 12},
+            end: {line: 5, character: 34}
           },
           code: "invalid-uses-format"
         }
