@@ -448,6 +448,36 @@ jobs:
       expect(result).toEqual([]);
     });
 
+    it("self-reference workflow path", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.yml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self-reference workflow path with yaml extension", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.yaml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self-reference workflows-lab path", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows-lab/test.yml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
     it("remote workflow with version", async () => {
       const input = `on: push
 jobs:
@@ -687,20 +717,21 @@ jobs:
       ]);
     });
 
-    it("self-reference workflow is not supported at job level", async () => {
+    it("self-reference workflow with @ref is not supported at job level", async () => {
       const input = `on: push
 jobs:
   test:
-    uses: $/.github/workflows/test.yml
+    uses: $/.github/workflows/test.yml@v1
 `;
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toEqual([
         {
-          message: "Invalid workflow reference '$/.github/workflows/test.yml': no version specified",
+          message:
+            "Invalid workflow reference '$/.github/workflows/test.yml@v1': cannot specify version when calling self-referenced workflows",
           severity: DiagnosticSeverity.Error,
           range: {
             start: {line: 3, character: 10},
-            end: {line: 3, character: 38}
+            end: {line: 3, character: 41}
           },
           code: "invalid-workflow-uses-format"
         }

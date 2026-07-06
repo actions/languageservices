@@ -312,9 +312,60 @@ function validateCronExpression(diagnostics: Diagnostic[], token: StringToken): 
  * - ./.github/workflows/{filename}.yaml
  * - ./.github/workflows-lab/{filename}.yml
  * - ./.github/workflows-lab/{filename}.yaml
+ * - $/.github/workflows/{filename}.yml
+ * - $/.github/workflows/{filename}.yaml
+ * - $/.github/workflows-lab/{filename}.yml
+ * - $/.github/workflows-lab/{filename}.yaml
  */
 function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToken): void {
   const uses = token.value;
+
+  // Self workflow reference: `$/` resolves within the same repository at the running
+  // SHA, exactly like `./` for local reusable workflows.
+  if (uses.startsWith("$/")) {
+    // Cannot have @ version for self-references
+    if (uses.includes("@")) {
+      addWorkflowUsesFormatError(diagnostics, token, "cannot specify version when calling self-referenced workflows");
+      return;
+    }
+
+    const selfPath = uses.substring(2);
+    if (!selfPath.startsWith(".github/workflows/") && !selfPath.startsWith(".github/workflows-lab/")) {
+      addWorkflowUsesFormatError(diagnostics, token, "self-referenced workflows must be rooted in '.github/workflows'");
+      return;
+    }
+
+    // Must have .yml or .yaml extension
+    if (!uses.endsWith(".yml") && !uses.endsWith(".yaml")) {
+      addWorkflowUsesFormatError(
+        diagnostics,
+        token,
+        "workflow file should have either a '.yml' or '.yaml' file extension"
+      );
+      return;
+    }
+
+    // Must be at top level of .github/workflows/ or .github/workflows-lab/ (no subdirectories)
+    const pathParts = uses.split("/");
+    if (pathParts.length !== 4) {
+      // Expected: "$", ".github", "workflows" or "workflows-lab", "filename.yml"
+      addWorkflowUsesFormatError(
+        diagnostics,
+        token,
+        "workflows must be defined at the top level of the .github/workflows/ directory"
+      );
+      return;
+    }
+
+    // Filename cannot be just the extension
+    const filename = pathParts[3];
+    if (filename === ".yml" || filename === ".yaml") {
+      addWorkflowUsesFormatError(diagnostics, token, "invalid workflow file name");
+      return;
+    }
+
+    return;
+  }
 
   // Local workflow reference
   if (uses.startsWith("./.github/workflows/") || uses.startsWith("./.github/workflows-lab/")) {
