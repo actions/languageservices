@@ -49,7 +49,9 @@ export interface ExperimentalFeatures {
 
   /**
    * Enable the queue property in workflow concurrency settings.
-   * @default false
+   *
+   * @deprecated Graduated to stable — the queue property is always enabled
+   * regardless of this value.
    */
   allowConcurrencyQueue?: boolean;
 
