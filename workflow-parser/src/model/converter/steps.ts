@@ -130,7 +130,7 @@ function createActionStepId(step: ActionStep): string {
     return "self";
   }
 
-  // Self-reference ($/path): resolved from the same repository as the executing
+  // Self repository reference ($/path): resolved from the same repository as the executing
   // workflow/action.
   if (uses.startsWith("$/")) {
     return "self";

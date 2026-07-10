@@ -36,10 +36,10 @@ export async function validateActionReference(
 
   const uses = step.uses.value;
 
-  // Self-reference ($/path): resolve the action from the same repository as the executing
+  // Self repository reference ($/path): resolve the action from the same repository as the executing
   // workflow/action. The target directory must contain an `action.yml` or `action.yaml`.
   if (uses.startsWith("$/")) {
-    await validateSelfActionReference(diagnostics, step.uses.value, step.uses.range, config);
+    await validateSelfRepositoryActionReference(diagnostics, step.uses.value, step.uses.range, config);
     return;
   }
 
@@ -141,16 +141,16 @@ export async function validateActionReference(
 }
 
 /**
- * Validates a self-reference (`$/path`) action `uses` value by resolving the referenced
+ * Validates a self repository (`$/path`) action `uses` value by resolving the referenced
  * action within the same repository. The target directory must contain an `action.yml` or
  * `action.yaml` manifest.
  *
  * The existence check requires a `FileProvider` (the same mechanism used to resolve reusable
  * workflows). When no `FileProvider` is configured, the check is skipped so we don't emit a
  * false error. Format-level problems (empty path, `@ref`) are reported by
- * `validateStepUsesFormat`, so this only runs for well-formed self-references.
+ * `validateStepUsesFormat`, so this only runs for well-formed self repository references.
  */
-async function validateSelfActionReference(
+async function validateSelfRepositoryActionReference(
   diagnostics: Diagnostic[],
   uses: string,
   range: TokenRange | undefined,
@@ -163,7 +163,7 @@ async function validateSelfActionReference(
 
   const path = uses.substring("$/".length);
 
-  // Skip malformed self-references (empty path or a trailing @ref); those are reported by
+  // Skip malformed self repository references (empty path or a trailing @ref); those are reported by
   // validateStepUsesFormat.
   if (!path || uses.includes("@")) {
     return;

@@ -18,7 +18,7 @@ export function parseFileReference(ref: string): FileReference {
     };
   }
 
-  // Self-reference: `$/<path>` resolves within the same repository at the running
+  // Self repository reference: `$/<path>` resolves within the same repository at the running
   // SHA, exactly like `./` for local references.
   if (ref.startsWith("$/")) {
     return {

@@ -320,18 +320,18 @@ function validateCronExpression(diagnostics: Diagnostic[], token: StringToken): 
 function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToken): void {
   const uses = token.value;
 
-  // Self workflow reference: `$/` resolves within the same repository at the running
+  // Self repository workflow reference: `$/` resolves within the same repository at the running
   // SHA, exactly like `./` for local reusable workflows.
   if (uses.startsWith("$/")) {
-    // Cannot have @ version for self-references
+    // Cannot have @ version for self repository references
     if (uses.includes("@")) {
-      addWorkflowUsesFormatError(diagnostics, token, "cannot specify version when calling self-referenced workflows");
+      addWorkflowUsesFormatError(diagnostics, token, "cannot specify version when calling self repository workflows");
       return;
     }
 
     const selfPath = uses.substring(2);
     if (!selfPath.startsWith(".github/workflows/") && !selfPath.startsWith(".github/workflows-lab/")) {
-      addWorkflowUsesFormatError(diagnostics, token, "self-referenced workflows must be rooted in '.github/workflows'");
+      addWorkflowUsesFormatError(diagnostics, token, "self repository workflows must be rooted in '.github/workflows'");
       return;
     }
 

@@ -386,7 +386,7 @@ jobs:
       expect(result).toEqual([
         {
           message:
-            "A version cannot be specified for self-references. Expected format $/{path}. Actual '$/actions/composite@v1'",
+            "A version cannot be specified for self repository references. Expected format $/{path}. Actual '$/actions/composite@v1'",
           severity: DiagnosticSeverity.Error,
           range: {
             start: {line: 5, character: 12},
@@ -727,7 +727,7 @@ jobs:
       expect(result).toEqual([
         {
           message:
-            "Invalid workflow reference '$/.github/workflows/test.yml@v1': cannot specify version when calling self-referenced workflows",
+            "Invalid workflow reference '$/.github/workflows/test.yml@v1': cannot specify version when calling self repository workflows",
           severity: DiagnosticSeverity.Error,
           range: {
             start: {line: 3, character: 10},

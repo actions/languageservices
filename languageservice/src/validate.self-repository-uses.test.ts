@@ -9,7 +9,7 @@ beforeEach(() => {
   clearCache();
 });
 
-// Resolves self-referenced actions ($/path) against a fake in-repo file system. Only
+// Resolves self repository actions ($/path) against a fake in-repo file system. Only
 // `actions/my-action/action.yml` exists.
 const selfActionFileProvider: FileProvider = {
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -19,7 +19,7 @@ const selfActionFileProvider: FileProvider = {
         return {
           name: "actions/my-action/action.yml",
           content: `name: My Action
-description: A self-referenced action
+description: A self repository action
 runs:
   using: node20
   main: index.js

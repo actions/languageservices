@@ -39,7 +39,7 @@ export function warnIfShortSha(diagnostics: Diagnostic[], token: StringToken, re
  * - docker://image:tag
  * - ./local/path
  * - .\local\path (Windows)
- * - $/path (self-reference: an action in the same repository as the executing workflow/action)
+ * - $/path (self repository reference: an action in the same repository as the executing workflow/action)
  * - {owner}/{repo}@{ref}
  * - {owner}/{repo}/{path}@{ref}
  */
@@ -67,11 +67,11 @@ export function validateStepUsesFormat(diagnostics: Diagnostic[], token: StringT
     return;
   }
 
-  // Self-reference ($/path): an action resolved from the same repository as the
+  // Self repository reference ($/path): an action resolved from the same repository as the
   // currently-executing workflow/action. A trailing @ref is not allowed; the ref is
   // implicitly the same as the executing workflow/action.
   if (uses.startsWith("$/")) {
-    validateSelfUsesFormat(diagnostics, token, uses);
+    validateSelfRepositoryUsesFormat(diagnostics, token, uses);
     return;
   }
 
@@ -127,13 +127,13 @@ function addStepUsesFormatError(diagnostics: Diagnostic[], token: StringToken): 
 }
 
 /**
- * Validates the format of a self-reference (`$/path`) step `uses` value.
+ * Validates the format of a self repository (`$/path`) step `uses` value.
  *
- * Self-references resolve an action from the same repository as the executing
+ * Self repository references resolve an action from the same repository as the executing
  * workflow/action. The path after `$/` must be non-empty and must NOT include a version
  * (`@ref`), since the ref is implicitly the same as the executing workflow/action.
  */
-function validateSelfUsesFormat(diagnostics: Diagnostic[], token: StringToken, uses: string): void {
+function validateSelfRepositoryUsesFormat(diagnostics: Diagnostic[], token: StringToken, uses: string): void {
   const path = uses.substring("$/".length);
 
   // Must reference a non-empty path within the repository
@@ -147,10 +147,10 @@ function validateSelfUsesFormat(diagnostics: Diagnostic[], token: StringToken, u
     return;
   }
 
-  // A version (@ref) cannot be specified for self-references
+  // A version (@ref) cannot be specified for self repository references
   if (uses.includes("@")) {
     diagnostics.push({
-      message: `A version cannot be specified for self-references. Expected format $/{path}. Actual '${uses}'`,
+      message: `A version cannot be specified for self repository references. Expected format $/{path}. Actual '${uses}'`,
       severity: DiagnosticSeverity.Error,
       range: mapRange(token.range),
       code: "invalid-uses-format"
