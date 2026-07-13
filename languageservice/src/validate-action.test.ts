@@ -26,7 +26,7 @@ runs:
       expect(diagnostics).toEqual([]);
     });
 
-    it("validates a composite action with a $/ self-reference step", async () => {
+    it("validates a composite action with a $/ self repository step", async () => {
       const doc = createActionDocument(`
 name: My Action
 description: Does something

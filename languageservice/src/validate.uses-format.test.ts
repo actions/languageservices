@@ -129,7 +129,7 @@ jobs:
       expect(result).toEqual([]);
     });
 
-    it("self-reference with $/", async () => {
+    it("self repository reference with $/", async () => {
       const input = `on: push
 jobs:
   build:
@@ -141,7 +141,7 @@ jobs:
       expect(result).toEqual([]);
     });
 
-    it("self-reference with $/ and subdirectories", async () => {
+    it("self repository reference with $/ and subdirectories", async () => {
       const input = `on: push
 jobs:
   build:
@@ -352,7 +352,7 @@ jobs:
       ]);
     });
 
-    it("self-reference with empty path", async () => {
+    it("self repository reference with empty path", async () => {
       const input = `on: push
 jobs:
   build:
@@ -374,7 +374,7 @@ jobs:
       ]);
     });
 
-    it("self-reference with a ref", async () => {
+    it("self repository reference with a ref", async () => {
       const input = `on: push
 jobs:
   build:
@@ -397,7 +397,7 @@ jobs:
       ]);
     });
 
-    it("self-reference to reusable workflow in step", async () => {
+    it("self repository reference to reusable workflow in step", async () => {
       const input = `on: push
 jobs:
   build:
@@ -448,7 +448,7 @@ jobs:
       expect(result).toEqual([]);
     });
 
-    it("self-reference workflow path", async () => {
+    it("self repository workflow path", async () => {
       const input = `on: push
 jobs:
   test:
@@ -458,7 +458,7 @@ jobs:
       expect(result).toEqual([]);
     });
 
-    it("self-reference workflow path with yaml extension", async () => {
+    it("self repository workflow path with yaml extension", async () => {
       const input = `on: push
 jobs:
   test:
@@ -468,7 +468,7 @@ jobs:
       expect(result).toEqual([]);
     });
 
-    it("self-reference workflows-lab path", async () => {
+    it("self repository workflows-lab path", async () => {
       const input = `on: push
 jobs:
   test:
@@ -717,7 +717,7 @@ jobs:
       ]);
     });
 
-    it("self-reference workflow with @ref is not supported at job level", async () => {
+    it("self repository workflow with @ref is not supported at job level", async () => {
       const input = `on: push
 jobs:
   test:

@@ -59,7 +59,7 @@ describe("parseActionReference", () => {
     expect(parse("./directory/")).toBeUndefined();
   });
 
-  it("self-reference action", () => {
+  it("self repository action", () => {
     expect(parse("$/actions/composite")).toBeUndefined();
   });
 

@@ -32,8 +32,8 @@ runs:
   }
 };
 
-describe("self-reference ($/) action resolution", () => {
-  it("valid self-reference resolves to an action.yml", async () => {
+describe("self repository ($/) action resolution", () => {
+  it("valid self repository reference resolves to an action.yml", async () => {
     const input = `on: push
 jobs:
   build:
@@ -47,7 +47,7 @@ jobs:
     expect(result).toEqual([]);
   });
 
-  it("self-reference to a directory without an action manifest reports an error", async () => {
+  it("self repository reference to a directory without an action manifest reports an error", async () => {
     const input = `on: push
 jobs:
   build:
