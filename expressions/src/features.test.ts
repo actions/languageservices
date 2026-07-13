@@ -57,6 +57,7 @@ describe("FeatureFlags", () => {
         "blockScalarChompingWarning",
         "allowCaseFunction",
         "allowCopilotRequestsPermission",
+        "allowDrivesPermissionAutocomplete",
         "allowConcurrencyQueue",
         "allowBackgroundSteps"
       ]);

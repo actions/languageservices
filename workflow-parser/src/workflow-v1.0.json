@@ -1622,6 +1622,10 @@
             "type": "permission-level-any",
             "description": "Discussions and related comments and labels."
           },
+          "drives": {
+            "type": "permission-level-any",
+            "description": "GitHub Drives persistent workspace storage. Use `read` for checkout and `write` to commit changes."
+          },
           "id-token": {
             "type": "permission-level-write-or-no-access",
             "description": "Token to request an OpenID Connect token."

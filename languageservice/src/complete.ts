@@ -174,6 +174,14 @@ export async function complete(
     values = values.filter(v => v.label !== "copilot-requests");
   }
 
+  // Filter `drives` from permissions completions when the feature flag is disabled
+  if (
+    !config?.featureFlags?.isEnabled("allowDrivesPermissionAutocomplete") &&
+    parent?.definition?.key === "permissions-mapping"
+  ) {
+    values = values.filter(v => v.label !== "drives");
+  }
+
   if (!isAction && !config?.featureFlags?.isEnabled("allowBackgroundSteps")) {
     values = values.filter(v => !backgroundStepCompletionLabels.has(v.label));
   }

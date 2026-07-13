@@ -1045,6 +1045,82 @@ jobs:
   });
 });
 
+describe("permissions drives completion", () => {
+  it("includes drives when allowDrivesPermissionAutocomplete is enabled", async () => {
+    const input = `on: push
+permissions:
+  |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowDrivesPermissionAutocomplete: true})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).toContain("drives");
+  });
+
+  it("excludes drives when allowDrivesPermissionAutocomplete is disabled", async () => {
+    const input = `on: push
+permissions:
+  |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowDrivesPermissionAutocomplete: false})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).not.toContain("drives");
+  });
+
+  it("excludes drives when no feature flags are provided", async () => {
+    const input = `on: push
+permissions:
+  |`;
+    const result = await complete(...getPositionFromCursor(input));
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).not.toContain("drives");
+  });
+
+  it("includes drives in job-level permissions when allowDrivesPermissionAutocomplete is enabled", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowDrivesPermissionAutocomplete: true})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).toContain("drives");
+  });
+
+  it("excludes drives from job-level permissions when allowDrivesPermissionAutocomplete is disabled", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      |`;
+    const result = await complete(...getPositionFromCursor(input), {
+      featureFlags: new FeatureFlags({allowDrivesPermissionAutocomplete: false})
+    });
+
+    expect(result).not.toBeUndefined();
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("actions");
+    expect(labels).not.toContain("drives");
+  });
+});
+
 describe("service container command/entrypoint completion", () => {
   it("suggests entrypoint and command in service container", async () => {
     const input = `on: push
