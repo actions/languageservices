@@ -1,4 +1,3 @@
-import {FeatureFlags} from "@actions/expressions/features";
 import {DiagnosticSeverity} from "vscode-languageserver-types";
 import {validate} from "./validate.js";
 import {createDocument} from "./test-utils/document.js";
@@ -7,10 +6,6 @@ import {clearCache} from "./utils/workflow-cache.js";
 beforeEach(() => {
   clearCache();
 });
-
-const queueValidationConfig = {
-  featureFlags: new FeatureFlags({})
-};
 
 describe("validate concurrency deadlock", () => {
   describe("should error on matching concurrency groups", () => {
@@ -264,7 +259,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const queueErrors = result.filter(d => d.message.includes("queue: max"));
       expect(queueErrors).toHaveLength(1);
@@ -287,7 +282,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const queueErrors = result.filter(d => d.message.includes("queue: max"));
       expect(queueErrors).toHaveLength(1);
@@ -313,7 +308,7 @@ jobs:
     steps:
       - run: echo hi`;
 
-      const result = await validate(createDocument("wf.yaml", input), queueValidationConfig);
+      const result = await validate(createDocument("wf.yaml", input));
 
       const queueErrors = result.filter(d => d.message.includes("queue: max"));
       expect(queueErrors).toHaveLength(2);
