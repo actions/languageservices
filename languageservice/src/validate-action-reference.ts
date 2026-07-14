@@ -1,11 +1,13 @@
 import {isMapping} from "@actions/workflow-parser";
 import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {Step} from "@actions/workflow-parser/model/workflow-template";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {ScalarToken} from "@actions/workflow-parser/templates/tokens/scalar-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
 import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {ActionReference, parseActionReference} from "./action.js";
+import {parse} from "yaml";
+import {ActionMetadata, ActionReference, parseActionReference} from "./action.js";
 import {mapRange} from "./utils/range.js";
 import {ValidationConfig} from "./validate.js";
 
@@ -14,7 +16,7 @@ export const DiagnosticCode = {
 } as const;
 
 export interface MissingInputsDiagnosticData {
-  action: ActionReference;
+  action?: ActionReference;
   missingInputs: Array<{
     name: string;
     default?: string;
@@ -35,35 +37,47 @@ export async function validateActionReference(
   }
 
   const uses = step.uses.value;
+  let action: ActionReference | undefined;
+  let actionMetadata: ActionMetadata | undefined;
 
-  // Self repository reference ($/path): resolve the action from the same repository as the executing
-  // workflow/action. The target directory must contain an `action.yml` or `action.yaml`.
   if (uses.startsWith("$/")) {
-    await validateSelfRepositoryActionReference(diagnostics, step.uses.value, step.uses.range, config);
-    return;
+    actionMetadata = await fetchSelfRepositoryActionMetadata(diagnostics, uses, step.uses.range, config);
+  } else {
+    if (!config?.actionsMetadataProvider) {
+      return;
+    }
+
+    // Parse the action reference (e.g., "actions/checkout@v4" -> {owner, name, ref})
+    action = parseActionReference(uses);
+    if (!action) {
+      return;
+    }
+
+    // Fetch the action's metadata (action.yml) to get input definitions
+    actionMetadata = await config.actionsMetadataProvider.fetchActionMetadata(action);
+    if (actionMetadata === undefined) {
+      diagnostics.push({
+        severity: DiagnosticSeverity.Error,
+        range: mapRange(step.uses.range),
+        message: `Unable to resolve action \`${uses}\`, repository or version not found`
+      });
+      return;
+    }
   }
 
-  if (!config?.actionsMetadataProvider) {
-    return;
-  }
-
-  // Parse the action reference (e.g., "actions/checkout@v4" -> {owner, name, ref})
-  const action = parseActionReference(step.uses.value);
-  if (!action) {
-    return;
-  }
-
-  // Fetch the action's metadata (action.yml) to get input definitions
-  const actionMetadata = await config.actionsMetadataProvider.fetchActionMetadata(action);
   if (actionMetadata === undefined) {
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: mapRange(step.uses.range),
-      message: `Unable to resolve action \`${step.uses.value}\`, repository or version not found`
-    });
     return;
   }
 
+  validateActionInputs(diagnostics, stepToken, actionMetadata, action);
+}
+
+function validateActionInputs(
+  diagnostics: Diagnostic[],
+  stepToken: MappingToken,
+  actionMetadata: ActionMetadata,
+  action: ActionReference | undefined
+): void {
   // Find the "with" key in the step token to get the inputs passed to the action
   let withKey: ScalarToken | undefined;
   let withToken: TemplateToken | undefined;
@@ -123,7 +137,7 @@ export async function validateActionReference(
 
     // Build minimal diagnostic data - position calculation happens in the quickfix
     const diagnosticData: MissingInputsDiagnosticData = {
-      action,
+      ...(action ? {action} : {}),
       missingInputs: missingRequiredInputs.map(([name, input]) => ({
         name,
         default: input.default
@@ -141,21 +155,18 @@ export async function validateActionReference(
 }
 
 /**
- * Validates a self repository (`$/path`) action `uses` value by resolving the referenced
- * action within the same repository. The target directory must contain an `action.yml` or
- * `action.yaml` manifest.
+ * Fetches metadata for a self repository (`$/path`) action from the same repository.
  *
- * The existence check requires a `FileProvider` (the same mechanism used to resolve reusable
- * workflows). When no `FileProvider` is configured, the check is skipped so we don't emit a
- * false error. Format-level problems (empty path, `@ref`) are reported by
- * `validateStepUsesFormat`, so this only runs for well-formed self repository references.
+ * Resolution requires a `FileProvider`, the same mechanism used for reusable workflows. When
+ * none is configured, validation is skipped to avoid a false error. Format-level problems are
+ * reported by `validateStepUsesFormat`.
  */
-async function validateSelfRepositoryActionReference(
+async function fetchSelfRepositoryActionMetadata(
   diagnostics: Diagnostic[],
   uses: string,
   range: TokenRange | undefined,
   config: ValidationConfig | undefined
-): Promise<void> {
+): Promise<ActionMetadata | undefined> {
   const fileProvider = config?.fileProvider;
   if (!fileProvider) {
     return;
@@ -169,13 +180,19 @@ async function validateSelfRepositoryActionReference(
     return;
   }
 
+  let content: string | undefined;
   for (const manifest of ["action.yml", "action.yaml"]) {
     try {
-      await fileProvider.getFileContent({path: `${path}/${manifest}`});
-      return; // Found a valid action manifest
+      const file = await fileProvider.getFileContent({path: `${path}/${manifest}`});
+      content = file.content;
+      break;
     } catch {
       // Try the next manifest filename
     }
+  }
+
+  if (content !== undefined) {
+    return parse(content) as ActionMetadata;
   }
 
   diagnostics.push({

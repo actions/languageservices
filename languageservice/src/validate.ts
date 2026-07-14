@@ -320,18 +320,21 @@ function validateCronExpression(diagnostics: Diagnostic[], token: StringToken): 
 function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToken): void {
   const uses = token.value;
 
-  // Self repository workflow reference: `$/` resolves within the same repository at the running
-  // SHA, exactly like `./` for local reusable workflows.
-  if (uses.startsWith("$/")) {
-    // Cannot have @ version for self repository references
-    if (uses.includes("@")) {
-      addWorkflowUsesFormatError(diagnostics, token, "cannot specify version when calling self repository workflows");
-      return;
-    }
+  const isLocalWorkflow = uses.startsWith("./.github/workflows/") || uses.startsWith("./.github/workflows-lab/");
+  const isSelfRepositoryWorkflow =
+    uses.startsWith("$/.github/workflows/") || uses.startsWith("$/.github/workflows-lab/");
 
-    const selfPath = uses.substring(2);
-    if (!selfPath.startsWith(".github/workflows/") && !selfPath.startsWith(".github/workflows-lab/")) {
-      addWorkflowUsesFormatError(diagnostics, token, "self repository workflows must be rooted in '.github/workflows'");
+  // Local or self repository workflow reference
+  if (isLocalWorkflow || isSelfRepositoryWorkflow) {
+    // Cannot have @ version for local or self repository workflows
+    if (uses.includes("@")) {
+      addWorkflowUsesFormatError(
+        diagnostics,
+        token,
+        isSelfRepositoryWorkflow
+          ? "cannot specify version when calling self repository workflows"
+          : "cannot specify version when calling local workflows"
+      );
       return;
     }
 
@@ -348,7 +351,6 @@ function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToke
     // Must be at top level of .github/workflows/ or .github/workflows-lab/ (no subdirectories)
     const pathParts = uses.split("/");
     if (pathParts.length !== 4) {
-      // Expected: "$", ".github", "workflows" or "workflows-lab", "filename.yml"
       addWorkflowUsesFormatError(
         diagnostics,
         token,
@@ -367,49 +369,15 @@ function validateWorkflowUsesFormat(diagnostics: Diagnostic[], token: StringToke
     return;
   }
 
-  // Local workflow reference
-  if (uses.startsWith("./.github/workflows/") || uses.startsWith("./.github/workflows-lab/")) {
-    // Cannot have @ version for local workflows
-    if (uses.includes("@")) {
-      addWorkflowUsesFormatError(diagnostics, token, "cannot specify version when calling local workflows");
-      return;
-    }
-
-    // Must have .yml or .yaml extension
-    if (!uses.endsWith(".yml") && !uses.endsWith(".yaml")) {
-      addWorkflowUsesFormatError(
-        diagnostics,
-        token,
-        "workflow file should have either a '.yml' or '.yaml' file extension"
-      );
-      return;
-    }
-
-    // Must be at top level of .github/workflows/ or .github/workflows-lab/ (no subdirectories)
-    const pathParts = uses.split("/");
-    if (pathParts.length !== 4) {
-      // Expected: ".", ".github", "workflows" or "workflows-lab", "filename.yml"
-      addWorkflowUsesFormatError(
-        diagnostics,
-        token,
-        "workflows must be defined at the top level of the .github/workflows/ directory"
-      );
-      return;
-    }
-
-    // Filename cannot be just the extension
-    const filename = pathParts[3];
-    if (filename === ".yml" || filename === ".yaml") {
-      addWorkflowUsesFormatError(diagnostics, token, "invalid workflow file name");
-      return;
-    }
-
-    return;
-  }
-
-  // Malformed local workflow reference (starts with ./ but not in .github/workflows)
-  if (uses.startsWith("./")) {
-    addWorkflowUsesFormatError(diagnostics, token, "local workflow references must be rooted in '.github/workflows'");
+  // Malformed local or self repository workflow reference
+  if (uses.startsWith("./") || uses.startsWith("$/")) {
+    addWorkflowUsesFormatError(
+      diagnostics,
+      token,
+      uses.startsWith("$/")
+        ? "self repository workflows must be rooted in '.github/workflows'"
+        : "local workflow references must be rooted in '.github/workflows'"
+    );
     return;
   }
 

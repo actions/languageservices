@@ -352,7 +352,7 @@ jobs:
       ]);
     });
 
-    it("self repository reference with empty path", async () => {
+    it("allows a self repository reference with an empty path like a local action path", async () => {
       const input = `on: push
 jobs:
   build:
@@ -361,20 +361,10 @@ jobs:
     - uses: $/
 `;
       const result = await validate(createDocument("wf.yaml", input));
-      expect(result).toEqual([
-        {
-          message: "Expected format $/{path}. Actual '$/'",
-          severity: DiagnosticSeverity.Error,
-          range: {
-            start: {line: 5, character: 12},
-            end: {line: 5, character: 14}
-          },
-          code: "invalid-uses-format"
-        }
-      ]);
+      expect(result).toEqual([]);
     });
 
-    it("self repository reference with a ref", async () => {
+    it("allows a self repository reference with a ref like a local action path", async () => {
       const input = `on: push
 jobs:
   build:
@@ -383,21 +373,10 @@ jobs:
     - uses: $/actions/composite@v1
 `;
       const result = await validate(createDocument("wf.yaml", input));
-      expect(result).toEqual([
-        {
-          message:
-            "A version cannot be specified for self repository references. Expected format $/{path}. Actual '$/actions/composite@v1'",
-          severity: DiagnosticSeverity.Error,
-          range: {
-            start: {line: 5, character: 12},
-            end: {line: 5, character: 34}
-          },
-          code: "invalid-uses-format"
-        }
-      ]);
+      expect(result).toEqual([]);
     });
 
-    it("self repository reference to reusable workflow in step", async () => {
+    it("allows a self repository workflow path in a step like a local action path", async () => {
       const input = `on: push
 jobs:
   build:
@@ -406,18 +385,7 @@ jobs:
     - uses: $/.github/workflows/test.yml
 `;
       const result = await validate(createDocument("wf.yaml", input));
-      expect(result).toEqual([
-        {
-          message:
-            "Reusable workflows should be referenced at the top-level `jobs.<job_id>.uses` key, not within steps",
-          severity: DiagnosticSeverity.Error,
-          range: {
-            start: {line: 5, character: 12},
-            end: {line: 5, character: 40}
-          },
-          code: "invalid-uses-format"
-        }
-      ]);
+      expect(result).toEqual([]);
     });
   });
 });
