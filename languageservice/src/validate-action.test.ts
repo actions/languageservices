@@ -26,6 +26,19 @@ runs:
       expect(diagnostics).toEqual([]);
     });
 
+    it("validates a composite action with a $/ self repository step", async () => {
+      const doc = createActionDocument(`
+name: My Action
+description: Does something
+runs:
+  using: composite
+  steps:
+    - uses: $/actions/nested
+`);
+      const diagnostics = await validate(doc);
+      expect(diagnostics).toEqual([]);
+    });
+
     it("validates a node20 action", async () => {
       const doc = createActionDocument(`
 name: My Action

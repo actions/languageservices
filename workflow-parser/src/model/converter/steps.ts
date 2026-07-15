@@ -236,6 +236,12 @@ function createActionStepId(step: ActionStep): string {
     return "self";
   }
 
+  // Self repository reference ($/path): resolved from the same repository as the executing
+  // workflow/action.
+  if (uses.startsWith("$/")) {
+    return "self";
+  }
+
   const segments = uses.split("@");
   if (segments.length != 2) {
     return "";

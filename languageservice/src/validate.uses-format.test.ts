@@ -128,6 +128,30 @@ jobs:
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toEqual([]);
     });
+
+    it("self repository reference with $/", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/actions/composite
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self repository reference with $/ and subdirectories", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/.github/actions/nested/my-action
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
   });
 
   describe("invalid formats", () => {
@@ -327,6 +351,42 @@ jobs:
         }
       ]);
     });
+
+    it("allows a self repository reference with an empty path like a local action path", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("allows a self repository reference with a ref like a local action path", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/actions/composite@v1
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("allows a self repository workflow path in a step like a local action path", async () => {
+      const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: $/.github/workflows/test.yml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
   });
 });
 
@@ -351,6 +411,36 @@ jobs:
 jobs:
   test:
     uses: ./.github/workflows/test.yaml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self repository workflow path", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.yml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self repository workflow path with yaml extension", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.yaml
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([]);
+    });
+
+    it("self repository workflows-lab path", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows-lab/test.yml
 `;
       const result = await validate(createDocument("wf.yaml", input));
       expect(result).toEqual([]);
@@ -589,6 +679,27 @@ jobs:
           range: {
             start: {line: 3, character: 10},
             end: {line: 3, character: 30}
+          },
+          code: "invalid-workflow-uses-format"
+        }
+      ]);
+    });
+
+    it("self repository workflow with @ref is not supported at job level", async () => {
+      const input = `on: push
+jobs:
+  test:
+    uses: $/.github/workflows/test.yml@v1
+`;
+      const result = await validate(createDocument("wf.yaml", input));
+      expect(result).toEqual([
+        {
+          message:
+            "Invalid workflow reference '$/.github/workflows/test.yml@v1': cannot specify version when calling self repository workflows",
+          severity: DiagnosticSeverity.Error,
+          range: {
+            start: {line: 3, character: 10},
+            end: {line: 3, character: 41}
           },
           code: "invalid-workflow-uses-format"
         }
