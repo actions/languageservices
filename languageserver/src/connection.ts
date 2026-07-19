@@ -62,7 +62,7 @@ export function initConnection(connection: Connection) {
 
     hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
 
-    const options = params.initializationOptions as InitializationOptions;
+    const options = (params.initializationOptions ?? {}) as InitializationOptions;
 
     if (options.sessionToken) {
       client = getClient(options.sessionToken, options.userAgent, options.gitHubApiUrl);
