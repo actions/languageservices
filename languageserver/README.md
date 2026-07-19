@@ -10,10 +10,16 @@ The [package](https://www.npmjs.com/package/@actions/languageserver) contains Ty
 npm install @actions/languageserver
 ```
 
-To install the language server as a standalone CLI:
+To install the language server as a standalone CLI with [NPM](https://github.com/actions/languageservices):
 
 ```bash
 npm install -g @actions/languageserver
+```
+
+Alternatively, you can install it using [Homebrew](https://brew.sh):
+
+```bash
+brew install actions-languageserver
 ```
 
 This makes the `actions-languageserver` command available globally.
