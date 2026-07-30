@@ -139,6 +139,7 @@ on:
       - review_request_removed
       - auto_merge_enabled
       - auto_merge_disabled
+      - stacked
   pull_request_comment:
     types:
       - created
@@ -183,6 +184,7 @@ on:
       - review_request_removed
       - auto_merge_enabled
       - auto_merge_disabled
+      - stacked
   push:
     branches:
       - master
@@ -414,7 +416,8 @@ jobs:
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
-        "auto_merge_disabled"
+        "auto_merge_disabled",
+        "stacked"
       ]
     },
     "pull_request_comment": {
@@ -473,7 +476,8 @@ jobs:
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
-        "auto_merge_disabled"
+        "auto_merge_disabled",
+        "stacked"
       ]
     },
     "push": {
