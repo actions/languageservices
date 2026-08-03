@@ -4373,7 +4373,7 @@
       },
       {
         "name": "type",
-        "description": "The type of issue.",
+        "description": "The type assigned to the issue. This is only present for issues in repositories where issue types are supported.",
         "childParamsGroups": [
           {
             "name": "id",
@@ -5044,6 +5044,16 @@
                 "name": "user_view_type"
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "minimized",
+        "description": "Details about why an issue comment was minimized.",
+        "childParamsGroups": [
+          {
+            "name": "reason",
+            "description": "The reason the comment was minimized."
           }
         ]
       }
@@ -5738,7 +5748,7 @@
       },
       {
         "name": "type",
-        "description": "The type of issue.",
+        "description": "The type assigned to the issue. This is only present for issues in repositories where issue types are supported.",
         "childParamsGroups": [
           {
             "name": "id",
@@ -7120,6 +7130,16 @@
                 ]
               }
             ]
+          },
+          {
+            "name": "minimized",
+            "description": "Details about why an issue comment was minimized.",
+            "childParamsGroups": [
+              {
+                "name": "reason",
+                "description": "The reason the comment was minimized."
+              }
+            ]
           }
         ]
       },
@@ -7162,6 +7182,10 @@
             "description": "Unique identifier for the issue field."
           },
           {
+            "name": "issue_field_name",
+            "description": "The human-readable name of the issue field."
+          },
+          {
             "name": "node_id"
           },
           {
@@ -7175,6 +7199,24 @@
           {
             "name": "single_select_option",
             "description": "Details about the selected option (only present for single_select fields)",
+            "childParamsGroups": [
+              {
+                "name": "id",
+                "description": "Unique identifier for the option."
+              },
+              {
+                "name": "name",
+                "description": "The name of the option"
+              },
+              {
+                "name": "color",
+                "description": "The color of the option"
+              }
+            ]
+          },
+          {
+            "name": "multi_select_options",
+            "description": "Details about the selected options",
             "childParamsGroups": [
               {
                 "name": "id",
@@ -7208,7 +7250,7 @@
       },
       {
         "name": "type",
-        "description": "The type of issue.",
+        "description": "The type assigned to the issue. This is only present for issues in repositories where issue types are supported.",
         "childParamsGroups": [
           {
             "name": "id",
@@ -8242,6 +8284,16 @@
                 ]
               }
             ]
+          },
+          {
+            "name": "minimized",
+            "description": "Details about why an issue comment was minimized.",
+            "childParamsGroups": [
+              {
+                "name": "reason",
+                "description": "The reason the comment was minimized."
+              }
+            ]
           }
         ]
       },
@@ -8284,6 +8336,10 @@
             "description": "Unique identifier for the issue field."
           },
           {
+            "name": "issue_field_name",
+            "description": "The human-readable name of the issue field."
+          },
+          {
             "name": "node_id"
           },
           {
@@ -8297,6 +8353,24 @@
           {
             "name": "single_select_option",
             "description": "Details about the selected option (only present for single_select fields)",
+            "childParamsGroups": [
+              {
+                "name": "id",
+                "description": "Unique identifier for the option."
+              },
+              {
+                "name": "name",
+                "description": "The name of the option"
+              },
+              {
+                "name": "color",
+                "description": "The color of the option"
+              }
+            ]
+          },
+          {
+            "name": "multi_select_options",
+            "description": "Details about the selected options",
             "childParamsGroups": [
               {
                 "name": "id",
@@ -8330,7 +8404,7 @@
       },
       {
         "name": "type",
-        "description": "The type of issue.",
+        "description": "The type assigned to the issue. This is only present for issues in repositories where issue types are supported.",
         "childParamsGroups": [
           {
             "name": "id",
@@ -9492,6 +9566,16 @@
                 ]
               }
             ]
+          },
+          {
+            "name": "minimized",
+            "description": "Details about why an issue comment was minimized.",
+            "childParamsGroups": [
+              {
+                "name": "reason",
+                "description": "The reason the comment was minimized."
+              }
+            ]
           }
         ]
       },
@@ -9534,6 +9618,10 @@
             "description": "Unique identifier for the issue field."
           },
           {
+            "name": "issue_field_name",
+            "description": "The human-readable name of the issue field."
+          },
+          {
             "name": "node_id"
           },
           {
@@ -9547,6 +9635,24 @@
           {
             "name": "single_select_option",
             "description": "Details about the selected option (only present for single_select fields)",
+            "childParamsGroups": [
+              {
+                "name": "id",
+                "description": "Unique identifier for the option."
+              },
+              {
+                "name": "name",
+                "description": "The name of the option"
+              },
+              {
+                "name": "color",
+                "description": "The color of the option"
+              }
+            ]
+          },
+          {
+            "name": "multi_select_options",
+            "description": "Details about the selected options",
             "childParamsGroups": [
               {
                 "name": "id",
@@ -9576,7 +9682,7 @@
       },
       {
         "name": "type",
-        "description": "The type of issue.",
+        "description": "The type assigned to the issue. This is only present for issues in repositories where issue types are supported.",
         "childParamsGroups": [
           {
             "name": "id",
@@ -9698,7 +9804,7 @@
   },
   {
     "name": "type",
-    "description": "The type of issue.",
+    "description": "The type assigned to the issue. This is only present for issues in repositories where issue types are supported.",
     "childParamsGroups": [
       {
         "name": "id",
@@ -12274,6 +12380,41 @@
         "name": "review_comments_url"
       },
       {
+        "name": "stack",
+        "description": "The stack information associated with a pull request.",
+        "childParamsGroups": [
+          {
+            "name": "base",
+            "childParamsGroups": [
+              {
+                "name": "ref",
+                "description": "The base ref of the stack this pull request belongs to."
+              },
+              {
+                "name": "sha",
+                "description": "The base SHA of the stack this pull request belongs to."
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "description": "The total number of pull requests in the stack."
+          },
+          {
+            "name": "position",
+            "description": "The one-based position of this pull request within the stack, where 1 is the bottom of the stack."
+          },
+          {
+            "name": "id",
+            "description": "The ID of the stack that this pull request belongs to."
+          },
+          {
+            "name": "number",
+            "description": "The number of the stack that this pull request belongs to."
+          }
+        ]
+      },
+      {
         "name": "state",
         "description": "State of this Pull Request. Either `open` or `closed`."
       },
@@ -14110,6 +14251,41 @@
       },
       {
         "name": "review_comments_url"
+      },
+      {
+        "name": "stack",
+        "description": "The stack information associated with a pull request.",
+        "childParamsGroups": [
+          {
+            "name": "base",
+            "childParamsGroups": [
+              {
+                "name": "ref",
+                "description": "The base ref of the stack this pull request belongs to."
+              },
+              {
+                "name": "sha",
+                "description": "The base SHA of the stack this pull request belongs to."
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "description": "The total number of pull requests in the stack."
+          },
+          {
+            "name": "position",
+            "description": "The one-based position of this pull request within the stack, where 1 is the bottom of the stack."
+          },
+          {
+            "name": "id",
+            "description": "The ID of the stack that this pull request belongs to."
+          },
+          {
+            "name": "number",
+            "description": "The number of the stack that this pull request belongs to."
+          }
+        ]
       },
       {
         "name": "state",
@@ -16011,6 +16187,41 @@
           {
             "name": "commit_message",
             "description": "Commit message for the merge commit."
+          }
+        ]
+      },
+      {
+        "name": "stack",
+        "description": "The stack information associated with a pull request.",
+        "childParamsGroups": [
+          {
+            "name": "base",
+            "childParamsGroups": [
+              {
+                "name": "ref",
+                "description": "The base ref of the stack this pull request belongs to."
+              },
+              {
+                "name": "sha",
+                "description": "The base SHA of the stack this pull request belongs to."
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "description": "The total number of pull requests in the stack."
+          },
+          {
+            "name": "position",
+            "description": "The one-based position of this pull request within the stack, where 1 is the bottom of the stack."
+          },
+          {
+            "name": "id",
+            "description": "The ID of the stack that this pull request belongs to."
+          },
+          {
+            "name": "number",
+            "description": "The number of the stack that this pull request belongs to."
           }
         ]
       },
@@ -18027,6 +18238,41 @@
         "name": "review_comments_url"
       },
       {
+        "name": "stack",
+        "description": "The stack information associated with a pull request.",
+        "childParamsGroups": [
+          {
+            "name": "base",
+            "childParamsGroups": [
+              {
+                "name": "ref",
+                "description": "The base ref of the stack this pull request belongs to."
+              },
+              {
+                "name": "sha",
+                "description": "The base SHA of the stack this pull request belongs to."
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "description": "The total number of pull requests in the stack."
+          },
+          {
+            "name": "position",
+            "description": "The one-based position of this pull request within the stack, where 1 is the bottom of the stack."
+          },
+          {
+            "name": "id",
+            "description": "The ID of the stack that this pull request belongs to."
+          },
+          {
+            "name": "number",
+            "description": "The number of the stack that this pull request belongs to."
+          }
+        ]
+      },
+      {
         "name": "state",
         "description": "State of this Pull Request. Either `open` or `closed`."
       },
@@ -20020,6 +20266,41 @@
         "name": "review_comments_url"
       },
       {
+        "name": "stack",
+        "description": "The stack information associated with a pull request.",
+        "childParamsGroups": [
+          {
+            "name": "base",
+            "childParamsGroups": [
+              {
+                "name": "ref",
+                "description": "The base ref of the stack this pull request belongs to."
+              },
+              {
+                "name": "sha",
+                "description": "The base SHA of the stack this pull request belongs to."
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "description": "The total number of pull requests in the stack."
+          },
+          {
+            "name": "position",
+            "description": "The one-based position of this pull request within the stack, where 1 is the bottom of the stack."
+          },
+          {
+            "name": "id",
+            "description": "The ID of the stack that this pull request belongs to."
+          },
+          {
+            "name": "number",
+            "description": "The number of the stack that this pull request belongs to."
+          }
+        ]
+      },
+      {
         "name": "state",
         "description": "State of this Pull Request. Either `open` or `closed`."
       },
@@ -21980,6 +22261,41 @@
         "name": "review_comments_url"
       },
       {
+        "name": "stack",
+        "description": "The stack information associated with a pull request.",
+        "childParamsGroups": [
+          {
+            "name": "base",
+            "childParamsGroups": [
+              {
+                "name": "ref",
+                "description": "The base ref of the stack this pull request belongs to."
+              },
+              {
+                "name": "sha",
+                "description": "The base SHA of the stack this pull request belongs to."
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "description": "The total number of pull requests in the stack."
+          },
+          {
+            "name": "position",
+            "description": "The one-based position of this pull request within the stack, where 1 is the bottom of the stack."
+          },
+          {
+            "name": "id",
+            "description": "The ID of the stack that this pull request belongs to."
+          },
+          {
+            "name": "number",
+            "description": "The number of the stack that this pull request belongs to."
+          }
+        ]
+      },
+      {
         "name": "state"
       },
       {
@@ -23793,6 +24109,41 @@
       },
       {
         "name": "review_comments_url"
+      },
+      {
+        "name": "stack",
+        "description": "The stack information associated with a pull request.",
+        "childParamsGroups": [
+          {
+            "name": "base",
+            "childParamsGroups": [
+              {
+                "name": "ref",
+                "description": "The base ref of the stack this pull request belongs to."
+              },
+              {
+                "name": "sha",
+                "description": "The base SHA of the stack this pull request belongs to."
+              }
+            ]
+          },
+          {
+            "name": "size",
+            "description": "The total number of pull requests in the stack."
+          },
+          {
+            "name": "position",
+            "description": "The one-based position of this pull request within the stack, where 1 is the bottom of the stack."
+          },
+          {
+            "name": "id",
+            "description": "The ID of the stack that this pull request belongs to."
+          },
+          {
+            "name": "number",
+            "description": "The number of the stack that this pull request belongs to."
+          }
+        ]
       },
       {
         "name": "state"
