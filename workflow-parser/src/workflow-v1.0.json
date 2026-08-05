@@ -2218,6 +2218,7 @@
         "properties": {
           "name": "step-name",
           "id": "step-id",
+          "if": "step-if",
           "continue-on-error": "step-continue-on-error",
           "wait": {
             "type": "step-wait-target",
@@ -2231,6 +2232,7 @@
         "properties": {
           "name": "step-name",
           "id": "step-id",
+          "if": "step-if",
           "continue-on-error": "step-continue-on-error",
           "wait-all": {
             "type": "step-wait-all-value",
@@ -2244,6 +2246,7 @@
         "properties": {
           "name": "step-name",
           "id": "step-id",
+          "if": "step-if",
           "continue-on-error": "step-continue-on-error",
           "cancel": {
             "type": "step-cancel-target",
