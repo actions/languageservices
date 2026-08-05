@@ -18,6 +18,14 @@ export function parseFileReference(ref: string): FileReference {
     };
   }
 
+  // Self repository reference: `$/<path>` resolves within the same repository at the running
+  // SHA, exactly like `./` for local references.
+  if (ref.startsWith("$/")) {
+    return {
+      path: ref.substring(2)
+    };
+  }
+
   const [remotePath, version] = ref.split("@");
   const [owner, repository, ...pathSegments] = remotePath.split("/").filter(s => s.length > 0);
 

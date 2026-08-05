@@ -39,6 +39,7 @@ export function warnIfShortSha(diagnostics: Diagnostic[], token: StringToken, re
  * - docker://image:tag
  * - ./local/path
  * - .\local\path (Windows)
+ * - $/path (self repository reference: an action in the same repository as the executing workflow/action)
  * - {owner}/{repo}@{ref}
  * - {owner}/{repo}/{path}@{ref}
  */
@@ -61,8 +62,8 @@ export function validateStepUsesFormat(diagnostics: Diagnostic[], token: StringT
     return;
   }
 
-  // Local action path - always valid format
-  if (uses.startsWith("./") || uses.startsWith(".\\")) {
+  // Local and self repository action paths - always valid format
+  if (uses.startsWith("./") || uses.startsWith(".\\") || uses.startsWith("$/")) {
     return;
   }
 

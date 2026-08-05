@@ -1,4 +1,4 @@
-import {parseFileReference} from "./file-reference.js";
+import {fileIdentifier, parseFileReference} from "./file-reference.js";
 
 describe("parseFileReference", () => {
   it("parses local file reference", () => {
@@ -13,6 +13,27 @@ describe("parseFileReference", () => {
     expect(ref).toEqual({
       path: ""
     });
+  });
+
+  it("parses self file reference", () => {
+    const ref = parseFileReference("$/.github/workflows/build.yml");
+    expect(ref).toEqual({
+      path: ".github/workflows/build.yml"
+    });
+  });
+
+  it("parses self file references with an empty path", () => {
+    const ref = parseFileReference("$/");
+    expect(ref).toEqual({
+      path: ""
+    });
+  });
+
+  it("normalizes self file references to the same identifier as local references", () => {
+    const selfRef = parseFileReference("$/.github/workflows/build.yml");
+    const localRef = parseFileReference("./.github/workflows/build.yml");
+    expect(fileIdentifier(selfRef)).toEqual(fileIdentifier(localRef));
+    expect(fileIdentifier(selfRef)).toEqual("./.github/workflows/build.yml");
   });
 
   it("parses remote file reference", () => {

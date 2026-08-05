@@ -1,10 +1,13 @@
 import {isMapping} from "@actions/workflow-parser";
 import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {Step} from "@actions/workflow-parser/model/workflow-template";
+import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {ScalarToken} from "@actions/workflow-parser/templates/tokens/scalar-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
+import {TokenRange} from "@actions/workflow-parser/templates/tokens/token-range";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {ActionReference, parseActionReference} from "./action.js";
+import {parse} from "yaml";
+import {ActionMetadata, ActionReference, parseActionReference} from "./action.js";
 import {mapRange} from "./utils/range.js";
 import {ValidationConfig} from "./validate.js";
 
@@ -13,7 +16,7 @@ export const DiagnosticCode = {
 } as const;
 
 export interface MissingInputsDiagnosticData {
-  action: ActionReference;
+  action?: ActionReference;
   missingInputs: Array<{
     name: string;
     default?: string;
@@ -29,27 +32,52 @@ export async function validateActionReference(
   step: Step | undefined,
   config: ValidationConfig | undefined
 ): Promise<void> {
-  if (!isMapping(stepToken) || !step || !isActionStep(step) || !config?.actionsMetadataProvider) {
+  if (!isMapping(stepToken) || !step || !isActionStep(step)) {
     return;
   }
 
-  // Parse the action reference (e.g., "actions/checkout@v4" -> {owner, name, ref})
-  const action = parseActionReference(step.uses.value);
-  if (!action) {
-    return;
+  const uses = step.uses.value;
+  let action: ActionReference | undefined;
+  let actionMetadata: ActionMetadata | undefined;
+
+  if (uses.startsWith("$/")) {
+    actionMetadata = await fetchSelfRepositoryActionMetadata(diagnostics, uses, step.uses.range, config);
+  } else {
+    if (!config?.actionsMetadataProvider) {
+      return;
+    }
+
+    // Parse the action reference (e.g., "actions/checkout@v4" -> {owner, name, ref})
+    action = parseActionReference(uses);
+    if (!action) {
+      return;
+    }
+
+    // Fetch the action's metadata (action.yml) to get input definitions
+    actionMetadata = await config.actionsMetadataProvider.fetchActionMetadata(action);
+    if (actionMetadata === undefined) {
+      diagnostics.push({
+        severity: DiagnosticSeverity.Error,
+        range: mapRange(step.uses.range),
+        message: `Unable to resolve action \`${uses}\`, repository or version not found`
+      });
+      return;
+    }
   }
 
-  // Fetch the action's metadata (action.yml) to get input definitions
-  const actionMetadata = await config.actionsMetadataProvider.fetchActionMetadata(action);
   if (actionMetadata === undefined) {
-    diagnostics.push({
-      severity: DiagnosticSeverity.Error,
-      range: mapRange(step.uses.range),
-      message: `Unable to resolve action \`${step.uses.value}\`, repository or version not found`
-    });
     return;
   }
 
+  validateActionInputs(diagnostics, stepToken, actionMetadata, action);
+}
+
+function validateActionInputs(
+  diagnostics: Diagnostic[],
+  stepToken: MappingToken,
+  actionMetadata: ActionMetadata,
+  action: ActionReference | undefined
+): void {
   // Find the "with" key in the step token to get the inputs passed to the action
   let withKey: ScalarToken | undefined;
   let withToken: TemplateToken | undefined;
@@ -109,7 +137,7 @@ export async function validateActionReference(
 
     // Build minimal diagnostic data - position calculation happens in the quickfix
     const diagnosticData: MissingInputsDiagnosticData = {
-      action,
+      ...(action ? {action} : {}),
       missingInputs: missingRequiredInputs.map(([name, input]) => ({
         name,
         default: input.default
@@ -124,4 +152,53 @@ export async function validateActionReference(
       data: diagnosticData
     });
   }
+}
+
+/**
+ * Fetches metadata for a self repository (`$/path`) action from the same repository.
+ *
+ * Resolution requires a `FileProvider`, the same mechanism used for reusable workflows. When
+ * none is configured, validation is skipped to avoid a false error. Format-level problems are
+ * reported by `validateStepUsesFormat`.
+ */
+async function fetchSelfRepositoryActionMetadata(
+  diagnostics: Diagnostic[],
+  uses: string,
+  range: TokenRange | undefined,
+  config: ValidationConfig | undefined
+): Promise<ActionMetadata | undefined> {
+  const fileProvider = config?.fileProvider;
+  if (!fileProvider) {
+    return;
+  }
+
+  const path = uses.substring("$/".length);
+
+  // Skip malformed self repository references (empty path or a trailing @ref); those are reported by
+  // validateStepUsesFormat.
+  if (!path || uses.includes("@")) {
+    return;
+  }
+
+  let content: string | undefined;
+  for (const manifest of ["action.yml", "action.yaml"]) {
+    try {
+      const file = await fileProvider.getFileContent({path: `${path}/${manifest}`});
+      content = file.content;
+      break;
+    } catch {
+      // Try the next manifest filename
+    }
+  }
+
+  if (content !== undefined) {
+    return parse(content) as ActionMetadata;
+  }
+
+  diagnostics.push({
+    severity: DiagnosticSeverity.Error,
+    range: mapRange(range),
+    message: `Unable to resolve action \`${uses}\`, no 'action.yml' or 'action.yaml' found in '${path}'`,
+    code: "invalid-uses-format"
+  });
 }

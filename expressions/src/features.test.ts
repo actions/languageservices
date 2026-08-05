@@ -25,7 +25,6 @@ describe("FeatureFlags", () => {
     it("returns true when all is enabled", () => {
       const flags = new FeatureFlags({all: true});
       expect(flags.isEnabled("missingInputsQuickfix")).toBe(true);
-      expect(flags.isEnabled("allowConcurrencyQueue")).toBe(true);
     });
 
     it("explicit feature flag takes precedence over all:true", () => {
@@ -57,7 +56,7 @@ describe("FeatureFlags", () => {
         "blockScalarChompingWarning",
         "allowCaseFunction",
         "allowCopilotRequestsPermission",
-        "allowConcurrencyQueue",
+        "allowDrivesPermissionAutocomplete",
         "allowBackgroundSteps"
       ]);
     });

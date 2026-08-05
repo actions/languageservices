@@ -42,10 +42,10 @@ export interface ExperimentalFeatures {
   allowCopilotRequestsPermission?: boolean;
 
   /**
-   * Enable the queue property in workflow concurrency settings.
+   * Enable the drives permission in workflow permissions autocomplete.
    * @default false
    */
-  allowConcurrencyQueue?: boolean;
+  allowDrivesPermissionAutocomplete?: boolean;
 
   /**
    * Enable background workflow steps and related wait/cancel steps.
@@ -68,7 +68,7 @@ const allFeatureKeys: ExperimentalFeatureKey[] = [
   "blockScalarChompingWarning",
   "allowCaseFunction",
   "allowCopilotRequestsPermission",
-  "allowConcurrencyQueue",
+  "allowDrivesPermissionAutocomplete",
   "allowBackgroundSteps"
 ];
 
