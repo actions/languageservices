@@ -279,4 +279,63 @@ jobs:
     const result = await hover(...getPositionFromCursor(input));
     expect(result).toBeNull();
   });
+
+  it("on run key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        ru|n: echo hi
+        background: true
+      - cancel: server`;
+    const result = await hover(...getPositionFromCursor(input), bgConfig);
+    expect(result).not.toBeNull();
+    expect(result?.contents).toContain("Runs command-line programs using the operating system's shell");
+  });
+
+  it("on run value and same line as key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: echo| hi
+        background: true
+      - cancel: server`;
+    const result = await hover(...getPositionFromCursor(input), bgConfig);
+    expect(result).toBeNull();
+  });
+
+  it("on run value and different line to key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: >
+          echo| hi
+        background: true
+      - cancel: server`;
+    const result = await hover(...getPositionFromCursor(input), bgConfig);
+    expect(result).toBeNull();
+  });
+
+  it("on run input value", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        uses: foo/bar@main
+        with:
+          run: echo| hi`;
+    const result = await hover(...getPositionFromCursor(input), bgConfig);
+    expect(result).not.toBeNull();
+    expect(result?.contents).toContain("Available expression contexts");
+  });
 });
