@@ -112,7 +112,7 @@ export class YamlObjectReader implements ObjectReader {
     if (isPair(node)) {
       const scalarKey = node.key as Scalar;
       range = this.getRange(scalarKey);
-      const key = scalarKey.value as string;
+      const key = scalarKey.value === null ? "" : String(scalarKey.value);
       yield new ParseEvent(EventType.Literal, new StringToken(this.fileId, range, key, undefined));
       for (const child of this.getNodes(node.value, aliasResolutionStack)) {
         yield child;
