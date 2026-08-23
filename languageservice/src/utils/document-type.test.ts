@@ -27,6 +27,20 @@ describe("detectDocumentType", () => {
       expect(detectDocumentType("C:\\Users\\me\\action.yml")).toBe("action");
       expect(detectDocumentType("C:\\repo\\.github\\actions\\my-action\\action.yml")).toBe("action");
     });
+
+    it("handles file uri", () => {
+      expect(detectDocumentType("file:///c/code/repo/action.yml")).toBe("action");
+    });
+
+    it("handles git uri", () => {
+      expect(
+        detectDocumentType(
+          `git:/c%3A/code/repo/action.yml?${encodeURIComponent(
+            JSON.stringify({path: "c:\\code\\repo\\action.yml", ref: ""})
+          )}`
+        )
+      ).toBe("action");
+    });
   });
 
   describe("workflow files", () => {
@@ -55,6 +69,20 @@ describe("detectDocumentType", () => {
       expect(detectDocumentType("/repo/.github/workflows/action.yaml")).toBe("workflow");
       expect(detectDocumentType("/repo/.github/workflows-lab/action.yml")).toBe("workflow");
     });
+
+    it("handles file uri", () => {
+      expect(detectDocumentType("file:///c/code/repo/.github/workflows/ci.yml")).toBe("workflow");
+    });
+
+    it("handles git uri", () => {
+      expect(
+        detectDocumentType(
+          `git:/c%3A/code/repo/.github/workflows/ci.yml?${encodeURIComponent(
+            JSON.stringify({path: "c:\\code\\repo\\.github\\workflows\\ci.yml", ref: ""})
+          )}`
+        )
+      ).toBe("workflow");
+    });
   });
 
   describe("unknown files", () => {
@@ -65,6 +93,10 @@ describe("detectDocumentType", () => {
 
     it("returns unknown for non-yaml files", () => {
       expect(detectDocumentType("/path/to/file.txt")).toBe("unknown");
+    });
+
+    it("returns unknown for invalid URI", () => {
+      expect(detectDocumentType("foo bar")).toBe("unknown");
     });
   });
 });
