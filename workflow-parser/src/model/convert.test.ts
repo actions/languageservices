@@ -96,7 +96,8 @@ jobs:
         content: `on: push
 jobs:
   build:
-    runs-on: ubuntu-latest`
+    runs-on: ubuntu-latest
+    steps: []`
       },
       nullTrace
     );
@@ -136,9 +137,11 @@ jobs:
   build:
     if: \${{ true }}
     runs-on: ubuntu-latest
+    steps: []
   deploy:
     if: true
-    runs-on: ubuntu-latest`
+    runs-on: ubuntu-latest
+    steps: []`
       },
       nullTrace
     );
@@ -186,7 +189,8 @@ jobs:
 jobs:
   build:
     needs: # comment to preserve whitespace in test
-    runs-on: ubuntu-latest`
+    runs-on: ubuntu-latest
+    steps: []`
       },
       nullTrace
     );
@@ -231,11 +235,17 @@ jobs:
   job1:
     needs: [unknown-job, job3]
     runs-on: ubuntu-latest
+    steps:
+      - run: echo job1
   job2:
     runs-on: ubuntu-latest
+    steps:
+      - run: echo job2
   job3:
     needs: job1
-    runs-on: ubuntu-latest`
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo job3`
       },
       nullTrace
     );
@@ -255,7 +265,7 @@ jobs:
         },
         {
           Message:
-            "wf.yaml (Line: 9, Col: 12): Job 'job3' depends on job 'job1' which creates a cycle in the dependency graph."
+            "wf.yaml (Line: 13, Col: 12): Job 'job3' depends on job 'job1' which creates a cycle in the dependency graph."
         }
       ],
       events: {
@@ -271,7 +281,16 @@ jobs:
           name: "job1",
           needs: ["unknown-job", "job3"],
           "runs-on": "ubuntu-latest",
-          steps: [],
+          steps: [
+            {
+              id: "__run",
+              if: {
+                expr: "success()",
+                type: 3
+              },
+              run: "echo job1"
+            }
+          ],
           type: "job"
         },
         {
@@ -282,7 +301,16 @@ jobs:
           },
           name: "job2",
           "runs-on": "ubuntu-latest",
-          steps: [],
+          steps: [
+            {
+              id: "__run",
+              if: {
+                expr: "success()",
+                type: 3
+              },
+              run: "echo job2"
+            }
+          ],
           type: "job"
         },
         {
@@ -294,7 +322,16 @@ jobs:
           name: "job3",
           needs: ["job1"],
           "runs-on": "ubuntu-latest",
-          steps: [],
+          steps: [
+            {
+              id: "__run",
+              if: {
+                expr: "success()",
+                type: 3
+              },
+              run: "echo job3"
+            }
+          ],
           type: "job"
         }
       ]
@@ -397,6 +434,49 @@ jobs:
     });
   });
 
+  it("converts workflow with one job without steps", async () => {
+    const result = parseWorkflow(
+      {
+        name: "wf.yaml",
+        content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      },
+      nullTrace
+    );
+
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion
+    });
+
+    expect(serializeTemplate(template)).toEqual({
+      errors: [
+        {
+          Message: "wf.yaml (Line: 4, Col: 5): Required property is missing: steps"
+        }
+      ],
+      events: {
+        push: {}
+      },
+      jobs: [
+        {
+          id: "build",
+          if: {
+            expr: "success()",
+            type: 3
+          },
+          name: "build",
+          needs: undefined,
+          outputs: undefined,
+          "runs-on": "ubuntu-latest",
+          steps: [],
+          type: "job"
+        }
+      ]
+    });
+  });
+
   // Extra coverage since workflow_call components are not all covered by x-lang parsers
   it("converts workflow_call on", async () => {
     const result = parseWorkflow(
@@ -417,7 +497,8 @@ jobs:
       secret2:
 jobs:
   build:
-    runs-on: ubuntu-latest`
+    runs-on: ubuntu-latest
+    steps: []`
       },
       nullTrace
     );
