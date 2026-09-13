@@ -1,7 +1,8 @@
 import {data, DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions";
 import {parseActionReference} from "@actions/languageservice/action";
 import {WorkflowContext} from "@actions/languageservice/context/workflow-context";
-import {isActionStep} from "@actions/workflow-parser/model/type-guards";
+import {isActionStep, isParallelStep} from "@actions/workflow-parser/model/type-guards";
+import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {Octokit} from "@octokit/rest";
 import {TTLCache} from "../utils/cache.js";
 import {getActionOutputs} from "./action-outputs.js";
@@ -26,7 +27,25 @@ export async function getStepsContext(
   // Copy the default context for each step
   // If the step is an action, add the action outputs to the context
   const stepsContext = new DescriptionDictionary();
-  for (const step of workflowContext.job.steps) {
+  await collectSteps(workflowContext.job.steps, octokit, cache, defaultContext, contextSteps, stepsContext);
+
+  return stepsContext;
+}
+
+async function collectSteps(
+  steps: Step[],
+  octokit: Octokit,
+  cache: TTLCache,
+  defaultContext: DescriptionDictionary,
+  contextSteps: Set<string>,
+  stepsContext: DescriptionDictionary
+) {
+  for (const step of steps) {
+    if (isParallelStep(step)) {
+      await collectSteps(step.parallel, octokit, cache, defaultContext, contextSteps, stepsContext);
+      continue;
+    }
+
     if (!contextSteps.has(step.id)) {
       continue;
     }
@@ -72,6 +91,4 @@ export async function getStepsContext(
     }
     stepsContext.add(step.id, stepContext);
   }
-
-  return stepsContext;
 }

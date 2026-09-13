@@ -83,6 +83,63 @@ jobs:
     ]);
   });
 
+  it("links for actions in parallel workflow steps", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+    - uses: actions/checkout@v2
+    - parallel:
+      - uses: actions/checkout@v3
+      - uses: github/codeql-action/init@v2`;
+    const result = await documentLinks(createDocument("test.yaml", input), undefined);
+    expect(result).toEqual([
+      {
+        range: {
+          end: {
+            character: 31,
+            line: 5
+          },
+          start: {
+            character: 12,
+            line: 5
+          }
+        },
+        target: "https://www.github.com/actions/checkout/tree/v2/",
+        tooltip: "Open action on GitHub"
+      },
+      {
+        range: {
+          end: {
+            character: 33,
+            line: 7
+          },
+          start: {
+            character: 14,
+            line: 7
+          }
+        },
+        target: "https://www.github.com/actions/checkout/tree/v3/",
+        tooltip: "Open action on GitHub"
+      },
+      {
+        range: {
+          end: {
+            character: 42,
+            line: 8
+          },
+          start: {
+            character: 14,
+            line: 8
+          }
+        },
+        target: "https://www.github.com/github/codeql-action/tree/v2/init",
+        tooltip: "Open action on GitHub"
+      }
+    ]);
+  });
+
   it("links for reusable local workflow", async () => {
     const input = `on: push
 jobs:
@@ -145,6 +202,19 @@ runs:
     expect(result[0].target).toBe("https://www.github.com/actions/checkout/tree/v4/");
     expect(result[0].tooltip).toBe("Open action on GitHub");
     expect(result[1].target).toBe("https://www.github.com/actions/setup-node/tree/v4/");
+  });
+
+  it("does not link actions in unsupported parallel composite action steps", async () => {
+    const input = `name: My Composite Action
+description: A composite action with parallel steps
+runs:
+  using: composite
+  steps:
+    - parallel:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4`;
+    const result = await documentLinks(createDocument("action.yml", input), undefined);
+    expect(result).toHaveLength(0);
   });
 
   it("no links for non-composite action", async () => {

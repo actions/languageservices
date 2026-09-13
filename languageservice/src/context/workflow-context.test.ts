@@ -62,4 +62,22 @@ jobs:
     expect(step).not.toBeUndefined();
     expect(step.uses.value).toBe("actions/checkout@v2");
   });
+
+  it("context for workflow parallel uses step", async () => {
+    const context = await testGetWorkflowContext(`on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - parallel:
+      - run: echo Hello
+      - uses: actions/checkout@v2|`);
+    expect(context.uri).not.toBe("");
+    expect(context.template).not.toBeUndefined();
+    expect(context.job).not.toBeUndefined();
+
+    const step = context.step as ActionStep;
+    expect(step).not.toBeUndefined();
+    expect(step.uses.value).toBe("actions/checkout@v2");
+  });
 });

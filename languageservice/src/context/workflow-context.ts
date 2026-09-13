@@ -1,5 +1,5 @@
 import {isMapping, isSequence, WorkflowTemplate} from "@actions/workflow-parser";
-import {isJob, isReusableWorkflowJob} from "@actions/workflow-parser/model/type-guards";
+import {isJob, isParallelStep, isReusableWorkflowJob} from "@actions/workflow-parser/model/type-guards";
 import {Job, ReusableWorkflowJob, Step} from "@actions/workflow-parser/model/workflow-template";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
 import {SequenceToken} from "@actions/workflow-parser/templates/tokens/sequence-token";
@@ -98,9 +98,32 @@ function findStep(steps?: Step[], stepSequence?: SequenceToken, stepToken?: Mapp
   // Steps may not define an ID, so find the step by index
   let stepIndex = -1;
   for (let i = 0; i < stepSequence.count; i++) {
-    if (stepSequence.get(i) === stepToken) {
+    const token = stepSequence.get(i);
+    if (token === stepToken) {
       stepIndex = i;
       break;
+    }
+
+    // If the index is in range and the token is the mapping
+    // token for a parallel step, then we can step down
+    // into its parallel steps and look for the step there.
+    if (
+      i >= 0 &&
+      i < steps.length &&
+      token.definition?.key === "parallel-step" &&
+      isMapping(token) &&
+      token.count === 1
+    ) {
+      const parallelSteps = token.get(0).value;
+      if (parallelSteps.definition?.key === "parallel-steps" && isSequence(parallelSteps)) {
+        const parallelStep = steps[i];
+        if (isParallelStep(parallelStep)) {
+          const stepInParallel = findStep(parallelStep.parallel, parallelSteps, stepToken);
+          if (stepInParallel) {
+            return stepInParallel;
+          }
+        }
+      }
     }
   }
 

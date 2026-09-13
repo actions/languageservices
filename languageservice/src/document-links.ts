@@ -1,5 +1,6 @@
 import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
-import {isJob, isReusableWorkflowJob} from "@actions/workflow-parser/model/type-guards";
+import {isActionStep, isJob, isParallelStep, isReusableWorkflowJob} from "@actions/workflow-parser/model/type-guards";
+import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {parseFileReference} from "@actions/workflow-parser/workflows/file-reference";
 import {TextDocument} from "vscode-languageserver-textdocument";
@@ -49,23 +50,11 @@ function actionDocumentLinks(file: File, uri: string): DocumentLink[] {
     return links;
   }
 
-  const steps = template.runs.steps ?? [];
-  for (const step of steps) {
-    if ("uses" in step) {
-      const actionRef = parseActionReference(step.uses.value);
-      if (!actionRef) {
-        continue;
-      }
-
-      const url = actionUrl(actionRef);
-
-      links.push({
-        range: mapRange(step.uses.range),
-        target: url,
-        tooltip: `Open action on GitHub`
-      });
-    }
-  }
+  addLinksInSteps(
+    template.runs.steps ?? [],
+    false, // Parallel steps are not supported in composite actions.
+    links
+  );
 
   return links;
 }
@@ -92,22 +81,7 @@ async function workflowDocumentLinks(file: File, uri: string, workspace: string 
 
     if (isJob(job)) {
       // Add links to referenced actions
-      for (const step of job.steps || []) {
-        if ("uses" in step) {
-          const actionRef = parseActionReference(step.uses.value);
-          if (!actionRef) {
-            continue;
-          }
-
-          const url = actionUrl(actionRef);
-
-          links.push({
-            range: mapRange(step.uses.range),
-            target: url,
-            tooltip: `Open action on GitHub`
-          });
-        }
-      }
+      addLinksInSteps(job.steps || [], true, links);
     } else if (isReusableWorkflowJob(job)) {
       // Add links to referenced reusable workflows
       const ref = parseFileReference(job.ref.value);
@@ -140,4 +114,30 @@ async function workflowDocumentLinks(file: File, uri: string, workspace: string 
   }
 
   return [...links];
+}
+
+function addLinksInSteps(steps: Step[], allowParallel: boolean, links: DocumentLink[]) {
+  for (const step of steps || []) {
+    if (isActionStep(step)) {
+      const actionRef = parseActionReference(step.uses.value);
+      if (!actionRef) {
+        continue;
+      }
+
+      const url = actionUrl(actionRef);
+
+      links.push({
+        range: mapRange(step.uses.range),
+        target: url,
+        tooltip: `Open action on GitHub`
+      });
+    } else if (allowParallel && isParallelStep(step)) {
+      // Step down into the parallel steps.
+      addLinksInSteps(
+        step.parallel,
+        false, // Nested parallel blocks are not allowed.
+        links
+      );
+    }
+  }
 }
