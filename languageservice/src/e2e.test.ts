@@ -1,9 +1,9 @@
-import {complete} from "./complete";
-import {hover} from "./hover";
-import {registerLogger} from "./log";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {TestLogger} from "./test-utils/logger";
-import {clearCache} from "./utils/workflow-cache";
+import {complete} from "./complete.js";
+import {hover} from "./hover.js";
+import {registerLogger} from "./log.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {TestLogger} from "./test-utils/logger.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 registerLogger(new TestLogger());
 
@@ -21,17 +21,23 @@ describe("end-to-end", () => {
     const result = await complete(...getPositionFromCursor(input));
 
     expect(result).not.toBeUndefined();
-    expect(result.length).toEqual(9);
-    const labels = result.map(x => x.label);
-    expect(labels).toEqual([
+    expect(result.length).toEqual(13);
+    const labelsWithDetails = result.map(x =>
+      x.labelDetails?.description ? `${x.label} (${x.labelDetails.description})` : x.label
+    );
+    expect(labelsWithDetails).toEqual([
       "concurrency",
+      "concurrency (full syntax)",
       "defaults",
       "description",
       "env",
       "jobs",
       "name",
       "on",
+      "on (list)",
+      "on (full syntax)",
       "permissions",
+      "permissions (full syntax)",
       "run-name"
     ]);
   });

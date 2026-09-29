@@ -1,11 +1,11 @@
-import {BooleanToken, MappingToken, NullToken, NumberToken, ScalarToken, SequenceToken, StringToken} from ".";
-import {Definition} from "../schema/definition";
-import {DefinitionInfo} from "../schema/definition-info";
-import {PropertyDefinition} from "../schema/property-definition";
-import {SerializedToken} from "./serialization";
-import {TokenRange} from "./token-range";
-import {TraversalState} from "./traversal-state";
-import {TokenType, tokenTypeName} from "./types";
+import {BooleanToken, MappingToken, NullToken, NumberToken, ScalarToken, SequenceToken, StringToken} from "./index.js";
+import {Definition} from "../schema/definition.js";
+import {DefinitionInfo} from "../schema/definition-info.js";
+import {PropertyDefinition} from "../schema/property-definition.js";
+import {SerializedToken} from "./serialization.js";
+import {TokenRange} from "./token-range.js";
+import {TraversalState} from "./traversal-state.js";
+import {TokenType, tokenTypeName} from "./types.js";
 
 export class TemplateTokenError extends Error {
   constructor(message: string, public readonly token?: TemplateToken) {
@@ -185,14 +185,23 @@ export abstract class TemplateToken {
 
   /**
    * Returns all tokens (depth first)
-   * @param value The object to travese
+   * @param value The object to traverse
    * @param omitKeys Whether to omit mapping keys
+   * @yields A tuple of [parent, token, keyToken, ancestors] for each token in the tree
    */
   public static *traverse(
     value: TemplateToken,
     omitKeys?: boolean
-  ): Generator<[parent: TemplateToken | undefined, token: TemplateToken, keyToken: TemplateToken | undefined], void> {
-    yield [undefined, value, undefined];
+  ): Generator<
+    [
+      parent: TemplateToken | undefined,
+      token: TemplateToken,
+      keyToken: TemplateToken | undefined,
+      ancestors: TemplateToken[]
+    ],
+    void
+  > {
+    yield [undefined, value, undefined, []];
 
     switch (value.templateTokenType) {
       case TokenType.Sequence:
@@ -202,7 +211,7 @@ export abstract class TemplateToken {
         while (state.parent) {
           if (state.moveNext(omitKeys ?? false)) {
             value = state.current as TemplateToken;
-            yield [state.parent?.current, value, state.currentKey];
+            yield [state.parent?.current, value, state.currentKey, state.getAncestors()];
 
             switch (value.type) {
               case TokenType.Sequence:

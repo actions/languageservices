@@ -1,5 +1,5 @@
-import {clearCache} from "../utils/workflow-cache";
-import {getPositionFromCursor} from "./cursor-position";
+import {clearCache} from "../utils/workflow-cache.js";
+import {getPositionFromCursor} from "./cursor-position.js";
 
 beforeEach(() => {
   clearCache();

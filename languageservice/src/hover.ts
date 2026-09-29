@@ -1,123 +1,176 @@
-import {data, DescriptionDictionary, Parser} from "@actions/expressions";
+import {data, DescriptionDictionary, FeatureFlags, Parser} from "@actions/expressions";
 import {FunctionDefinition, FunctionInfo} from "@actions/expressions/funcs/info";
 import {Lexer} from "@actions/expressions/lexer";
-import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
+import {parseAction} from "@actions/workflow-parser/actions/action-parser";
+import {isString} from "@actions/workflow-parser";
 import {getCronDescription} from "@actions/workflow-parser/model/converter/cron";
+import {ErrorPolicy} from "@actions/workflow-parser/model/convert";
 import {splitAllowedContext} from "@actions/workflow-parser/templates/allowed-context";
-import {StringToken} from "@actions/workflow-parser/templates/tokens/string-token";
 import {TemplateToken} from "@actions/workflow-parser/templates/tokens/template-token";
-import {isBasicExpression, isString} from "@actions/workflow-parser/templates/tokens/type-guards";
+import {isBasicExpression} from "@actions/workflow-parser/templates/tokens/type-guards";
 import {File} from "@actions/workflow-parser/workflows/file";
 import {FileProvider} from "@actions/workflow-parser/workflows/file-provider";
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
 import {Hover} from "vscode-languageserver-types";
-import {ContextProviderConfig} from "./context-providers/config";
-import {getContext, Mode} from "./context-providers/default";
-import {getFunctionDescription} from "./context-providers/descriptions";
-import {getWorkflowContext, WorkflowContext} from "./context/workflow-context";
+import {ContextProviderConfig} from "./context-providers/config.js";
+import {getActionExpressionContext, getWorkflowExpressionContext, Mode} from "./context-providers/default.js";
+import {getFunctionDescription} from "./context-providers/descriptions.js";
+import {ActionContext, getActionContext} from "./context/action-context.js";
+import {getWorkflowContext, WorkflowContext} from "./context/workflow-context.js";
 import {
   getReusableWorkflowInputDescription,
   isReusableWorkflowJobInput
-} from "./description-providers/reusable-job-inputs";
-import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-pos";
-import {HoverVisitor} from "./expression-hover/visitor";
-import {info} from "./log";
-import {isPotentiallyExpression} from "./utils/expression-detection";
-import {findToken, TokenResult} from "./utils/find-token";
-import {mapRange} from "./utils/range";
-import {fetchOrConvertWorkflowTemplate, fetchOrParseWorkflow} from "./utils/workflow-cache";
+} from "./description-providers/reusable-job-inputs.js";
+import {ExpressionPos, mapToExpressionPos} from "./expression-hover/expression-pos.js";
+import {HoverVisitor} from "./expression-hover/visitor.js";
+import {info} from "./log.js";
+import {nullTrace} from "./nulltrace.js";
+import {isActionDocument} from "./utils/document-type.js";
+import {isPotentiallyExpression} from "./utils/expression-detection.js";
+import {findToken} from "./utils/find-token.js";
+import {mapRange} from "./utils/range.js";
+import {getOrConvertActionTemplate, getOrConvertWorkflowTemplate, getOrParseWorkflow} from "./utils/workflow-cache.js";
 
 export type HoverConfig = {
   descriptionProvider?: DescriptionProvider;
   contextProviderConfig?: ContextProviderConfig;
   fileProvider?: FileProvider;
+  featureFlags?: FeatureFlags;
 };
 
 export type DescriptionProvider = {
-  getDescription(context: WorkflowContext, token: TemplateToken, path: TemplateToken[]): Promise<string | undefined>;
+  getDescription(
+    context: WorkflowContext | ActionContext,
+    token: TemplateToken,
+    path: TemplateToken[]
+  ): Promise<string | undefined>;
 };
 
+/**
+ * Returns hover information for the token at the given position.
+ */
 export async function hover(document: TextDocument, position: Position, config?: HoverConfig): Promise<Hover | null> {
   const file: File = {
     name: document.uri,
     content: document.getText()
   };
 
-  const parsedWorkflow = fetchOrParseWorkflow(file, document.uri);
-  if (!parsedWorkflow?.value) {
+  // Determine document type based on file path (action.yml vs workflow file)
+  const isAction = isActionDocument(document.uri);
+
+  // Parse document
+  const parsedTemplate = isAction
+    ? parseAction(file, nullTrace)
+    : getOrParseWorkflow(file, document.uri, false, config?.featureFlags);
+  if (!parsedTemplate?.value) {
     return null;
   }
 
-  const template = await fetchOrConvertWorkflowTemplate(
-    parsedWorkflow.context,
-    parsedWorkflow.value,
-    document.uri,
-    config,
-    {
-      errorPolicy: ErrorPolicy.TryConversion,
-      fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
-    }
-  );
-
-  const tokenResult = findToken(position, parsedWorkflow.value);
+  // Find the token at the cursor position
+  const tokenResult = findToken(position, parsedTemplate.value);
   const {token, keyToken, parent} = tokenResult;
   const tokenDefinitionInfo = (keyToken || parent || token)?.definitionInfo;
 
-  const workflowContext = getWorkflowContext(document.uri, template, tokenResult.path);
-  if (token && tokenDefinitionInfo) {
-    if (isBasicExpression(token) || isPotentiallyExpression(token)) {
-      info(`Calculating expression hover for token with definition ${tokenDefinitionInfo.definition.key}`);
-
-      const allowedContext = tokenDefinitionInfo.allowedContext || [];
-      const {namedContexts, functions} = splitAllowedContext(allowedContext);
-      const context = await getContext(namedContexts, config?.contextProviderConfig, workflowContext, Mode.Completion);
-
-      for (const func of functions) {
-        func.description = getFunctionDescription(func.name);
-      }
-
-      const exprPos = mapToExpressionPos(token, position);
-      if (exprPos) {
-        return expressionHover(exprPos, context, namedContexts, functions);
-      }
-    }
-  }
-
-  if (!token?.definition) {
+  // Early exit if there's nothing to provide hover for
+  const hoverToken = token || keyToken;
+  const isExpressionHover =
+    token && tokenDefinitionInfo && (isBasicExpression(token) || isPotentiallyExpression(token, isAction));
+  if (!isExpressionHover && !hoverToken?.definition) {
     return null;
   }
 
-  info(`Calculating hover for token with definition ${token.definition.key}`);
+  // Build document context (jobs, steps, inputs, etc.) from the parsed template
+  const documentContext = isAction
+    ? getActionContext(
+        document.uri,
+        getOrConvertActionTemplate(parsedTemplate.context, parsedTemplate.value, document.uri, {
+          errorPolicy: ErrorPolicy.TryConversion
+        }),
+        tokenResult.path
+      )
+    : getWorkflowContext(
+        document.uri,
+        await getOrConvertWorkflowTemplate(parsedTemplate.context, parsedTemplate.value, document.uri, config, {
+          errorPolicy: ErrorPolicy.TryConversion,
+          fetchReusableWorkflowDepth: config?.fileProvider ? 1 : 0
+        }),
+        tokenResult.path
+      );
 
-  if (tokenResult.parent && isCronMappingValue(tokenResult)) {
-    const tokenValue = (token as StringToken).value;
-    const description = getCronDescription(tokenValue);
-    if (description) {
-      return {
-        contents: description,
-        range: mapRange(token.range)
-      } satisfies Hover;
+  // Expression hover
+  if (isExpressionHover) {
+    info(`Calculating expression hover for token with definition ${tokenDefinitionInfo.definition.key}`);
+
+    const allowedContext = tokenDefinitionInfo.allowedContext || [];
+    const {namedContexts, functions} = splitAllowedContext(allowedContext);
+
+    // Build expression context with named contexts (github, env, etc.) and their descriptions
+    const expressionContext = isAction
+      ? getActionExpressionContext(
+          namedContexts,
+          config?.contextProviderConfig,
+          documentContext as ActionContext,
+          Mode.Hover
+        )
+      : await getWorkflowExpressionContext(
+          namedContexts,
+          config?.contextProviderConfig,
+          documentContext as WorkflowContext,
+          Mode.Hover
+        );
+
+    // Populate function descriptions for hover display
+    for (const func of functions) {
+      func.description = getFunctionDescription(func.name);
+    }
+
+    // Convert document position to expression-relative position
+    const exprPos = mapToExpressionPos(token, position);
+    if (exprPos) {
+      // Find the expression element at the cursor and return its description
+      return expressionHover(exprPos, expressionContext, namedContexts, functions);
     }
   }
 
-  if (tokenResult.parent && isReusableWorkflowJobInput(tokenResult)) {
-    let description = getReusableWorkflowInputDescription(workflowContext, tokenResult);
-    description = appendContext(description, token.definitionInfo?.allowedContext);
-    return {
-      contents: description,
-      range: mapRange(token.range)
-    } satisfies Hover;
+  if (!hoverToken?.definition) {
+    return null;
   }
 
-  let description = await getDescription(config, workflowContext, token, tokenResult.path);
-  description = appendContext(description, token.definitionInfo?.allowedContext);
+  // Non-expression hover: show the schema description for the YAML key or value
+  info(`Calculating hover for token with definition ${hoverToken.definition.key}`);
 
+  // Check for cron expression hover
+  if (isString(hoverToken) && hoverToken.definition.key === "cron-pattern") {
+    const cronDescription = getCronDescription(hoverToken.value);
+    if (cronDescription) {
+      return {
+        contents: cronDescription,
+        range: mapRange(hoverToken.range)
+      };
+    }
+  }
+
+  let description: string;
+  if (!isAction && tokenResult.parent && isReusableWorkflowJobInput(tokenResult)) {
+    // Reusable workflow call: fetch the called workflow's input descriptions
+    description = getReusableWorkflowInputDescription(documentContext as WorkflowContext, tokenResult);
+  } else {
+    // Default: use custom provider or token's schema description
+    description =
+      (await getDescription(config, documentContext, hoverToken, tokenResult.path)) || hoverToken.description || "";
+  }
+
+  // Return hover with description and available expression contexts
   return {
-    contents: description,
-    range: mapRange(token.range)
+    contents: appendContext(description, hoverToken.definitionInfo?.allowedContext),
+    range: mapRange(hoverToken.range)
   } satisfies Hover;
 }
 
+/**
+ * Appends available expression contexts and functions to a hover description.
+ * For example: "Available expression contexts: `github`, `env`"
+ */
 function appendContext(description: string, allowedContext?: string[]) {
   if (!allowedContext || allowedContext.length == 0) {
     return description;
@@ -141,33 +194,30 @@ function appendContext(description: string, allowedContext?: string[]) {
   return `${description}${namedContextsString}${functionsString}`;
 }
 
+/**
+ * Gets a custom description from the configured description provider.
+ * Used to fetch rich descriptions like action input docs from GitHub repos.
+ */
 async function getDescription(
   config: HoverConfig | undefined,
-  workflowContext: WorkflowContext,
+  documentContext: WorkflowContext | ActionContext,
   token: TemplateToken,
   path: TemplateToken[]
-) {
-  const defaultDescription = token.description || "";
+): Promise<string | undefined> {
   if (!config?.descriptionProvider) {
-    return defaultDescription;
+    return undefined;
   }
 
-  const description = await config.descriptionProvider.getDescription(workflowContext, token, path);
-  return description || defaultDescription;
+  return await config.descriptionProvider.getDescription(documentContext, token, path);
 }
 
-function isCronMappingValue(tokenResult: TokenResult): boolean {
-  return (
-    tokenResult.parent?.definition?.key === "cron-mapping" &&
-    !!tokenResult.token &&
-    isString(tokenResult.token) &&
-    tokenResult.token.value !== "cron"
-  );
-}
-
+/**
+ * Parses an expression and finds the element at the cursor position to show its description.
+ * For example, hovering over `github.actor` shows "The login of the user that triggered the workflow".
+ */
 function expressionHover(
   exprPos: ExpressionPos,
-  context: DescriptionDictionary,
+  expressionContext: DescriptionDictionary,
   namedContexts: string[],
   functions: FunctionInfo[]
 ): Hover | null {
@@ -187,7 +237,7 @@ function expressionHover(
         call: () => new data.Null()
       });
     }
-    const hv = new HoverVisitor(position, context, functionMap);
+    const hv = new HoverVisitor(position, expressionContext, functionMap);
     const hoverResult = hv.hover(expr);
     if (!hoverResult) {
       return null;

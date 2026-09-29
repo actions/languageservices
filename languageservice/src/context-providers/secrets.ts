@@ -1,8 +1,8 @@
 import {data, DescriptionDictionary} from "@actions/expressions";
 import {StringData} from "@actions/expressions/data/string";
-import {WorkflowContext} from "../context/workflow-context";
-import {Mode} from "./default";
-import {getDescription} from "./descriptions";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {Mode} from "./default.js";
+import {getDescription} from "./descriptions.js";
 
 export function getSecretsContext(workflowContext: WorkflowContext, mode: Mode): DescriptionDictionary {
   const d = new DescriptionDictionary({

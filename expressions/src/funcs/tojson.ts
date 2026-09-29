@@ -1,6 +1,6 @@
-import {ExpressionData, StringData} from "../data";
-import {replacer} from "../data/replacer";
-import {FunctionDefinition} from "./info";
+import {ExpressionData, StringData} from "../data/index.js";
+import {replacer} from "../data/replacer.js";
+import {FunctionDefinition} from "./info.js";
 
 export const tojson: FunctionDefinition = {
   name: "toJson",

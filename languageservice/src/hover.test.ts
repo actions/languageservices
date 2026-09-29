@@ -1,8 +1,9 @@
+import {FeatureFlags} from "@actions/expressions";
 import {isString} from "@actions/workflow-parser";
-import {DescriptionProvider, hover, HoverConfig} from "./hover";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearCache} from "./utils/workflow-cache";
+import {DescriptionProvider, hover, HoverConfig} from "./hover.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 export function testHoverConfig(tokenValue: string, tokenKey: string, description?: string) {
   return {
@@ -110,11 +111,7 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual(
-      "Runs at 0 and 30 minutes past the hour, at 00:00 and 12:00\n\n" +
-        "Actions schedules run at most every 5 minutes. " +
-        "[Learn more](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule)"
-    );
+    expect(result?.contents).toEqual("Runs at 0 and 30 minutes past the hour, at 00:00 and 12:00");
   });
 
   it("on a cron mapping key", async () => {
@@ -124,7 +121,9 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual("");
+    expect(result?.contents).toEqual(
+      "A cron expression that represents a schedule. A scheduled workflow will run at most once every 5 minutes."
+    );
   });
 
   it("on an invalid cron schedule", async () => {
@@ -134,7 +133,9 @@ jobs:
 `;
     const result = await hover(...getPositionFromCursor(input));
     expect(result).not.toBeUndefined();
-    expect(result?.contents).toEqual("");
+    expect(result?.contents).toEqual(
+      "A cron expression that represents a schedule. A scheduled workflow will run at most once every 5 minutes."
+    );
   });
 
   it("shows context inherited from parent nodes", async () => {
@@ -199,7 +200,83 @@ jobs:
     const result = await hover(...getPositionFromCursor(input), testHoverConfig("uses", "step-uses", undefined));
     expect(result).not.toBeUndefined();
     expect(result?.contents).toEqual(
-      "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image."
+      "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, a [private repository with access enabled](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#allowing-access-to-components-in-a-private-repository), or in a published Docker container image."
     );
+  });
+});
+
+describe("hover for background step keywords", () => {
+  const bgConfig: HoverConfig = {featureFlags: new FeatureFlags({allowBackgroundSteps: true})};
+
+  it("on background key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: echo hi
+        ba|ckground: true`;
+    const result = await hover(...getPositionFromCursor(input), bgConfig);
+    expect(result).not.toBeNull();
+    expect(result?.contents).toContain("runs this step in the background");
+  });
+
+  it("on wait key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: echo hi
+        background: true
+      - wa|it: server`;
+    const result = await hover(...getPositionFromCursor(input), bgConfig);
+    expect(result).not.toBeNull();
+    expect(result?.contents).toContain("background steps to wait for");
+  });
+
+  it("on wait-all key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: echo hi
+        background: true
+      - wa|it-all:`;
+    const result = await hover(...getPositionFromCursor(input), bgConfig);
+    expect(result).not.toBeNull();
+    expect(result?.contents).toContain("Wait for all prior background steps");
+  });
+
+  it("on cancel key", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: echo hi
+        background: true
+      - ca|ncel: server`;
+    const result = await hover(...getPositionFromCursor(input), bgConfig);
+    expect(result).not.toBeNull();
+    expect(result?.contents).toContain("background step to cancel");
+  });
+
+  it("no hover for background keywords when feature flag is off", async () => {
+    const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: echo hi
+        ba|ckground: true`;
+    const result = await hover(...getPositionFromCursor(input));
+    expect(result).toBeNull();
   });
 });

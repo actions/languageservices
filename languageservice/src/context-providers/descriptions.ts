@@ -1,4 +1,4 @@
-import descriptions from "./descriptions.json";
+import descriptions from "./descriptions.min.json";
 
 export const RootContext = "root";
 const FunctionContext = "functions";

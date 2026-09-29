@@ -1,10 +1,19 @@
-import {TemplateContext} from "../../templates/template-context";
-import {BasicExpressionToken, MappingToken, ScalarToken, StringToken, TemplateToken} from "../../templates/tokens";
-import {isSequence} from "../../templates/tokens/type-guards";
-import {isActionStep} from "../type-guards";
-import {ActionStep, Step} from "../workflow-template";
-import {handleTemplateTokenErrors} from "./handle-errors";
-import {IdBuilder} from "./id-builder";
+import {TemplateContext} from "../../templates/template-context.js";
+import {
+  BasicExpressionToken,
+  MappingToken,
+  NullToken,
+  ScalarToken,
+  StringToken,
+  TemplateToken
+} from "../../templates/tokens/index.js";
+import {isSequence} from "../../templates/tokens/type-guards.js";
+import {isActionStep} from "../type-guards.js";
+import {convertToIfCondition} from "./if-condition.js";
+import {ActionStep, Step} from "../workflow-template.js";
+import {handleTemplateTokenErrors} from "./handle-errors.js";
+import {IdBuilder} from "./id-builder.js";
+import {FeatureFlags} from "@actions/expressions/features";
 
 export function convertSteps(context: TemplateContext, steps: TemplateToken): Step[] {
   if (!isSequence(steps)) {
@@ -13,10 +22,13 @@ export function convertSteps(context: TemplateContext, steps: TemplateToken): St
   }
 
   const idBuilder = new IdBuilder();
+  const knownStepIds = new Set<string>();
 
   const result: Step[] = [];
   for (const item of steps) {
-    const step = handleTemplateTokenErrors(steps, context, undefined, () => convertStep(context, idBuilder, item));
+    const step = handleTemplateTokenErrors(steps, context, undefined, () =>
+      convertStep(context, idBuilder, knownStepIds, item)
+    );
     if (step) {
       result.push(step);
     }
@@ -30,6 +42,14 @@ export function convertSteps(context: TemplateContext, steps: TemplateToken): St
     let id = "";
     if (isActionStep(step)) {
       id = createActionStepId(step);
+    } else if ("wait" in step) {
+      id = "wait";
+    } else if ("wait-all" in step) {
+      id = "wait-all";
+    } else if ("cancel" in step) {
+      id = "cancel";
+    } else if ("parallel" in step) {
+      id = "parallel";
     }
 
     if (!id) {
@@ -43,16 +63,26 @@ export function convertSteps(context: TemplateContext, steps: TemplateToken): St
   return result;
 }
 
-function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: TemplateToken): Step | undefined {
+function convertStep(
+  context: TemplateContext,
+  idBuilder: IdBuilder,
+  knownStepIds: Set<string>,
+  step: TemplateToken
+): Step | undefined {
   const mapping = step.assertMapping("steps item");
 
   let run: ScalarToken | undefined;
   let id: StringToken | undefined;
   let name: ScalarToken | undefined;
   let uses: StringToken | undefined;
+  let background: boolean | undefined;
+  let wait: StringToken[] | undefined;
+  let waitAll: boolean | undefined;
+  let cancel: StringToken | undefined;
+  let parallel: TemplateToken | undefined;
   let continueOnError: boolean | ScalarToken | undefined;
   let env: MappingToken | undefined;
-  const ifCondition = new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined);
+  let ifCondition: BasicExpressionToken | undefined;
   for (const item of mapping) {
     const key = item.key.assertString("steps item key");
     switch (key.value) {
@@ -62,6 +92,8 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
           const error = idBuilder.tryAddKnownId(id.value);
           if (error) {
             context.error(id, error);
+          } else {
+            knownStepIds.add(id.value);
           }
         }
         break;
@@ -74,8 +106,27 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
       case "uses":
         uses = item.value.assertString("steps item uses");
         break;
+      case "background":
+        background = item.value.assertBoolean("steps item background").value;
+        break;
+      case "wait":
+        wait = convertWaitTargets(context, knownStepIds, item.value, id);
+        break;
+      case "wait-all":
+        waitAll = convertWaitAllValue(context, item.value);
+        break;
+      case "cancel":
+        cancel = item.value.assertString("steps item cancel");
+        validateTargetStepId(context, knownStepIds, cancel, id);
+        break;
+      case "parallel":
+        parallel = item.value;
+        break;
       case "env":
         env = item.value.assertMapping("step env");
+        break;
+      case "if":
+        ifCondition = convertToIfCondition(context, item.value);
         break;
       case "continue-on-error":
         if (!item.value.isExpression) {
@@ -90,10 +141,11 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
     return {
       id: id?.value || "",
       name,
-      if: ifCondition,
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       "continue-on-error": continueOnError,
       env,
-      run
+      run,
+      background
     };
   }
 
@@ -101,13 +153,77 @@ function convertStep(context: TemplateContext, idBuilder: IdBuilder, step: Templ
     return {
       id: id?.value || "",
       name,
-      if: ifCondition,
+      if: ifCondition || new BasicExpressionToken(undefined, undefined, "success()", undefined, undefined, undefined),
       "continue-on-error": continueOnError,
       env,
-      uses
+      uses,
+      background
     };
   }
-  context.error(step, "Expected uses or run to be defined");
+
+  if (wait) {
+    return {
+      id: id?.value || "",
+      name: name || createSyntheticStepName("Wait"),
+      "continue-on-error": continueOnError,
+      wait
+    };
+  }
+
+  if (waitAll !== undefined) {
+    return {
+      id: id?.value || "",
+      name: name || createSyntheticStepName("Wait for all"),
+      "continue-on-error": continueOnError,
+      "wait-all": waitAll
+    };
+  }
+
+  if (cancel) {
+    return {
+      id: id?.value || "",
+      name: name || createSyntheticStepName("Cancel"),
+      "continue-on-error": continueOnError,
+      cancel
+    };
+  }
+
+  if (parallel) {
+    const parallelSteps = convertSteps(context, parallel);
+    // Validate: parallel blocks only allow run and uses steps
+    for (const ps of parallelSteps) {
+      if ("background" in ps && ps.background !== undefined) {
+        context.error(
+          step,
+          "'background' is not allowed inside a parallel block. Steps in a parallel block are automatically run as background steps."
+        );
+      }
+      if ("wait" in ps) {
+        context.error(step, "'wait' is not allowed inside a parallel block.");
+      }
+      if ("wait-all" in ps) {
+        context.error(step, "'wait-all' is not allowed inside a parallel block.");
+      }
+      if ("cancel" in ps) {
+        context.error(step, "'cancel' is not allowed inside a parallel block.");
+      }
+      if ("parallel" in ps) {
+        context.error(step, "Nested 'parallel' blocks are not allowed.");
+      }
+    }
+    return {
+      id: id?.value || "",
+      name: name || createSyntheticStepName("Parallel group"),
+      parallel: parallelSteps
+    };
+  }
+
+  context.error(
+    step,
+    (context.state.featureFlags as FeatureFlags | undefined)?.isEnabled("allowBackgroundSteps")
+      ? "Expected one of uses, run, wait, wait-all, cancel, or parallel to be defined"
+      : "Expected one of uses or run to be defined"
+  );
 }
 
 function createActionStepId(step: ActionStep): string {
@@ -117,6 +233,12 @@ function createActionStepId(step: ActionStep): string {
   }
 
   if (uses.startsWith("./") || uses.startsWith(".\\")) {
+    return "self";
+  }
+
+  // Self repository reference ($/path): resolved from the same repository as the executing
+  // workflow/action.
+  if (uses.startsWith("$/")) {
     return "self";
   }
 
@@ -133,4 +255,58 @@ function createActionStepId(step: ActionStep): string {
   }
 
   return "";
+}
+
+function createSyntheticStepName(value: string): ScalarToken {
+  return new StringToken(undefined, undefined, value, undefined, undefined, undefined);
+}
+
+function convertWaitTargets(
+  context: TemplateContext,
+  knownStepIds: Set<string>,
+  token: TemplateToken,
+  ownStepId?: StringToken
+): StringToken[] {
+  if (token instanceof StringToken) {
+    validateTargetStepId(context, knownStepIds, token, ownStepId);
+    return [token];
+  }
+
+  const sequence = token.assertSequence("steps item wait");
+  const targets: StringToken[] = [];
+  for (let i = 0; i < sequence.count; i++) {
+    const target = sequence.get(i).assertString("steps item wait item");
+    validateTargetStepId(context, knownStepIds, target, ownStepId);
+    targets.push(target);
+  }
+
+  return targets;
+}
+
+function convertWaitAllValue(context: TemplateContext, token: TemplateToken): boolean {
+  if (token instanceof NullToken) {
+    return true;
+  }
+
+  const value = token.assertBoolean("steps item wait-all").value;
+  if (!value) {
+    context.error(token, "The value of 'wait-all' must be true or omitted");
+  }
+
+  return true;
+}
+
+function validateTargetStepId(
+  context: TemplateContext,
+  knownStepIds: Set<string>,
+  target: StringToken,
+  ownStepId?: StringToken
+) {
+  if (target.value.startsWith("__")) {
+    context.error(target, `The identifier '${target.value}' is invalid. IDs starting with '__' are reserved.`);
+  } else if (ownStepId && target.value.toLowerCase() === ownStepId.value.toLowerCase()) {
+    context.error(target, `Step '${ownStepId.value}' cannot reference itself`);
+  } else if (!knownStepIds.has(target.value)) {
+    context.error(target, `Step references unknown step ID '${target.value}'`);
+  }
 }

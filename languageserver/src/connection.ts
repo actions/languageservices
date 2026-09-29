@@ -1,8 +1,18 @@
-import {documentLinks, hover, validate, ValidationConfig} from "@actions/languageservice";
+import {
+  documentLinks,
+  getCodeActions,
+  getInlayHints,
+  hover,
+  validate,
+  ValidationConfig
+} from "@actions/languageservice";
 import {registerLogger, setLogLevel} from "@actions/languageservice/log";
 import {clearCache, clearCacheEntry} from "@actions/languageservice/utils/workflow-cache";
 import {Octokit} from "@octokit/rest";
 import {
+  CodeAction,
+  CodeActionKind,
+  CodeActionParams,
   CompletionItem,
   Connection,
   DocumentLink,
@@ -12,24 +22,27 @@ import {
   HoverParams,
   InitializeParams,
   InitializeResult,
+  InlayHint,
+  InlayHintParams,
   TextDocumentIdentifier,
   TextDocumentPositionParams,
   TextDocuments,
   TextDocumentSyncKind
 } from "vscode-languageserver";
 import {TextDocument} from "vscode-languageserver-textdocument";
-import {getClient} from "./client";
-import {Commands} from "./commands";
-import {contextProviders} from "./context-providers";
-import {descriptionProvider} from "./description-provider";
-import {getFileProvider} from "./file-provider";
-import {InitializationOptions, RepositoryContext} from "./initializationOptions";
-import {onCompletion} from "./on-completion";
-import {ReadFileRequest, Requests} from "./request";
-import {getActionsMetadataProvider} from "./utils/action-metadata";
-import {TTLCache} from "./utils/cache";
-import {timeOperation} from "./utils/timer";
-import {valueProviders} from "./value-providers";
+import {getClient} from "./client.js";
+import {Commands} from "./commands.js";
+import {contextProviders} from "./context-providers.js";
+import {descriptionProvider} from "./description-provider.js";
+import {FeatureFlags} from "@actions/expressions";
+import {getFileProvider} from "./file-provider.js";
+import {InitializationOptions, RepositoryContext} from "./initializationOptions.js";
+import {onCompletion} from "./on-completion.js";
+import {ReadFileRequest, Requests} from "./request.js";
+import {getActionsMetadataProvider} from "./utils/action-metadata.js";
+import {TTLCache} from "./utils/cache.js";
+import {timeOperation} from "./utils/timer.js";
+import {valueProviders} from "./value-providers.js";
 
 export function initConnection(connection: Connection) {
   const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -39,6 +52,7 @@ export function initConnection(connection: Connection) {
   const cache = new TTLCache();
 
   let hasWorkspaceFolderCapability = false;
+  let featureFlags = new FeatureFlags();
 
   // Register remote console logger with language service
   registerLogger(connection.console);
@@ -62,6 +76,8 @@ export function initConnection(connection: Connection) {
       setLogLevel(options.logLevel);
     }
 
+    featureFlags = new FeatureFlags(options.experimentalFeatures);
+
     const result: InitializeResult = {
       capabilities: {
         textDocumentSync: TextDocumentSyncKind.Full,
@@ -72,6 +88,10 @@ export function initConnection(connection: Connection) {
         hoverProvider: true,
         documentLinkProvider: {
           resolveProvider: false
+        },
+        inlayHintProvider: true,
+        codeActionProvider: {
+          codeActionKinds: [CodeActionKind.QuickFix]
         }
       }
     };
@@ -88,6 +108,11 @@ export function initConnection(connection: Connection) {
   });
 
   connection.onInitialized(() => {
+    const enabledFeatures = featureFlags.getEnabledFeatures();
+    if (enabledFeatures.length > 0) {
+      connection.console.info(`Experimental features enabled: ${enabledFeatures.join(", ")}`);
+    }
+
     if (hasWorkspaceFolderCapability) {
       connection.workspace.onDidChangeWorkspaceFolders(() => {
         clearCache();
@@ -111,7 +136,8 @@ export function initConnection(connection: Connection) {
       actionsMetadataProvider: getActionsMetadataProvider(client, cache),
       fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
         return await connection.sendRequest(Requests.ReadFile, {path} satisfies ReadFileRequest);
-      })
+      }),
+      featureFlags
     };
 
     const result = await validate(textDocument, config);
@@ -128,7 +154,8 @@ export function initConnection(connection: Connection) {
           getDocument(documents, textDocument),
           client,
           repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri)),
-          cache
+          cache,
+          featureFlags
         )
     );
   });
@@ -141,7 +168,8 @@ export function initConnection(connection: Connection) {
         contextProviderConfig: repoContext && contextProviders(client, repoContext, cache),
         fileProvider: getFileProvider(client, cache, repoContext?.workspaceUri, async path => {
           return await connection.sendRequest(Requests.ReadFile, {path});
-        })
+        }),
+        featureFlags
       });
     });
   });
@@ -156,6 +184,23 @@ export function initConnection(connection: Connection) {
   connection.onDocumentLinks(async ({textDocument}: DocumentLinkParams): Promise<DocumentLink[] | null> => {
     const repoContext = repos.find(repo => textDocument.uri.startsWith(repo.workspaceUri));
     return documentLinks(getDocument(documents, textDocument), repoContext?.workspaceUri);
+  });
+
+  connection.languages.inlayHint.on(async ({textDocument}: InlayHintParams): Promise<InlayHint[] | null> => {
+    return timeOperation("inlayHints", () => {
+      return getInlayHints(getDocument(documents, textDocument));
+    });
+  });
+
+  connection.onCodeAction((params: CodeActionParams): CodeAction[] => {
+    const document = getDocument(documents, params.textDocument);
+    return getCodeActions({
+      uri: params.textDocument.uri,
+      documentContent: document.getText(),
+      diagnostics: params.context.diagnostics,
+      only: params.context.only,
+      featureFlags
+    });
   });
 
   // Make the text document manager listen on the connection

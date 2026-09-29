@@ -1,4 +1,4 @@
-import {TemplateSchema} from "./template-schema";
+import {TemplateSchema} from "./template-schema.js";
 import {
   DEFINITION,
   ONE_OF,
@@ -10,17 +10,17 @@ import {
   CONSTANT,
   LOOSE_KEY_TYPE,
   ALLOWED_VALUES
-} from "../template-constants";
-import {MappingToken} from "../tokens";
-import {BooleanDefinition} from "./boolean-definition";
-import {Definition} from "./definition";
-import {DefinitionType} from "./definition-type";
-import {MappingDefinition} from "./mapping-definition";
-import {NullDefinition} from "./null-definition";
-import {NumberDefinition} from "./number-definition";
-import {SequenceDefinition} from "./sequence-definition";
-import {StringDefinition} from "./string-definition";
-import {PropertyDefinition} from "./property-definition";
+} from "../template-constants.js";
+import {MappingToken} from "../tokens/index.js";
+import {BooleanDefinition} from "./boolean-definition.js";
+import {Definition} from "./definition.js";
+import {DefinitionType} from "./definition-type.js";
+import {MappingDefinition} from "./mapping-definition.js";
+import {NullDefinition} from "./null-definition.js";
+import {NumberDefinition} from "./number-definition.js";
+import {SequenceDefinition} from "./sequence-definition.js";
+import {StringDefinition} from "./string-definition.js";
+import {PropertyDefinition} from "./property-definition.js";
 
 /**
  * Must resolve to exactly one of the referenced definitions

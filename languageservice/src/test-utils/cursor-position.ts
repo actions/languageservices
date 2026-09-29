@@ -1,5 +1,5 @@
 import {Position, TextDocument} from "vscode-languageserver-textdocument";
-import {createDocument} from "./document";
+import {createDocument} from "./document.js";
 
 /**
  * Calculates the position of the cursor and the document without that cursor

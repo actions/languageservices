@@ -4,3 +4,4 @@ dist
 *.js
 *.json
 *.d.ts
+/.nx/workspace-data

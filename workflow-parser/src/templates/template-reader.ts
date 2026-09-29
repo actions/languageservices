@@ -1,16 +1,16 @@
 // template-reader *just* does schema validation
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import {ObjectReader} from "./object-reader";
-import {TemplateSchema} from "./schema";
-import {DefinitionInfo} from "./schema/definition-info";
-import {DefinitionType} from "./schema/definition-type";
-import {MappingDefinition} from "./schema/mapping-definition";
-import {ScalarDefinition} from "./schema/scalar-definition";
-import {SequenceDefinition} from "./schema/sequence-definition";
-import {StringDefinition} from "./schema/string-definition";
-import {ANY, CLOSE_EXPRESSION, INSERT_DIRECTIVE, OPEN_EXPRESSION} from "./template-constants";
-import {TemplateContext} from "./template-context";
+import {ObjectReader} from "./object-reader.js";
+import {FeatureFlags} from "@actions/expressions/features";
+import {TemplateSchema} from "./schema/index.js";
+import {DefinitionInfo} from "./schema/definition-info.js";
+import {DefinitionType} from "./schema/definition-type.js";
+import {MappingDefinition} from "./schema/mapping-definition.js";
+import {ScalarDefinition} from "./schema/scalar-definition.js";
+import {SequenceDefinition} from "./schema/sequence-definition.js";
+import {ANY, CLOSE_EXPRESSION, INSERT_DIRECTIVE, OPEN_EXPRESSION} from "./template-constants.js";
+import {TemplateContext} from "./template-context.js";
 import {
   BasicExpressionToken,
   ExpressionToken,
@@ -20,12 +20,14 @@ import {
   ScalarToken,
   StringToken,
   TemplateToken
-} from "./tokens";
-import {TokenRange} from "./tokens/token-range";
-import {isString} from "./tokens/type-guards";
-import {TokenType} from "./tokens/types";
+} from "./tokens/index.js";
+import {TokenRange} from "./tokens/token-range.js";
+import {isString} from "./tokens/type-guards.js";
+import {TokenType} from "./tokens/types.js";
 
 const WHITESPACE_PATTERN = /\s/;
+const backgroundStepProperties = new Set(["background", "wait", "wait-all", "cancel"]);
+const backgroundStepOnlyProperties = new Set(["wait", "wait-all", "cancel"]);
 
 export function readTemplate(
   context: TemplateContext,
@@ -216,6 +218,12 @@ class TemplateReader {
       // Well known
       const nextPropertyDef = this._schema.matchPropertyAndFilter(mappingDefinitions, nextKey.value);
       if (nextPropertyDef) {
+        if (!this.backgroundStepsEnabled() && backgroundStepProperties.has(nextKey.value)) {
+          this._context.error(nextKey, `Unexpected value '${nextKey.value}'`);
+          this.skipValue();
+          continue;
+        }
+
         const nextDefinition = new DefinitionInfo(definition, nextPropertyDef.type);
 
         // Store the definition on the key, the value may have its own definition
@@ -278,9 +286,13 @@ class TemplateReader {
         }
       }
 
+      const properties = this.backgroundStepsEnabled()
+        ? nonDuplicates
+        : nonDuplicates.filter(property => !backgroundStepOnlyProperties.has(property));
+
       this._context.error(
         mapping,
-        `There's not enough info to determine what you meant. Add one of these properties: ${nonDuplicates
+        `There's not enough info to determine what you meant. Add one of these properties: ${properties
           .sort()
           .join(", ")}`
       );
@@ -452,18 +464,17 @@ class TemplateReader {
     }
 
     const allowedContext = definitionInfo.allowedContext;
-    const raw = token.source || token.value;
+    const isSingleLine = token.range === undefined || token.range.start.line === token.range.end.line;
+
+    // For single-line strings, use token.value (without YAML quotes) for expression detection,
+    // because token.source includes quote characters that would be incorrectly detected as literal text.
+    // For multi-line block scalars, use token.source directly because it makes position calculation easier
+    // (no quote characters to handle, and token.source preserves the original line/column structure in YAML).
+    const raw = isSingleLine ? token.value : token.source ?? token.value;
 
     let startExpression: number = raw.indexOf(OPEN_EXPRESSION);
     if (startExpression < 0) {
-      // Doesn't contain "${{"
-      // Check if value should still be evaluated as an expression
-      if (definitionInfo.definition instanceof StringDefinition && definitionInfo.definition.isExpression) {
-        const expression = this.parseIntoExpressionToken(token.range!, raw, allowedContext, token, definitionInfo);
-        if (expression) {
-          return expression;
-        }
-      }
+      // Doesn't contain "{{"
       return token;
     }
 
@@ -504,14 +515,17 @@ class TemplateReader {
         );
 
         let tr = token.range!;
-        if (tr.start.line === tr.end.line) {
-          // If it's a single line expression, adjust the range to only cover the sub-expression
+        if (isSingleLine) {
+          // Single-line: Adjust the range to only cover the sub-expression.
+          // Calculate offset to account for YAML quote characters.
+          // For example, `"${{ expr }}"` has source with quotes, value without.
+          const offset = (token.source ?? raw).indexOf(OPEN_EXPRESSION) - raw.indexOf(OPEN_EXPRESSION);
           tr = {
-            start: {line: tr.start.line, column: tr.start.column + startExpression},
-            end: {line: tr.end.line, column: tr.start.column + endExpression + 1}
+            start: {line: tr.start.line, column: tr.start.column + startExpression + offset},
+            end: {line: tr.end.line, column: tr.start.column + endExpression + 1 + offset}
           };
         } else {
-          // Adjust the range to only cover the expression for multi-line strings
+          // Multi-line: Adjust the range to only cover the expression
           const startRaw = raw.substring(0, startExpression);
           const adjustedStartLine = startRaw.split("\n").length;
           const beginningOfLine = startRaw.lastIndexOf("\n");
@@ -612,7 +626,9 @@ class TemplateReader {
       `format('${format.join("")}'${args.join("")})`,
       definitionInfo,
       expressionTokens,
-      raw
+      raw,
+      undefined,
+      token.blockScalarHeader
     );
   }
 
@@ -694,7 +710,8 @@ class TemplateReader {
         definitionInfo,
         undefined,
         token.source,
-        expressionRange
+        expressionRange,
+        token.blockScalarHeader
       ),
       error: undefined
     };
@@ -788,6 +805,10 @@ class TemplateReader {
     }
 
     return result.join("");
+  }
+
+  private backgroundStepsEnabled(): boolean {
+    return (this._context.state.featureFlags as FeatureFlags | undefined)?.isEnabled("allowBackgroundSteps") ?? false;
   }
 }
 

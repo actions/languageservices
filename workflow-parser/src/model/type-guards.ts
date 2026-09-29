@@ -1,4 +1,4 @@
-import {ActionStep, Job, ReusableWorkflowJob, RunStep, Step, WorkflowJob} from "./workflow-template";
+import {ActionStep, Job, ReusableWorkflowJob, RunStep, Step, WorkflowJob} from "./workflow-template.js";
 
 export function isRunStep(step: Step): step is RunStep {
   return (step as RunStep).run !== undefined;

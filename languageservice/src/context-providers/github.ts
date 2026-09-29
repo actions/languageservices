@@ -1,13 +1,16 @@
 import {data, DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions";
 import {ExpressionData} from "@actions/expressions/data/expressiondata";
 import {TypesFilterConfig} from "@actions/workflow-parser/model/workflow-template";
-import {WorkflowContext} from "../context/workflow-context";
-import {Mode} from "./default";
-import {getDescription} from "./descriptions";
-import {getEventPayload, getSupportedEventTypes} from "./events/eventPayloads";
-import {getInputsContext} from "./inputs";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {Mode} from "./default.js";
+import {getDescription} from "./descriptions.js";
+import {getEventPayload, getSupportedEventTypes} from "./events/eventPayloads.js";
+import {getInputsContext} from "./inputs.js";
 
-export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): DescriptionDictionary {
+/**
+ * Returns the github context with properties like actor, ref, sha, event, etc.
+ */
+export function getGithubContext(workflowContext: WorkflowContext | undefined, mode: Mode): DescriptionDictionary {
   // https://docs.github.com/en/actions/learn-github-actions/contexts#github-context
   const keys = [
     "action",
@@ -26,7 +29,6 @@ export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): 
     "graphql_url",
     "head_ref",
     "job",
-    "job_workflow_sha",
     "path",
     "ref",
     "ref_name",
@@ -73,7 +75,10 @@ export function getGithubContext(workflowContext: WorkflowContext, mode: Mode): 
   );
 }
 
-function getEventContext(workflowContext: WorkflowContext, mode: Mode): ExpressionData {
+/**
+ * Builds the github.event context based on workflow trigger configuration.
+ */
+function getEventContext(workflowContext: WorkflowContext | undefined, mode: Mode): ExpressionData {
   const d = new DescriptionDictionary();
   const eventsConfig = workflowContext?.template?.events;
 

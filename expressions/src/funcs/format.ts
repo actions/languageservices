@@ -1,5 +1,5 @@
-import {ExpressionData, StringData} from "../data";
-import {FunctionDefinition} from "./info";
+import {ExpressionData, StringData} from "../data/index.js";
+import {FunctionDefinition} from "./info.js";
 
 export const format: FunctionDefinition = {
   name: "format",

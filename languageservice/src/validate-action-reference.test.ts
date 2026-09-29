@@ -1,11 +1,11 @@
 import {DiagnosticSeverity} from "vscode-languageserver-types";
-import {ActionMetadata, ActionReference} from "./action";
-import {registerLogger} from "./log";
-import {createDocument} from "./test-utils/document";
-import {TestLogger} from "./test-utils/logger";
-import {validate, ValidationConfig} from "./validate";
-import {ValueProviderKind} from "./value-providers/config";
-import {clearCache} from "./utils/workflow-cache";
+import {ActionMetadata, ActionReference} from "./action.js";
+import {registerLogger} from "./log.js";
+import {createDocument} from "./test-utils/document.js";
+import {TestLogger} from "./test-utils/logger.js";
+import {validate, ValidationConfig} from "./validate.js";
+import {ValueProviderKind} from "./value-providers/config.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 registerLogger(new TestLogger());
 
@@ -249,7 +249,21 @@ jobs:
             line: 7
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            }
+          ]
+        }
       }
     ]);
   });
@@ -294,7 +308,25 @@ jobs:
             line: 7
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            },
+            {
+              default: undefined,
+              name: "key"
+            }
+          ]
+        }
       }
     ]);
   });
@@ -323,7 +355,25 @@ jobs:
             line: 6
           }
         },
-        severity: DiagnosticSeverity.Error
+        severity: DiagnosticSeverity.Error,
+        code: "missing-required-inputs",
+        data: {
+          action: {
+            name: "cache",
+            owner: "actions",
+            ref: "v1"
+          },
+          missingInputs: [
+            {
+              default: undefined,
+              name: "path"
+            },
+            {
+              default: undefined,
+              name: "key"
+            }
+          ]
+        }
       }
     ]);
   });

@@ -1,4 +1,4 @@
-import {actionIdentifier, parseActionReference as parse} from "./action";
+import {actionIdentifier, parseActionReference as parse} from "./action.js";
 
 describe("parseActionReference", () => {
   it("basic action", () => {
@@ -57,6 +57,10 @@ describe("parseActionReference", () => {
 
   it("local action with path", () => {
     expect(parse("./directory/")).toBeUndefined();
+  });
+
+  it("self repository action", () => {
+    expect(parse("$/actions/composite")).toBeUndefined();
   });
 
   it("Docker Hub action", () => {

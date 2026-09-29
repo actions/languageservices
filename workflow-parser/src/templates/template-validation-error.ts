@@ -1,4 +1,4 @@
-import {TokenRange} from "./tokens/token-range";
+import {TokenRange} from "./tokens/token-range.js";
 
 /**
  * Provides information about an error which occurred during validation

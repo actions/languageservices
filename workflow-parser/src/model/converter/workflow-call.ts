@@ -1,9 +1,9 @@
-import {TemplateContext} from "../../templates/template-context";
-import {MappingToken, TemplateToken} from "../../templates/tokens";
-import {isMapping} from "../../templates/tokens/type-guards";
-import {SecretConfig, WorkflowCallConfig, InputConfig, InputType} from "../workflow-template";
-import {convertStringList} from "./string-list";
-import {ScalarToken} from "../../templates/tokens/scalar-token";
+import {TemplateContext} from "../../templates/template-context.js";
+import {MappingToken, TemplateToken} from "../../templates/tokens/index.js";
+import {isMapping} from "../../templates/tokens/type-guards.js";
+import {SecretConfig, WorkflowCallConfig, InputConfig, InputType} from "../workflow-template.js";
+import {convertStringList} from "./string-list.js";
+import {ScalarToken} from "../../templates/tokens/scalar-token.js";
 
 export function convertEventWorkflowCall(context: TemplateContext, token: MappingToken): WorkflowCallConfig {
   const result: WorkflowCallConfig = {};

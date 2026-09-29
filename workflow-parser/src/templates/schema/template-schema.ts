@@ -1,5 +1,5 @@
-import {TokenType} from "../../templates/tokens/types";
-import {ObjectReader} from "../object-reader";
+import {TokenType} from "../../templates/tokens/types.js";
+import {ObjectReader} from "../object-reader.js";
 import {
   ALLOWED_VALUES,
   ANY,
@@ -43,22 +43,22 @@ import {
   TEMPLATE_SCHEMA,
   TYPE,
   VERSION
-} from "../template-constants";
-import {TemplateContext, TemplateValidationErrors} from "../template-context";
-import {readTemplate} from "../template-reader";
-import {MappingToken, SequenceToken, StringToken} from "../tokens";
-import {NoOperationTraceWriter} from "../trace-writer";
-import {BooleanDefinition} from "./boolean-definition";
-import {Definition} from "./definition";
-import {DefinitionType} from "./definition-type";
-import {MappingDefinition} from "./mapping-definition";
-import {NullDefinition} from "./null-definition";
-import {NumberDefinition} from "./number-definition";
-import {OneOfDefinition} from "./one-of-definition";
-import {PropertyDefinition} from "./property-definition";
-import {ScalarDefinition} from "./scalar-definition";
-import {SequenceDefinition} from "./sequence-definition";
-import {StringDefinition} from "./string-definition";
+} from "../template-constants.js";
+import {TemplateContext, TemplateValidationErrors} from "../template-context.js";
+import {readTemplate} from "../template-reader.js";
+import {MappingToken, SequenceToken, StringToken} from "../tokens/index.js";
+import {NoOperationTraceWriter} from "../trace-writer.js";
+import {BooleanDefinition} from "./boolean-definition.js";
+import {Definition} from "./definition.js";
+import {DefinitionType} from "./definition-type.js";
+import {MappingDefinition} from "./mapping-definition.js";
+import {NullDefinition} from "./null-definition.js";
+import {NumberDefinition} from "./number-definition.js";
+import {OneOfDefinition} from "./one-of-definition.js";
+import {PropertyDefinition} from "./property-definition.js";
+import {ScalarDefinition} from "./scalar-definition.js";
+import {SequenceDefinition} from "./sequence-definition.js";
+import {StringDefinition} from "./string-definition.js";
 
 /**
  * This models the root schema object and contains definitions

@@ -1,7 +1,7 @@
-import {DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions/.";
-import {testGetWorkflowContext} from "../test-utils/test-workflow-context";
-import {Mode} from "./default";
-import {getGithubContext} from "./github";
+import {DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions";
+import {testGetWorkflowContext} from "../test-utils/test-workflow-context.js";
+import {Mode} from "./default.js";
+import {getGithubContext} from "./github.js";
 
 describe("github context", () => {
   it("single event", async () => {
@@ -117,10 +117,15 @@ jobs:
       "pull_request",
       "reactions",
       "repository_url",
+      "pinned_comment",
+      "sub_issues_summary",
+      "issue_dependencies_summary",
+      "issue_field_values",
       "state",
       "state_reason",
       "timeline_url",
       "title",
+      "type",
       "updated_at",
       "url",
       "user"

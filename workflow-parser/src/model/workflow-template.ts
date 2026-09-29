@@ -5,7 +5,7 @@ import {
   SequenceToken,
   StringToken,
   TemplateToken
-} from "../templates/tokens";
+} from "../templates/tokens/index.js";
 
 export type WorkflowTemplate = {
   events: EventsConfig;
@@ -18,14 +18,18 @@ export type WorkflowTemplate = {
   }[];
 };
 
+export type ConcurrencyQueue = "single" | "max";
+
 export type ConcurrencySetting = {
   group?: StringToken;
   cancelInProgress?: boolean;
+  queue?: ConcurrencyQueue;
 };
 
 export type ActionsEnvironmentReference = {
   name?: TemplateToken;
   url?: TemplateToken;
+  skipDeployment?: boolean;
 };
 
 export type WorkflowJob = Job | ReusableWorkflowJob;
@@ -41,6 +45,7 @@ export type BaseJob = {
   concurrency?: TemplateToken;
   strategy?: TemplateToken;
   outputs?: MappingToken;
+  snapshot?: TemplateToken;
 };
 
 // `job-factory` in the schema
@@ -73,6 +78,8 @@ export type Container = {
   ports?: SequenceToken;
   volumes?: SequenceToken;
   options?: StringToken;
+  entrypoint?: StringToken;
+  command?: StringToken;
 };
 
 export type Credential = {
@@ -80,22 +87,44 @@ export type Credential = {
   password: StringToken | undefined;
 };
 
-export type Step = ActionStep | RunStep;
+export type Step = ActionStep | RunStep | WaitStep | WaitAllStep | CancelStep | ParallelStep;
 
 type BaseStep = {
   id: string;
   name?: ScalarToken;
-  if: BasicExpressionToken;
+  if?: BasicExpressionToken;
   "continue-on-error"?: boolean | ScalarToken;
+};
+
+type ExecutionStep = BaseStep & {
+  if: BasicExpressionToken;
   env?: MappingToken;
 };
 
-export type RunStep = BaseStep & {
+export type RunStep = ExecutionStep & {
   run: ScalarToken;
+  background?: boolean;
 };
 
-export type ActionStep = BaseStep & {
+export type ActionStep = ExecutionStep & {
   uses: StringToken;
+  background?: boolean;
+};
+
+export type WaitStep = BaseStep & {
+  wait: StringToken[];
+};
+
+export type WaitAllStep = BaseStep & {
+  "wait-all": boolean;
+};
+
+export type CancelStep = BaseStep & {
+  cancel: StringToken;
+};
+
+export type ParallelStep = BaseStep & {
+  parallel: Step[];
 };
 
 export type EventsConfig = {
@@ -129,6 +158,7 @@ export type EventsConfig = {
   repository_dispatch?: TypesFilterConfig;
   release?: TypesFilterConfig;
   watch?: TypesFilterConfig;
+  image_versions?: TypesFilterConfig & VersionsFilterConfig & NamesFilterConfig;
 
   // Index signature to allow easier lookup
   [eventName: string]: unknown;
@@ -136,6 +166,14 @@ export type EventsConfig = {
 
 export type TypesFilterConfig = {
   types?: string[];
+};
+
+export type VersionsFilterConfig = {
+  versions?: string[];
+};
+
+export type NamesFilterConfig = {
+  names?: string[];
 };
 
 export type BranchFilterConfig = {
@@ -186,6 +224,7 @@ export type SecretConfig = {
 
 export type ScheduleConfig = {
   cron: string;
+  timezone?: string;
 };
 
 export type WorkflowFilterConfig = {

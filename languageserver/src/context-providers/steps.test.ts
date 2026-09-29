@@ -1,11 +1,11 @@
-import {data, DescriptionDictionary} from "@actions/expressions";
+import {data, DescriptionDictionary, isDescriptionDictionary} from "@actions/expressions";
 import {getStepsContext as getDefaultStepsContext} from "@actions/languageservice/context-providers/steps";
 import {Octokit} from "@octokit/rest";
 import fetchMock from "fetch-mock";
 
-import {createWorkflowContext} from "../test-utils/workflow-context";
-import {TTLCache} from "../utils/cache";
-import {getStepsContext} from "./steps";
+import {createWorkflowContext} from "../test-utils/workflow-context.js";
+import {TTLCache} from "../utils/cache.js";
+import {getStepsContext} from "./steps.js";
 
 const workflow = `
 name: Caching Primes
@@ -63,6 +63,47 @@ it("returns default context when job is undefined", async () => {
   expect(stepsContext).toEqual(defaultContext);
 });
 
+it("outputs is an incomplete dictionary to allow dynamic outputs", async () => {
+  const mock = fetchMock
+    .sandbox()
+    .getOnce("https://api.github.com/repos/actions/cache/contents/action.yml?ref=v3", actionMetadata);
+
+  const workflowContext = await createWorkflowContext(workflow, "build");
+  const defaultContext = getDefaultStepsContext(workflowContext);
+
+  const stepsContext = await getStepsContext(
+    new Octokit({
+      request: {
+        fetch: mock
+      }
+    }),
+    new TTLCache(),
+    defaultContext,
+    workflowContext
+  );
+
+  // Get the step context
+  const stepContext = stepsContext?.get("cache-primes");
+  if (!stepContext) {
+    throw new Error("Expected stepContext to be defined");
+  }
+  expect(isDescriptionDictionary(stepContext)).toBe(true);
+
+  // Get the outputs - should be a dictionary, not null
+  const outputs = (stepContext as DescriptionDictionary).get("outputs");
+  if (!outputs) {
+    throw new Error("Expected outputs to be defined");
+  }
+  expect(isDescriptionDictionary(outputs)).toBe(true);
+
+  // Outputs should be marked incomplete to allow dynamic outputs
+  const outputsDict = outputs as DescriptionDictionary;
+  expect(outputsDict.complete).toBe(false);
+
+  // Known outputs from action.yml should be present
+  expect(outputsDict.get("cache-hit")).toBeDefined();
+});
+
 it("adds action outputs", async () => {
   const mock = fetchMock
     .sandbox()
@@ -83,17 +124,22 @@ it("adds action outputs", async () => {
   );
   expect(stepsContext).toBeDefined();
 
+  // Create expected outputs dict with complete = false
+  // (actions can have dynamic outputs beyond what's declared in action.yml)
+  const expectedOutputs = new DescriptionDictionary({
+    key: "cache-hit",
+    value: new data.StringData("A boolean value to indicate an exact match was found for the primary key"),
+    description: "A boolean value to indicate an exact match was found for the primary key"
+  });
+  expectedOutputs.complete = false;
+
   expect(stepsContext).toEqual(
     new DescriptionDictionary({
       key: "cache-primes",
       value: new DescriptionDictionary(
         {
           key: "outputs",
-          value: new DescriptionDictionary({
-            key: "cache-hit",
-            value: new data.StringData("A boolean value to indicate an exact match was found for the primary key"),
-            description: "A boolean value to indicate an exact match was found for the primary key"
-          })
+          value: expectedOutputs
         },
         {
           key: "conclusion",

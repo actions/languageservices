@@ -1,9 +1,10 @@
+import {FeatureFlags} from "@actions/expressions";
 import {Diagnostic, DiagnosticSeverity} from "vscode-languageserver-types";
-import {createDocument} from "./test-utils/document";
-import {validate} from "./validate";
-import {defaultValueProviders} from "./value-providers/default";
-import {clearCache} from "./utils/workflow-cache";
-import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config";
+import {createDocument} from "./test-utils/document.js";
+import {validate} from "./validate.js";
+import {defaultValueProviders} from "./value-providers/default.js";
+import {clearCache} from "./utils/workflow-cache.js";
+import {ValueProviderConfig, ValueProviderKind} from "./value-providers/config.js";
 
 beforeEach(() => {
   clearCache();
@@ -14,6 +15,99 @@ describe("validation", () => {
     const result = await validate(createDocument("wf.yaml", "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest"));
 
     expect(result.length).toBe(0);
+  });
+
+  it("background step keywords are accepted when enabled", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: npm start
+        background: true
+      - wait: server
+        continue-on-error: true
+      - wait-all:
+        continue-on-error: false
+      - cancel: server`
+      ),
+      {featureFlags: new FeatureFlags({allowBackgroundSteps: true})}
+    );
+
+    expect(result.length).toBe(0);
+  });
+
+  it("background step keywords are rejected when disabled", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: npm start
+        background: true
+      - wait: server
+      - wait-all:
+      - cancel: server`
+      )
+    );
+
+    expect(result.map(x => x.message)).toEqual([
+      "Unexpected value 'background'",
+      "Unexpected value 'wait'",
+      "Unexpected value 'wait-all'",
+      "Unexpected value 'cancel'",
+      "Expected one of uses or run to be defined",
+      "Expected one of uses or run to be defined",
+      "Expected one of uses or run to be defined"
+    ]);
+  });
+
+  it("background step keywords are included in ambiguity errors when enabled", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - runn: echo hi`
+      ),
+      {featureFlags: new FeatureFlags({allowBackgroundSteps: true})}
+    );
+
+    expect(result.map(x => x.message)).toContain(
+      "There's not enough info to determine what you meant. Add one of these properties: cancel, parallel, run, shell, uses, wait, wait-all, with, working-directory"
+    );
+  });
+
+  it("wait-all false is rejected", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - wait-all: false`
+      ),
+      {featureFlags: new FeatureFlags({allowBackgroundSteps: true})}
+    );
+
+    expect(result).toContainEqual(
+      expect.objectContaining({
+        message: "The value of 'wait-all' must be true or omitted"
+      })
+    );
   });
 
   it("missing jobs key", async () => {
@@ -165,6 +259,43 @@ jobs:
     } as Diagnostic);
   });
 
+  it("issues event with field_added activity type", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  issues:
+    types: [field_added, field_removed]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`
+      )
+    );
+
+    expect(result.length).toBe(0);
+  });
+
+  it("issues event with invalid activity type", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  issues:
+    types: [opened, not_a_real_type]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`
+      )
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]?.message).toBe("Unexpected value 'not_a_real_type'");
+  });
+
   it("invalid cron string", async () => {
     const result = await validate(
       createDocument(
@@ -181,7 +312,7 @@ jobs:
 
     expect(result.length).toBe(1);
     expect(result[0]).toEqual({
-      message: "Invalid cron string",
+      message: "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)",
       range: {
         end: {
           character: 21,
@@ -193,6 +324,78 @@ jobs:
         }
       }
     } as Diagnostic);
+  });
+
+  it("cron with interval less than 5 minutes shows warning", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  schedule:
+    - cron: '*/1 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      ),
+      {valueProviderConfig: defaultValueProviders}
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]).toEqual({
+      message:
+        'Actions schedules run at most every 5 minutes. "*/1 * * * *" (runs every minute) will not run as frequently as specified.',
+      severity: DiagnosticSeverity.Warning,
+      code: "on-schedule",
+      codeDescription: {
+        href: "https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#onschedule"
+      },
+      range: {
+        end: {
+          character: 25,
+          line: 2
+        },
+        start: {
+          character: 12,
+          line: 2
+        }
+      }
+    } as Diagnostic);
+  });
+
+  it("cron with interval of 5 minutes or more shows no diagnostic", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  schedule:
+    - cron: '*/5 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      ),
+      {valueProviderConfig: defaultValueProviders}
+    );
+
+    expect(result.length).toBe(0);
+  });
+
+  it("cron with comma-separated minutes less than 5 apart shows warning", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  schedule:
+    - cron: '0,2 * * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+      ),
+      {valueProviderConfig: defaultValueProviders}
+    );
+
+    expect(result.length).toBe(1);
+    expect(result[0]?.severity).toBe(DiagnosticSeverity.Warning);
+    expect(result[0]?.message).toContain("Actions schedules run at most every 5 minutes.");
   });
 
   it("invalid YAML", async () => {
@@ -292,6 +495,51 @@ jobs:
       };
 
       const result = await validate(createDocument("wf.yaml", workflow), {valueProviderConfig});
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("environment deployment", () => {
+    it("allows deployment boolean under environment mapping", async () => {
+      const workflow = `
+on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      deployment: false
+    steps:
+    - run: echo
+`;
+      const result = await validate(createDocument("wf.yaml", workflow));
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("workflow_dispatch", () => {
+    it("allows empty string in choice options", async () => {
+      const result = await validate(
+        createDocument(
+          "wf.yaml",
+          `on:
+  workflow_dispatch:
+    inputs:
+      plugin-name:
+        description: Specific plugin to build
+        type: choice
+        options:
+          - ''
+          - foo
+          - bar
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`
+        )
+      );
+
       expect(result).toEqual([]);
     });
   });

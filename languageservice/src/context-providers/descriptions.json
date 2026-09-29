@@ -105,13 +105,6 @@
     "job": {
       "description": "The [`job_id`](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_id) of the current job.\nNote: This context property is set by the Actions runner, and is only available within the execution `steps` of a job. Otherwise, the value of this property will be `null`."
     },
-    "job_workflow_sha": {
-      "description": "For jobs using a reusable workflow, the commit SHA for the reusable workflow file.",
-      "versions": {
-        "ghes": ">=3.9",
-        "ghae": ">=3.9"
-      }
-    },
     "path": {
       "description": "Path on the runner to the file that sets system PATH variables from workflow commands. This file is unique to the current step and is a different file for each step in a job. For more information, see \"[Workflow commands for GitHub Actions](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-system-path).\""
     },
@@ -198,6 +191,47 @@
       "description": "The default working directory on the runner for steps, and the default location of your repository when using the [`checkout`](https://github.com/actions/checkout) action."
     }
   },
+  "job": {
+    "container": {
+      "description": "Information about the job's container. For more information about containers, see \"[Running jobs in a container](https://docs.github.com/actions/using-jobs/running-jobs-in-a-container).\""
+    },
+    "container.id": {
+      "description": "The ID of the container."
+    },
+    "container.network": {
+      "description": "The ID of the container network. The runner creates the network used by all containers in a job."
+    },
+    "services": {
+      "description": "The service containers created for a job. For more information about service containers, see \"[Using service containers](https://docs.github.com/actions/using-containerized-services/about-service-containers).\""
+    },
+    "services.<service_id>.id": {
+      "description": "The ID of the service container."
+    },
+    "services.<service_id>.network": {
+      "description": "The ID of the service container network. The runner creates the network used by all containers in a job."
+    },
+    "services.<service_id>.ports": {
+      "description": "The exposed ports of the service container."
+    },
+    "status": {
+      "description": "The current status of the job. Possible values are `success`, `failure`, or `cancelled`."
+    },
+    "check_run_id": {
+      "description": "The unique identifier of the check run for this job."
+    },
+    "workflow_file_path": {
+      "description": "The path of the workflow file that contains the job. For example, `.github/workflows/my-workflow.yml`."
+    },
+    "workflow_ref": {
+      "description": "The ref path to the workflow file that contains the job. For example, `octocat/hello-world/.github/workflows/my-workflow.yml@refs/heads/my_branch`."
+    },
+    "workflow_repository": {
+      "description": "The owner and repository name of the workflow file that contains the job. For example, `octocat/Hello-World`."
+    },
+    "workflow_sha": {
+      "description": "The commit SHA of the workflow file that contains the job."
+    }
+  },
   "secrets": {
     "GITHUB_TOKEN": {
       "description": "Automatically created token for each workflow run. For more information, see \"[Automatic token authentication](https://docs.github.com/actions/security-guides/automatic-token-authentication).\""
@@ -239,7 +273,13 @@
       "description": "The path to the directory containing preinstalled tools for GitHub-hosted runners. For more information, see \"[About GitHub-hosted runners](https://docs.github.com/actions/reference/specifications-for-github-hosted-runners/#supported-software).\""
     },
     "debug": {
-      "description": "This is set only if [debug logging](https://docs.github.com/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled, and always has the value of `1`. It can be useful as an indicator to enable additional debugging or verbose logging in your own job steps."
+      "description": "This is set only if [`ACTIONS_STEP_DEBUG`](https://docs.github.com/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging) is enabled, and always has the value of `\"1\"`. It can be useful as an indicator to enable additional debugging or verbose logging in your own job steps."
+    },
+    "environment": {
+      "description": "The environment of the runner executing the job. Possible values are `github-hosted` for GitHub-hosted runners, or `self-hosted` for self-hosted runners."
+    },
+    "workspace": {
+      "description": "The runner-specific working directory path for the job."
     }
   },
   "strategy": {

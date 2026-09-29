@@ -1,9 +1,9 @@
 import {convertWorkflowTemplate, parseWorkflow, WorkflowTemplate} from "@actions/workflow-parser";
-import {getWorkflowContext, WorkflowContext} from "../context/workflow-context";
-import {nullTrace} from "../nulltrace";
-import {findToken} from "../utils/find-token";
-import {getPositionFromCursor} from "./cursor-position";
-import {testFileProvider} from "./test-file-provider";
+import {getWorkflowContext, WorkflowContext} from "../context/workflow-context.js";
+import {nullTrace} from "../nulltrace.js";
+import {findToken} from "../utils/find-token.js";
+import {getPositionFromCursor} from "./cursor-position.js";
+import {testFileProvider} from "./test-file-provider.js";
 
 export async function testGetWorkflowContext(input: string): Promise<WorkflowContext> {
   const [textDocument, pos] = getPositionFromCursor(input);

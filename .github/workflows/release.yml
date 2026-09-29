@@ -59,7 +59,7 @@ jobs:
 
     permissions:
       contents: write
-      packages: write
+      id-token: write
 
     env:
       PKG_VERSION: "" # will be set in the workflow
@@ -69,9 +69,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 24.x
           cache: "npm"
-          scope: '@actions'
 
       - name: Parse version from lerna.json
         run: |
@@ -97,13 +96,6 @@ jobs:
             core.summary.addLink(`Release v${{ env.PKG_VERSION }}`, release.data.html_url);
             await core.summary.write();
 
-      - name: setup authentication
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Publish packages
         run: |
-          lerna publish ${{ env.PKG_VERSION }} --yes --no-git-reset --no-git-tag-version
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          npx lerna publish ${{ env.PKG_VERSION }} --yes --no-git-reset --no-git-tag-version

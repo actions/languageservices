@@ -1,7 +1,7 @@
-import {TemplateContext} from "../../templates/template-context";
-import {TemplateToken} from "../../templates/tokens/template-token";
-import {isString} from "../../templates/tokens/type-guards";
-import {ConcurrencySetting} from "../workflow-template";
+import {TemplateContext} from "../../templates/template-context.js";
+import {TemplateToken} from "../../templates/tokens/template-token.js";
+import {isString} from "../../templates/tokens/type-guards.js";
+import {ConcurrencyQueue, ConcurrencySetting} from "../workflow-template.js";
 
 export function convertConcurrency(context: TemplateContext, token: TemplateToken): ConcurrencySetting {
   const result: ConcurrencySetting = {};
@@ -25,6 +25,9 @@ export function convertConcurrency(context: TemplateContext, token: TemplateToke
         break;
       case "cancel-in-progress":
         result.cancelInProgress = property.value.assertBoolean("cancel-in-progress").value;
+        break;
+      case "queue":
+        result.queue = property.value.assertString("queue").value as ConcurrencyQueue;
         break;
       default:
         context.error(propertyName, `Invalid property name: ${propertyName.value}`);

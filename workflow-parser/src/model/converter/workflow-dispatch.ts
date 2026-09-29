@@ -1,8 +1,8 @@
-import {TemplateContext} from "../../templates/template-context";
-import {MappingToken} from "../../templates/tokens/mapping-token";
-import {ScalarToken} from "../../templates/tokens/scalar-token";
-import {InputConfig, InputType, WorkflowDispatchConfig} from "../workflow-template";
-import {convertStringList} from "./string-list";
+import {TemplateContext} from "../../templates/template-context.js";
+import {MappingToken} from "../../templates/tokens/mapping-token.js";
+import {ScalarToken} from "../../templates/tokens/scalar-token.js";
+import {InputConfig, InputType, WorkflowDispatchConfig} from "../workflow-template.js";
+import {convertStringList} from "./string-list.js";
 
 export function convertEventWorkflowDispatchInputs(
   context: TemplateContext,

@@ -1,6 +1,6 @@
-import {TemplateValidationError} from "./templates/template-validation-error";
-import {nullTrace} from "./test-utils/null-trace";
-import {parseWorkflow} from "./workflows/workflow-parser";
+import {TemplateValidationError} from "./templates/template-validation-error.js";
+import {nullTrace} from "./test-utils/null-trace.js";
+import {parseWorkflow} from "./workflows/workflow-parser.js";
 
 describe("parseWorkflow", () => {
   it("parses valid workflow", () => {

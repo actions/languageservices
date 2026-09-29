@@ -3,7 +3,7 @@ import {Expr, Logical} from "@actions/expressions/ast";
 import {ExpressionData} from "@actions/expressions/data/expressiondata";
 import {TokenType} from "@actions/expressions/lexer";
 import {falsy, truthy} from "@actions/expressions/result";
-import {AccessError} from "./error-dictionary";
+import {AccessError} from "./error-dictionary.js";
 
 export type ValidationError = {
   message: string;

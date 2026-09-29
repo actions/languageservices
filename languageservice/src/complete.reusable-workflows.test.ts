@@ -1,8 +1,8 @@
 import {CompletionItem, MarkupContent} from "vscode-languageserver-types";
-import {complete} from "./complete";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearCache} from "./utils/workflow-cache";
+import {complete} from "./complete.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 function mapResult(result: CompletionItem[]) {
   return result.map(x => {
@@ -21,7 +21,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     with:
       |
 `;
@@ -49,7 +49,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     with:
       username: monalisa
       |
@@ -74,7 +74,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     secrets:
       |
 `;
@@ -102,7 +102,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     secrets: |
 `;
     const result = await complete(...getPositionFromCursor(input), {fileProvider: testFileProvider});
@@ -117,7 +117,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     secrets:
       envPAT: "myPAT"
       |

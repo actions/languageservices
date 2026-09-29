@@ -1,8 +1,8 @@
-import {DEFINITION, NULL} from "../template-constants";
-import {MappingToken, LiteralToken} from "../tokens";
-import {DefinitionType} from "./definition-type";
-import {ScalarDefinition} from "./scalar-definition";
-import {TokenType} from "../tokens/types";
+import {DEFINITION, NULL} from "../template-constants.js";
+import {MappingToken, LiteralToken} from "../tokens/index.js";
+import {DefinitionType} from "./definition-type.js";
+import {ScalarDefinition} from "./scalar-definition.js";
+import {TokenType} from "../tokens/types.js";
 
 export class NullDefinition extends ScalarDefinition {
   public constructor(key: string, definition?: MappingToken) {

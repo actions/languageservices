@@ -1,6 +1,6 @@
 import {DescriptionDictionary} from "@actions/expressions";
-import {WorkflowContext} from "../context/workflow-context";
-import {Mode} from "./default";
+import {WorkflowContext} from "../context/workflow-context.js";
+import {Mode} from "./default.js";
 
 export type ContextProviderConfig = {
   getContext: (

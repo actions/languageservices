@@ -5,6 +5,7 @@
     "declaration": true,
     "declarationMap": true,
     "noEmit": false,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "skipLibCheck": true
   }
 }

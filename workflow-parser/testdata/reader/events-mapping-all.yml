@@ -66,6 +66,8 @@ on:
       - unlocked
       - milestoned
       - demilestoned
+      - field_added
+      - field_removed
   label:
     types:
       - created
@@ -120,6 +122,8 @@ on:
       - unassigned
       - labeled
       - unlabeled
+      - milestoned
+      - demilestoned
       - opened
       - edited
       - closed
@@ -129,12 +133,13 @@ on:
       - ready_for_review
       - locked
       - unlocked
+      - enqueued
+      - dequeued
       - review_requested
       - review_request_removed
       - auto_merge_enabled
       - auto_merge_disabled
-      - milestoned
-      - demilestoned
+      - stacked
   pull_request_comment:
     types:
       - created
@@ -162,6 +167,8 @@ on:
       - unassigned
       - labeled
       - unlabeled
+      - milestoned
+      - demilestoned
       - opened
       - edited
       - closed
@@ -171,10 +178,13 @@ on:
       - ready_for_review
       - locked
       - unlocked
+      - enqueued
+      - dequeued
       - review_requested
       - review_request_removed
       - auto_merge_enabled
       - auto_merge_disabled
+      - stacked
   push:
     branches:
       - master
@@ -310,7 +320,9 @@ jobs:
         "locked",
         "unlocked",
         "milestoned",
-        "demilestoned"
+        "demilestoned",
+        "field_added",
+        "field_removed"
       ]
     },
     "label": {
@@ -388,6 +400,8 @@ jobs:
         "unassigned",
         "labeled",
         "unlabeled",
+        "milestoned",
+        "demilestoned",
         "opened",
         "edited",
         "closed",
@@ -397,10 +411,13 @@ jobs:
         "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
-        "auto_merge_disabled"
+        "auto_merge_disabled",
+        "stacked"
       ]
     },
     "pull_request_comment": {
@@ -443,6 +460,8 @@ jobs:
         "unassigned",
         "labeled",
         "unlabeled",
+        "milestoned",
+        "demilestoned",
         "opened",
         "edited",
         "closed",
@@ -452,10 +471,13 @@ jobs:
         "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
-        "auto_merge_disabled"
+        "auto_merge_disabled",
+        "stacked"
       ]
     },
     "push": {

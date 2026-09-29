@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {data, DescriptionDictionary} from "@actions/expressions";
-import {CompletionItem, CompletionItemKind} from "vscode-languageserver-types";
-import {complete, getExpressionInput} from "./complete";
-import {ContextProviderConfig} from "./context-providers/config";
-import {registerLogger} from "./log";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {TestLogger} from "./test-utils/logger";
-import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearCache} from "./utils/workflow-cache";
+import {data, DescriptionDictionary, FeatureFlags} from "@actions/expressions";
+import {CompletionItem, CompletionItemKind, MarkupContent} from "vscode-languageserver-types";
+import {complete, getExpressionInput} from "./complete.js";
+import {ContextProviderConfig} from "./context-providers/config.js";
+import {registerLogger} from "./log.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {TestLogger} from "./test-utils/logger.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: (context: string) => {
@@ -68,12 +68,16 @@ describe("expressions", () => {
   describe("top-level auto-complete", () => {
     it("single region", async () => {
       const input = "run-name: ${{ | }}";
-      const result = await complete(...getPositionFromCursor(input));
+      const result = await complete(...getPositionFromCursor(input), {
+        contextProviderConfig,
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
+      });
 
       expect(result.map(x => x.label)).toEqual([
         "github",
         "inputs",
         "vars",
+        "case",
         "contains",
         "endsWith",
         "format",
@@ -108,12 +112,16 @@ describe("expressions", () => {
 
     it("single region with existing input", async () => {
       const input = "run-name: ${{ g| }}";
-      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+      const result = await complete(...getPositionFromCursor(input), {
+        contextProviderConfig,
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
+      });
 
       expect(result.map(x => x.label)).toEqual([
         "github",
         "inputs",
         "vars",
+        "case",
         "contains",
         "endsWith",
         "format",
@@ -126,12 +134,16 @@ describe("expressions", () => {
 
     it("single region with existing condition", async () => {
       const input = "run-name: ${{ g| == 'test' }}";
-      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+      const result = await complete(...getPositionFromCursor(input), {
+        contextProviderConfig,
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
+      });
 
       expect(result.map(x => x.label)).toEqual([
         "github",
         "inputs",
         "vars",
+        "case",
         "contains",
         "endsWith",
         "format",
@@ -144,12 +156,16 @@ describe("expressions", () => {
 
     it("multiple regions with partial function", async () => {
       const input = "run-name: Run a ${{ inputs.test }} one-line script ${{ from|('test') == inputs.name }}";
-      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+      const result = await complete(...getPositionFromCursor(input), {
+        contextProviderConfig,
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
+      });
 
       expect(result.map(x => x.label)).toEqual([
         "github",
         "inputs",
         "vars",
+        "case",
         "contains",
         "endsWith",
         "format",
@@ -162,12 +178,16 @@ describe("expressions", () => {
 
     it("multiple regions - first region", async () => {
       const input = "run-name: test-${{ git| == 1 }}-${{ github.event }}";
-      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+      const result = await complete(...getPositionFromCursor(input), {
+        contextProviderConfig,
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
+      });
 
       expect(result.map(x => x.label)).toEqual([
         "github",
         "inputs",
         "vars",
+        "case",
         "contains",
         "endsWith",
         "format",
@@ -180,12 +200,16 @@ describe("expressions", () => {
 
     it("multiple regions", async () => {
       const input = "run-name: test-${{ github }}-${{ | }}";
-      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+      const result = await complete(...getPositionFromCursor(input), {
+        contextProviderConfig,
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
+      });
 
       expect(result.map(x => x.label)).toEqual([
         "github",
         "inputs",
         "vars",
+        "case",
         "contains",
         "endsWith",
         "format",
@@ -299,7 +323,16 @@ jobs:
         "on: push\njobs:\n  build:\n    runs-on: ubuntu-latest\n    environment:\n      url: ${{ runner.| }}\n    steps:\n      - run: echo";
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).toEqual(["arch", "name", "os", "temp", "tool_cache"]);
+      expect(result.map(x => x.label)).toEqual([
+        "arch",
+        "debug",
+        "environment",
+        "name",
+        "os",
+        "temp",
+        "tool_cache",
+        "workspace"
+      ]);
     });
 
     describe("job if", () => {
@@ -385,6 +418,36 @@ jobs:
         const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
         expect(result.map(x => x.label)).toEqual(["event"]);
+      });
+
+      it("includes both contexts and extension functions", async () => {
+        const input = `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo
+      if: |`;
+        const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+        const labels = result.map(x => x.label);
+
+        // Context namespaces should be present
+        expect(labels).toContain("github");
+        expect(labels).toContain("runner");
+        expect(labels).toContain("env");
+        expect(labels).toContain("steps");
+
+        // Extension functions should be present (from schema context array)
+        expect(labels).toContain("hashFiles");
+        expect(labels).toContain("always");
+        expect(labels).toContain("success");
+        expect(labels).toContain("failure");
+        expect(labels).toContain("cancelled");
+
+        // Built-in functions should be present
+        expect(labels).toContain("toJson");
+        expect(labels).toContain("fromJson");
+        expect(labels).toContain("contains");
       });
     });
   });
@@ -861,7 +924,7 @@ jobs:
   });
 
   describe("strategy context", () => {
-    it("strategy is not suggested when outside of a matrix job", async () => {
+    it("strategy is suggested even when no strategy defined", async () => {
       const input = `
 on: push
 
@@ -875,7 +938,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).not.toContain("strategy");
+      expect(result.map(x => x.label)).toContain("strategy");
     });
 
     it("strategy is suggested within a matrix job", async () => {
@@ -922,7 +985,7 @@ jobs:
   });
 
   describe("matrix context", () => {
-    it("matrix is not suggested when outside of a matrix job", async () => {
+    it("matrix is suggested even when no strategy defined", async () => {
       const input = `
 on: push
 
@@ -936,7 +999,7 @@ jobs:
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
 
-      expect(result.map(x => x.label)).not.toContain("strategy");
+      expect(result.map(x => x.label)).toContain("matrix");
     });
 
     it("matrix is suggested within a matrix job", async () => {
@@ -1101,7 +1164,16 @@ jobs:
 `;
 
       const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
-      expect(result.map(x => x.label)).toEqual(["container", "services", "status"]);
+      expect(result.map(x => x.label)).toEqual([
+        "check_run_id",
+        "container",
+        "services",
+        "status",
+        "workflow_file_path",
+        "workflow_ref",
+        "workflow_repository",
+        "workflow_sha"
+      ]);
     });
 
     it("job context is suggested within a job output", async () => {
@@ -1117,17 +1189,23 @@ jobs:
         run: echo hi
 `;
 
-      const result = await complete(...getPositionFromCursor(input), {contextProviderConfig});
+      const result = await complete(...getPositionFromCursor(input), {
+        contextProviderConfig,
+        featureFlags: new FeatureFlags({allowCaseFunction: true})
+      });
       expect(result.map(x => x.label)).toEqual([
         "env",
         "github",
         "inputs",
         "job",
+        "matrix",
         "needs",
         "runner",
         "secrets",
         "steps",
+        "strategy",
         "vars",
+        "case",
         "contains",
         "endsWith",
         "format",
@@ -1239,6 +1317,7 @@ jobs:
     expect(hashFiles).toBeDefined();
     expect(hashFiles!.kind).toBe(CompletionItemKind.Function);
     expect(hashFiles!.insertText).toBe("hashFiles()");
+    expect((hashFiles!.documentation as MarkupContent)?.value).toContain("Returns a single hash for the set of files");
 
     // Not a function
     const github = result.find(x => x.label === "github");
@@ -1268,7 +1347,7 @@ jobs:
 on: push
 jobs:
   a:
-    uses: ./reusable-workflow-with-outputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-outputs.yaml
   b:
     needs: [a]
     runs-on: ubuntu-latest

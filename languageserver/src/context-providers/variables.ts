@@ -7,10 +7,10 @@ import {isMapping, isString} from "@actions/workflow-parser";
 import {Octokit} from "@octokit/rest";
 import {RequestError} from "@octokit/request-error";
 
-import {RepositoryContext} from "../initializationOptions";
-import {TTLCache} from "../utils/cache";
-import {errorStatus} from "../utils/error";
-import {getRepoPermission} from "../utils/repo-permission";
+import {RepositoryContext} from "../initializationOptions.js";
+import {TTLCache} from "../utils/cache.js";
+import {errorStatus} from "../utils/error.js";
+import {getRepoPermission} from "../utils/repo-permission.js";
 
 export async function getVariables(
   workflowContext: WorkflowContext,
@@ -26,6 +26,8 @@ export async function getVariables(
     return secretsContext;
   }
 
+  const variablesContext = defaultContext || new DescriptionDictionary();
+
   let environmentName: string | undefined;
   if (workflowContext?.job?.environment) {
     if (isString(workflowContext.job.environment)) {
@@ -35,14 +37,19 @@ export async function getVariables(
         if (isString(x.key) && x.key.value === "name") {
           if (isString(x.value)) {
             environmentName = x.value.value;
+          } else {
+            // this means we have a dynamic environment, in those situations we want to skip validation
+            variablesContext.complete = false;
           }
           break;
         }
       }
+    } else {
+      // if the expression is something like environment: ${{ ... }} then we want to skip validation
+      variablesContext.complete = false;
     }
   }
 
-  const variablesContext = defaultContext || new DescriptionDictionary();
   try {
     const variables = await getRemoteVariables(octokit, cache, repo, environmentName);
 

@@ -1,13 +1,13 @@
 import {data, DescriptionDictionary} from "@actions/expressions";
 import {isScalar, isString} from "@actions/workflow-parser";
 import {MappingToken} from "@actions/workflow-parser/templates/tokens/mapping-token";
-import {WorkflowContext} from "../context/workflow-context";
+import {WorkflowContext} from "../context/workflow-context.js";
 
 export function getEnvContext(workflowContext: WorkflowContext): DescriptionDictionary {
   const d = new DescriptionDictionary();
 
   //step env
-  if (workflowContext.step?.env) {
+  if (workflowContext.step && "env" in workflowContext.step && workflowContext.step.env) {
     envContext(workflowContext.step.env, d);
   }
 

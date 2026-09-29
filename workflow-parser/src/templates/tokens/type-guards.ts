@@ -1,13 +1,13 @@
-import {BasicExpressionToken} from "./basic-expression-token";
-import {BooleanToken} from "./boolean-token";
-import {LiteralToken} from "./literal-token";
-import {MappingToken} from "./mapping-token";
-import {NumberToken} from "./number-token";
-import {ScalarToken} from "./scalar-token";
-import {SequenceToken} from "./sequence-token";
-import {StringToken} from "./string-token";
-import {TemplateToken} from "./template-token";
-import {TokenType} from "./types";
+import {BasicExpressionToken} from "./basic-expression-token.js";
+import {BooleanToken} from "./boolean-token.js";
+import {LiteralToken} from "./literal-token.js";
+import {MappingToken} from "./mapping-token.js";
+import {NumberToken} from "./number-token.js";
+import {ScalarToken} from "./scalar-token.js";
+import {SequenceToken} from "./sequence-token.js";
+import {StringToken} from "./string-token.js";
+import {TemplateToken} from "./template-token.js";
+import {TokenType} from "./types.js";
 
 export function isLiteral(t: TemplateToken): t is LiteralToken {
   return t.isLiteral;

@@ -1,6 +1,6 @@
-import {DefinitionInfo} from "../schema/definition-info";
-import {ScalarToken} from "./scalar-token";
-import {TokenRange} from "./token-range";
+import {DefinitionInfo} from "../schema/definition-info.js";
+import {ScalarToken} from "./scalar-token.js";
+import {TokenRange} from "./token-range.js";
 
 export abstract class LiteralToken extends ScalarToken {
   public constructor(

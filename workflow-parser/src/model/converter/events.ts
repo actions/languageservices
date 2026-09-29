@@ -1,22 +1,24 @@
-import {TemplateContext} from "../../templates/template-context";
-import {MappingToken} from "../../templates/tokens/mapping-token";
-import {SequenceToken} from "../../templates/tokens/sequence-token";
-import {TemplateToken} from "../../templates/tokens/template-token";
-import {isLiteral, isMapping, isSequence, isString} from "../../templates/tokens/type-guards";
-import {TokenType} from "../../templates/tokens/types";
+import {TemplateContext} from "../../templates/template-context.js";
+import {MappingToken} from "../../templates/tokens/mapping-token.js";
+import {SequenceToken} from "../../templates/tokens/sequence-token.js";
+import {TemplateToken} from "../../templates/tokens/template-token.js";
+import {isLiteral, isMapping, isSequence, isString} from "../../templates/tokens/type-guards.js";
+import {TokenType} from "../../templates/tokens/types.js";
 import {
   BranchFilterConfig,
   EventsConfig,
+  NamesFilterConfig,
   PathFilterConfig,
   ScheduleConfig,
   TagFilterConfig,
   TypesFilterConfig,
+  VersionsFilterConfig,
   WorkflowFilterConfig
-} from "../workflow-template";
-import {isValidCron} from "./cron";
-import {convertStringList} from "./string-list";
-import {convertEventWorkflowCall} from "./workflow-call";
-import {convertEventWorkflowDispatchInputs} from "./workflow-dispatch";
+} from "../workflow-template.js";
+import {isValidCron} from "./cron.js";
+import {convertStringList} from "./string-list.js";
+import {convertEventWorkflowCall} from "./workflow-call.js";
+import {convertEventWorkflowDispatchInputs} from "./workflow-dispatch.js";
 
 export function convertOn(context: TemplateContext, token: TemplateToken): EventsConfig {
   if (isLiteral(token)) {
@@ -76,10 +78,11 @@ export function convertOn(context: TemplateContext, token: TemplateToken): Event
         ...convertPatternFilter("tags", eventToken),
         ...convertPatternFilter("paths", eventToken),
         ...convertFilter("types", eventToken),
+        ...convertFilter("versions", eventToken),
+        ...convertFilter("names", eventToken),
         ...convertFilter("workflows", eventToken)
       };
     }
-
     return result;
   }
 
@@ -121,8 +124,8 @@ function convertPatternFilter<T extends BranchFilterConfig & TagFilterConfig & P
   return result;
 }
 
-function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig>(
-  name: "types" | "workflows",
+function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig & VersionsFilterConfig & NamesFilterConfig>(
+  name: "types" | "workflows" | "versions" | "names",
   token: MappingToken
 ): T {
   const result = {} as T;
@@ -146,23 +149,34 @@ function convertFilter<T extends TypesFilterConfig & WorkflowFilterConfig>(
 
 function convertSchedule(context: TemplateContext, token: SequenceToken): ScheduleConfig[] | undefined {
   const result = [] as ScheduleConfig[];
+
   for (const item of token) {
     const mappingToken = item.assertMapping(`event schedule`);
-    if (mappingToken.count == 1) {
-      const schedule = mappingToken.get(0);
-      const scheduleKey = schedule.key.assertString(`schedule key`);
-      if (scheduleKey.value == "cron") {
-        const cron = schedule.value.assertString(`schedule cron`);
-        // Validate the cron string
+    const config: ScheduleConfig = {cron: ""};
+    let valid = true;
+
+    for (const entry of mappingToken) {
+      const key = entry.key.assertString(`schedule key`);
+
+      if (key.value === "cron") {
+        const cron = entry.value.assertString(`schedule cron`);
         if (!isValidCron(cron.value)) {
-          context.error(cron, "Invalid cron string");
+          context.error(cron, "Invalid cron expression. Expected format: '* * * * *' (minute hour day month weekday)");
         }
-        result.push({cron: cron.value});
+        config.cron = cron.value;
+      } else if (key.value === "timezone") {
+        const timezone = entry.value.assertString(`schedule timezone`);
+        config.timezone = timezone.value;
       } else {
-        context.error(scheduleKey, `Invalid schedule key`);
+        context.error(key, `Invalid schedule key`);
+        valid = false;
       }
-    } else {
-      context.error(mappingToken, "Invalid format for 'schedule'");
+    }
+
+    if (valid && config.cron) {
+      result.push(config);
+    } else if (valid && !config.cron) {
+      context.error(mappingToken, "Missing required key 'cron' in schedule entry");
     }
   }
 

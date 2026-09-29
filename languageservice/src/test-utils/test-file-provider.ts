@@ -5,9 +5,9 @@ export const testFileProvider: FileProvider = {
   // eslint-disable-next-line @typescript-eslint/require-await
   getFileContent: async ref => {
     switch (fileIdentifier(ref)) {
-      case "monalisa/octocat/workflow.yaml@main":
+      case "monalisa/octocat/.github/workflows/workflow.yaml@main":
         return {
-          name: "monalisa/octocat/workflow.yaml",
+          name: "monalisa/octocat/.github/workflows/workflow.yaml",
           content: `
 on: workflow_call
 jobs:
@@ -31,9 +31,9 @@ jobs:
 `
         };
 
-      case "./reusable-workflow.yaml":
+      case "./.github/workflows/reusable-workflow.yaml":
         return {
-          name: "reusable-workflow.yaml",
+          name: ".github/workflows/reusable-workflow.yaml",
           content: `
 on: workflow_call
 jobs:
@@ -44,9 +44,9 @@ jobs:
 `
         };
 
-      case "./reusable-workflow-with-inputs.yaml":
+      case "./.github/workflows/reusable-workflow-with-inputs.yaml":
         return {
-          name: "reusable-workflow-with-inputs.yaml",
+          name: ".github/workflows/reusable-workflow-with-inputs.yaml",
           content: `
 on:
   workflow_call:
@@ -76,9 +76,9 @@ jobs:
   `
         };
 
-      case "./reusable-workflow-with-inputs-no-description.yaml":
+      case "./.github/workflows/reusable-workflow-with-inputs-no-description.yaml":
         return {
-          name: "reusable-workflow-with-inputs.yaml",
+          name: ".github/workflows/reusable-workflow-with-inputs.yaml",
           content: `
 on:
   workflow_call:
@@ -95,9 +95,9 @@ jobs:
   `
         };
 
-      case "./reusable-workflow-with-outputs.yaml":
+      case "./.github/workflows/reusable-workflow-with-outputs.yaml":
         return {
-          name: "reusable-workflow-with-outputs.yaml",
+          name: ".github/workflows/reusable-workflow-with-outputs.yaml",
           content: `
 on:
   workflow_call:

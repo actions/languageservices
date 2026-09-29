@@ -99,6 +99,7 @@
           "discussion_comment": "discussion-comment",
           "fork": "fork",
           "gollum": "gollum",
+          "image_version": "image-version",
           "issue_comment": "issue-comment",
           "issues": "issues",
           "label": "label",
@@ -140,6 +141,7 @@
         "discussion-comment-string",
         "fork-string",
         "gollum-string",
+        "image-version-string",
         "issue-comment-string",
         "issues-string",
         "label-string",
@@ -436,6 +438,47 @@
       "description": "Runs your workflow when someone creates or updates a Wiki page.",
       "null": {}
     },
+    "image-version-string": {
+      "description": "Runs your workflow when an image version is created or changes state.",
+      "string": {
+        "constant": "image_version"
+      }
+    },
+    "image-version": {
+      "description": "Runs your workflow when an image version is created or changes state.",
+      "one-of": [
+        "null",
+        "image-version-mapping"
+      ]
+    },
+    "image-version-mapping": {
+      "mapping": {
+        "properties": {
+          "types": "image-version-activity",
+          "names": "event-names",
+          "versions": "event-versions"
+        }
+      }
+    },
+    "image-version-activity": {
+      "description": "The types of image version activity that trigger the workflow. Supported activity types: `created`, `ready`, `deleted`.",
+      "one-of": [
+        "image-version-activity-type",
+        "image-version-activity-types"
+      ]
+    },
+    "image-version-activity-types": {
+      "sequence": {
+        "item-type": "image-version-activity-type"
+      }
+    },
+    "image-version-activity-type": {
+      "allowed-values": [
+        "created",
+        "ready",
+        "deleted"
+      ]
+    },
     "issue-comment-string": {
       "description": "Runs your workflow when an issue or pull request comment is created, edited, or deleted.",
       "string": {
@@ -496,7 +539,7 @@
       }
     },
     "issues-activity": {
-      "description": "The types of issue activity that trigger the workflow. Supported activity types: `opened`, `edited`, `deleted`, `transferred`, `pinned`, `unpinned`, `closed`, `reopened`, `assigned`, `unassigned`, `labeled`, `unlabeled`, `locked`, `unlocked`, `milestoned`, `demilestoned`.",
+      "description": "The types of issue activity that trigger the workflow. Supported activity types: `opened`, `edited`, `deleted`, `transferred`, `pinned`, `unpinned`, `closed`, `reopened`, `assigned`, `unassigned`, `labeled`, `unlabeled`, `locked`, `unlocked`, `milestoned`, `demilestoned`, `field_added`, `field_removed`, `typed`, `untyped`.",
       "one-of": [
         "issues-activity-type",
         "issues-activity-types"
@@ -524,7 +567,11 @@
         "locked",
         "unlocked",
         "milestoned",
-        "demilestoned"
+        "demilestoned",
+        "field_added",
+        "field_removed",
+        "typed",
+        "untyped"
       ]
     },
     "label-string": {
@@ -813,7 +860,7 @@
       }
     },
     "pull-request-activity": {
-      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `ready_for_review`, `locked`, `unlocked`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
+      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `locked`, `unlocked`, `enqueued`, `dequeued`, `milestoned`, `demilestoned`, `ready_for_review`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`, `stacked`.",
       "one-of": [
         "pull-request-activity-type",
         "pull-request-activity-types"
@@ -836,13 +883,18 @@
         "reopened",
         "synchronize",
         "converted_to_draft",
-        "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
+        "milestoned",
+        "demilestoned",
+        "ready_for_review",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
-        "auto_merge_disabled"
+        "auto_merge_disabled",
+        "stacked"
       ]
     },
     "pull-request-comment-string": {
@@ -961,7 +1013,7 @@
       }
     },
     "pull-request-target-activity": {
-      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `ready_for_review`, `locked`, `unlocked`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`.",
+      "description": "The types of pull request activity that trigger the workflow. Supported activity types: `assigned`, `unassigned`, `labeled`, `unlabeled`, `opened`, `edited`, `closed`, `reopened`, `synchronize`, `converted_to_draft`, `locked`, `unlocked`, `enqueued`, `dequeued`, `milestoned`, `demilestoned`, `ready_for_review`, `review_requested`, `review_request_removed`, `auto_merge_enabled`, `auto_merge_disabled`, `stacked`.",
       "one-of": [
         "pull-request-target-activity-type",
         "pull-request-target-activity-types"
@@ -984,13 +1036,18 @@
         "reopened",
         "synchronize",
         "converted_to_draft",
-        "ready_for_review",
         "locked",
         "unlocked",
+        "enqueued",
+        "dequeued",
+        "milestoned",
+        "demilestoned",
+        "ready_for_review",
         "review_requested",
         "review_request_removed",
         "auto_merge_enabled",
-        "auto_merge_disabled"
+        "auto_merge_disabled",
+        "stacked"
       ]
     },
     "push-string": {
@@ -1221,6 +1278,13 @@
         "sequence-of-non-empty-string"
       ]
     },
+    "event-names": {
+      "description": "Use the `names` filter when you want to include names via patterns or when you want to both include and exclude names using patterns. ",
+      "one-of": [
+        "non-empty-string",
+        "sequence-of-non-empty-string"
+      ]
+    },
     "event-tags": {
       "description": "Use the `tags` filter when you want to include tag name patterns or when you want to both include and exclude tag names patterns. You cannot use both the `tags` and `tags-ignore` filters for the same event in a workflow.",
       "one-of": [
@@ -1244,6 +1308,13 @@
     },
     "event-paths-ignore": {
       "description": "Use the `paths-ignore` filter when you only want to exclude file path patterns. You cannot use both the `paths` and `paths-ignore` filters for the same event in a workflow.",
+      "one-of": [
+        "non-empty-string",
+        "sequence-of-non-empty-string"
+      ]
+    },
+    "event-versions": {
+      "description": "Use the `versions` filter when you want to include versions via patterns or when you want to both include and exclude versions using patterns. ",
       "one-of": [
         "non-empty-string",
         "sequence-of-non-empty-string"
@@ -1482,7 +1553,7 @@
           },
           "default": "workflow-dispatch-input-default",
           "options": {
-            "type": "sequence-of-non-empty-string",
+            "type": "sequence-of-string",
             "description": "The options of the dropdown list, if the type is a choice."
           }
         }
@@ -1521,6 +1592,10 @@
             "type": "permission-level-any",
             "description": "Actions workflows, workflow runs, and artifacts."
           },
+          "artifact-metadata": {
+            "type": "permission-level-any",
+            "description": "Storage and deployment records for build artifacts."
+          },
           "attestations": {
             "type": "permission-level-any",
             "description": "Artifact attestations."
@@ -1529,9 +1604,17 @@
             "type": "permission-level-any",
             "description": "Check runs and check suites."
           },
+          "code-quality": {
+            "type": "permission-level-any",
+            "description": "Code quality data."
+          },
           "contents": {
             "type": "permission-level-any",
             "description": "Repository contents, commits, branches, downloads, releases, and merges."
+          },
+          "copilot-requests": {
+            "type": "permission-level-write-or-no-access",
+            "description": "GitHub Copilot requests."
           },
           "deployments": {
             "type": "permission-level-any",
@@ -1540,6 +1623,10 @@
           "discussions": {
             "type": "permission-level-any",
             "description": "Discussions and related comments and labels."
+          },
+          "drives": {
+            "type": "permission-level-any",
+            "description": "GitHub Drives persistent workspace storage. Use `read` for checkout and `write` to commit changes."
           },
           "id-token": {
             "type": "permission-level-write-or-no-access",
@@ -1571,11 +1658,15 @@
           },
           "security-events": {
             "type": "permission-level-any",
-            "description": "Code scanning and Dependabot alerts."
+            "description": "Code scanning alerts."
           },
           "statuses": {
             "type": "permission-level-any",
             "description": "Commit statuses."
+          },
+          "vulnerability-alerts": {
+            "type": "permission-level-read-or-no-access",
+            "description": "Dependabot alerts."
           }
         }
       }
@@ -1710,7 +1801,8 @@
           "concurrency": "job-concurrency",
           "outputs": "job-outputs",
           "defaults": "job-defaults",
-          "steps": "steps"
+          "steps": "steps",
+          "snapshot": "snapshot"
         }
       }
     },
@@ -1780,9 +1872,7 @@
         "cancelled(0,0)",
         "success(0,MAX)"
       ],
-      "string": {
-        "is-expression": true
-      }
+      "string": {}
     },
     "job-if-result": {
       "context": [
@@ -1853,6 +1943,41 @@
         "loose-key-type": "non-empty-string",
         "loose-value-type": "any"
       }
+    },
+    "snapshot": {
+      "description": "Use `snapshot` to define a custom image you want to create or update after your job succeeds by taking a snapshot of your runner.",
+      "one-of": [
+        "non-empty-string",
+        "snapshot-mapping"
+      ]
+    },
+    "snapshot-mapping": {
+      "mapping": {
+        "properties": {
+          "image-name": {
+            "description": "The desired name of the custom image you want to create or update.",
+            "type": "non-empty-string",
+            "required": true
+          },
+          "if": "snapshot-if",
+          "version": {
+            "description": "The desired major version updates upon a new custom image version creation.",
+            "type": "non-empty-string"
+          }
+        }
+      }
+    },
+    "snapshot-if": {
+      "context": [
+        "github",
+        "inputs",
+        "vars",
+        "needs",
+        "strategy",
+        "matrix"
+      ],
+      "description": "Use the if conditional to prevent a snapshot from being taken unless a condition is met. Any supported context and expression can be used to create a conditional. Expressions in an `if` conditional do not require the bracketed expression syntax. When you use expressions in an `if` conditional, you may omit the expression syntax because GitHub automatically evaluates the `if` conditional as an expression.",
+      "string": {}
     },
     "runs-on": {
       "description": "Use `runs-on` to define the type of machine to run the job on.\n* The destination machine can be either a GitHub-hosted runner, larger runner, or a self-hosted runner.\n* You can target runners based on the labels assigned to them, or their group membership, or a combination of these.\n* You can provide `runs-on` as a single string or as an array of strings.\n* If you specify an array of strings, your workflow will execute on any runner that matches all of the specified `runs-on` values.\n* If you would like to run your workflow on multiple machines, use `jobs.<job_id>.strategy`.",
@@ -1943,9 +2068,19 @@
           "cancel-in-progress": {
             "type": "boolean",
             "description": "To cancel any currently running job or workflow in the same concurrency group, specify cancel-in-progress: true."
+          },
+          "queue": {
+            "type": "concurrency-queue",
+            "description": "The queuing mode for the concurrency group. When set to `max`, workflows or jobs will wait in a queue for the concurrency group up to the maximum queue length. Default: `single` meaning at most one item can be pending."
           }
         }
       }
+    },
+    "concurrency-queue": {
+      "allowed-values": [
+        "single",
+        "max"
+      ]
     },
     "job-environment": {
       "description": "The environment that the job references. All environment protection rules must pass before a job referencing the environment is sent to a runner.",
@@ -1972,6 +2107,10 @@
           "url": {
             "type": "string-runner-context-no-secrets",
             "description": "The environment URL, which maps to `environment_url` in the deployments API."
+          },
+          "deployment": {
+            "type": "boolean",
+            "description": "Whether to create a deployment record for this environment. Defaults to true."
           }
         }
       }
@@ -2021,7 +2160,7 @@
       }
     },
     "steps": {
-      "description": "A job contains a sequence of tasks called `steps`. Steps can run commands, run setup tasks, or run an action in your repository, a public repository, or an action published in a Docker registry. Not all steps run actions, but all actions run as a step. Each step runs in its own process in the runner environment and has access to the workspace and filesystem. Because steps run in their own process, changes to environment variables are not preserved between steps. GitHub provides built-in steps to set up and complete a job. Must contain either `uses` or `run`.",
+      "description": "A job contains a sequence of tasks called `steps`. Steps can run commands, run setup tasks, run an action in your repository, a public repository, or an action published in a Docker registry, wait for background steps to complete, or cancel a background step. Not all steps run actions, but all actions run as a step. Each step runs in its own process in the runner environment and has access to the workspace and filesystem. Because steps run in their own process, changes to environment variables are not preserved between steps. GitHub provides built-in steps to set up and complete a job.",
       "sequence": {
         "item-type": "steps-item"
       }
@@ -2029,7 +2168,11 @@
     "steps-item": {
       "one-of": [
         "run-step",
-        "regular-step"
+        "regular-step",
+        "wait-step",
+        "wait-all-step",
+        "cancel-step",
+        "parallel-step"
       ]
     },
     "run-step": {
@@ -2047,7 +2190,8 @@
           "continue-on-error": "step-continue-on-error",
           "env": "step-env",
           "working-directory": "string-steps-context",
-          "shell": "shell"
+          "shell": "shell",
+          "background": "step-background"
         }
       }
     },
@@ -2064,12 +2208,92 @@
             "required": true
           },
           "with": "step-with",
-          "env": "step-env"
+          "env": "step-env",
+          "background": "step-background"
         }
       }
     },
+    "wait-step": {
+      "mapping": {
+        "properties": {
+          "name": "step-name",
+          "id": "step-id",
+          "continue-on-error": "step-continue-on-error",
+          "wait": {
+            "type": "step-wait-target",
+            "required": true
+          }
+        }
+      }
+    },
+    "wait-all-step": {
+      "mapping": {
+        "properties": {
+          "name": "step-name",
+          "id": "step-id",
+          "continue-on-error": "step-continue-on-error",
+          "wait-all": {
+            "type": "step-wait-all-value",
+            "required": true
+          }
+        }
+      }
+    },
+    "cancel-step": {
+      "mapping": {
+        "properties": {
+          "name": "step-name",
+          "id": "step-id",
+          "continue-on-error": "step-continue-on-error",
+          "cancel": {
+            "type": "step-cancel-target",
+            "required": true
+          }
+        }
+      }
+    },
+    "parallel-step": {
+      "mapping": {
+        "properties": {
+          "parallel": {
+            "type": "parallel-steps",
+            "required": true,
+            "description": "Run a group of steps concurrently. All steps in the parallel block run as background steps and the workflow waits for all of them to complete before continuing."
+          }
+        }
+      }
+    },
+    "parallel-steps": {
+      "sequence": {
+        "item-type": "steps-item"
+      }
+    },
     "step-uses": {
-      "description": "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, or in a published Docker container image.",
+      "description": "Selects an action to run as part of a step in your job. An action is a reusable unit of code. You can use an action defined in the same repository as the workflow, a public repository, a [private repository with access enabled](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#allowing-access-to-components-in-a-private-repository), or in a published Docker container image.",
+      "string": {
+        "require-non-empty": true
+      }
+    },
+    "step-background": {
+      "boolean": {},
+      "description": "When set to true, runs this step in the background. The workflow continues to the next step immediately without waiting for the background step to finish."
+    },
+    "step-wait-target": {
+      "description": "The step ID or IDs of background steps to wait for.",
+      "one-of": [
+        "non-empty-string",
+        "sequence-of-non-empty-string"
+      ]
+    },
+    "step-wait-all-value": {
+      "description": "Wait for all prior background steps to complete. Use as a bare key (`wait-all:`) or with a boolean value.",
+      "one-of": [
+        "null",
+        "boolean"
+      ]
+    },
+    "step-cancel-target": {
+      "description": "The step ID of a background step to cancel.",
       "string": {
         "require-non-empty": true
       }
@@ -2117,9 +2341,7 @@
         "hashFiles(1,255)"
       ],
       "description": "Use the `if` conditional to prevent a step from running unless a condition is met. Any supported context and expression can be used to create a conditional. Expressions in an `if` conditional do not require the bracketed expression syntax. When you use expressions in an `if` conditional, you may omit the expression syntax because GitHub automatically evaluates the `if` conditional as an expression.",
-      "string": {
-        "is-expression": true
-      }
+      "string": {}
     },
     "step-if-result": {
       "context": [
@@ -2248,7 +2470,7 @@
             "description": "Use `jobs.<job_id>.container.image` to define the Docker image to use as the container to run the action. The value can be the Docker Hub image or a registry name."
           },
           "options": {
-            "type": "non-empty-string",
+            "type": "string",
             "description": "Use `jobs.<job_id>.container.options` to configure additional Docker container resource options."
           },
           "env": "container-env",
@@ -2290,7 +2512,7 @@
       ],
       "one-of": [
         "non-empty-string",
-        "container-mapping"
+        "service-container-mapping"
       ]
     },
     "container-registry-credentials": {
@@ -2324,6 +2546,11 @@
     "sequence-of-non-empty-string": {
       "sequence": {
         "item-type": "non-empty-string"
+      }
+    },
+    "sequence-of-string": {
+      "sequence": {
+        "item-type": "string"
       }
     },
     "boolean-needs-context": {
@@ -2514,13 +2741,56 @@
     "cron-mapping": {
       "mapping": {
         "properties": {
-          "cron": "cron-pattern"
+          "cron": {
+            "type": "cron-pattern",
+            "required": true
+          },
+          "timezone": "timezone-string"
         }
       }
     },
     "cron-pattern": {
+      "description": "A cron expression that represents a schedule. A scheduled workflow will run at most once every 5 minutes.",
       "string": {
         "require-non-empty": true
+      }
+    },
+    "timezone-string": {
+      "description": "A string that represents the time zone a scheduled workflow will run relative to in IANA format (e.g. 'America/New_York' or 'Europe/London'). If omitted, the workflow will run relative to midnight UTC.",
+      "string": {
+        "require-non-empty": true
+      }
+    },
+    "service-container-mapping": {
+      "mapping": {
+        "properties": {
+          "image": {
+            "type": "non-empty-string",
+            "description": "The Docker image to use as the container. The value can be the Docker Hub image or a registry name."
+          },
+          "options": {
+            "type": "string",
+            "description": "Additional Docker container resource options."
+          },
+          "env": "container-env",
+          "ports": {
+            "type": "sequence-of-non-empty-string",
+            "description": "An array of ports to expose on the container."
+          },
+          "volumes": {
+            "type": "sequence-of-non-empty-string",
+            "description": "An array of volumes for the container to use. You can use volumes to share data between services or other steps in a job. You can specify named Docker volumes, anonymous Docker volumes, or bind mounts on the host."
+          },
+          "credentials": "container-registry-credentials",
+          "entrypoint": {
+            "type": "string",
+            "description": "Override the default ENTRYPOINT in the service container image."
+          },
+          "command": {
+            "type": "string",
+            "description": "Override the default CMD in the service container image."
+          }
+        }
       }
     }
   }

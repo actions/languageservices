@@ -1,7 +1,7 @@
-import {createDocument} from "./test-utils/document";
-import {testFileProvider} from "./test-utils/test-file-provider";
-import {clearCache} from "./utils/workflow-cache";
-import {validate} from "./validate";
+import {createDocument} from "./test-utils/document.js";
+import {testFileProvider} from "./test-utils/test-file-provider.js";
+import {clearCache} from "./utils/workflow-cache.js";
+import {validate} from "./validate.js";
 
 beforeEach(() => {
   clearCache();
@@ -43,7 +43,7 @@ on: push
 
 jobs:
   build:
-    uses: monalisa/octocat/workflow.yaml@not-a-branch
+    uses: monalisa/octocat/.github/workflows/workflow.yaml@not-a-branch
 `;
     const result = await validate(createDocument("wf.yaml", input), {
       fileProvider: testFileProvider
@@ -58,7 +58,7 @@ jobs:
             line: 5
           },
           end: {
-            character: 53,
+            character: 71,
             line: 5
           }
         }
@@ -72,7 +72,7 @@ on: push
 
 jobs:
   build:
-    uses: monalisa/octocat/workflow.yaml@main
+    uses: monalisa/octocat/.github/workflows/workflow.yaml@main
 `;
     const result = await validate(createDocument("wf.yaml", input), {
       fileProvider: testFileProvider
@@ -87,7 +87,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow.yaml
+    uses: ./.github/workflows/reusable-workflow.yaml
 `;
     const result = await validate(createDocument("wf.yaml", input), {
       fileProvider: testFileProvider
@@ -102,7 +102,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     secrets:
       envPAT: pat
 `;
@@ -119,7 +119,7 @@ jobs:
             line: 5
           },
           end: {
-            character: 46,
+            character: 64,
             line: 5
           }
         }
@@ -133,7 +133,7 @@ on: push
 
 jobs:
   build:
-    uses: ./reusable-workflow-with-inputs.yaml
+    uses: ./.github/workflows/reusable-workflow-with-inputs.yaml
     with:
       username: monalisa
     secrets:

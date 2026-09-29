@@ -1,7 +1,7 @@
-import {TemplateToken} from ".";
-import {MappingToken} from "./mapping-token";
-import {SequenceToken} from "./sequence-token";
-import {TokenType} from "./types";
+import {TemplateToken} from "./index.js";
+import {MappingToken} from "./mapping-token.js";
+import {SequenceToken} from "./sequence-token.js";
+import {TokenType} from "./types.js";
 
 export class TraversalState {
   private readonly _token: TemplateToken;
@@ -65,5 +65,20 @@ export class TraversalState {
       default:
         throw new Error(`Unexpected token type '${this._token.templateTokenType}' when traversing state`);
     }
+  }
+
+  /**
+   * Returns the ancestor tokens from root to the current token's parent container.
+   */
+  public getAncestors(): TemplateToken[] {
+    const ancestors: TemplateToken[] = [];
+    let state: TraversalState | undefined = this.parent;
+    while (state) {
+      if (state.current) {
+        ancestors.unshift(state.current);
+      }
+      state = state.parent;
+    }
+    return ancestors;
   }
 }

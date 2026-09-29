@@ -1,12 +1,12 @@
 import {data, DescriptionDictionary} from "@actions/expressions";
 import {format} from "@actions/expressions/funcs/format";
 import {Hover} from "vscode-languageserver-types";
-import {ContextProviderConfig} from "./context-providers/config";
-import {hover} from "./hover";
-import {registerLogger} from "./log";
-import {getPositionFromCursor} from "./test-utils/cursor-position";
-import {TestLogger} from "./test-utils/logger";
-import {clearCache} from "./utils/workflow-cache";
+import {ContextProviderConfig} from "./context-providers/config.js";
+import {hover} from "./hover.js";
+import {registerLogger} from "./log.js";
+import {getPositionFromCursor} from "./test-utils/cursor-position.js";
+import {TestLogger} from "./test-utils/logger.js";
+import {clearCache} from "./utils/workflow-cache.js";
 
 const contextProviderConfig: ContextProviderConfig = {
   getContext: (context: string) => {
@@ -155,8 +155,8 @@ jobs:
       contents:
         "Causes the step to always execute, and returns `true`, even when canceled. The `always` expression is best used at the step level or on tasks that you expect to run even when a job is canceled. For example, you can use `always` to send logs even when a job is canceled.",
       range: {
-        start: {line: 3, character: 11},
-        end: {line: 3, character: 17}
+        start: {line: 3, character: 8},
+        end: {line: 3, character: 14}
       }
     });
   });

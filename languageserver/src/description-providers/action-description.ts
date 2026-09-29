@@ -2,8 +2,8 @@ import {actionUrl, parseActionReference} from "@actions/languageservice/action";
 import {isActionStep} from "@actions/workflow-parser/model/type-guards";
 import {Step} from "@actions/workflow-parser/model/workflow-template";
 import {Octokit} from "@octokit/rest";
-import {fetchActionMetadata} from "../utils/action-metadata";
-import {TTLCache} from "../utils/cache";
+import {fetchActionMetadata} from "../utils/action-metadata.js";
+import {TTLCache} from "../utils/cache.js";
 
 export async function getActionDescription(client: Octokit, cache: TTLCache, step: Step): Promise<string | undefined> {
   if (!isActionStep(step)) {

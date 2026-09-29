@@ -1,8 +1,8 @@
-import {DEFINITION, BOOLEAN} from "../template-constants";
-import {MappingToken, LiteralToken} from "../tokens";
-import {TokenType} from "../tokens/types";
-import {DefinitionType} from "./definition-type";
-import {ScalarDefinition} from "./scalar-definition";
+import {DEFINITION, BOOLEAN} from "../template-constants.js";
+import {MappingToken, LiteralToken} from "../tokens/index.js";
+import {TokenType} from "../tokens/types.js";
+import {DefinitionType} from "./definition-type.js";
+import {ScalarDefinition} from "./scalar-definition.js";
 
 export class BooleanDefinition extends ScalarDefinition {
   public constructor(key: string, definition?: MappingToken) {

@@ -1,8 +1,18 @@
-import {isCollection, isDocument, isMap, isPair, isScalar, isSeq, LineCounter, parseDocument, Scalar} from "yaml";
-import type {LinePos} from "yaml/dist/errors";
-import type {NodeBase} from "yaml/dist/nodes/Node";
-import {ObjectReader} from "../templates/object-reader";
-import {EventType, ParseEvent} from "../templates/parse-event";
+import {
+  isAlias,
+  isCollection,
+  isDocument,
+  isMap,
+  isPair,
+  isScalar,
+  isSeq,
+  LineCounter,
+  parseDocument,
+  Scalar
+} from "yaml";
+import type {Document} from "yaml";
+import {ObjectReader} from "../templates/object-reader.js";
+import {EventType, ParseEvent} from "../templates/parse-event.js";
 import {
   BooleanToken,
   LiteralToken,
@@ -11,8 +21,12 @@ import {
   NumberToken,
   SequenceToken,
   StringToken
-} from "../templates/tokens/index";
-import {Position, TokenRange} from "../templates/tokens/token-range";
+} from "../templates/tokens/index.js";
+import {Position, TokenRange} from "../templates/tokens/token-range.js";
+
+// Internal yaml types - defined locally since yaml package doesn't export them
+type LinePos = {line: number; col: number};
+type NodeBase = {range?: [number, number, number] | null};
 
 export type YamlError = {
   message: string;
@@ -22,30 +36,31 @@ export type YamlError = {
 export class YamlObjectReader implements ObjectReader {
   private readonly _generator: Generator<ParseEvent>;
   private _current!: IteratorResult<ParseEvent>;
+  private readonly doc: Document;
   private fileId?: number;
   private lineCounter = new LineCounter();
 
   public errors: YamlError[] = [];
 
   constructor(fileId: number | undefined, content: string) {
-    const doc = parseDocument(content, {
+    this.doc = parseDocument(content, {
       lineCounter: this.lineCounter,
       keepSourceTokens: true,
       uniqueKeys: false // Uniqueness is validated by the template reader
     });
-    for (const err of doc.errors) {
+    for (const err of this.doc.errors) {
       this.errors.push({message: err.message, range: rangeFromLinePos(err.linePos)});
     }
-    this._generator = this.getNodes(doc);
+    this._generator = this.getNodes(this.doc, new Set());
     this.fileId = fileId;
   }
 
-  private *getNodes(node: unknown): Generator<ParseEvent, void> {
+  private *getNodes(node: unknown, aliasResolutionStack: Set<unknown>): Generator<ParseEvent, void> {
     let range = this.getRange(node as NodeBase | undefined);
 
     if (isDocument(node)) {
       yield new ParseEvent(EventType.DocumentStart);
-      for (const item of this.getNodes(node.contents)) {
+      for (const item of this.getNodes(node.contents, new Set())) {
         yield item;
       }
       yield new ParseEvent(EventType.DocumentEnd);
@@ -59,7 +74,7 @@ export class YamlObjectReader implements ObjectReader {
       }
 
       for (const item of node.items) {
-        for (const child of this.getNodes(item)) {
+        for (const child of this.getNodes(item, aliasResolutionStack)) {
           yield child;
         }
       }
@@ -74,12 +89,32 @@ export class YamlObjectReader implements ObjectReader {
       yield new ParseEvent(EventType.Literal, YamlObjectReader.getLiteralToken(this.fileId, range, node));
     }
 
+    // Handle YAML aliases - resolve to the anchored value
+    if (isAlias(node)) {
+      const resolved = node.resolve(this.doc);
+      if (resolved) {
+        // Prevent infinite recursion from circular aliases
+        if (aliasResolutionStack.has(resolved)) {
+          // Silently ignore circular reference - the missing content will cause
+          // downstream validation errors which is acceptable for this edge case
+          return;
+        }
+        // Track this node in the alias resolution stack
+        const newStack = new Set(aliasResolutionStack);
+        newStack.add(resolved);
+        // Yield the resolved node's contents
+        yield* this.getNodes(resolved, newStack);
+      }
+      // If unresolved, the yaml library already reports an error
+      return;
+    }
+
     if (isPair(node)) {
       const scalarKey = node.key as Scalar;
       range = this.getRange(scalarKey);
       const key = scalarKey.value as string;
       yield new ParseEvent(EventType.Literal, new StringToken(this.fileId, range, key, undefined));
-      for (const child of this.getNodes(node.value)) {
+      for (const child of this.getNodes(node.value, aliasResolutionStack)) {
         yield child;
       }
     }
@@ -117,11 +152,27 @@ export class YamlObjectReader implements ObjectReader {
         return new BooleanToken(fileId, range, value, undefined);
       case "string": {
         let source: string | undefined;
+        let blockScalarHeader: string | undefined;
+
         if (token.srcToken && "source" in token.srcToken) {
           source = token.srcToken.source;
+
+          // Extract block scalar header (e.g., |-, |+, >-)
+          //
+          // CST node interfaces are supported and documented per yaml library maintainer:
+          // https://eemeli.org/yaml/#parser -> "For a complete description of CST node
+          // interfaces, please consult the cst.ts source."
+          // See also: https://github.com/eemeli/yaml/issues/643
+          if (token.srcToken.type === "block-scalar" && "props" in token.srcToken) {
+            const props = token.srcToken.props as Array<{type: string; source?: string}>;
+            const headerProp = props.find(p => p.type === "block-scalar-header");
+            if (headerProp?.source) {
+              blockScalarHeader = headerProp.source;
+            }
+          }
         }
 
-        return new StringToken(fileId, range, value, undefined, source);
+        return new StringToken(fileId, range, value, undefined, source, blockScalarHeader);
       }
       default:
         throw new Error(`Unexpected value type '${typeof value}' when reading object`);

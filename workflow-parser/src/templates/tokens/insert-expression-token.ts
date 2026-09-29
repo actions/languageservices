@@ -1,9 +1,9 @@
-import {TemplateToken, ScalarToken, ExpressionToken} from ".";
-import {DefinitionInfo} from "../schema/definition-info";
-import {INSERT_DIRECTIVE, OPEN_EXPRESSION, CLOSE_EXPRESSION} from "../template-constants";
-import {SerializedExpressionToken} from "./serialization";
-import {TokenRange} from "./token-range";
-import {TokenType} from "./types";
+import {TemplateToken, ScalarToken, ExpressionToken} from "./index.js";
+import {DefinitionInfo} from "../schema/definition-info.js";
+import {INSERT_DIRECTIVE, OPEN_EXPRESSION, CLOSE_EXPRESSION} from "../template-constants.js";
+import {SerializedExpressionToken} from "./serialization.js";
+import {TokenRange} from "./token-range.js";
+import {TokenType} from "./types.js";
 
 export class InsertExpressionToken extends ExpressionToken {
   public constructor(

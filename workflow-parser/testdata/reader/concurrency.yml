@@ -25,7 +25,11 @@ jobs:
     concurrency:
       group: ref
       cancel-in-progress: ${{ github.ref }}
-
+  build5:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy
+      queue: max
 
 ---
 {
@@ -141,6 +145,29 @@ jobs:
         ]
       },
       "runs-on": "macos-latest"
+    },
+    {
+      "type": "job",
+      "id": "build5",
+      "name": "build5",
+      "if": {
+        "type": 3,
+        "expr": "success()"
+      },
+      "concurrency": {
+        "type": 2,
+        "map": [
+          {
+            "Key": "group",
+            "Value": "deploy"
+          },
+          {
+            "Key": "queue",
+            "Value": "max"
+          }
+        ]
+      },
+      "runs-on": "ubuntu-latest"
     }
   ]
 }

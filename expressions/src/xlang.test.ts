@@ -1,14 +1,14 @@
 import * as fs from "fs";
 import * as path from "path";
-import {Expr} from "./ast";
-import * as data from "./data";
-import {kindStr} from "./data/expressiondata";
-import {replacer} from "./data/replacer";
-import {reviver} from "./data/reviver";
-import {ExpressionError} from "./errors";
-import {Evaluator} from "./evaluator";
-import {Lexer, Result} from "./lexer";
-import {Parser} from "./parser";
+import {Expr} from "./ast.js";
+import * as data from "./data/index.js";
+import {kindStr} from "./data/expressiondata.js";
+import {replacer} from "./data/replacer.js";
+import {reviver} from "./data/reviver.js";
+import {ExpressionError} from "./errors.js";
+import {Evaluator} from "./evaluator.js";
+import {Lexer, Result} from "./lexer.js";
+import {Parser} from "./parser.js";
 
 interface TestResult {
   value: data.ExpressionData;

@@ -1,11 +1,11 @@
-import {Array} from "./array";
-import {BooleanData} from "./boolean";
-import {Dictionary} from "./dictionary";
-import {ExpressionData} from "./expressiondata";
-import {Null} from "./null";
-import {NumberData} from "./number";
-import {reviver} from "./reviver";
-import {StringData} from "./string";
+import {Array} from "./array.js";
+import {BooleanData} from "./boolean.js";
+import {Dictionary} from "./dictionary.js";
+import {ExpressionData} from "./expressiondata.js";
+import {Null} from "./null.js";
+import {NumberData} from "./number.js";
+import {reviver} from "./reviver.js";
+import {StringData} from "./string.js";
 
 describe("reviver", () => {
   const tests: {

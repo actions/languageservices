@@ -1,5 +1,5 @@
-import {getPositionFromCursor} from "../test-utils/cursor-position";
-import {transform} from "./transform";
+import {getPositionFromCursor} from "../test-utils/cursor-position.js";
+import {transform} from "./transform.js";
 
 describe("transform", () => {
   it("adds : at end of line", () => {

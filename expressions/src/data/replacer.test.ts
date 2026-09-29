@@ -1,9 +1,9 @@
-import {Array} from "./array";
-import {Dictionary} from "./dictionary";
-import {Null} from "./null";
-import {NumberData} from "./number";
-import {replacer} from "./replacer";
-import {StringData} from "./string";
+import {Array} from "./array.js";
+import {Dictionary} from "./dictionary.js";
+import {Null} from "./null.js";
+import {NumberData} from "./number.js";
+import {replacer} from "./replacer.js";
+import {StringData} from "./string.js";
 
 describe("replacer", () => {
   it("null", () => {

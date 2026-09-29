@@ -1,12 +1,12 @@
-import {DefinitionInfo} from "../schema/definition-info";
+import {DefinitionInfo} from "../schema/definition-info.js";
 
-import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "../template-constants";
-import {ExpressionToken} from "./expression-token";
-import {ScalarToken} from "./scalar-token";
-import {SerializedExpressionToken} from "./serialization";
-import {TemplateToken} from "./template-token";
-import {TokenRange} from "./token-range";
-import {TokenType} from "./types";
+import {CLOSE_EXPRESSION, OPEN_EXPRESSION} from "../template-constants.js";
+import {ExpressionToken} from "./expression-token.js";
+import {ScalarToken} from "./scalar-token.js";
+import {SerializedExpressionToken} from "./serialization.js";
+import {TemplateToken} from "./template-token.js";
+import {TokenRange} from "./token-range.js";
+import {TokenType} from "./types.js";
 
 export class BasicExpressionToken extends ExpressionToken {
   private readonly expr: string;
@@ -24,7 +24,19 @@ export class BasicExpressionToken extends ExpressionToken {
   public readonly expressionRange: TokenRange | undefined;
 
   /**
-   * @param originalExpressions If the basic expression was transformed from individual expressions, these will be the original ones
+   * The block scalar header (e.g., "|", "|-", "|+", ">", ">-", ">+") if parsed from a YAML block scalar.
+   */
+  public readonly blockScalarHeader: string | undefined;
+
+  /**
+   * @param file The file ID where this token originated
+   * @param range The range of the entire expression including `${{` and `}}`
+   * @param expression The expression string without `${{` and `}}` markers
+   * @param definitionInfo Schema definition info for this token
+   * @param originalExpressions If transformed from individual expressions (e.g., format()), these are the originals
+   * @param source The original source string from the YAML
+   * @param expressionRange The range of just the expression, excluding `${{` and `}}`
+   * @param blockScalarHeader The block scalar header (e.g., "|", "|-") if parsed from a YAML block scalar
    */
   public constructor(
     file: number | undefined,
@@ -33,13 +45,15 @@ export class BasicExpressionToken extends ExpressionToken {
     definitionInfo: DefinitionInfo | undefined,
     originalExpressions: BasicExpressionToken[] | undefined,
     source: string | undefined,
-    expressionRange?: TokenRange | undefined
+    expressionRange?: TokenRange | undefined,
+    blockScalarHeader?: string | undefined
   ) {
     super(TokenType.BasicExpression, file, range, undefined, definitionInfo);
     this.expr = expression;
     this.source = source;
     this.originalExpressions = originalExpressions;
     this.expressionRange = expressionRange;
+    this.blockScalarHeader = blockScalarHeader;
   }
 
   public get expression(): string {
@@ -55,7 +69,8 @@ export class BasicExpressionToken extends ExpressionToken {
           this.definitionInfo,
           this.originalExpressions,
           this.source,
-          this.expressionRange
+          this.expressionRange,
+          this.blockScalarHeader
         )
       : new BasicExpressionToken(
           this.file,
@@ -64,7 +79,8 @@ export class BasicExpressionToken extends ExpressionToken {
           this.definitionInfo,
           this.originalExpressions,
           this.source,
-          this.expressionRange
+          this.expressionRange,
+          this.blockScalarHeader
         );
   }
 

@@ -1,4 +1,4 @@
-import {ExpressionDataInterface, Kind} from "./expressiondata";
+import {ExpressionDataInterface, Kind} from "./expressiondata.js";
 
 export class BooleanData implements ExpressionDataInterface {
   constructor(public readonly value: boolean) {}

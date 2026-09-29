@@ -1,13 +1,94 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import {nullTrace} from "../test-utils/null-trace";
-import {parseWorkflow} from "../workflows/workflow-parser";
-import {convertWorkflowTemplate, ErrorPolicy} from "./convert";
+import {FeatureFlags} from "@actions/expressions";
+import {nullTrace} from "../test-utils/null-trace.js";
+import {TemplateContext, TemplateValidationErrors} from "../templates/template-context.js";
+import {parseWorkflow} from "../workflows/workflow-parser.js";
+import {getWorkflowSchema} from "../workflows/workflow-schema.js";
+import {convertWorkflowTemplate, ErrorPolicy} from "./convert.js";
 
 function serializeTemplate(template: unknown): unknown {
   return JSON.parse(JSON.stringify(template));
 }
 
 describe("convertWorkflowTemplate", () => {
+  it("rejects background steps when feature flag is disabled", async () => {
+    const result = parseWorkflow(
+      {
+        name: "wf.yaml",
+        content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: npm start
+        background: true
+      - wait-all:`
+      },
+      nullTrace
+    );
+
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.ReturnErrorsOnly
+    });
+
+    expect(serializeTemplate(template)).toMatchObject({
+      errors: [
+        {
+          Message: "wf.yaml (Line: 8, Col: 9): Unexpected value 'background'"
+        },
+        {
+          Message: "wf.yaml (Line: 9, Col: 9): Unexpected value 'wait-all'"
+        }
+      ]
+    });
+  });
+
+  it("accepts background steps when feature flag is enabled", async () => {
+    const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+    context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+    const result = parseWorkflow(
+      {
+        name: "wf.yaml",
+        content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: server
+        run: npm start
+        background: true
+      - wait-all:`
+      },
+      context
+    );
+
+    const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+      errorPolicy: ErrorPolicy.TryConversion,
+      featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+    });
+
+    expect(serializeTemplate(template)).toMatchObject({
+      jobs: [
+        {
+          steps: [
+            {
+              id: "server",
+              background: true,
+              run: "npm start"
+            },
+            {
+              id: "__wait-all",
+              "wait-all": true
+            }
+          ]
+        }
+      ]
+    });
+    expect(template.errors).toBeUndefined();
+  });
+
   it("converts workflow with one job", async () => {
     const result = parseWorkflow(
       {
@@ -74,7 +155,7 @@ jobs:
         {
           id: "build",
           if: {
-            expr: "success()",
+            expr: "success() && (true)",
             type: 3
           },
           name: "build",
@@ -85,7 +166,7 @@ jobs:
         {
           id: "deploy",
           if: {
-            expr: "success()",
+            expr: "success() && (true)",
             type: 3
           },
           name: "deploy",
@@ -380,6 +461,411 @@ jobs:
           type: "job"
         }
       ]
+    });
+  });
+
+  describe("if condition context validation", () => {
+    it("validates job-level if with allowed contexts", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    if: github.event_name == 'push' && needs.test.result == 'success'
+    needs: test
+    runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      // Should convert successfully - github and needs are allowed in job-level if
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.jobs).toHaveLength(2);
+    });
+
+    it("validates job-level if rejects disallowed contexts", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    if: steps.test.outcome == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - id: test
+        run: echo hello`
+        },
+        nullTrace
+      );
+
+      await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      // Should have error - steps context not allowed in job-level if
+      const errors = result.context.errors.getErrors();
+      expect(errors.length).toBeGreaterThan(0);
+      const errorMessages = errors.map(e => e.message).join(" ");
+      expect(errorMessages.toLowerCase()).toMatch(/steps|context/);
+    });
+
+    it("validates step-level if allows all contexts", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: first
+        run: echo hello
+      - if: steps.first.outcome == 'success' && job.status == 'success'
+        run: echo world`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      // Should convert successfully - steps and job contexts allowed in step-level if
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.jobs).toHaveLength(1);
+    });
+
+    it("handles case-insensitive status functions in if conditions", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: Success()
+        run: echo "uppercase Success"
+      - if: FAILURE()
+        run: echo "uppercase FAILURE"
+      - if: Cancelled() || Always()
+        run: echo "mixed case"`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      // Should convert successfully - status functions are case-insensitive
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.jobs).toHaveLength(1);
+
+      // Verify the conditions are preserved without wrapping in success() &&
+      const job = template.jobs[0];
+      expect(job.type).toBe("job");
+      if (job.type === "job") {
+        expect(job.steps[0].if?.expression).toBe("Success()");
+        expect(job.steps[1].if?.expression).toBe("FAILURE()");
+        expect(job.steps[2].if?.expression).toBe("Cancelled() || Always()");
+      }
+    });
+
+    it("handles empty if condition", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  job1:
+    if: ""
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hello
+  job2:
+    if: ''
+    runs-on: ubuntu-latest
+    steps:
+      - if: ""
+        run: echo world
+      - if: ''
+        run: echo test`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      // Empty conditions should default to success()
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.jobs).toHaveLength(2);
+
+      const job1 = template.jobs[0];
+      expect(job1.if?.expression).toBe("success()");
+
+      const job2 = template.jobs[1];
+      expect(job2.if?.expression).toBe("success()");
+
+      if (job2.type === "job") {
+        expect(job2.steps[0].if?.expression).toBe("success()");
+        expect(job2.steps[1].if?.expression).toBe("success()");
+      }
+    });
+
+    it("handles status functions with property access", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - if: success().outputs.result
+        run: echo "success with property"
+      - if: failure().outputs.value
+        run: echo "failure with property"
+      - if: always() && steps.test.outcome
+        run: echo "always with &&"`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      // Should not wrap - status functions are present even with property access
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.jobs).toHaveLength(1);
+
+      const job = template.jobs[0];
+      expect(job.type).toBe("job");
+      if (job.type === "job") {
+        expect(job.steps[0].if?.expression).toBe("success().outputs.result");
+        expect(job.steps[1].if?.expression).toBe("failure().outputs.value");
+        expect(job.steps[2].if?.expression).toBe("always() && steps.test.outcome");
+      }
+    });
+  });
+
+  describe("schedule timezone", () => {
+    it("allows timezone in schedule", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on:
+  schedule:
+    - cron: '0 0 * * *'
+      timezone: America/New_York
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.events?.schedule).toHaveLength(1);
+      expect(template.events?.schedule?.[0]).toEqual({
+        cron: "0 0 * * *",
+        timezone: "America/New_York"
+      });
+    });
+
+    it("reports error when cron is missing from schedule entry", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on:
+  schedule:
+    - timezone: America/New_York
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      // Both schema validation and converter report the missing cron
+      expect(result.context.errors.getErrors().length).toBeGreaterThanOrEqual(1);
+      const errorMessages = result.context.errors
+        .getErrors()
+        .map(e => e.message)
+        .join(", ");
+      expect(errorMessages).toMatch(/Required property is missing: cron|Missing required key 'cron'/);
+      expect(template.events?.schedule).toHaveLength(0);
+    });
+
+    it("converts schedule without timezone", async () => {
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest`
+        },
+        nullTrace
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion
+      });
+
+      expect(result.context.errors.getErrors()).toHaveLength(0);
+      expect(template.events?.schedule).toHaveLength(1);
+      expect(template.events?.schedule?.[0]).toEqual({
+        cron: "0 0 * * *"
+      });
+    });
+  });
+
+  describe("parallel steps", () => {
+    it("converts a valid parallel block", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - parallel:
+          - run: echo "step 1"
+          - run: echo "step 2"`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeUndefined();
+      const job = template.jobs[0];
+      expect("steps" in job).toBe(true);
+      if (!("steps" in job)) return;
+      expect(job.steps).toHaveLength(1);
+      expect(job.steps[0]).toHaveProperty("parallel");
+      const parallelStep = job.steps[0] as {parallel: unknown[]};
+      expect(parallelStep.parallel).toHaveLength(2);
+    });
+
+    it("rejects wait inside parallel block", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - id: bg
+        run: echo hi
+        background: true
+      - parallel:
+          - wait: bg
+          - run: echo "step 1"`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeDefined();
+      expect(template.errors!.some(e => e.Message.includes("'wait' is not allowed inside a parallel block"))).toBe(
+        true
+      );
+    });
+
+    it("rejects background inside parallel block", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - parallel:
+          - run: echo hi
+            background: true`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeDefined();
+      expect(
+        template.errors!.some(e => e.Message.includes("'background' is not allowed inside a parallel block"))
+      ).toBe(true);
+    });
+
+    it("rejects nested parallel blocks", async () => {
+      const context = new TemplateContext(new TemplateValidationErrors(), getWorkflowSchema(), nullTrace);
+      context.state.featureFlags = new FeatureFlags({allowBackgroundSteps: true});
+
+      const result = parseWorkflow(
+        {
+          name: "wf.yaml",
+          content: `on: push
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - parallel:
+          - parallel:
+              - run: echo nested`
+        },
+        context
+      );
+
+      const template = await convertWorkflowTemplate(result.context, result.value!, undefined, {
+        errorPolicy: ErrorPolicy.TryConversion,
+        featureFlags: new FeatureFlags({allowBackgroundSteps: true})
+      });
+
+      expect(template.errors).toBeDefined();
+      expect(template.errors!.some(e => e.Message.includes("Nested 'parallel' blocks are not allowed"))).toBe(true);
     });
   });
 });
