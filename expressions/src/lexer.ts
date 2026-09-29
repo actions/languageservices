@@ -322,7 +322,7 @@ export class Lexer {
 
     // Trim the surrounding quotes.
     let value = this.input.substring(this.start + 1, this.offset - 1);
-    value = value.replace("''", "'");
+    value = value.replaceAll("''", "'");
 
     this.addToken(TokenType.STRING, value);
   }

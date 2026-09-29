@@ -27,6 +27,27 @@ describe("lexer", () => {
     // Strings
     {input: "'It''s okay'", tokenTypes: [TokenType.STRING]},
     {
+      input: "'a''b''c'",
+      tokenTypes: [TokenType.STRING],
+      tokens: [
+        {
+          type: TokenType.STRING,
+          lexeme: "'a''b''c'",
+          value: "a'b'c",
+          range: {
+            start: {
+              line: 0,
+              column: 0
+            },
+            end: {
+              line: 0,
+              column: 9
+            }
+          }
+        }
+      ]
+    },
+    {
       input: "format('{0} == ''queued''', needs)",
       tokenTypes: [
         TokenType.IDENTIFIER,
