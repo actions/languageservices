@@ -129,7 +129,7 @@ async function workflowDocumentLinks(file: File, uri: string, workspace: string 
         // We need workspace information to generate this link
         // Local workflow, generate workspace link
         const workspaceURI = vscodeURI.URI.parse(workspace);
-        const refURI = vscodeURI.Utils.joinPath(workspaceURI, job.ref.value);
+        const refURI = vscodeURI.Utils.joinPath(workspaceURI, ref.path);
 
         links.push({
           range: mapRange(job.ref.range),
