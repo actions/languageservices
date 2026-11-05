@@ -121,6 +121,7 @@ jobs:
       "sub_issues_summary",
       "issue_dependencies_summary",
       "issue_field_values",
+      "status",
       "state",
       "state_reason",
       "timeline_url",

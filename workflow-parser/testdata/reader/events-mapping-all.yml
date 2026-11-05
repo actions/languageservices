@@ -68,6 +68,7 @@ on:
       - demilestoned
       - field_added
       - field_removed
+      - status_changed
   label:
     types:
       - created
@@ -322,7 +323,8 @@ jobs:
         "milestoned",
         "demilestoned",
         "field_added",
-        "field_removed"
+        "field_removed",
+        "status_changed"
       ]
     },
     "label": {
