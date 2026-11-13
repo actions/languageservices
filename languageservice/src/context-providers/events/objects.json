@@ -839,7 +839,8 @@
             "name": "allow_rebase_merge"
           },
           {
-            "name": "temp_clone_token"
+            "name": "temp_clone_token",
+            "description": "When present and non-empty, a temporary credential for read-only Git access to this repository.\nIt expires five minutes after generation and cannot be used to push changes.\nTreat this value as sensitive and avoid recording it in logs."
           },
           {
             "name": "allow_squash_merge"
@@ -884,7 +885,8 @@
         ]
       },
       {
-        "name": "temp_clone_token"
+        "name": "temp_clone_token",
+        "description": "When present and non-empty, a temporary credential for read-only Git access to this repository.\nIt expires five minutes after generation and cannot be used to push changes.\nTreat this value as sensitive and avoid recording it in logs."
       },
       {
         "name": "allow_squash_merge",
@@ -1688,7 +1690,8 @@
                 "name": "role_name"
               },
               {
-                "name": "temp_clone_token"
+                "name": "temp_clone_token",
+                "description": "When present and non-empty, a temporary credential for read-only Git access to this repository.\nIt expires five minutes after generation and cannot be used to push changes.\nTreat this value as sensitive and avoid recording it in logs."
               },
               {
                 "name": "delete_branch_on_merge"
@@ -3523,6 +3526,82 @@
           {
             "name": "default",
             "description": "Whether this label comes by default in a new repository."
+          },
+          {
+            "name": "archived_at",
+            "description": "Timestamp indicating when the label was archived, or `null` if it has not been archived."
+          },
+          {
+            "name": "archived_by",
+            "description": "A GitHub user.",
+            "childParamsGroups": [
+              {
+                "name": "name"
+              },
+              {
+                "name": "email"
+              },
+              {
+                "name": "login"
+              },
+              {
+                "name": "id"
+              },
+              {
+                "name": "node_id"
+              },
+              {
+                "name": "avatar_url"
+              },
+              {
+                "name": "gravatar_id"
+              },
+              {
+                "name": "url"
+              },
+              {
+                "name": "html_url"
+              },
+              {
+                "name": "followers_url"
+              },
+              {
+                "name": "following_url"
+              },
+              {
+                "name": "gists_url"
+              },
+              {
+                "name": "starred_url"
+              },
+              {
+                "name": "subscriptions_url"
+              },
+              {
+                "name": "organizations_url"
+              },
+              {
+                "name": "repos_url"
+              },
+              {
+                "name": "events_url"
+              },
+              {
+                "name": "received_events_url"
+              },
+              {
+                "name": "type"
+              },
+              {
+                "name": "site_admin"
+              },
+              {
+                "name": "starred_at"
+              },
+              {
+                "name": "user_view_type"
+              }
+            ]
           }
         ]
       }
@@ -3540,6 +3619,82 @@
       },
       {
         "name": "description"
+      },
+      {
+        "name": "archived_at",
+        "description": "Timestamp indicating when the label was archived, or `null` if it has not been archived."
+      },
+      {
+        "name": "archived_by",
+        "description": "A GitHub user.",
+        "childParamsGroups": [
+          {
+            "name": "name"
+          },
+          {
+            "name": "email"
+          },
+          {
+            "name": "login"
+          },
+          {
+            "name": "id"
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "avatar_url"
+          },
+          {
+            "name": "gravatar_id"
+          },
+          {
+            "name": "url"
+          },
+          {
+            "name": "html_url"
+          },
+          {
+            "name": "followers_url"
+          },
+          {
+            "name": "following_url"
+          },
+          {
+            "name": "gists_url"
+          },
+          {
+            "name": "starred_url"
+          },
+          {
+            "name": "subscriptions_url"
+          },
+          {
+            "name": "organizations_url"
+          },
+          {
+            "name": "repos_url"
+          },
+          {
+            "name": "events_url"
+          },
+          {
+            "name": "received_events_url"
+          },
+          {
+            "name": "type"
+          },
+          {
+            "name": "site_admin"
+          },
+          {
+            "name": "starred_at"
+          },
+          {
+            "name": "user_view_type"
+          }
+        ]
       },
       {
         "name": "id"
@@ -6401,6 +6556,82 @@
             "name": "description"
           },
           {
+            "name": "archived_at",
+            "description": "Timestamp indicating when the label was archived, or `null` if it has not been archived."
+          },
+          {
+            "name": "archived_by",
+            "description": "A GitHub user.",
+            "childParamsGroups": [
+              {
+                "name": "name"
+              },
+              {
+                "name": "email"
+              },
+              {
+                "name": "login"
+              },
+              {
+                "name": "id"
+              },
+              {
+                "name": "node_id"
+              },
+              {
+                "name": "avatar_url"
+              },
+              {
+                "name": "gravatar_id"
+              },
+              {
+                "name": "url"
+              },
+              {
+                "name": "html_url"
+              },
+              {
+                "name": "followers_url"
+              },
+              {
+                "name": "following_url"
+              },
+              {
+                "name": "gists_url"
+              },
+              {
+                "name": "starred_url"
+              },
+              {
+                "name": "subscriptions_url"
+              },
+              {
+                "name": "organizations_url"
+              },
+              {
+                "name": "repos_url"
+              },
+              {
+                "name": "events_url"
+              },
+              {
+                "name": "received_events_url"
+              },
+              {
+                "name": "type"
+              },
+              {
+                "name": "site_admin"
+              },
+              {
+                "name": "starred_at"
+              },
+              {
+                "name": "user_view_type"
+              }
+            ]
+          },
+          {
             "name": "id"
           },
           {
@@ -7231,6 +7462,1202 @@
                 "description": "The color of the option"
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "description": "The status of the issue, or `null` if it has none. Issue statuses are in preview and only available to accounts enrolled in the preview.",
+        "childParamsGroups": [
+          {
+            "name": "id",
+            "description": "The stable identifier of the planning status."
+          },
+          {
+            "name": "name",
+            "description": "The display name of the planning status, which may change in the future."
+          },
+          {
+            "name": "category",
+            "description": "A stable identifier for the category, such as `backlog`, `planned`, `started`, `completed`, `not_planned` or `duplicate`. Clients should expect new keys to be added."
+          }
+        ]
+      },
+      {
+        "name": "state",
+        "description": "State of the issue; either 'open' or 'closed'"
+      },
+      {
+        "name": "state_reason"
+      },
+      {
+        "name": "timeline_url"
+      },
+      {
+        "name": "title",
+        "description": "Title of the issue"
+      },
+      {
+        "name": "type",
+        "description": "The type assigned to the issue. This is only present for issues in repositories where issue types are supported.",
+        "childParamsGroups": [
+          {
+            "name": "id",
+            "description": "The unique identifier of the issue type."
+          },
+          {
+            "name": "node_id",
+            "description": "The node identifier of the issue type."
+          },
+          {
+            "name": "name",
+            "description": "The name of the issue type."
+          },
+          {
+            "name": "description",
+            "description": "The description of the issue type."
+          },
+          {
+            "name": "color",
+            "description": "The color of the issue type."
+          },
+          {
+            "name": "created_at",
+            "description": "The time the issue type created."
+          },
+          {
+            "name": "updated_at",
+            "description": "The time the issue type last updated."
+          },
+          {
+            "name": "is_enabled",
+            "description": "The enabled state of the issue type."
+          }
+        ]
+      },
+      {
+        "name": "updated_at"
+      },
+      {
+        "name": "url",
+        "description": "URL for the issue"
+      },
+      {
+        "name": "user",
+        "childParamsGroups": [
+          {
+            "name": "avatar_url"
+          },
+          {
+            "name": "deleted"
+          },
+          {
+            "name": "email"
+          },
+          {
+            "name": "events_url"
+          },
+          {
+            "name": "followers_url"
+          },
+          {
+            "name": "following_url"
+          },
+          {
+            "name": "gists_url"
+          },
+          {
+            "name": "gravatar_id"
+          },
+          {
+            "name": "html_url"
+          },
+          {
+            "name": "id"
+          },
+          {
+            "name": "login"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "organizations_url"
+          },
+          {
+            "name": "received_events_url"
+          },
+          {
+            "name": "repos_url"
+          },
+          {
+            "name": "site_admin"
+          },
+          {
+            "name": "starred_url"
+          },
+          {
+            "name": "subscriptions_url"
+          },
+          {
+            "name": "type"
+          },
+          {
+            "name": "url"
+          },
+          {
+            "name": "user_view_type"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "issue",
+    "description": "The [issue](https://docs.github.com/rest/issues/issues#get-an-issue) itself.",
+    "childParamsGroups": [
+      {
+        "name": "active_lock_reason"
+      },
+      {
+        "name": "assignee",
+        "childParamsGroups": [
+          {
+            "name": "avatar_url"
+          },
+          {
+            "name": "deleted"
+          },
+          {
+            "name": "email"
+          },
+          {
+            "name": "events_url"
+          },
+          {
+            "name": "followers_url"
+          },
+          {
+            "name": "following_url"
+          },
+          {
+            "name": "gists_url"
+          },
+          {
+            "name": "gravatar_id"
+          },
+          {
+            "name": "html_url"
+          },
+          {
+            "name": "id"
+          },
+          {
+            "name": "login"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "organizations_url"
+          },
+          {
+            "name": "received_events_url"
+          },
+          {
+            "name": "repos_url"
+          },
+          {
+            "name": "site_admin"
+          },
+          {
+            "name": "starred_url"
+          },
+          {
+            "name": "subscriptions_url"
+          },
+          {
+            "name": "type"
+          },
+          {
+            "name": "url"
+          },
+          {
+            "name": "user_view_type"
+          }
+        ]
+      },
+      {
+        "name": "assignees",
+        "childParamsGroups": [
+          {
+            "name": "avatar_url"
+          },
+          {
+            "name": "deleted"
+          },
+          {
+            "name": "email"
+          },
+          {
+            "name": "events_url"
+          },
+          {
+            "name": "followers_url"
+          },
+          {
+            "name": "following_url"
+          },
+          {
+            "name": "gists_url"
+          },
+          {
+            "name": "gravatar_id"
+          },
+          {
+            "name": "html_url"
+          },
+          {
+            "name": "id"
+          },
+          {
+            "name": "login"
+          },
+          {
+            "name": "name"
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "organizations_url"
+          },
+          {
+            "name": "received_events_url"
+          },
+          {
+            "name": "repos_url"
+          },
+          {
+            "name": "site_admin"
+          },
+          {
+            "name": "starred_url"
+          },
+          {
+            "name": "subscriptions_url"
+          },
+          {
+            "name": "type"
+          },
+          {
+            "name": "url"
+          },
+          {
+            "name": "user_view_type"
+          }
+        ]
+      },
+      {
+        "name": "author_association",
+        "description": "How the author is associated with the repository."
+      },
+      {
+        "name": "body",
+        "description": "Contents of the issue"
+      },
+      {
+        "name": "closed_at"
+      },
+      {
+        "name": "comments"
+      },
+      {
+        "name": "comments_url"
+      },
+      {
+        "name": "created_at"
+      },
+      {
+        "name": "draft"
+      },
+      {
+        "name": "events_url"
+      },
+      {
+        "name": "html_url"
+      },
+      {
+        "name": "id"
+      },
+      {
+        "name": "labels",
+        "childParamsGroups": [
+          {
+            "name": "color",
+            "description": "6-character hex code, without the leading #, identifying the color"
+          },
+          {
+            "name": "default"
+          },
+          {
+            "name": "description"
+          },
+          {
+            "name": "id"
+          },
+          {
+            "name": "name",
+            "description": "The name of the label."
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "url",
+            "description": "URL for the label"
+          }
+        ]
+      },
+      {
+        "name": "labels_url"
+      },
+      {
+        "name": "locked"
+      },
+      {
+        "name": "milestone",
+        "description": "A collection of related issues and pull requests.",
+        "childParamsGroups": [
+          {
+            "name": "closed_at"
+          },
+          {
+            "name": "closed_issues"
+          },
+          {
+            "name": "created_at"
+          },
+          {
+            "name": "creator",
+            "childParamsGroups": [
+              {
+                "name": "avatar_url"
+              },
+              {
+                "name": "deleted"
+              },
+              {
+                "name": "email"
+              },
+              {
+                "name": "events_url"
+              },
+              {
+                "name": "followers_url"
+              },
+              {
+                "name": "following_url"
+              },
+              {
+                "name": "gists_url"
+              },
+              {
+                "name": "gravatar_id"
+              },
+              {
+                "name": "html_url"
+              },
+              {
+                "name": "id"
+              },
+              {
+                "name": "login"
+              },
+              {
+                "name": "name"
+              },
+              {
+                "name": "node_id"
+              },
+              {
+                "name": "organizations_url"
+              },
+              {
+                "name": "received_events_url"
+              },
+              {
+                "name": "repos_url"
+              },
+              {
+                "name": "site_admin"
+              },
+              {
+                "name": "starred_url"
+              },
+              {
+                "name": "subscriptions_url"
+              },
+              {
+                "name": "type"
+              },
+              {
+                "name": "url"
+              },
+              {
+                "name": "user_view_type"
+              }
+            ]
+          },
+          {
+            "name": "description"
+          },
+          {
+            "name": "due_on"
+          },
+          {
+            "name": "html_url"
+          },
+          {
+            "name": "id"
+          },
+          {
+            "name": "labels_url"
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "number",
+            "description": "The number of the milestone."
+          },
+          {
+            "name": "open_issues"
+          },
+          {
+            "name": "state",
+            "description": "The state of the milestone."
+          },
+          {
+            "name": "title",
+            "description": "The title of the milestone."
+          },
+          {
+            "name": "updated_at"
+          },
+          {
+            "name": "url"
+          }
+        ]
+      },
+      {
+        "name": "node_id"
+      },
+      {
+        "name": "number"
+      },
+      {
+        "name": "performed_via_github_app",
+        "description": "GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.",
+        "childParamsGroups": [
+          {
+            "name": "created_at"
+          },
+          {
+            "name": "description"
+          },
+          {
+            "name": "events",
+            "description": "The list of events for the GitHub app"
+          },
+          {
+            "name": "external_url"
+          },
+          {
+            "name": "html_url"
+          },
+          {
+            "name": "id",
+            "description": "Unique identifier of the GitHub app"
+          },
+          {
+            "name": "name",
+            "description": "The name of the GitHub app"
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "owner",
+            "childParamsGroups": [
+              {
+                "name": "avatar_url"
+              },
+              {
+                "name": "deleted"
+              },
+              {
+                "name": "email"
+              },
+              {
+                "name": "events_url"
+              },
+              {
+                "name": "followers_url"
+              },
+              {
+                "name": "following_url"
+              },
+              {
+                "name": "gists_url"
+              },
+              {
+                "name": "gravatar_id"
+              },
+              {
+                "name": "html_url"
+              },
+              {
+                "name": "id"
+              },
+              {
+                "name": "login"
+              },
+              {
+                "name": "name"
+              },
+              {
+                "name": "node_id"
+              },
+              {
+                "name": "organizations_url"
+              },
+              {
+                "name": "received_events_url"
+              },
+              {
+                "name": "repos_url"
+              },
+              {
+                "name": "site_admin"
+              },
+              {
+                "name": "starred_url"
+              },
+              {
+                "name": "subscriptions_url"
+              },
+              {
+                "name": "type"
+              },
+              {
+                "name": "url"
+              },
+              {
+                "name": "user_view_type"
+              }
+            ]
+          },
+          {
+            "name": "permissions",
+            "description": "The set of permissions for the GitHub app",
+            "childParamsGroups": [
+              {
+                "name": "actions"
+              },
+              {
+                "name": "administration"
+              },
+              {
+                "name": "checks"
+              },
+              {
+                "name": "content_references"
+              },
+              {
+                "name": "contents"
+              },
+              {
+                "name": "deployments"
+              },
+              {
+                "name": "discussions"
+              },
+              {
+                "name": "emails"
+              },
+              {
+                "name": "environments"
+              },
+              {
+                "name": "issues"
+              },
+              {
+                "name": "keys"
+              },
+              {
+                "name": "members"
+              },
+              {
+                "name": "metadata"
+              },
+              {
+                "name": "organization_administration"
+              },
+              {
+                "name": "organization_hooks"
+              },
+              {
+                "name": "organization_packages"
+              },
+              {
+                "name": "organization_plan"
+              },
+              {
+                "name": "organization_projects"
+              },
+              {
+                "name": "organization_secrets"
+              },
+              {
+                "name": "organization_self_hosted_runners"
+              },
+              {
+                "name": "organization_user_blocking"
+              },
+              {
+                "name": "packages"
+              },
+              {
+                "name": "pages"
+              },
+              {
+                "name": "pull_requests"
+              },
+              {
+                "name": "repository_hooks"
+              },
+              {
+                "name": "repository_projects"
+              },
+              {
+                "name": "secret_scanning_alerts"
+              },
+              {
+                "name": "secrets"
+              },
+              {
+                "name": "security_events"
+              },
+              {
+                "name": "security_scanning_alert"
+              },
+              {
+                "name": "single_file"
+              },
+              {
+                "name": "statuses"
+              },
+              {
+                "name": "vulnerability_alerts"
+              },
+              {
+                "name": "workflows"
+              }
+            ]
+          },
+          {
+            "name": "slug",
+            "description": "The slug name of the GitHub app"
+          },
+          {
+            "name": "updated_at"
+          }
+        ]
+      },
+      {
+        "name": "pull_request",
+        "childParamsGroups": [
+          {
+            "name": "diff_url"
+          },
+          {
+            "name": "html_url"
+          },
+          {
+            "name": "merged_at"
+          },
+          {
+            "name": "patch_url"
+          },
+          {
+            "name": "url"
+          }
+        ]
+      },
+      {
+        "name": "reactions",
+        "childParamsGroups": [
+          {
+            "name": "+1"
+          },
+          {
+            "name": "-1"
+          },
+          {
+            "name": "confused"
+          },
+          {
+            "name": "eyes"
+          },
+          {
+            "name": "heart"
+          },
+          {
+            "name": "hooray"
+          },
+          {
+            "name": "laugh"
+          },
+          {
+            "name": "rocket"
+          },
+          {
+            "name": "total_count"
+          },
+          {
+            "name": "url"
+          }
+        ]
+      },
+      {
+        "name": "repository_url"
+      },
+      {
+        "name": "pinned_comment",
+        "description": "Comments provide a way for people to collaborate on an issue.",
+        "childParamsGroups": [
+          {
+            "name": "id",
+            "description": "Unique identifier of the issue comment"
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "url",
+            "description": "URL for the issue comment"
+          },
+          {
+            "name": "body",
+            "description": "Contents of the issue comment"
+          },
+          {
+            "name": "body_text"
+          },
+          {
+            "name": "body_html"
+          },
+          {
+            "name": "html_url"
+          },
+          {
+            "name": "user",
+            "description": "A GitHub user.",
+            "childParamsGroups": [
+              {
+                "name": "name"
+              },
+              {
+                "name": "email"
+              },
+              {
+                "name": "login"
+              },
+              {
+                "name": "id"
+              },
+              {
+                "name": "node_id"
+              },
+              {
+                "name": "avatar_url"
+              },
+              {
+                "name": "gravatar_id"
+              },
+              {
+                "name": "url"
+              },
+              {
+                "name": "html_url"
+              },
+              {
+                "name": "followers_url"
+              },
+              {
+                "name": "following_url"
+              },
+              {
+                "name": "gists_url"
+              },
+              {
+                "name": "starred_url"
+              },
+              {
+                "name": "subscriptions_url"
+              },
+              {
+                "name": "organizations_url"
+              },
+              {
+                "name": "repos_url"
+              },
+              {
+                "name": "events_url"
+              },
+              {
+                "name": "received_events_url"
+              },
+              {
+                "name": "type"
+              },
+              {
+                "name": "site_admin"
+              },
+              {
+                "name": "starred_at"
+              },
+              {
+                "name": "user_view_type"
+              }
+            ]
+          },
+          {
+            "name": "created_at"
+          },
+          {
+            "name": "updated_at"
+          },
+          {
+            "name": "issue_url"
+          },
+          {
+            "name": "author_association",
+            "description": "How the author is associated with the repository."
+          },
+          {
+            "name": "performed_via_github_app",
+            "description": "GitHub apps are a new way to extend GitHub. They can be installed directly on organizations and user accounts and granted access to specific repositories. They come with granular permissions and built-in webhooks. GitHub apps are first class actors within GitHub.",
+            "childParamsGroups": [
+              {
+                "name": "id",
+                "description": "Unique identifier of the GitHub app"
+              },
+              {
+                "name": "slug",
+                "description": "The slug name of the GitHub app"
+              },
+              {
+                "name": "node_id"
+              },
+              {
+                "name": "client_id"
+              },
+              {
+                "name": "owner",
+                "description": "A GitHub user."
+              },
+              {
+                "name": "name",
+                "description": "The name of the GitHub app"
+              },
+              {
+                "name": "description"
+              },
+              {
+                "name": "external_url"
+              },
+              {
+                "name": "html_url"
+              },
+              {
+                "name": "created_at"
+              },
+              {
+                "name": "updated_at"
+              },
+              {
+                "name": "permissions",
+                "description": "The set of permissions for the GitHub app",
+                "childParamsGroups": [
+                  {
+                    "name": "issues"
+                  },
+                  {
+                    "name": "checks"
+                  },
+                  {
+                    "name": "metadata"
+                  },
+                  {
+                    "name": "contents"
+                  },
+                  {
+                    "name": "deployments"
+                  }
+                ]
+              },
+              {
+                "name": "events",
+                "description": "The list of events for the GitHub app. Note that the `installation_target`, `security_advisory`, and `meta` events are not included because they are global events and not specific to an installation."
+              },
+              {
+                "name": "installations_count",
+                "description": "The number of installations associated with the GitHub app. Only returned when the integration is requesting details about itself."
+              }
+            ]
+          },
+          {
+            "name": "reactions",
+            "childParamsGroups": [
+              {
+                "name": "url"
+              },
+              {
+                "name": "total_count"
+              },
+              {
+                "name": "+1"
+              },
+              {
+                "name": "-1"
+              },
+              {
+                "name": "laugh"
+              },
+              {
+                "name": "confused"
+              },
+              {
+                "name": "heart"
+              },
+              {
+                "name": "hooray"
+              },
+              {
+                "name": "eyes"
+              },
+              {
+                "name": "rocket"
+              }
+            ]
+          },
+          {
+            "name": "pin",
+            "description": "Context around who pinned an issue comment and when it was pinned.",
+            "childParamsGroups": [
+              {
+                "name": "pinned_at"
+              },
+              {
+                "name": "pinned_by",
+                "description": "A GitHub user.",
+                "childParamsGroups": [
+                  {
+                    "name": "name"
+                  },
+                  {
+                    "name": "email"
+                  },
+                  {
+                    "name": "login"
+                  },
+                  {
+                    "name": "id"
+                  },
+                  {
+                    "name": "node_id"
+                  },
+                  {
+                    "name": "avatar_url"
+                  },
+                  {
+                    "name": "gravatar_id"
+                  },
+                  {
+                    "name": "url"
+                  },
+                  {
+                    "name": "html_url"
+                  },
+                  {
+                    "name": "followers_url"
+                  },
+                  {
+                    "name": "following_url"
+                  },
+                  {
+                    "name": "gists_url"
+                  },
+                  {
+                    "name": "starred_url"
+                  },
+                  {
+                    "name": "subscriptions_url"
+                  },
+                  {
+                    "name": "organizations_url"
+                  },
+                  {
+                    "name": "repos_url"
+                  },
+                  {
+                    "name": "events_url"
+                  },
+                  {
+                    "name": "received_events_url"
+                  },
+                  {
+                    "name": "type"
+                  },
+                  {
+                    "name": "site_admin"
+                  },
+                  {
+                    "name": "starred_at"
+                  },
+                  {
+                    "name": "user_view_type"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "minimized",
+            "description": "Details about why an issue comment was minimized.",
+            "childParamsGroups": [
+              {
+                "name": "reason",
+                "description": "The reason the comment was minimized."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "sub_issues_summary",
+        "childParamsGroups": [
+          {
+            "name": "total"
+          },
+          {
+            "name": "completed"
+          },
+          {
+            "name": "percent_completed"
+          }
+        ]
+      },
+      {
+        "name": "issue_dependencies_summary",
+        "childParamsGroups": [
+          {
+            "name": "blocked_by"
+          },
+          {
+            "name": "blocking"
+          },
+          {
+            "name": "total_blocked_by"
+          },
+          {
+            "name": "total_blocking"
+          }
+        ]
+      },
+      {
+        "name": "issue_field_values",
+        "childParamsGroups": [
+          {
+            "name": "issue_field_id",
+            "description": "Unique identifier for the issue field."
+          },
+          {
+            "name": "issue_field_name",
+            "description": "The human-readable name of the issue field."
+          },
+          {
+            "name": "node_id"
+          },
+          {
+            "name": "data_type",
+            "description": "The data type of the issue field"
+          },
+          {
+            "name": "value",
+            "description": "The value of the issue field"
+          },
+          {
+            "name": "single_select_option",
+            "description": "Details about the selected option (only present for single_select fields)",
+            "childParamsGroups": [
+              {
+                "name": "id",
+                "description": "Unique identifier for the option."
+              },
+              {
+                "name": "name",
+                "description": "The name of the option"
+              },
+              {
+                "name": "color",
+                "description": "The color of the option"
+              }
+            ]
+          },
+          {
+            "name": "multi_select_options",
+            "description": "Details about the selected options",
+            "childParamsGroups": [
+              {
+                "name": "id",
+                "description": "Unique identifier for the option."
+              },
+              {
+                "name": "name",
+                "description": "The name of the option"
+              },
+              {
+                "name": "color",
+                "description": "The color of the option"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "description": "The status of the issue, or `null` if it has none. Issue statuses are in preview and only available to accounts enrolled in the preview.",
+        "childParamsGroups": [
+          {
+            "name": "id",
+            "description": "The stable identifier of the planning status."
+          },
+          {
+            "name": "name",
+            "description": "The display name of the planning status, which may change in the future."
+          },
+          {
+            "name": "category",
+            "description": "A stable identifier for the category, such as `backlog`, `planned`, `started`, `completed`, `not_planned` or `duplicate`. Clients should expect new keys to be added."
           }
         ]
       },
@@ -8385,6 +9812,24 @@
                 "description": "The color of the option"
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "description": "The status of the issue, or `null` if it has none. Issue statuses are in preview and only available to accounts enrolled in the preview.",
+        "childParamsGroups": [
+          {
+            "name": "id",
+            "description": "The stable identifier of the planning status."
+          },
+          {
+            "name": "name",
+            "description": "The display name of the planning status, which may change in the future."
+          },
+          {
+            "name": "category",
+            "description": "A stable identifier for the category, such as `backlog`, `planned`, `started`, `completed`, `not_planned` or `duplicate`. Clients should expect new keys to be added."
           }
         ]
       },
@@ -8837,6 +10282,82 @@
             "name": "description"
           },
           {
+            "name": "archived_at",
+            "description": "Timestamp indicating when the label was archived, or `null` if it has not been archived."
+          },
+          {
+            "name": "archived_by",
+            "description": "A GitHub user.",
+            "childParamsGroups": [
+              {
+                "name": "name"
+              },
+              {
+                "name": "email"
+              },
+              {
+                "name": "login"
+              },
+              {
+                "name": "id"
+              },
+              {
+                "name": "node_id"
+              },
+              {
+                "name": "avatar_url"
+              },
+              {
+                "name": "gravatar_id"
+              },
+              {
+                "name": "url"
+              },
+              {
+                "name": "html_url"
+              },
+              {
+                "name": "followers_url"
+              },
+              {
+                "name": "following_url"
+              },
+              {
+                "name": "gists_url"
+              },
+              {
+                "name": "starred_url"
+              },
+              {
+                "name": "subscriptions_url"
+              },
+              {
+                "name": "organizations_url"
+              },
+              {
+                "name": "repos_url"
+              },
+              {
+                "name": "events_url"
+              },
+              {
+                "name": "received_events_url"
+              },
+              {
+                "name": "type"
+              },
+              {
+                "name": "site_admin"
+              },
+              {
+                "name": "starred_at"
+              },
+              {
+                "name": "user_view_type"
+              }
+            ]
+          },
+          {
             "name": "id"
           },
           {
@@ -9667,6 +11188,24 @@
                 "description": "The color of the option"
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "status",
+        "description": "The status of the issue, or `null` if it has none. Issue statuses are in preview and only available to accounts enrolled in the preview.",
+        "childParamsGroups": [
+          {
+            "name": "id",
+            "description": "The stable identifier of the planning status."
+          },
+          {
+            "name": "name",
+            "description": "The display name of the planning status, which may change in the future."
+          },
+          {
+            "name": "category",
+            "description": "A stable identifier for the category, such as `backlog`, `planned`, `started`, `completed`, `not_planned` or `duplicate`. Clients should expect new keys to be added."
           }
         ]
       },
@@ -12505,9 +14044,6 @@
     ]
   },
   {
-    "name": "number"
-  },
-  {
     "name": "reason"
   },
   {
@@ -14530,6 +16066,78 @@
           },
           {
             "name": "default"
+          },
+          {
+            "name": "archived_by",
+            "description": "A GitHub user.",
+            "childParamsGroups": [
+              {
+                "name": "name"
+              },
+              {
+                "name": "email"
+              },
+              {
+                "name": "login"
+              },
+              {
+                "name": "id"
+              },
+              {
+                "name": "node_id"
+              },
+              {
+                "name": "avatar_url"
+              },
+              {
+                "name": "gravatar_id"
+              },
+              {
+                "name": "url"
+              },
+              {
+                "name": "html_url"
+              },
+              {
+                "name": "followers_url"
+              },
+              {
+                "name": "following_url"
+              },
+              {
+                "name": "gists_url"
+              },
+              {
+                "name": "starred_url"
+              },
+              {
+                "name": "subscriptions_url"
+              },
+              {
+                "name": "organizations_url"
+              },
+              {
+                "name": "repos_url"
+              },
+              {
+                "name": "events_url"
+              },
+              {
+                "name": "received_events_url"
+              },
+              {
+                "name": "type"
+              },
+              {
+                "name": "site_admin"
+              },
+              {
+                "name": "starred_at"
+              },
+              {
+                "name": "user_view_type"
+              }
+            ]
           }
         ]
       },
@@ -15330,7 +16938,8 @@
                 "description": "Whether to allow rebase merges for pull requests."
               },
               {
-                "name": "temp_clone_token"
+                "name": "temp_clone_token",
+                "description": "When present and non-empty, a temporary credential for read-only Git access to this repository.\nIt expires five minutes after generation and cannot be used to push changes.\nTreat this value as sensitive and avoid recording it in logs."
               },
               {
                 "name": "allow_squash_merge",
@@ -15862,7 +17471,8 @@
                 "description": "Whether to allow rebase merges for pull requests."
               },
               {
-                "name": "temp_clone_token"
+                "name": "temp_clone_token",
+                "description": "When present and non-empty, a temporary credential for read-only Git access to this repository.\nIt expires five minutes after generation and cannot be used to push changes.\nTreat this value as sensitive and avoid recording it in logs."
               },
               {
                 "name": "allow_squash_merge",

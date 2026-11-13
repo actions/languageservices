@@ -277,6 +277,24 @@ jobs:
     expect(result.length).toBe(0);
   });
 
+  it("issues event with status_changed activity type", async () => {
+    const result = await validate(
+      createDocument(
+        "wf.yaml",
+        `on:
+  issues:
+    types: [status_changed]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo`
+      )
+    );
+
+    expect(result.length).toBe(0);
+  });
+
   it("issues event with invalid activity type", async () => {
     const result = await validate(
       createDocument(
