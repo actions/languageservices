@@ -34,6 +34,7 @@ const DROPPED_EVENTS = new Set([
   "installation_repositories",
   "installation_target",
   "issue_dependencies",
+  "issue_relates_to",
   "marketplace_purchase",
   "member",
   "membership",

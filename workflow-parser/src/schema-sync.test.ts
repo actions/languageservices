@@ -38,7 +38,11 @@ describe("schema-sync", () => {
 
     // issue_comment: pinned and unpinned are webhook-only, not listed as workflow trigger activity types
     // See: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#issue_comment
-    issue_comment: ["pinned", "unpinned"]
+    issue_comment: ["pinned", "unpinned"],
+
+    // label: archived and unarchived are webhook-only, not listed as workflow trigger activity types
+    // See: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#label
+    label: ["archived", "unarchived"]
   };
 
   // Activity types that exist in workflow schema but are intentionally NOT

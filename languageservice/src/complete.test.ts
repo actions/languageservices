@@ -125,6 +125,16 @@ jobs:
     expect(labels).toContain("closed");
   });
 
+  it("issues activity type completion includes status_changed", async () => {
+    const input = `on:
+  issues:
+    types:
+      - |`;
+    const result = await complete(...getPositionFromCursor(input));
+    const labels = result.map(x => x.label);
+    expect(labels).toContain("status_changed");
+  });
+
   it("map keys filter out existing values", async () => {
     const input = `on: push
 jobs:

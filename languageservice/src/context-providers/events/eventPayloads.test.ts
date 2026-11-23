@@ -94,6 +94,23 @@ describe("eventPayloads", () => {
       expect(issue?.get("user")).toBeDefined();
     });
 
+    it("returns the status change for issues status_changed", () => {
+      expect(getSupportedEventTypes("issues")).toContain("status_changed");
+
+      const payload = getEventPayload("issues", "status_changed");
+      expect(payload).toBeDefined();
+      expect(payload?.get("issue")).toBeDefined();
+
+      const status = payload?.get("status") as DescriptionDictionary | undefined;
+      expect(status?.get("id")).toBeDefined();
+      expect(status?.get("category")).toBeDefined();
+
+      const changes = payload?.get("changes") as DescriptionDictionary | undefined;
+      const statusChange = changes?.get("status") as DescriptionDictionary | undefined;
+      const from = statusChange?.get("from") as DescriptionDictionary | undefined;
+      expect(from?.get("id")).toBeDefined();
+    });
+
     it("returns undefined for unknown event", () => {
       const payload = getEventPayload("not_a_real_event", "default");
       expect(payload).toBeUndefined();
