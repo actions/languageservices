@@ -4,6 +4,8 @@
  * because files in non-standard locations wouldn't work as workflows/actions anyway.
  */
 
+import {URI} from "vscode-uri";
+
 export type DocumentType = "workflow" | "action" | "unknown";
 
 /**
@@ -13,6 +15,15 @@ export type DocumentType = "workflow" | "action" | "unknown";
  * @returns The detected document type
  */
 export function detectDocumentType(uri: string): DocumentType {
+  // VS Code uses a "git" scheme for documents in a diff view.
+  // Those URIs can have a query string, which means the regex we
+  // use won't always match because we anchor to the end of the
+  // URI. Extract the path from those URIs and use that instead.
+  const parsed = URI.parse(uri);
+  if (parsed.scheme === "git") {
+    uri = parsed.path;
+  }
+
   // Normalize path separators
   const normalizedUri = uri.replace(/\\/g, "/");
 
