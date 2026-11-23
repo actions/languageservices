@@ -30,10 +30,11 @@ export async function getSecrets(
   const eventsConfig = workflowContext?.template?.events;
 
   if (eventsConfig?.workflow_call) {
-    // Unpredictable secrets may be passed in via a workflow_call trigger
+    // Caller workflows may pass extra secrets, so this context is never complete.
     secretsContext.complete = false;
-    // Exit early for validation mode or if workflow_call is the only trigger
-    if (mode === Mode.Validation || Object.keys(eventsConfig).length == 1) {
+    // Validation cannot know those caller secrets. Completion still loads
+    // repo and org secrets because a caller can use secrets: inherit.
+    if (mode === Mode.Validation) {
       return secretsContext;
     }
   }
