@@ -560,7 +560,7 @@
     },
     "branding-color": {
       "description": "The background color of the badge.\n\n[Documentation](https://docs.github.com/actions/creating-actions/metadata-syntax-for-github-actions#brandingcolor)",
-      "allowed-values": ["white", "yellow", "blue", "green", "orange", "red", "purple", "gray-dark"]
+      "allowed-values": ["white", "black", "yellow", "blue", "green", "orange", "red", "purple", "gray-dark"]
     },
     "using": {
       "description": "The runtime used to execute the action.",
